@@ -76,7 +76,7 @@
                         <h6 class="mb-0 text-white">{{Auth::user()->name}}</h6>
                         <p class="mb-0 font-size-11 text-white-50 fw-semibold">{{Auth::user()->email}}</p>
                     </div>
-                    <a class="dropdown-item" href="#"><i
+                    <a class="dropdown-item" href="{{ route('profile.edit') }}"><i
                             class="mdi mdi-account-circle text-muted font-size-16 align-middle me-1"></i> <span
                             class="align-middle">Profile</span></a>
                     <!-- <a class="dropdown-item" href="apps-chat.html"><i

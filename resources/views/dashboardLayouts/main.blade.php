@@ -11,7 +11,7 @@
     <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
     <meta content="Pichforest" name="author" />
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{asset('Landing/assets/logos/logo.svg')}}">
+    <link rel="shortcut icon" href="{{asset('logo.png')}}">
 
 
     <!-- Font Awesome -->
@@ -770,6 +770,57 @@
                         </div>
                     </div>
                     <!-- end Breadcrumb -->
+
+                    <!-- Global Alerts -->
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="mdi mdi-check-circle me-2 font-size-20"></i>
+                                <div>{{ session('success') }}</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if(session('status') === 'profile-updated')
+                        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="mdi mdi-account-check me-2 font-size-20"></i>
+                                <div>Profile information updated successfully!</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if(session('status') === 'password-updated')
+                        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="mdi mdi-lock-check me-2 font-size-20"></i>
+                                <div>Password has been changed successfully!</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="mdi mdi-alert-circle me-2 font-size-20"></i>
+                                <div>{{ session('error') }}</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    @if($errors->any() && !session('status'))
+                        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="mdi mdi-alert-circle me-2 font-size-20"></i>
+                                <div>Please check the form for errors.</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
 
                     @yield('content')
 
