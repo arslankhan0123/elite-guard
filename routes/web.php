@@ -19,16 +19,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    $companyCount = Company::count();
-    $siteCount = Site::count();
-    $nfcCount = NfcTag::count();
-    $employeeCount = Employee::count();
+Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
+    Route::get('/dashboard', function () {
+        $companyCount = Company::count();
+        $siteCount = Site::count();
+        $nfcCount = NfcTag::count();
+        $employeeCount = Employee::count();
 
-    return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount'));
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
+        return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount'));
+    })->name('dashboard');
 
     Route::group(['prefix' => '/company'], function () {
         Route::get('/', [CompanyController::class, 'index'])->name('companies.index');
@@ -65,7 +64,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/update/{id}', [EmployeeController::class, 'update'])->name('employees.update');
         Route::get('/delete/{id}', [EmployeeController::class, 'delete'])->name('employees.delete');
     });
+});
 
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

@@ -176,6 +176,16 @@
         </style>
     </head>
     <body>
+        @if(session('error'))
+            <div style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <div class="alert alert-danger shadow-lg border-0 animate__animated animate__shakeX" role="alert" style="background: #fee2e2; color: #991b1b; border-left: 5px solid #dc2626; padding: 20px; border-radius: 12px; font-weight: 600;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <span>{{ session('error') }}</span>
+                    </div>
+                </div>
+            </div>
+        @endif
         <div class="circle circle-1"></div>
         <div class="circle circle-2"></div>
 
@@ -190,10 +200,12 @@
                 @if (Route::has('login'))
                     <div class="btn-group">
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="btn btn-primary">
-                                Go to Dashboard
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-                            </a>
+                            @if(Auth::user()->role === 'SuperAdmin')
+                                <a href="{{ url('/dashboard') }}" class="btn btn-primary">
+                                    Go to Dashboard
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                                </a>
+                            @endif
                         @else
                             <a href="{{ route('login') }}" class="btn btn-primary">
                                 Log in

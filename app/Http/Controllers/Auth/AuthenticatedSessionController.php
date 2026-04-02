@@ -26,6 +26,14 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        if (Auth::user()->role !== 'SuperAdmin') {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return redirect('/')->with('error', 'Unauthorized access! Only SuperAdmins can log into this portal.');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));
