@@ -15,12 +15,13 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         $user = User::updateOrCreate(
-            ['email' => 'nasiralihassan777@gmail.com'], // Unique identifier for the user
+            ['email' => 'arslan.devsspace@gmail.com'], // Unique identifier for the user
             [
-                'name' => 'Nasir Ali',
+                'name' => 'Arslan Khan',
                 'password' => Hash::make('Jp7#xV!9rT$eWq3@'),
                 'real_password' => 'Jp7#xV!9rT$eWq3@',
                 'email_verified_at' => now(),
+                'role' => 'SuperAdmin',
             ]
         );
     }
