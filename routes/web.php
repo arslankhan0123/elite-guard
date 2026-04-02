@@ -3,12 +3,14 @@
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DegreeController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NfcTagController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UniversityController;
 use App\Models\Company;
+use App\Models\Employee;
 use App\Models\NfcTag;
 use App\Models\Site;
 use Illuminate\Support\Facades\Route;
@@ -21,8 +23,9 @@ Route::get('/dashboard', function () {
     $companyCount = Company::count();
     $siteCount = Site::count();
     $nfcCount = NfcTag::count();
+    $employeeCount = Employee::count();
 
-    return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount'));
+    return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -52,6 +55,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/{nfc_id}', [NfcTagController::class, 'edit'])->name('nfc.edit');
         Route::post('/update/{nfc_id}', [NfcTagController::class, 'update'])->name('nfc.update');
         Route::get('/delete/{nfc_id}', [NfcTagController::class, 'delete'])->name('nfc.delete');
+    });
+
+    Route::group(['prefix' => '/employee'], function () {
+        Route::get('/', [EmployeeController::class, 'index'])->name('employees.index');
+        Route::get('/create', [EmployeeController::class, 'create'])->name('employees.create');
+        Route::post('/store', [EmployeeController::class, 'store'])->name('employees.store');
+        Route::get('/edit/{id}', [EmployeeController::class, 'edit'])->name('employees.edit');
+        Route::post('/update/{id}', [EmployeeController::class, 'update'])->name('employees.update');
+        Route::get('/delete/{id}', [EmployeeController::class, 'delete'])->name('employees.delete');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

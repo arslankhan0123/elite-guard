@@ -1,0 +1,97 @@
+@extends('dashboardLayouts.main')
+@section('title', 'Manage Employees')
+
+@section('breadcrumbTitle', 'Employee Directory')
+
+@section('breadcrumbs')
+<li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Employees</li>
+@endsection
+
+@section('content')
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h4 class="fw-bold mb-1">Elite Personnel</h4>
+                        <p class="text-muted mb-0">Total of {{ count($employees) }} registered employees & guards.</p>
+                    </div>
+                    <a href="{{ route('employees.create') }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                        <i data-feather="plus" class="me-1"></i> Add Employee
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="custom-table" class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Phone</th>
+                                <th>Joining Date</th>
+                                <th>Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($employees as $employee)
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-soft-primary text-primary p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i data-feather="user" style="width: 18px;"></i>
+                                        </div>
+                                        <span class="fw-bold text-dark">{{ $employee->user->name }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ $employee->user->email }}</td>
+                                <td>
+                                    <span class="badge rounded-pill {{ $employee->user->role == 'SuperAdmin' ? 'bg-soft-danger text-danger' : 'bg-soft-info text-info' }} px-3">
+                                        {{ $employee->user->role }}
+                                    </span>
+                                </td>
+                                <td>{{ $employee->phone ?? 'N/A' }}</td>
+                                <td>{{ $employee->joining_date ? \Carbon\Carbon::parse($employee->joining_date)->format('d M, Y') : 'N/A' }}</td>
+                                <td>
+                                    @if($employee->status)
+                                        <span class="badge bg-soft-success text-success fw-bold px-3 rounded-pill">Active</span>
+                                    @else
+                                        <span class="badge bg-soft-secondary text-secondary fw-bold px-3 rounded-pill">Inactive</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ route('employees.edit', $employee->id) }}" class="editBtn" title="Edit">
+                                            <svg viewBox="0 0 512 512">
+                                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0z"></path>
+                                            </svg>
+                                        </a>
+                                        <a href="{{ route('employees.delete', $employee->id) }}" class="bin-button" title="Delete" onclick="return confirm('Are you sure you want to delete this employee?');">
+                                            <svg class="bin-top" viewBox="0 0 39 7">
+                                                <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+                                                <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+                                            </svg>
+                                            <svg class="bin-bottom" viewBox="0 0 33 39">
+                                                <mask>
+                                                    <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" fill="white"></path>
+                                                </mask>
+                                                <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" fill="white"></path>
+                                                <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+                                                <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

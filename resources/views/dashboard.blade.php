@@ -64,6 +64,7 @@
     .card-company { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
     .card-site { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
     .card-nfc { background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%); }
+    .card-employee { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
 
     .stat-icon {
         font-size: 3rem;
@@ -195,7 +196,7 @@
 
     <!-- Stats Grid -->
     <div class="row g-4 mt-2">
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <a href="{{ route('companies.index') }}" class="text-decoration-none">
                 <div class="vibrant-card card-company p-4">
                     <div class="stat-label">Total Organizations</div>
@@ -208,7 +209,7 @@
             </a>
         </div>
 
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <a href="{{ route('sites.index') }}" class="text-decoration-none">
                 <div class="vibrant-card card-site p-4">
                     <div class="stat-label">Tactical Print Sites</div>
@@ -221,7 +222,7 @@
             </a>
         </div>
 
-        <div class="col-xl-4 col-md-12">
+        <div class="col-xl-3 col-md-6">
             <a href="{{ route('nfc.index') }}" class="text-decoration-none">
                 <div class="vibrant-card card-nfc p-4">
                     <div class="stat-label">NFC Device Tags</div>
@@ -229,6 +230,19 @@
                     <div class="stat-icon"><i data-feather="rss"></i></div>
                     <div class="mt-3 fs-6 d-flex align-items-center gap-1 opacity-75">
                         Manage Checkpoints <i data-feather="arrow-right" style="width: 16px;"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <a href="{{ route('employees.index') }}" class="text-decoration-none">
+                <div class="vibrant-card card-employee p-4">
+                    <div class="stat-label">Team Employees</div>
+                    <div class="stat-value">{{ $employeeCount }}</div>
+                    <div class="stat-icon"><i data-feather="users"></i></div>
+                    <div class="mt-3 fs-6 d-flex align-items-center gap-1 opacity-75">
+                        Directory <i data-feather="arrow-right" style="width: 16px;"></i>
                     </div>
                 </div>
             </a>
@@ -265,6 +279,10 @@
                     <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
                         <div class="text-muted small fw-bold mb-1">CHECKPOINTS</div>
                         <div class="h5 fw-bold text-info mb-0">{{ $nfcCount }}</div>
+                    </div>
+                    <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
+                        <div class="text-muted small fw-bold mb-1">TEAM</div>
+                        <div class="h5 fw-bold text-warning mb-0">{{ $employeeCount }}</div>
                     </div>
                 </div>
                 <div class="mt-4 p-3 rounded-4 bg-primary-subtle border border-primary-subtle text-primary small d-flex align-items-center gap-2">
