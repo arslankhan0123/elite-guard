@@ -28,4 +28,9 @@ class Site extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function nfcTags()
+    {
+        return $this->hasMany(NfcTag::class);
+    }
 }

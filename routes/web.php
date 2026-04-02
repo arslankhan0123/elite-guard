@@ -4,6 +4,7 @@ use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DegreeController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\NfcTagController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UniversityController;
@@ -35,6 +36,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/{site_id}', [SiteController::class, 'edit'])->name('sites.edit');
         Route::post('/update/{site_id}', [SiteController::class, 'update'])->name('sites.update');
         Route::get('/delete/{site_id}', [SiteController::class, 'delete'])->name('sites.delete');
+    });
+
+    Route::group(['prefix' => '/nfc'], function () {
+        Route::get('/', [NfcTagController::class, 'index'])->name('nfc.index');
+        Route::get('/create', [NfcTagController::class, 'create'])->name('nfc.create');
+        Route::post('/store', [NfcTagController::class, 'store'])->name('nfc.store');
+        Route::get('/edit/{nfc_id}', [NfcTagController::class, 'edit'])->name('nfc.edit');
+        Route::post('/update/{nfc_id}', [NfcTagController::class, 'update'])->name('nfc.update');
+        Route::get('/delete/{nfc_id}', [NfcTagController::class, 'delete'])->name('nfc.delete');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
