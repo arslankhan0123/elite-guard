@@ -3,229 +3,376 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Degree Town - Coming Soon</title>
+        <title>Elite Guard - Enterprise Security Management</title>
 
-        <!-- Fonts -->
+        <!-- Google Fonts: Inter & Outfit -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+        
+        <!-- Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        
+        <!-- AOS Animation Library -->
+        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+        
+        <!-- Bootstrap 5 -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
         <style>
             :root {
-                --primary: #6366f1;
-                --primary-hover: #4f46e5;
-                --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
-                --glass: rgba(255, 255, 255, 0.03);
-                --glass-border: rgba(255, 255, 255, 0.1);
+                --primary: #8b5cf6;
+                --primary-glow: rgba(139, 92, 246, 0.4);
+                --secondary: #3b82f6;
+                --accent: #10b981;
+                --bg-dark: #020617;
+                --bg-card: rgba(15, 23, 42, 0.6);
+                --glass-border: rgba(255, 255, 255, 0.08);
+                --text-main: #f8fafc;
+                --text-dim: #94a3b8;
             }
 
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
+                cursor: default;
             }
+            
+            a, button { cursor: pointer; }
 
             body {
                 font-family: 'Outfit', sans-serif;
-                background: var(--bg-gradient);
-                background-size: 400% 400%;
-                animation: gradientBG 15s ease infinite;
-                color: #fff;
+                background-color: var(--bg-dark);
+                color: var(--text-main);
+                overflow-x: hidden;
+                line-height: 1.6;
+            }
+
+            /* --- Background Architecture --- */
+            .main-scene {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                z-index: -2;
+                background: radial-gradient(circle at 20% 30%, #1e1b4b 0%, transparent 40%),
+                            radial-gradient(circle at 80% 70%, #0f172a 0%, transparent 40%);
+            }
+
+            .hero-wallpaper {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background-image: linear-gradient(to bottom, rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.98)), 
+                                  url('{{ asset('brain/0aa9d240-740f-43ee-8a8c-d4ab45a72724/elite_guard_hero_bg_1775160362111.png') }}');
+                background-size: cover;
+                background-position: center;
+                z-index: -1;
+                opacity: 0.7;
+            }
+
+            /* --- Navigation --- */
+            .nav-elite {
+                padding: 60px 0;
+                background: transparent;
+                position: relative;
+                width: 100%;
+                z-index: 1000;
+            }
+
+            .brand-name {
+                font-family: 'Inter', sans-serif;
+                font-weight: 850;
+                font-size: 2.2rem;
+                letter-spacing: -2px;
+                background: linear-gradient(to right, #fff, var(--primary));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                text-decoration: none;
+            }
+
+            /* --- Hero Section --- */
+            .hero-section {
                 min-height: 100vh;
                 display: flex;
-                flex-direction: column;
                 align-items: center;
-                justify-content: center;
-                overflow: hidden;
                 position: relative;
             }
 
-            @keyframes gradientBG {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
-            }
-
-            /* Animated background circles */
-            .circle {
-                position: absolute;
-                border-radius: 50%;
-                background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-                z-index: 0;
-                filter: blur(40px);
-                animation: float 20s infinite ease-in-out;
-            }
-
-            .circle-1 { width: 400px; height: 400px; top: -100px; left: -100px; }
-            .circle-2 { width: 400px; height: 400px; bottom: -100px; right: -100px; animation-delay: -5s; }
-
-            @keyframes float {
-                0%, 100% { transform: translateY(0) scale(1); }
-                50% { transform: translateY(-30px) scale(1.1); }
-            }
-
-            .container {
-                z-index: 10;
-                text-align: center;
-                padding: 2rem;
-                max-width: 800px;
-                width: 90%;
-            }
-
-            .logo {
-                font-weight: 700;
-                font-size: 3.5rem;
-                letter-spacing: -1px;
-                margin-bottom: 1rem;
-                background: linear-gradient(to right, #fff, #a5b4fc);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+            .badge-os {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid var(--glass-border);
+                backdrop-filter: blur(5px);
+                color: var(--primary);
+                padding: 10px 20px;
+                border-radius: 50px;
+                font-weight: 800;
+                font-size: 0.75rem;
+                letter-spacing: 3px;
+                text-transform: uppercase;
+                margin-bottom: 2rem;
                 display: inline-block;
             }
 
-            .coming-soon {
-                font-size: 1.25rem;
-                color: #94a3b8;
-                font-weight: 300;
-                text-transform: uppercase;
-                letter-spacing: 4px;
-                margin-bottom: 3rem;
-                display: block;
+            .title-hq {
+                font-size: clamp(3rem, 10vw, 6.5rem);
+                font-weight: 950;
+                line-height: 0.9;
+                margin-bottom: 25px;
+                letter-spacing: -5px;
             }
 
-            .card {
-                background: var(--glass);
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                border: 1px solid var(--glass-border);
-                padding: 3rem;
-                border-radius: 2rem;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-                margin-bottom: 3rem;
+            .text-glow {
+                text-shadow: 0 0 50px var(--primary-glow);
+                background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
             }
 
-            h1 {
-                font-size: 2.5rem;
-                font-weight: 600;
-                margin-bottom: 1rem;
+            .desc-hq {
+                font-size: 1.3rem;
+                color: var(--text-dim);
+                max-width: 650px;
+                margin-bottom: 4rem;
+                font-weight: 400;
+                line-height: 1.7;
             }
 
-            p {
-                color: #94a3b8;
-                font-size: 1.1rem;
-                line-height: 1.6;
-                margin-bottom: 2rem;
-            }
-
-            .btn-group {
-                display: flex;
-                gap: 1.5rem;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .btn {
-                padding: 0.875rem 2.5rem;
-                border-radius: 12px;
-                font-weight: 600;
-                font-size: 1rem;
+            /* --- Buttons --- */
+            .btn-action-hub {
+                padding: 20px 45px;
+                border-radius: 20px;
+                font-weight: 800;
+                font-size: 1.2rem;
                 text-decoration: none;
-                transition: all 0.3s ease;
                 display: inline-flex;
                 align-items: center;
-                gap: 0.5rem;
-                cursor: pointer;
+                gap: 15px;
+                transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+                border: none;
+                position: relative;
+                overflow: hidden;
             }
 
-            .btn-primary {
+            .btn-primary-hub {
                 background: var(--primary);
-                color: #fff;
-                box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+                color: white;
+                box-shadow: 0 15px 40px -10px var(--primary-glow);
             }
 
-            .btn-primary:hover {
-                background: var(--primary-hover);
-                transform: translateY(-2px);
-                box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+            .btn-primary-hub:hover {
+                background: var(--primary-dark);
+                transform: scale(1.05) translateY(-5px);
+                box-shadow: 0 25px 50px -12px var(--primary-glow);
+                color: white;
             }
 
-            .btn-outline {
-                background: transparent;
-                border: 1px solid var(--glass-border);
-                color: #fff;
-            }
-
-            .btn-outline:hover {
+            .btn-secondary-hub {
                 background: rgba(255, 255, 255, 0.05);
-                border-color: rgba(255, 255, 255, 0.3);
-                transform: translateY(-2px);
+                border: 1px solid var(--glass-border);
+                color: white;
+                backdrop-filter: blur(10px);
+            }
+
+            .btn-secondary-hub:hover {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: white;
+                color: white;
+            }
+
+            /* --- Intelligence Cards --- */
+            .intel-card {
+                background: var(--bg-card);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--glass-border);
+                padding: 45px;
+                border-radius: 35px;
+                transition: all 0.5s ease;
+                height: 100%;
+                position: relative;
+            }
+
+            .intel-card:hover {
+                border-color: var(--primary);
+                transform: translateY(-15px);
+                background: rgba(15, 23, 42, 0.8);
+            }
+
+            .intel-icon {
+                width: 70px;
+                height: 70px;
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                border-radius: 22px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 30px;
+                color: white;
+                font-size: 1.8rem;
+                box-shadow: 0 10px 20px -5px var(--primary-glow);
+            }
+
+            .stat-badge {
+                position: absolute;
+                top: 45px;
+                right: 45px;
+                font-size: 0.7rem;
+                font-weight: 800;
+                color: var(--accent);
+                background: rgba(16, 185, 129, 0.1);
+                padding: 5px 12px;
+                border-radius: 10px;
+                border: 1px solid rgba(16, 185, 129, 0.2);
+            }
+
+            /* --- Alerts --- */
+            .security-alert-box {
+                position: fixed;
+                top: 30px;
+                right: 30px;
+                z-index: 10000;
+                min-width: 400px;
+            }
+
+            .glass-alert {
+                background: rgba(239, 68, 68, 0.1);
+                backdrop-filter: blur(30px);
+                border: 1px solid rgba(239, 68, 68, 0.2);
+                border-left: 6px solid #ef4444;
+                padding: 30px;
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                animation: slideInShake 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            @keyframes slideInShake {
+                0% { transform: translateX(100%); }
+                70% { transform: translateX(-10%); }
+                100% { transform: translateX(0); }
             }
 
             footer {
-                position: absolute;
-                bottom: 2rem;
-                color: #64748b;
-                font-size: 0.875rem;
+                padding: 80px 0;
+                text-align: center;
+                color: var(--text-dim);
+                background: rgba(0,0,0,0.3);
+                margin-top: 150px;
             }
 
-            @media (max-width: 640px) {
-                .logo { font-size: 2.5rem; }
-                .card { padding: 2rem; }
-                h1 { font-size: 2rem; }
+            .tag-line {
+                font-weight: 800;
+                color: var(--primary);
+                display: block;
+                margin-bottom: 10px;
             }
         </style>
     </head>
     <body>
         @if(session('error'))
-            <div style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                <div class="alert alert-danger shadow-lg border-0 animate__animated animate__shakeX" role="alert" style="background: #fee2e2; color: #991b1b; border-left: 5px solid #dc2626; padding: 20px; border-radius: 12px; font-weight: 600;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        <span>{{ session('error') }}</span>
+            <div class="security-alert-box">
+                <div class="glass-alert shadow-2xl">
+                    <div class="alert-icon-circle">
+                        <i class="fas fa-lock fa-2x text-danger animate-pulse"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1 text-danger">SECURITY EXCEPTION</h5>
+                        <p class="mb-0 small text-white-50 opacity-100">{{ session('error') }}</p>
                     </div>
                 </div>
             </div>
         @endif
-        <div class="circle circle-1"></div>
-        <div class="circle circle-2"></div>
 
-        <div class="container">
-            <div class="logo">Degree Town</div>
-            <span class="coming-soon">Evolution in Education</span>
+        <div class="main-scene"></div>
+        <div class="hero-wallpaper"></div>
 
-            <div class="card">
-                <h1>We're launching soon</h1>
-                <p>The ultimate destination for your academic journey is under construction. Join our community and stay updated as we prepare to redefine degree management.</p>
-                
-                @if (Route::has('login'))
-                    <div class="btn-group">
-                        @auth
-                            @if(Auth::user()->role === 'SuperAdmin')
-                                <a href="{{ url('/dashboard') }}" class="btn btn-primary">
-                                    Go to Dashboard
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-                                </a>
-                            @endif
-                        @else
-                            <a href="{{ route('login') }}" class="btn btn-primary">
-                                Log in
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+        <nav class="nav-elite">
+            <div class="container d-flex justify-content-between align-items-center">
+                <a href="#" class="brand-name">ELITE GUARD</a>
+                <div class="d-none d-md-flex align-items-center gap-5">
+                    @auth
+                        @if(Auth::user()->role === 'SuperAdmin')
+                            <a href="{{ url('/dashboard') }}" class="btn-action-hub btn-primary-hub py-2 px-4 fs-6">
+                                DASHBOARD <i class="fas fa-microchip"></i>
                             </a>
-
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="btn btn-outline">
-                                    Register
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
-                                </a>
-                            @endif
-                        @endauth
-                    </div>
-                @endif
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="btn-action-hub btn-secondary-hub py-2 px-4 fs-6">
+                            SYSTEM ACCESS <i class="fas fa-shield-halved"></i>
+                        </a>
+                    @endauth
+                </div>
             </div>
-        </div>
+        </nav>
+
+        <main class="hero-section">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-xl-8" data-aos="fade-up" data-aos-duration="1000">
+                        <div class="badge-os">TACTICAL OPERATIONS OS v2.4</div>
+                        <h1 class="title-hq text-glow">The Hub of <br>Elite Security.</h1>
+                        <p class="desc-hq">A comprehensive infrastructure for high-stakes patrol management. Synchronize NFC checkpoints, personnel strength, and tactical sites with military-grade intelligence in real-time.</p>
+                        
+                        <div class="d-flex flex-wrap gap-4">
+                            <a href="{{ route('login') }}" class="btn-action-hub btn-primary-hub">
+                                INITIALIZE PROTOCOL <i class="fas fa-bolt-lightning"></i>
+                            </a>
+                            <a href="{{ route('architecture') }}" class="btn-action-hub btn-secondary-hub">
+                                LEARN ARCHITECTURE <i class="fas fa-info-circle"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-5 pt-5">
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="intel-card">
+                            <span class="stat-badge">ENCRYPTED</span>
+                            <div class="intel-icon"><i class="fas fa-rss"></i></div>
+                            <h3 class="fw-bold mb-3">NFC Integration</h3>
+                            <p class="text-dim">hardware-level scan verification with real-time payload decryption and site linking.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="intel-card">
+                            <span class="stat-badge">REAL-TIME</span>
+                            <div class="intel-icon" style="background: linear-gradient(135deg, #3b82f6, #0ea5e9);"><i class="fas fa-map-location-dot"></i></div>
+                            <h3 class="fw-bold mb-3">Site Intelligence</h3>
+                            <p class="text-dim">Centralized command over diverse operational zones, patrol routes, and tactical sites.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="intel-card">
+                            <span class="stat-badge">SECURE</span>
+                            <div class="intel-icon" style="background: linear-gradient(135deg, #10b981, #34d399);"><i class="fas fa-user-gear"></i></div>
+                            <h3 class="fw-bold mb-3">Personnel OS</h3>
+                            <p class="text-dim">Complete administration of elite personnel, roles, and administrative controllers.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
 
         <footer>
-            &copy; {{ date('Y') }} Degree Town. All rights reserved.
+            <div class="container">
+                <span class="tag-line">DESIGNED FOR OPERATION EXCELLENCE</span>
+                <p class="small">&copy; {{ date('Y') }} Elite Guard Operational Systems. All critical data is encrypted under AES-256 standard.</p>
+            </div>
         </footer>
+
+        <!-- Scripts -->
+        <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+        <script>
+            AOS.init({
+                once: true,
+                mirror: false
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

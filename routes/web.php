@@ -19,6 +19,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/architecture', function () {
+    return view('architecture');
+})->name('architecture');
+
 Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
     Route::get('/dashboard', function () {
         $companyCount = Company::count();
