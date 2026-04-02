@@ -5,20 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Company extends Model
+class Site extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'company_id',
         'name',
-        'logo',
         'email',
         'phone',
-        'website',
-        'address',
-        'country',
         'city',
-        'description',
+        'country',
+        'address',
         'status',
     ];
 
@@ -26,8 +24,8 @@ class Company extends Model
         'status' => 'boolean',
     ];
 
-    public function sites()
+    public function company()
     {
-        return $this->hasMany(Site::class);
+        return $this->belongsTo(Company::class);
     }
 }

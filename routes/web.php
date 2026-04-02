@@ -5,6 +5,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DegreeController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UniversityController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/{company_id}', [CompanyController::class, 'edit'])->name('companies.edit');
         Route::post('/update/{company_id}', [CompanyController::class, 'update'])->name('companies.update');
         Route::get('/delete/{company_id}', [CompanyController::class, 'delete'])->name('companies.delete');
+    });
+
+    Route::group(['prefix' => '/site'], function () {
+        Route::get('/', [SiteController::class, 'index'])->name('sites.index');
+        Route::get('/create', [SiteController::class, 'create'])->name('sites.create');
+        Route::post('/store', [SiteController::class, 'store'])->name('sites.store');
+        Route::get('/edit/{site_id}', [SiteController::class, 'edit'])->name('sites.edit');
+        Route::post('/update/{site_id}', [SiteController::class, 'update'])->name('sites.update');
+        Route::get('/delete/{site_id}', [SiteController::class, 'delete'])->name('sites.delete');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
