@@ -8,6 +8,9 @@ use App\Http\Controllers\NfcTagController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UniversityController;
+use App\Models\Company;
+use App\Models\NfcTag;
+use App\Models\Site;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -15,7 +18,11 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $companyCount = Company::count();
+    $siteCount = Site::count();
+    $nfcCount = NfcTag::count();
+
+    return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
