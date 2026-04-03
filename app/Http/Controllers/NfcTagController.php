@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\NfcTag;
 use App\Models\Site;
 use App\Repositories\NfcTagsRepository;
 use Illuminate\Http\Request;
@@ -38,43 +37,42 @@ class NfcTagController extends Controller
     {
         $request->validate([
             'site_id' => 'required|exists:sites,id',
-            'uid' => 'required|string|max:255|unique:nfc_tags,uid',
-            'name' => 'required|string|max:255',
-            'status' => 'required|boolean',
+            'uid'     => 'required|string|max:255|unique:nfc_tags,uid',
+            'name'    => 'required|string|max:255',
+            'status'  => 'required|boolean',
         ]);
 
-        NfcTag::create($request->all());
+        $this->nfcTagsRepo->createNfcTag($request);
 
         return redirect()->route('nfc.index')->with('success', 'NFC Tag created successfully.');
     }
 
     public function edit($nfc_id)
     {
-        $nfcTag = NfcTag::findOrFail($nfc_id);
+        $nfcTag = $this->nfcTagsRepo->findNfcTagById($nfc_id);
         $sites = Site::with('company')->where('status', true)->get();
         return view('admin.nfc.edit', compact('nfcTag', 'sites'));
     }
 
     public function update(Request $request, $nfc_id)
     {
-        $nfcTag = NfcTag::findOrFail($nfc_id);
+        $nfcTag = $this->nfcTagsRepo->findNfcTagById($nfc_id);
 
         $request->validate([
             'site_id' => 'required|exists:sites,id',
-            'uid' => 'required|string|max:255|unique:nfc_tags,uid,' . $nfcTag->id,
-            'name' => 'required|string|max:255',
-            'status' => 'required|boolean',
+            'uid'     => 'required|string|max:255|unique:nfc_tags,uid,' . $nfcTag->id,
+            'name'    => 'required|string|max:255',
+            'status'  => 'required|boolean',
         ]);
 
-        $nfcTag->update($request->all());
+        $this->nfcTagsRepo->updateNfcTag($request, $nfc_id);
 
         return redirect()->route('nfc.index')->with('success', 'NFC Tag updated successfully.');
     }
 
     public function delete($nfc_id)
     {
-        $nfcTag = NfcTag::findOrFail($nfc_id);
-        $nfcTag->delete();
+        $this->nfcTagsRepo->deleteNfcTag($nfc_id);
 
         return redirect()->route('nfc.index')->with('success', 'NFC Tag deleted successfully.');
     }

@@ -9,32 +9,34 @@ class NfcTagsRepository
     // Get all NFC tags
     public function getAllNfcTags()
     {
-        $nfcTags = NfcTag::orderBy('id', 'desc')->get();
+        $nfcTags = NfcTag::with('site.company')->orderBy('id', 'desc')->get();
         $data = [
             'status' => true,
-            'message' => 'NFC tags retrieved successfully',
+            'message' => 'NFC Tags retrieved successfully',
             'nfcTags' => $nfcTags
         ];
         return $data;
     }
 
-    // Find a NFC tag by ID
+    // Find an NFC tag by ID
     public function findNfcTagById($id)
     {
         return NfcTag::find($id);
     }
 
     // Create a new NFC tag
-    public function createNfcTag(array $data)
+    public function createNfcTag($request)
     {
+        $data = $request->all();
         return NfcTag::create($data);
     }
 
     // Update an existing NFC tag
-    public function updateNfcTag($id, array $data)
+    public function updateNfcTag($request, $nfc_id)
     {
-        $nfcTag = NfcTag::find($id);
+        $nfcTag = NfcTag::find($nfc_id);
         if ($nfcTag) {
+            $data = $request->all();
             $nfcTag->update($data);
             return $nfcTag;
         }
