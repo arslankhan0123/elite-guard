@@ -43,15 +43,7 @@ class CompanyController extends Controller
             'status' => 'required|boolean',
         ]);
 
-        $data = $request->all();
-
-        if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('companies/logos', 'public');
-            $data['logo'] = $logoPath;
-        }
-
-        Company::create($data);
-
+        $companies = $this->companyRepo->createCompany($request);
         return redirect()->route('companies.index')->with('success', 'Company created successfully.');
     }
 
@@ -76,30 +68,13 @@ class CompanyController extends Controller
             'status' => 'required|boolean',
         ]);
 
-        $data = $request->all();
-
-        if ($request->hasFile('logo')) {
-            // Delete old logo if exists
-            if ($company->logo) {
-                Storage::disk('public')->delete($company->logo);
-            }
-            $logoPath = $request->file('logo')->store('companies/logos', 'public');
-            $data['logo'] = $logoPath;
-        }
-
-        $company->update($data);
-
+        $companies = $this->companyRepo->updateCompany($request, $company_id);
         return redirect()->route('companies.index')->with('success', 'Company updated successfully.');
     }
 
     public function delete($company_id)
     {
-        $company = Company::findOrFail($company_id);
-        if ($company->logo) {
-            Storage::disk('public')->delete($company->logo);
-        }
-        $company->delete();
-
+        $companies = $this->companyRepo->deleteCompany($company_id);
         return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
     }
 }
