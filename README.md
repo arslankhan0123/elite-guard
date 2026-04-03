@@ -71,3 +71,12 @@ Access the "NFC" tab in the header.
 Test "Create NFC Tag" and ensure UID uniqueness is enforced.
 Verify "Edit", "Update", and "Delete" functionality.
 Ensure the relationship chain (NFC -> Site -> Company) displays correctly in the index.
+
+
+
+
+
+
+
+for JWT
+php artisan jwt:secret

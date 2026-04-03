@@ -34,7 +34,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($sites as $site)
+                            @foreach($sites['sites'] as $site)
                             <tr>
                                 <td>{{ $site->id }}</td>
                                 <td>

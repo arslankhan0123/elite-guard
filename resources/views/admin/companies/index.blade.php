@@ -35,7 +35,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($companies as $company)
+                            @foreach($companies['companies'] as $company)
                             <tr>
                                 <td>{{ $company->id }}</td>
                                 <td>

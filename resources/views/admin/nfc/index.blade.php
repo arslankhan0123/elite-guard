@@ -33,7 +33,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($nfcTags as $tag)
+                            @foreach($nfcTags['nfcTags'] as $tag)
                             <tr>
                                 <td>{{ $tag->id }}</td>
                                 <td>
