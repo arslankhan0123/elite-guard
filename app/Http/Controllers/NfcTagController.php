@@ -4,14 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\NfcTag;
 use App\Models\Site;
+use App\Repositories\NfcTagsRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class NfcTagController extends Controller
 {
+    protected $nfcTagsRepo;
+
+    // Inject the repository via constructor
+    public function __construct(NfcTagsRepository $nfcTagsRepo)
+    {
+        $this->nfcTagsRepo = $nfcTagsRepo;
+    }
+
     public function index()
     {
-        $nfcTags = NfcTag::with('site.company')->orderBy('id', 'desc')->get();
+        // Use the repository to get all NFC tags
+        $nfcTags = $this->nfcTagsRepo->getAllNfcTags();
+
         return view('admin.nfc.index', compact('nfcTags'));
     }
 

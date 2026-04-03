@@ -4,13 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\Site;
+use App\Repositories\SiteRepository;
 use Illuminate\Http\Request;
 
 class SiteController extends Controller
 {
+    protected $siteRepo;
+
+    // Inject the repository via constructor
+    public function __construct(SiteRepository $siteRepo)
+    {
+        $this->siteRepo = $siteRepo;
+    }
+
     public function index()
     {
-        $sites = Site::with('company')->orderBy('id', 'desc')->get();
+        // Use the repository to get all sites
+        $sites = $this->siteRepo->getAllSites();
+
         return view('admin.sites.index', compact('sites'));
     }
 

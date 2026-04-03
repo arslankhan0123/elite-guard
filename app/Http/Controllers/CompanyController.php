@@ -5,13 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Repositories\CompanyRepository;
 
 class CompanyController extends Controller
 {
+    protected $companyRepo;
+
+    // Inject the repository via constructor
+    public function __construct(CompanyRepository $companyRepo)
+    {
+        $this->companyRepo = $companyRepo;
+    }
+
     public function index()
     {
-        $companies = Company::orderBy('id', 'desc')->get();
-        // dd($companies);
+        // Use the repository to get all companies
+        $companies = $this->companyRepo->getAllCompanies();
+
         return view('admin.companies.index', compact('companies'));
     }
 
