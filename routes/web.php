@@ -7,6 +7,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NfcTagController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UniversityController;
 use App\Models\Company;
@@ -68,6 +69,10 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/update/{id}', [EmployeeController::class, 'update'])->name('employees.update');
         Route::get('/delete/{id}', [EmployeeController::class, 'delete'])->name('employees.delete');
     });
+
+    Route::group(['prefix' => '/reports'], function () {
+        Route::get('/', [ReportController::class, 'index'])->name('reports.index');
+    });
 });
 
 Route::middleware('auth')->group(function () {
@@ -76,4 +81,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
