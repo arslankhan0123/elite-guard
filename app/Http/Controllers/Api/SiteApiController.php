@@ -19,6 +19,23 @@ class SiteApiController extends Controller
         $this->siteRepo = $siteRepo;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/sites",
+     *     summary="Get all sites",
+     *     tags={"Sites"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="All sites fetched.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Success"),
+     *             @OA\Property(property="message", type="string", example="All sites fetched."),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
         // Use the repository to get all sites
