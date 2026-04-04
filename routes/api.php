@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompanyApiController;
+use App\Http\Controllers\Api\ForgotPasswordApiController;
 use App\Http\Controllers\Api\SiteApiController;
 use App\Http\Controllers\Api\TagsApiController;
 use App\Http\Controllers\Api\UserApiController;
@@ -11,6 +12,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('register', [AuthController::class,'register']);
 Route::post('login', [AuthController::class,'login']);
+
+// Forgot Password Flow
+Route::post('forgot-password', [ForgotPasswordApiController::class, 'forgotPassword']);
+Route::post('verify-otp', [ForgotPasswordApiController::class, 'verifyOtp']);
+Route::post('reset-password', [ForgotPasswordApiController::class, 'resetPassword']);
 
 Route::middleware('auth:api')->group(function () {
 
