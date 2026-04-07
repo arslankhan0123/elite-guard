@@ -630,6 +630,147 @@
                 ]
             }
         },
+        "/api/time-clock": {
+            "get": {
+                "tags": [
+                    "TimeClock"
+                ],
+                "summary": "Get user time clock entries",
+                "operationId": "13fe29e9e8426e3b425194f726a25460",
+                "responses": {
+                    "200": {
+                        "description": "Time clock entries retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Time clock entries retrieved successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Time clock entries retrieved successfully"
+                                                },
+                                                "time_clocks": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/time-clock/store": {
+            "post": {
+                "tags": [
+                    "TimeClock"
+                ],
+                "summary": "Store time clock entry (Check-in/Check-out)",
+                "operationId": "decb4a42ba866ff7f55f93a6806c5302",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "uid"
+                                ],
+                                "properties": {
+                                    "uid": {
+                                        "type": "string",
+                                        "example": "NFC_TAG_UID_123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Time clock entry stored successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Time clock entry stored successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Time clock entry stored successfully"
+                                                },
+                                                "time_clock": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/user": {
             "get": {
                 "tags": [
@@ -715,6 +856,10 @@
         {
             "name": "NFC Tags",
             "description": "NFC Tags"
+        },
+        {
+            "name": "TimeClock",
+            "description": "TimeClock"
         },
         {
             "name": "User",
