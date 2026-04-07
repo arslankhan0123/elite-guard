@@ -35,6 +35,9 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/nfc-tags'], function () {
         Route::get('/', [TagsApiController::class, 'index']);
+        Route::get('/{site_id}', [TagsApiController::class, 'siteTags']);
+        Route::get('/checkSiteTags/{site_id}', [TagsApiController::class, 'checkSiteTags']);
+        Route::get('/check/points', [TagsApiController::class, 'checkPoints']);
     });
 
     Route::group(['prefix' => '/time-clock'], function () {
