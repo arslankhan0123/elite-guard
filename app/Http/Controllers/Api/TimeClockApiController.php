@@ -10,7 +10,7 @@ use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class TimeClockController extends Controller
+class TimeClockApiController extends Controller
 {
     use ApiResponser;
     protected $timeClock;

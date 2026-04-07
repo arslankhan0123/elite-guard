@@ -9,6 +9,7 @@ use App\Http\Controllers\NfcTagController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\TimeClockController;
 use App\Http\Controllers\UniversityController;
 use App\Models\Company;
 use App\Models\Employee;
@@ -72,6 +73,10 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
 
     Route::group(['prefix' => '/reports'], function () {
         Route::get('/', [ReportController::class, 'index'])->name('reports.index');
+    });
+
+    Route::group(['prefix' => '/time-clocks'], function () {
+        Route::get('/', [TimeClockController::class, 'index'])->name('time-clocks.index');
     });
 });
 
