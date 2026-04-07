@@ -24,4 +24,9 @@ class NfcTag extends Model
     {
         return $this->belongsTo(Site::class);
     }
+
+    public function timeClocks()
+    {
+        return $this->hasMany(TimeClock::class, 'nfc_tag_id');
+    }
 }

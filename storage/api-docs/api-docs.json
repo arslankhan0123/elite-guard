@@ -630,6 +630,160 @@
                 ]
             }
         },
+        "/api/nfc-tags/{site_id}": {
+            "get": {
+                "tags": [
+                    "NFC Tags"
+                ],
+                "summary": "Get NFC tags for a specific site",
+                "operationId": "c64e6756321b1ad37bd3fcdf1c3a866d",
+                "parameters": [
+                    {
+                        "name": "site_id",
+                        "in": "path",
+                        "description": "ID of the site to fetch NFC tags for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "NFC tags for the specified site fetched.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "NFC tags for the specified site fetched."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Site not found or no tags found."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/nfc-tags/checkSiteTags/{site_id}": {
+            "get": {
+                "tags": [
+                    "NFC Tags"
+                ],
+                "summary": "Get NFC tag check points for a specific site",
+                "operationId": "5b3c73c55879c82b0a9b86a5e2b50c8c",
+                "parameters": [
+                    {
+                        "name": "site_id",
+                        "in": "path",
+                        "description": "ID of the site to fetch NFC tag check points for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "NFC tag check points for the specified site fetched.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "NFC tags Check Points for the specified site fetched."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Site not found or no check points found."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/nfc-tags/check/points": {
+            "get": {
+                "tags": [
+                    "NFC Tags"
+                ],
+                "summary": "Get all NFC tag check points",
+                "operationId": "bca6eecb82fb99309049b0678c333110",
+                "responses": {
+                    "200": {
+                        "description": "All NFC tag check points fetched.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "NFC Tags Check Points retrieved successfully."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/time-clock": {
             "get": {
                 "tags": [
