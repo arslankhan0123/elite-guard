@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CompanyApiController;
 use App\Http\Controllers\Api\ForgotPasswordApiController;
 use App\Http\Controllers\Api\SiteApiController;
 use App\Http\Controllers\Api\TagsApiController;
+use App\Http\Controllers\Api\TimeClockApiController;
 use App\Http\Controllers\Api\TimeClockController;
 use App\Http\Controllers\Api\UserApiController;
 use App\Http\Controllers\CompanyController;
@@ -41,8 +42,8 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::group(['prefix' => '/time-clock'], function () {
-        Route::get('/', [TimeClockController::class, 'index']);
-        Route::post('/store', [TimeClockController::class, 'store']);
+        Route::get('/', [TimeClockApiController::class, 'index']);
+        Route::post('/store', [TimeClockApiController::class, 'store']);
     });
 });
 

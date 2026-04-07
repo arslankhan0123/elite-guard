@@ -56,4 +56,15 @@ class TimeClockRepository
         ];
         return $data;
     }
+
+    public function getCheckPoints()
+    {
+        $nfcTags = TimeClock::with('nfcTag.site.company')->orderBy('id', 'desc')->get();
+        $data = [
+            'status' => true,
+            'message' => 'Check points retrieved successfully',
+            'nfcTags' => $nfcTags
+        ];
+        return $data;
+    }
 }
