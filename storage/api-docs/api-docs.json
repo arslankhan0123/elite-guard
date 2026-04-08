@@ -790,7 +790,7 @@
                     "TimeClock"
                 ],
                 "summary": "Get user time clock entries",
-                "operationId": "13fe29e9e8426e3b425194f726a25460",
+                "operationId": "835d433d4ccac38f4fe73c9f626b36a2",
                 "responses": {
                     "200": {
                         "description": "Time clock entries retrieved successfully.",
@@ -845,7 +845,7 @@
                     "TimeClock"
                 ],
                 "summary": "Store time clock entry (Check-in/Check-out)",
-                "operationId": "decb4a42ba866ff7f55f93a6806c5302",
+                "operationId": "a321873bc72146e91dfc63513b2a91ed",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -971,6 +971,102 @@
                     },
                     "401": {
                         "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user/update": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user details",
+                "operationId": "69acc24c10d43a15ed02423ebd643a0a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john.doe@example.com"
+                                    },
+                                    "old_password": {
+                                        "type": "string",
+                                        "example": "old_password123"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "new_password123"
+                                    },
+                                    "confirm_password": {
+                                        "type": "string",
+                                        "example": "new_password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User updated successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Validation Error or Password Mismatch",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Old password is incorrect"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
