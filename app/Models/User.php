@@ -54,6 +54,31 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Employee::class);
     }
 
+    public function candidate()
+    {
+        return $this->hasOne(EmployeeCandidate::class);
+    }
+
+    public function bankDetail()
+    {
+        return $this->hasOne(EmployeeBankDetail::class);
+    }
+
+    public function licenseDetail()
+    {
+        return $this->hasOne(EmployeeLicenseDetail::class);
+    }
+
+    public function availability()
+    {
+        return $this->hasOne(EmployeeAvailability::class);
+    }
+
+    public function officeDetail()
+    {
+        return $this->hasOne(EmployeeOfficeDetail::class);
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
