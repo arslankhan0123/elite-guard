@@ -610,7 +610,7 @@
         }
 
         #custom-table tbody tr:hover {
-            transform: translateY(-2px) scale(1.002) !important;
+            /* transform: translateY(-2px) scale(1.002) !important; */
             background-color: #f5f3ff !important;
             /* Extremely soft violet */
             box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1) !important;

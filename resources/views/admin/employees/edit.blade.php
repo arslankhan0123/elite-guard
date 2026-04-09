@@ -1,5 +1,5 @@
 @extends('dashboardLayouts.main')
-@section('title', 'Edit Employee')
+@section('title', 'Edit Employee Profile')
 
 @section('breadcrumbTitle', 'Update Personnel')
 
@@ -16,142 +16,451 @@
         border-radius: 20px;
         background: #ffffff;
         box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        overflow: hidden;
     }
-    .section-header {
-        background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);
+    .nav-tabs-custom {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        background: #f8fafc;
+        padding: 10px 15px;
+        border-radius: 15px 15px 0 0;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .nav-tabs-custom .nav-link {
+        border: none;
+        color: #64748b;
+        font-weight: 600;
+        padding: 12px 20px;
+        border-radius: 10px;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .nav-tabs-custom .nav-link.active {
+        background: #7c3aed;
         color: white;
-        padding: 20px 25px;
-        border-radius: 20px 20px 0 0;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+    }
+    .section-title {
+        color: #1e293b;
+        font-weight: 800;
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title i {
+        color: #7c3aed;
     }
     .form-label {
         font-weight: 600;
         color: #475569;
         margin-bottom: 8px;
+        font-size: 0.9rem;
     }
     .form-control, .form-select {
         border-radius: 12px;
         padding: 12px 16px;
         border: 1px solid #e2e8f0;
         transition: all 0.3s;
+        background-color: #fcfdfe;
     }
     .form-control:focus, .form-select:focus {
         border-color: #7c3aed;
         box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        background-color: #fff;
     }
     .btn-submit {
-        background: #7c3aed;
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
         color: white;
         border-radius: 12px;
-        padding: 12px 40px;
+        padding: 14px 45px;
         font-weight: 700;
         border: none;
         transition: all 0.3s;
+        box-shadow: 0 10px 15px -3px rgba(109, 40, 217, 0.3);
     }
     .btn-submit:hover {
-        background: #6d28d9;
         transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(109, 40, 217, 0.2);
+        box-shadow: 0 20px 25px -5px rgba(109, 40, 217, 0.4);
+    }
+    .attach-label {
+        display: block;
+        padding: 15px;
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #f8fafc;
+    }
+    .attach-label:hover {
+        border-color: #7c3aed;
+        background: #f5f3ff;
+    }
+    .current-file {
+        display: block;
+        padding: 5px 10px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        color: #475569;
+        margin-top: 5px;
     }
 </style>
 
-<form action="{{ route('employees.update', $employee->id) }}" method="POST">
-    @csrf
-    <div class="row g-4">
-        <!-- Account Details -->
-        <div class="col-lg-6">
-            <div class="card form-card h-100">
-                <div class="section-header">
-                    <h5 class="mb-0 fw-bold"><i data-feather="lock" class="me-2"></i> Account Access</h5>
+<div class="row justify-content-center">
+    <div class="col-xl-12">
+        <form action="{{ route('employees.update', $employee->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('POST')
+            <div class="card form-card">
+                <div class="nav nav-tabs nav-tabs-custom" id="employeeTabs" role="tablist">
+                    <button class="nav-link active" id="part1-tab" data-bs-toggle="tab" data-bs-target="#part1" type="button" role="tab"><i data-feather="user"></i> Candidate Info</button>
+                    <button class="nav-link" id="part2-tab" data-bs-toggle="tab" data-bs-target="#part2" type="button" role="tab"><i data-feather="credit-card"></i> Bank Details</button>
+                    <button class="nav-link" id="part3-tab" data-bs-toggle="tab" data-bs-target="#part3" type="button" role="tab"><i data-feather="file-text"></i> Licenses</button>
+                    <button class="nav-link" id="part4-tab" data-bs-toggle="tab" data-bs-target="#part4" type="button" role="tab"><i data-feather="calendar"></i> Availability</button>
+                    <button class="nav-link" id="part5-tab" data-bs-toggle="tab" data-bs-target="#part5" type="button" role="tab"><i data-feather="briefcase"></i> Office Use</button>
                 </div>
+
                 <div class="card-body p-4 p-md-5">
-                    <div class="mb-4">
-                        <label for="name" class="form-label">Full Name</label>
-                        <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $employee->user->name) }}" required>
-                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <div class="tab-content" id="employeeTabsContent">
+                        <!-- Part 1: Candidate Information -->
+                        <div class="tab-pane fade show active" id="part1" role="tabpanel">
+                            <h4 class="section-title"><i data-feather="user"></i> Part 1: Candidate Information</h4>
+                            <div class="row g-4">
+                                @php
+                                    $candidate = $employee->user->candidate;
+                                @endphp
+                                <div class="col-md-6">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" name="first_name" class="form-control" value="{{ old('first_name', $candidate->first_name ?? '') }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" name="last_name" class="form-control" value="{{ old('last_name', $candidate->last_name ?? '') }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email (System Login)</label>
+                                    <input type="email" name="email" class="form-control" value="{{ old('email', $employee->user->email) }}" required>
+                                    <small class="text-muted">Changes to login email may affect employee access.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Assigned Role</label>
+                                    <select name="role" class="form-select" required>
+                                        <option value="Employee" {{ $employee->user->role == 'Employee' ? 'selected' : '' }}>Employee / Guard</option>
+                                        <option value="Admin" {{ $employee->user->role == 'Admin' ? 'selected' : '' }}>Admin</option>
+                                        <option value="SuperAdmin" {{ $employee->user->role == 'SuperAdmin' ? 'selected' : '' }}>SuperAdmin</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Change Password (Optional)</label>
+                                    <input type="password" name="password" class="form-control">
+                                    <small class="text-muted">Leave blank to keep current password.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Confirm Password</label>
+                                    <input type="password" name="password_confirmation" class="form-control">
+                                </div>
+                                <hr class="my-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Date of Birth</label>
+                                    <input type="date" name="dob" class="form-control" value="{{ old('dob', $candidate->dob ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Social Insurance Number (SIN)</label>
+                                    <input type="text" name="sin" class="form-control" value="{{ old('sin', $candidate->sin ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="text" name="phone" class="form-control" value="{{ old('phone', $candidate->phone ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Personal Email Address</label>
+                                    <input type="email" name="email_personal" class="form-control" value="{{ old('email_personal', $candidate->email ?? '') }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Home Address</label>
+                                    <input type="text" name="address" class="form-control" value="{{ old('address', $candidate->address ?? '') }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">City</label>
+                                    <input type="text" name="city" class="form-control" value="{{ old('city', $candidate->city ?? '') }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Province</label>
+                                    <input type="text" name="province" class="form-control" value="{{ old('province', $candidate->province ?? '') }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Postal Code</label>
+                                    <input type="text" name="postal_code" class="form-control" value="{{ old('postal_code', $candidate->postal_code ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Emergency Contact Person Name</label>
+                                    <input type="text" name="emergency_contact_name" class="form-control" value="{{ old('emergency_contact_name', $candidate->emergency_contact_name ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Emergency Contact Phone Number</label>
+                                    <input type="text" name="emergency_contact_phone" class="form-control" value="{{ old('emergency_contact_phone', $candidate->emergency_contact_phone ?? '') }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 2: Direct Deposit -->
+                        <div class="tab-pane fade" id="part2" role="tabpanel">
+                            <h4 class="section-title"><i data-feather="credit-card"></i> Part 2: Direct Deposit / E-transfer Info</h4>
+                            @php
+                                $bank = $employee->user->bankDetail;
+                            @endphp
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Bank Name</label>
+                                    <input type="text" name="bank_name" class="form-control" value="{{ old('bank_name', $bank->bank_name ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Institution Number</label>
+                                    <input type="text" name="institution_number" class="form-control" value="{{ old('institution_number', $bank->institution_number ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Transit Number</label>
+                                    <input type="text" name="transit_number" class="form-control" value="{{ old('transit_number', $bank->transit_number ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Account Number</label>
+                                    <input type="text" name="account_number" class="form-control" value="{{ old('account_number', $bank->account_number ?? '') }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Bank Address</label>
+                                    <input type="text" name="bank_address" class="form-control" value="{{ old('bank_address', $bank->bank_address ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Interac e-Transfer Email</label>
+                                    <input type="email" name="interac_email" class="form-control" value="{{ old('interac_email', $bank->interac_email ?? '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Attach Void Cheque</label>
+                                    <input type="file" name="void_cheque_file" id="void_cheque" class="d-none">
+                                    <label for="void_cheque" class="attach-label">
+                                        <i data-feather="upload-cloud" class="mb-2"></i>
+                                        <p class="mb-0 small text-muted">Click to update Void Cheque (PDF/Image)</p>
+                                    </label>
+                                    @if($bank && $bank->void_cheque_file)
+                                        <a href="{{ Storage::url($bank->void_cheque_file) }}" target="_blank" class="current-file"><i data-feather="eye" style="width: 12px;"></i> View Current File</a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 3: License Information -->
+                        <div class="tab-pane fade" id="part3" role="tabpanel">
+                            <h4 class="section-title"><i data-feather="file-text"></i> Part 3: License Information</h4>
+                            @php
+                                $license = $employee->user->licenseDetail;
+                            @endphp
+                            <!-- Security License -->
+                            <div class="p-3 mb-4 rounded bg-light border">
+                                <h6 class="fw-bold mb-3"><i data-feather="shield" class="me-2 text-primary"></i> Security License Info</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">License Number</label>
+                                        <input type="text" name="security_license_number" class="form-control" value="{{ $license->security_license_number ?? '' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Expiry Date</label>
+                                        <input type="date" name="security_license_expiry" class="form-control" value="{{ $license->security_license_expiry ?? '' }}">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Update Security License</label>
+                                        <input type="file" name="security_license_file" id="security_file" class="d-none">
+                                        <label for="security_file" class="attach-label">Click to update doc</label>
+                                        @if($license && $license->security_license_file)
+                                            <a href="{{ Storage::url($license->security_license_file) }}" target="_blank" class="current-file">View Current File</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Driver's License -->
+                            <div class="p-3 mb-4 rounded bg-light border">
+                                <h6 class="fw-bold mb-3"><i data-feather="truck" class="me-2 text-primary"></i> Driver's License Info</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">License Number</label>
+                                        <input type="text" name="drivers_license_number" class="form-control" value="{{ $license->drivers_license_number ?? '' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Expiry Date</label>
+                                        <input type="date" name="drivers_license_expiry" class="form-control" value="{{ $license->drivers_license_expiry ?? '' }}">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Update Driver's License</label>
+                                        <input type="file" name="drivers_license_file" id="drivers_file" class="d-none">
+                                        <label for="drivers_file" class="attach-label">Click to update doc</label>
+                                        @if($license && $license->drivers_license_file)
+                                            <a href="{{ Storage::url($license->drivers_license_file) }}" target="_blank" class="current-file">View Current File</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Work Eligibility -->
+                            <div class="p-3 mb-4 rounded bg-light border">
+                                <h6 class="fw-bold mb-3"><i data-feather="globe" class="me-2 text-primary"></i> Work Eligibility</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Document Type and Number</label>
+                                        <input type="text" name="work_eligibility_type_number" class="form-control" value="{{ $license->work_eligibility_type_number ?? '' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Expiry Date</label>
+                                        <input type="date" name="work_eligibility_expiry" class="form-control" value="{{ $license->work_eligibility_expiry ?? '' }}">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Update Work Permit / PR Card</label>
+                                        <input type="file" name="work_eligibility_file" id="work_file" class="d-none">
+                                        <label for="work_file" class="attach-label">Click to update doc</label>
+                                        @if($license && $license->work_eligibility_file)
+                                            <a href="{{ Storage::url($license->work_eligibility_file) }}" target="_blank" class="current-file">View Current File</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Others -->
+                            <div class="p-3 rounded bg-light border">
+                                <h6 class="fw-bold mb-3"><i data-feather="more-horizontal" class="me-2 text-primary"></i> Others</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Validate Criminal Record Check</label>
+                                        <select name="criminal_record_check" class="form-select">
+                                            <option value="Valid" {{ ($license->criminal_record_check ?? '') == 'Valid' ? 'selected' : '' }}>Valid</option>
+                                            <option value="In Progress" {{ ($license->criminal_record_check ?? '') == 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                                            <option value="Not Started" {{ ($license->criminal_record_check ?? '') == 'Not Started' ? 'selected' : '' }}>Not Started</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">First Aid Training Course</label>
+                                        <input type="text" name="first_aid_training" class="form-control" value="{{ $license->first_aid_training ?? '' }}">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Other Certificates if Any</label>
+                                        <textarea name="other_certificates" class="form-control" rows="2">{{ $license->other_certificates ?? '' }}</textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Attach Documents</label>
+                                        <input type="file" name="other_documents_file" id="other_docs_file" class="d-none">
+                                        <label for="other_docs_file" class="attach-label">Click to upload docs</label>
+                                        @if($license && $license->other_documents_file)
+                                            <a href="{{ Storage::url($license->other_documents_file) }}" target="_blank" class="current-file">View Current File</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 4: Availability -->
+                        <div class="tab-pane fade" id="part4" role="tabpanel">
+                            <h4 class="section-title"><i data-feather="calendar"></i> Part 4: Availability</h4>
+                            @php
+                                $availability = $employee->user->availability;
+                            @endphp
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Availability Date</label>
+                                    <input type="date" name="availability_date" class="form-control" value="{{ $availability->availability_date ?? '' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Hours employee willing to work</label>
+                                    <input type="text" name="willing_hours" class="form-control" value="{{ $availability->willing_hours ?? '' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Specific Hours employee unable to work</label>
+                                    <textarea name="unable_hours" class="form-control" rows="2">{{ $availability->unable_hours ?? '' }}</textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Days of week employee unable to work</label>
+                                    <textarea name="unable_days" class="form-control" rows="2">{{ $availability->unable_days ?? '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 5: Office Use Only -->
+                        <div class="tab-pane fade" id="part5" role="tabpanel">
+                            <h4 class="section-title"><i data-feather="briefcase"></i> Part 5: Office Use Only</h4>
+                            @php
+                                $office = $employee->user->officeDetail;
+                            @endphp
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label d-block">Employment Type</label>
+                                    <div class="d-flex gap-4 mt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="employment_type" id="fullTime" value="Full Time" {{ ($office->employment_type ?? '') == 'Full Time' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="fullTime">Full Time</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="employment_type" id="partTime" value="Part Time" {{ ($office->employment_type ?? '') == 'Part Time' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="partTime">Part Time</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="employment_type" id="casual" value="Casual" {{ ($office->employment_type ?? '') == 'Casual' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="casual">Casual</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Start Date</label>
+                                    <input type="date" name="start_date" class="form-control" value="{{ $office->start_date ?? '' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Job Position</label>
+                                    <input type="text" name="job_position" class="form-control" value="{{ $office->job_position ?? '' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Wage</label>
+                                    <input type="text" name="wage" class="form-control" value="{{ $office->wage ?? '' }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Other Notes</label>
+                                    <textarea name="other_notes" class="form-control" rows="3">{{ $office->other_notes ?? '' }}</textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Hiring Manager Name</label>
+                                    <input type="text" name="hiring_manager_name" class="form-control" value="{{ $office->hiring_manager_name ?? '' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Hiring Manager Signature (Initials)</label>
+                                    <input type="text" name="hiring_manager_signature" class="form-control" value="{{ $office->hiring_manager_signature ?? '' }}">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $employee->user->email) }}" required>
-                        @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="password" class="form-label">New Password (Leave blank to keep current)</label>
-                        <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror">
-                        @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="mb-0">
-                        <label for="role" class="form-label">Assigned Role</label>
-                        <select name="role" id="role" class="form-select @error('role') is-invalid @enderror" required>
-                            <option value="Employee" {{ $employee->user->role == 'Employee' ? 'selected' : '' }}>Employee / Guard</option>
-                            <option value="Admin" {{ $employee->user->role == 'Admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="SuperAdmin" {{ $employee->user->role == 'SuperAdmin' ? 'selected' : '' }}>SuperAdmin</option>
-                        </select>
-                        @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <div class="mt-5 text-center">
+                        <button type="submit" class="btn-submit">
+                            <i data-feather="save" class="me-2"></i> Update Profile
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Personal Details -->
-        <div class="col-lg-6">
-            <div class="card form-card h-100">
-                <div class="section-header" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
-                    <h5 class="mb-0 fw-bold"><i data-feather="user" class="me-2"></i> Employee Profile</h5>
-                </div>
-                <div class="card-body p-4 p-md-5">
-                    <div class="row">
-                        <div class="col-md-6 mb-4">
-                            <label for="phone" class="form-label">Contact Number</label>
-                            <input type="text" name="phone" id="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $employee->phone) }}">
-                            @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-md-6 mb-4">
-                            <label for="cnic" class="form-label">CNIC / ID Number</label>
-                            <input type="text" name="cnic" id="cnic" class="form-control @error('cnic') is-invalid @enderror" value="{{ old('cnic', $employee->cnic) }}">
-                            @error('cnic') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="address" class="form-label">Permanent Address</label>
-                        <textarea name="address" id="address" rows="2" class="form-control @error('address') is-invalid @enderror">{{ old('address', $employee->address) }}</textarea>
-                        @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-4">
-                            <label for="gender" class="form-label">Gender</label>
-                            <select name="gender" id="gender" class="form-select @error('gender') is-invalid @enderror">
-                                <option value="">Select Gender</option>
-                                <option value="Male" {{ old('gender', $employee->gender) == 'Male' ? 'selected' : '' }}>Male</option>
-                                <option value="Female" {{ old('gender', $employee->gender) == 'Female' ? 'selected' : '' }}>Female</option>
-                                <option value="Other" {{ old('gender', $employee->gender) == 'Other' ? 'selected' : '' }}>Other</option>
-                            </select>
-                            @error('gender') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-md-6 mb-4">
-                            <label for="joining_date" class="form-label">Joining Date</label>
-                            <input type="date" name="joining_date" id="joining_date" class="form-control @error('joining_date') is-invalid @enderror" value="{{ old('joining_date', $employee->joining_date) }}">
-                            @error('joining_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 text-center mt-4">
-            <button type="submit" class="btn-submit shadow-lg">
-                <i data-feather="save" class="me-2"></i> Save Changes
-            </button>
-            <div class="mt-3">
-                <a href="{{ route('employees.index') }}" class="text-muted text-decoration-none small">
-                    <i data-feather="arrow-left" style="width: 14px;"></i> Back to Directory
-                </a>
-            </div>
-        </div>
+        </form>
     </div>
-</form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // File input label update
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function(e) {
+                let fileName = e.target.files[0].name;
+                let label = document.querySelector(`label[for="${e.target.id}"]`);
+                label.innerHTML = `<i data-feather="check" class="text-success me-2"></i> ${fileName}`;
+                feather.replace();
+            });
+        });
+    });
+</script>
 @endsection
