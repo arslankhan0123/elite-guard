@@ -990,33 +990,196 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
-                                "required": [
-                                    "name",
-                                    "email"
-                                ],
                                 "properties": {
-                                    "name": {
+                                    "first_name": {
+                                        "description": "Updates user table name combined with last_name",
+                                        "type": "string",
+                                        "example": "Arslan"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Khan"
+                                    },
+                                    "email": {
+                                        "description": "Updates system login email",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@admin.com"
+                                    },
+                                    "password": {
+                                        "description": "Updates login password",
+                                        "type": "string",
+                                        "example": "12345678"
+                                    },
+                                    "candidate[first_name]": {
+                                        "type": "string",
+                                        "example": "Arslan"
+                                    },
+                                    "candidate[last_name]": {
+                                        "type": "string",
+                                        "example": "Khan"
+                                    },
+                                    "candidate[dob]": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1998-12-11"
+                                    },
+                                    "candidate[sin]": {
+                                        "type": "string",
+                                        "example": "SIN-123-456"
+                                    },
+                                    "candidate[phone]": {
+                                        "type": "string",
+                                        "example": "+923001234567"
+                                    },
+                                    "candidate[email]": {
+                                        "type": "string",
+                                        "example": "personal@email.com"
+                                    },
+                                    "candidate[address]": {
+                                        "type": "string",
+                                        "example": "123 Street"
+                                    },
+                                    "candidate[city]": {
+                                        "type": "string",
+                                        "example": "Lahore"
+                                    },
+                                    "candidate[province]": {
+                                        "type": "string",
+                                        "example": "Punjab"
+                                    },
+                                    "candidate[postal_code]": {
+                                        "type": "string",
+                                        "example": "54000"
+                                    },
+                                    "candidate[emergency_contact_name]": {
                                         "type": "string",
                                         "example": "John Doe"
                                     },
-                                    "email": {
+                                    "candidate[emergency_contact_phone]": {
                                         "type": "string",
-                                        "format": "email",
-                                        "example": "john.doe@example.com"
+                                        "example": "+923009876543"
                                     },
-                                    "old_password": {
+                                    "bank_detail[bank_name]": {
                                         "type": "string",
-                                        "example": "old_password123"
+                                        "example": "HBL"
                                     },
-                                    "password": {
+                                    "bank_detail[institution_number]": {
                                         "type": "string",
-                                        "example": "new_password123"
+                                        "example": "012"
                                     },
-                                    "confirm_password": {
+                                    "bank_detail[transit_number]": {
                                         "type": "string",
-                                        "example": "new_password123"
+                                        "example": "54321"
+                                    },
+                                    "bank_detail[account_number]": {
+                                        "type": "string",
+                                        "example": "11223344"
+                                    },
+                                    "bank_detail[bank_address]": {
+                                        "type": "string",
+                                        "example": "Main Blvd"
+                                    },
+                                    "bank_detail[interac_email]": {
+                                        "type": "string",
+                                        "example": "bank@email.com"
+                                    },
+                                    "bank_detail[void_cheque_file]": {
+                                        "description": "File upload (PDF/Image)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[security_license_number]": {
+                                        "type": "string",
+                                        "example": "SL-123"
+                                    },
+                                    "license_detail[security_license_expiry]": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2027-12-31"
+                                    },
+                                    "license_detail[security_license_file]": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[drivers_license_number]": {
+                                        "type": "string",
+                                        "example": "DL-456"
+                                    },
+                                    "license_detail[drivers_license_expiry]": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-06-15"
+                                    },
+                                    "license_detail[drivers_license_file]": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[work_eligibility_type_number]": {
+                                        "type": "string",
+                                        "example": "WE-789"
+                                    },
+                                    "license_detail[work_eligibility_expiry]": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "license_detail[work_eligibility_file]": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[criminal_record_check]": {
+                                        "type": "string",
+                                        "example": "Valid"
+                                    },
+                                    "license_detail[first_aid_training]": {
+                                        "type": "string",
+                                        "example": "Level 1"
+                                    },
+                                    "license_detail[other_certificates]": {
+                                        "type": "string"
+                                    },
+                                    "license_detail[other_documents_file]": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "availability[availability_date]": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "availability[willing_hours]": {
+                                        "type": "string",
+                                        "example": "40"
+                                    },
+                                    "availability[unable_hours]": {
+                                        "type": "string"
+                                    },
+                                    "availability[unable_days]": {
+                                        "type": "string"
+                                    },
+                                    "office_detail[employment_type]": {
+                                        "type": "string",
+                                        "example": "Full Time"
+                                    },
+                                    "office_detail[start_date]": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "office_detail[job_position]": {
+                                        "type": "string"
+                                    },
+                                    "office_detail[wage]": {
+                                        "type": "string"
+                                    },
+                                    "office_detail[other_notes]": {
+                                        "type": "string"
+                                    },
+                                    "office_detail[hiring_manager_name]": {
+                                        "type": "string"
+                                    },
+                                    "office_detail[hiring_manager_signature]": {
+                                        "type": "string"
                                     }
                                 },
                                 "type": "object"

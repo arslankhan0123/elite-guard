@@ -62,13 +62,62 @@ class UserApiController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name", "email"},
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
-     *             @OA\Property(property="old_password", type="string", example="old_password123"),
-     *             @OA\Property(property="password", type="string", example="new_password123"),
-     *             @OA\Property(property="confirm_password", type="string", example="new_password123")
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="first_name", type="string", example="Arslan", description="Updates user table name combined with last_name"),
+     *                 @OA\Property(property="last_name", type="string", example="Khan"),
+     *                 @OA\Property(property="email", type="string", format="email", example="admin@admin.com", description="Updates system login email"),
+     *                 @OA\Property(property="password", type="string", example="12345678", description="Updates login password"),
+     *                 
+     *                 @OA\Property(property="candidate[first_name]", type="string", example="Arslan"),
+     *                 @OA\Property(property="candidate[last_name]", type="string", example="Khan"),
+     *                 @OA\Property(property="candidate[dob]", type="string", format="date", example="1998-12-11"),
+     *                 @OA\Property(property="candidate[sin]", type="string", example="SIN-123-456"),
+     *                 @OA\Property(property="candidate[phone]", type="string", example="+923001234567"),
+     *                 @OA\Property(property="candidate[email]", type="string", example="personal@email.com"),
+     *                 @OA\Property(property="candidate[address]", type="string", example="123 Street"),
+     *                 @OA\Property(property="candidate[city]", type="string", example="Lahore"),
+     *                 @OA\Property(property="candidate[province]", type="string", example="Punjab"),
+     *                 @OA\Property(property="candidate[postal_code]", type="string", example="54000"),
+     *                 @OA\Property(property="candidate[emergency_contact_name]", type="string", example="John Doe"),
+     *                 @OA\Property(property="candidate[emergency_contact_phone]", type="string", example="+923009876543"),
+     *                 
+     *                 @OA\Property(property="bank_detail[bank_name]", type="string", example="HBL"),
+     *                 @OA\Property(property="bank_detail[institution_number]", type="string", example="012"),
+     *                 @OA\Property(property="bank_detail[transit_number]", type="string", example="54321"),
+     *                 @OA\Property(property="bank_detail[account_number]", type="string", example="11223344"),
+     *                 @OA\Property(property="bank_detail[bank_address]", type="string", example="Main Blvd"),
+     *                 @OA\Property(property="bank_detail[interac_email]", type="string", example="bank@email.com"),
+     *                 @OA\Property(property="bank_detail[void_cheque_file]", type="string", format="binary", description="File upload (PDF/Image)"),
+     *                 
+     *                 @OA\Property(property="license_detail[security_license_number]", type="string", example="SL-123"),
+     *                 @OA\Property(property="license_detail[security_license_expiry]", type="string", format="date", example="2027-12-31"),
+     *                 @OA\Property(property="license_detail[security_license_file]", type="string", format="binary"),
+     *                 @OA\Property(property="license_detail[drivers_license_number]", type="string", example="DL-456"),
+     *                 @OA\Property(property="license_detail[drivers_license_expiry]", type="string", format="date", example="2026-06-15"),
+     *                 @OA\Property(property="license_detail[drivers_license_file]", type="string", format="binary"),
+     *                 @OA\Property(property="license_detail[work_eligibility_type_number]", type="string", example="WE-789"),
+     *                 @OA\Property(property="license_detail[work_eligibility_expiry]", type="string", format="date"),
+     *                 @OA\Property(property="license_detail[work_eligibility_file]", type="string", format="binary"),
+     *                 @OA\Property(property="license_detail[criminal_record_check]", type="string", example="Valid"),
+     *                 @OA\Property(property="license_detail[first_aid_training]", type="string", example="Level 1"),
+     *                 @OA\Property(property="license_detail[other_certificates]", type="string"),
+     *                 @OA\Property(property="license_detail[other_documents_file]", type="string", format="binary"),
+     *                 
+     *                 @OA\Property(property="availability[availability_date]", type="string", format="date"),
+     *                 @OA\Property(property="availability[willing_hours]", type="string", example="40"),
+     *                 @OA\Property(property="availability[unable_hours]", type="string"),
+     *                 @OA\Property(property="availability[unable_days]", type="string"),
+     *                 
+     *                 @OA\Property(property="office_detail[employment_type]", type="string", example="Full Time"),
+     *                 @OA\Property(property="office_detail[start_date]", type="string", format="date"),
+     *                 @OA\Property(property="office_detail[job_position]", type="string"),
+     *                 @OA\Property(property="office_detail[wage]", type="string"),
+     *                 @OA\Property(property="office_detail[other_notes]", type="string"),
+     *                 @OA\Property(property="office_detail[hiring_manager_name]", type="string"),
+     *                 @OA\Property(property="office_detail[hiring_manager_signature]", type="string")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -93,8 +142,9 @@ class UserApiController extends Controller
     public function userUpdate(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . Auth::id(),
+            'name' => 'sometimes|nullable|string|max:255',
+            'first_name' => 'sometimes|nullable|string|max:255',
+            'email' => 'sometimes|nullable|email|unique:users,email,' . Auth::id(),
         ]);
 
         if ($validator->fails()) {
@@ -102,36 +152,6 @@ class UserApiController extends Controller
                 'status' => false,
                 'message' => $validator->errors()
             ], 401);
-        }
-
-        $user = Auth::user();
-
-        // password logic manually
-        if ($request->filled('password')) {
-
-            // old password required
-            if (!$request->filled('old_password')) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Old password is required'
-                ], 401);
-            }
-
-            // check old password with real_password column
-            if ($request->old_password !== $user->real_password) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Old password is incorrect'
-                ], 401);
-            }
-
-            // confirm password check
-            if ($request->password !== $request->confirm_password) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Password and confirm password do not match'
-                ], 401);
-            }
         }
 
         $user = $this->userRepo->userUpdate($request);
