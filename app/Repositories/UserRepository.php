@@ -12,7 +12,7 @@ class UserRepository
     // Get all sites
     public function getUser()
     {
-        $user = Auth::user();
+        $user = User::with(['candidate', 'bankDetail', 'licenseDetail', 'availability', 'officeDetail'])->find(Auth::id());
         $data = [
             'status' => true,
             'message' => 'User retrieved successfully',
@@ -40,6 +40,7 @@ class UserRepository
             ]);
         }
 
+        $user = User::with(['candidate', 'bankDetail', 'licenseDetail', 'availability', 'officeDetail'])->find($user->id);
         $data = [
             'status' => true,
             'message' => 'User updated successfully',
