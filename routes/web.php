@@ -8,6 +8,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NfcTagController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\TimeClockController;
 use App\Http\Controllers\UniversityController;
@@ -60,6 +61,12 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/edit/{nfc_id}', [NfcTagController::class, 'edit'])->name('nfc.edit');
         Route::post('/update/{nfc_id}', [NfcTagController::class, 'update'])->name('nfc.update');
         Route::get('/delete/{nfc_id}', [NfcTagController::class, 'delete'])->name('nfc.delete');
+    });
+
+    Route::group(['prefix' => '/schedules'], function () {
+        Route::get('/', [ScheduleController::class, 'index'])->name('schedules.index');
+        Route::post('/store', [ScheduleController::class, 'store'])->name('schedules.store');
+        Route::get('/delete/{id}', [ScheduleController::class, 'destroy'])->name('schedules.delete');
     });
 
     Route::group(['prefix' => '/employee'], function () {
