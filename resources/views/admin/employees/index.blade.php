@@ -31,6 +31,7 @@
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Phone</th>
+                                <th>Assigned Sites</th>
                                 <th>Joining Date</th>
                                 <th>Status</th>
                                 <th class="text-center">Actions</th>
@@ -54,6 +55,19 @@
                                     </span>
                                 </td>
                                 <td>{{ $employee->phone ?? 'N/A' }}</td>
+                                <td>
+                                    @if($employee->user->sites->count() > 0)
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach($employee->user->sites as $site)
+                                                <span class="badge bg-soft-primary text-primary rounded-pill px-2 py-1" style="font-size: 0.75rem;">
+                                                    <i data-feather="map-pin" style="width: 10px; height: 10px;"></i> {{ $site->name }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-muted small">No sites assigned</span>
+                                    @endif
+                                </td>
                                 <td>{{ $employee->joining_date ? \Carbon\Carbon::parse($employee->joining_date)->format('d M, Y') : 'N/A' }}</td>
                                 <td>
                                     @if($employee->status)
@@ -64,6 +78,13 @@
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-center gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" title="Assign Sites"
+                                                data-bs-toggle="modal" data-bs-target="#assignSitesModal"
+                                                data-employee-id="{{ $employee->user->id }}"
+                                                data-employee-name="{{ $employee->user->name }}"
+                                                data-assigned-sites="{{ $employee->user->sites->pluck('id')->toJson() }}">
+                                            <i data-feather="map" style="width: 14px; height: 14px;"></i>
+                                        </button>
                                         <a href="{{ route('employees.edit', $employee->id) }}" class="editBtn" title="Edit">
                                             <svg viewBox="0 0 512 512">
                                                 <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0z"></path>
@@ -94,4 +115,68 @@
         </div>
     </div>
 </div>
+
+<!-- Assign Sites Modal -->
+<div class="modal fade" id="assignSitesModal" tabindex="-1" aria-labelledby="assignSitesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="assignSitesModalLabel">
+                    <i data-feather="map-pin" class="me-2 text-primary"></i> Assign Sites
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="assignSitesForm" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Assign sites to <strong id="modalEmployeeName"></strong></p>
+                    <div class="site-checklist" style="max-height: 300px; overflow-y: auto;">
+                        @foreach($sites as $site)
+                        <div class="form-check mb-2 p-2 rounded border bg-light">
+                            <input class="form-check-input site-checkbox" type="checkbox" name="site_ids[]" value="{{ $site->id }}" id="site_{{ $site->id }}">
+                            <label class="form-check-label fw-semibold" for="site_{{ $site->id }}">
+                                {{ $site->name }}
+                                <small class="text-muted d-block">{{ $site->address ?? $site->city ?? '' }}</small>
+                            </label>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        <i data-feather="check" style="width: 16px; height: 16px;" class="me-1"></i> Save Assignment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('assignSitesModal');
+        modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const employeeId = button.getAttribute('data-employee-id');
+            const employeeName = button.getAttribute('data-employee-name');
+            const assignedSites = JSON.parse(button.getAttribute('data-assigned-sites') || '[]');
+
+            document.getElementById('modalEmployeeName').textContent = employeeName;
+            document.getElementById('assignSitesForm').action = '/employee/assign-sites/' + employeeId;
+
+            // Reset all checkboxes
+            document.querySelectorAll('.site-checkbox').forEach(cb => cb.checked = false);
+
+            // Check assigned sites
+            assignedSites.forEach(siteId => {
+                const cb = document.getElementById('site_' + siteId);
+                if (cb) cb.checked = true;
+            });
+
+            feather.replace();
+        });
+    });
+</script>
 @endsection
+

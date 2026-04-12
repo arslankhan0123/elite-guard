@@ -69,6 +69,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/edit/{id}', [EmployeeController::class, 'edit'])->name('employees.edit');
         Route::post('/update/{id}', [EmployeeController::class, 'update'])->name('employees.update');
         Route::get('/delete/{id}', [EmployeeController::class, 'delete'])->name('employees.delete');
+        Route::post('/assign-sites/{user_id}', [EmployeeController::class, 'assignSites'])->name('employees.assignSites');
     });
 
     Route::group(['prefix' => '/reports'], function () {
