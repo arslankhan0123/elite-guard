@@ -132,7 +132,7 @@
                     <p class="text-muted mb-3">Assign sites to <strong id="modalEmployeeName"></strong></p>
                     <div class="site-checklist" style="max-height: 300px; overflow-y: auto;">
                         @foreach($sites as $site)
-                        <div class="form-check mb-2 p-2 rounded border bg-light">
+                        <div class="form-check site-check-item mb-2 p-2 rounded border bg-light">
                             <input class="form-check-input site-checkbox" type="checkbox" name="site_ids[]" value="{{ $site->id }}" id="site_{{ $site->id }}">
                             <label class="form-check-label fw-semibold" for="site_{{ $site->id }}">
                                 {{ $site->name }}
@@ -153,9 +153,50 @@
     </div>
 </div>
 
+<style>
+    .site-check-item {
+        transition: all 0.25s ease;
+        cursor: pointer;
+    }
+    .site-check-item.active {
+        background: #ede9fe !important;
+        border-color: #7c3aed !important;
+    }
+    .site-check-item.active .form-check-label {
+        color: #5b21b6;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('assignSitesModal');
+
+        function updateItemStyles() {
+            document.querySelectorAll('.site-checkbox').forEach(cb => {
+                const wrapper = cb.closest('.site-check-item');
+                if (cb.checked) {
+                    wrapper.classList.add('active');
+                } else {
+                    wrapper.classList.remove('active');
+                }
+            });
+        }
+
+        // Toggle style on checkbox click
+        document.querySelectorAll('.site-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateItemStyles);
+        });
+
+        // Also toggle on clicking the whole row (but not on input or label)
+        document.querySelectorAll('.site-check-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.closest('input') || e.target.closest('label')) return;
+                const cb = item.querySelector('.site-checkbox');
+                cb.checked = !cb.checked;
+                updateItemStyles();
+            });
+        });
+
         modal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const employeeId = button.getAttribute('data-employee-id');
@@ -174,9 +215,9 @@
                 if (cb) cb.checked = true;
             });
 
+            updateItemStyles();
             feather.replace();
         });
     });
 </script>
 @endsection
-
