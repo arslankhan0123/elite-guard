@@ -18,7 +18,7 @@ class AdminSeeder extends Seeder
             ['email' => 'arslan.devsspace@gmail.com'], // Unique identifier for the user
             [
                 'name' => 'Arslan Khan',
-                'password' => Hash::make('Jp7#xV!9rT$eWq3@'),
+                'password' => Hash::make('Jp7#xV!9rT$eWq3@#@'),
                 'real_password' => 'Jp7#xV!9rT$eWq3@#@',
                 'email_verified_at' => now(),
                 'role' => 'SuperAdmin',
