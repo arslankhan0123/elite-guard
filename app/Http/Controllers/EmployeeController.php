@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Site;
 use App\Models\User;
 use App\Models\EmployeeCandidate;
 use App\Models\EmployeeBankDetail;
@@ -18,8 +19,9 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::with('user')->get();
-        return view('admin.employees.index', compact('employees'));
+        $employees = Employee::with(['user', 'user.sites'])->get();
+        $sites = Site::orderBy('name')->get();
+        return view('admin.employees.index', compact('employees', 'sites'));
     }
 
     public function create()
@@ -264,5 +266,20 @@ class EmployeeController extends Controller
         });
 
         return redirect()->route('employees.index')->with('success', 'Employee deleted successfully!');
+    }
+
+    public function assignSites(Request $request, $user_id)
+    {
+        $user = User::findOrFail($user_id);
+
+        $siteData = [];
+        if ($request->has('site_ids')) {
+            foreach ($request->site_ids as $siteId) {
+                $siteData[$siteId] = ['assigned_at' => now()];
+            }
+        }
+        $user->sites()->sync($siteData);
+
+        return redirect()->route('employees.index')->with('success', 'Sites assigned to ' . $user->name . ' successfully!');
     }
 }

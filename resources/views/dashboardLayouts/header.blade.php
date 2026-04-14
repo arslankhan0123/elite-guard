@@ -153,6 +153,14 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('schedules.index')}}"
+                                id="topnav-schedules" role="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="calendar"></i>
+                                <span data-key="t-schedules">Schedule</span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('employees.index')}}"
                                 id="topnav-employees" role="button" data-toggle="dropdown" aria-haspopup="true"
                                 aria-expanded="false">
@@ -174,6 +182,14 @@
                                 aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="bar-chart"></i>
                                 <span data-key="t-reports">Reports</span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('numbers.index')}}"
+                                id="topnav-numbers" role="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="phone"></i>
+                                <span data-key="t-numbers">Numbers</span>
                             </a>
                         </li>
                     </ul>

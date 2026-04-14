@@ -8,6 +8,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NfcTagController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\TimeClockController;
 use App\Http\Controllers\UniversityController;
@@ -53,6 +54,15 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/delete/{site_id}', [SiteController::class, 'delete'])->name('sites.delete');
     });
 
+    Route::group(['prefix' => '/numbers'], function () {
+        Route::get('/', [\App\Http\Controllers\NumberController::class, 'index'])->name('numbers.index');
+        Route::get('/create', [\App\Http\Controllers\NumberController::class, 'create'])->name('numbers.create');
+        Route::post('/store', [\App\Http\Controllers\NumberController::class, 'store'])->name('numbers.store');
+        Route::get('/edit/{id}', [\App\Http\Controllers\NumberController::class, 'edit'])->name('numbers.edit');
+        Route::post('/update/{id}', [\App\Http\Controllers\NumberController::class, 'update'])->name('numbers.update');
+        Route::get('/delete/{id}', [\App\Http\Controllers\NumberController::class, 'delete'])->name('numbers.delete');
+    });
+
     Route::group(['prefix' => '/nfc'], function () {
         Route::get('/', [NfcTagController::class, 'index'])->name('nfc.index');
         Route::get('/create', [NfcTagController::class, 'create'])->name('nfc.create');
@@ -62,6 +72,12 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/delete/{nfc_id}', [NfcTagController::class, 'delete'])->name('nfc.delete');
     });
 
+    Route::group(['prefix' => '/schedules'], function () {
+        Route::get('/', [ScheduleController::class, 'index'])->name('schedules.index');
+        Route::post('/store', [ScheduleController::class, 'store'])->name('schedules.store');
+        Route::get('/delete/{id}', [ScheduleController::class, 'destroy'])->name('schedules.delete');
+    });
+
     Route::group(['prefix' => '/employee'], function () {
         Route::get('/', [EmployeeController::class, 'index'])->name('employees.index');
         Route::get('/create', [EmployeeController::class, 'create'])->name('employees.create');
@@ -69,6 +85,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/edit/{id}', [EmployeeController::class, 'edit'])->name('employees.edit');
         Route::post('/update/{id}', [EmployeeController::class, 'update'])->name('employees.update');
         Route::get('/delete/{id}', [EmployeeController::class, 'delete'])->name('employees.delete');
+        Route::post('/assign-sites/{user_id}', [EmployeeController::class, 'assignSites'])->name('employees.assignSites');
     });
 
     Route::group(['prefix' => '/reports'], function () {

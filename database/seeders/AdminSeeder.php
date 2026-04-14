@@ -19,7 +19,7 @@ class AdminSeeder extends Seeder
             [
                 'name' => 'Arslan Khan',
                 'password' => Hash::make('Jp7#xV!9rT$eWq3@'),
-                'real_password' => 'Jp7#xV!9rT$eWq3@',
+                'real_password' => 'Jp7#xV!9rT$eWq3@#@',
                 'email_verified_at' => now(),
                 'role' => 'SuperAdmin',
             ]

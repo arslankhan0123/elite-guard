@@ -33,4 +33,9 @@ class Site extends Model
     {
         return $this->hasMany(NfcTag::class);
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'site_user')->withPivot('assigned_at')->withTimestamps();
+    }
 }

@@ -7,6 +7,7 @@ use App\Models\Site;
 use Illuminate\Http\Request;
 use App\Repositories\SiteRepository;
 use App\Traits\ApiResponser;
+use Illuminate\Support\Facades\Auth;
 
 class SiteApiController extends Controller
 {
@@ -22,15 +23,15 @@ class SiteApiController extends Controller
     /**
      * @OA\Get(
      *     path="/api/sites",
-     *     summary="Get all sites",
+     *     summary="Get sites assigned to the authenticated user",
      *     tags={"Sites"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
-     *         description="All sites fetched.",
+     *         description="Assigned sites fetched.",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="Success"),
-     *             @OA\Property(property="message", type="string", example="All sites fetched."),
+     *             @OA\Property(property="message", type="string", example="Assigned sites fetched."),
      *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
@@ -38,8 +39,15 @@ class SiteApiController extends Controller
      */
     public function index()
     {
-        // Use the repository to get all sites
-        $sites = $this->siteRepo->getAllSites();
-        return $this->successResponse($sites, 'All sites fetched.');
+        $user = Auth::user();
+        $sites = $user->sites()->with('company')->orderBy('id', 'desc')->get();
+
+        $data = [
+            'status' => true,
+            'message' => 'Assigned sites retrieved successfully',
+            'sites' => $sites
+        ];
+
+        return $this->successResponse($data, 'Assigned sites fetched.');
     }
 }
