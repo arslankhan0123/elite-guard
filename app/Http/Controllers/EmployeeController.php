@@ -10,6 +10,7 @@ use App\Models\EmployeeBankDetail;
 use App\Models\EmployeeLicenseDetail;
 use App\Models\EmployeeAvailability;
 use App\Models\EmployeeOfficeDetail;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -19,9 +20,14 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::with(['user', 'user.sites'])->get();
+        $currentMonday = Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
+        
+        $employees = Employee::with(['user', 'user.schedules' => function($query) use ($currentMonday) {
+            $query->where('week_start_date', $currentMonday);
+        }, 'user.schedules.site'])->get();
+        
         $sites = Site::orderBy('name')->get();
-        return view('admin.employees.index', compact('employees', 'sites'));
+        return view('admin.employees.index', compact('employees', 'sites', 'currentMonday'));
     }
 
     public function create()

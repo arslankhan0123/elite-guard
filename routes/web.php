@@ -75,6 +75,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
     Route::group(['prefix' => '/schedules'], function () {
         Route::get('/', [ScheduleController::class, 'index'])->name('schedules.index');
         Route::post('/store', [ScheduleController::class, 'store'])->name('schedules.store');
+        Route::post('/update', [ScheduleController::class, 'update'])->name('schedules.update');
         Route::get('/delete/{id}', [ScheduleController::class, 'destroy'])->name('schedules.delete');
     });
 
