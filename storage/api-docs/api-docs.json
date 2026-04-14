@@ -551,11 +551,12 @@
                 "tags": [
                     "Numbers"
                 ],
-                "summary": "Get all active numbers",
+                "summary": "Get active numbers for the Application",
+                "description": "Fetches numbers specifically categorized for 'Application' usage.",
                 "operationId": "ef1d7c8ca58324158f7c91f450bd4938",
                 "responses": {
                     "200": {
-                        "description": "Numbers fetched.",
+                        "description": "Numbers fetched successfully.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -569,10 +570,95 @@
                                             "example": "Numbers fetched."
                                         },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Numbers retrieved successfully"
+                                                },
+                                                "numbers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schedules": {
+            "get": {
+                "tags": [
+                    "Schedules"
+                ],
+                "summary": "Get schedules for the authenticated user",
+                "description": "Fetches schedules for the authenticated user for a specific week. Defaults to current week.",
+                "operationId": "2bebb83e63dfd2ee805676a881888d9b",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Any date within the target week (format: YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Schedules fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Schedules fetched."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Schedules retrieved successfully"
+                                                },
+                                                "week_start_date": {
+                                                    "type": "string",
+                                                    "example": "2026-04-13"
+                                                },
+                                                "schedules": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -1307,6 +1393,10 @@
         {
             "name": "Numbers",
             "description": "Numbers"
+        },
+        {
+            "name": "Schedules",
+            "description": "Schedules"
         },
         {
             "name": "Sites",
