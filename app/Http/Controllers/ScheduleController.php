@@ -9,6 +9,8 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WeeklyScheduleMail;
 
 class ScheduleController extends Controller
 {
@@ -74,7 +76,18 @@ class ScheduleController extends Controller
             }
         }
 
-        return back()->with('success', 'Assignments created successfully.');
+        // Send Notification Email
+        $user = User::findOrFail($request->user_id);
+        $allSchedules = Schedule::with('site.company')
+            ->where('user_id', $user->id)
+            ->where('week_start_date', $weekStart)
+            ->get();
+
+        if ($allSchedules->count() > 0) {
+            Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $allSchedules));
+        }
+
+        return back()->with('success', 'Assignments created and employee notified.');
     }
 
     /**
@@ -116,7 +129,18 @@ class ScheduleController extends Controller
             }
         }
 
-        return back()->with('success', 'Assignments updated successfully.');
+        // Send Notification Email
+        $user = User::findOrFail($request->user_id);
+        $allSchedules = Schedule::with('site.company')
+            ->where('user_id', $user->id)
+            ->where('week_start_date', $weekStart)
+            ->get();
+
+        if ($allSchedules->count() > 0) {
+            Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $allSchedules));
+        }
+
+        return back()->with('success', 'Assignments updated and employee notified.');
     }
 
     /**
@@ -128,5 +152,22 @@ class ScheduleController extends Controller
         $schedule->delete();
 
         return back()->with('success', 'Assignment removed successfully.');
+    }
+
+    /**
+     * Remove all assignments for a user in a specific week.
+     */
+    public function destroyByUserWeek(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'week_start_date' => 'required|date',
+        ]);
+
+        Schedule::where('user_id', $request->user_id)
+            ->where('week_start_date', $request->week_start_date)
+            ->delete();
+
+        return back()->with('success', 'All assignments for the employee this week have been removed.');
     }
 }
