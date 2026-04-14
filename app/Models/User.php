@@ -84,6 +84,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Site::class, 'site_user')->withPivot('assigned_at')->withTimestamps();
     }
 
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

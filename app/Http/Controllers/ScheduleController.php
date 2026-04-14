@@ -111,6 +111,11 @@ class ScheduleController extends Controller
             ->whereNotIn('site_id', $newSiteIds)
             ->delete();
 
+        // Update notes for all remaining existing assignments
+        Schedule::where('user_id', $request->user_id)
+            ->where('week_start_date', $weekStart)
+            ->update(['notes' => $request->notes]);
+
         // Add assignments that are in the new list but don't exist yet
         foreach ($newSiteIds as $site_id) {
             $exists = Schedule::where([
