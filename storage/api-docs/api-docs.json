@@ -546,16 +546,16 @@
                 }
             }
         },
-        "/api/sites": {
+        "/api/numbers": {
             "get": {
                 "tags": [
-                    "Sites"
+                    "Numbers"
                 ],
-                "summary": "Get all sites",
-                "operationId": "378fca0ba33262a216e741947b15d160",
+                "summary": "Get all active numbers",
+                "operationId": "ef1d7c8ca58324158f7c91f450bd4938",
                 "responses": {
                     "200": {
-                        "description": "All sites fetched.",
+                        "description": "Numbers fetched.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -566,7 +566,49 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "All sites fetched."
+                                            "example": "Numbers fetched."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sites": {
+            "get": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "Get sites assigned to the authenticated user",
+                "operationId": "378fca0ba33262a216e741947b15d160",
+                "responses": {
+                    "200": {
+                        "description": "Assigned sites fetched.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Assigned sites fetched."
                                         },
                                         "data": {
                                             "type": "array",
@@ -1261,6 +1303,10 @@
         {
             "name": "Forgot Password",
             "description": "Forgot Password"
+        },
+        {
+            "name": "Numbers",
+            "description": "Numbers"
         },
         {
             "name": "Sites",

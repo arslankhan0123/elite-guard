@@ -54,6 +54,15 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/delete/{site_id}', [SiteController::class, 'delete'])->name('sites.delete');
     });
 
+    Route::group(['prefix' => '/numbers'], function () {
+        Route::get('/', [\App\Http\Controllers\NumberController::class, 'index'])->name('numbers.index');
+        Route::get('/create', [\App\Http\Controllers\NumberController::class, 'create'])->name('numbers.create');
+        Route::post('/store', [\App\Http\Controllers\NumberController::class, 'store'])->name('numbers.store');
+        Route::get('/edit/{id}', [\App\Http\Controllers\NumberController::class, 'edit'])->name('numbers.edit');
+        Route::post('/update/{id}', [\App\Http\Controllers\NumberController::class, 'update'])->name('numbers.update');
+        Route::get('/delete/{id}', [\App\Http\Controllers\NumberController::class, 'delete'])->name('numbers.delete');
+    });
+
     Route::group(['prefix' => '/nfc'], function () {
         Route::get('/', [NfcTagController::class, 'index'])->name('nfc.index');
         Route::get('/create', [NfcTagController::class, 'create'])->name('nfc.create');
