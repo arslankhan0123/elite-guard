@@ -19,7 +19,7 @@ class ScheduleController extends Controller
     {
         // Get the requested date or default to now
         $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::now();
-        
+
         // Find the start of the week (Monday)
         $weekStart = $date->copy()->startOfWeek(Carbon::MONDAY);
         $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
@@ -34,10 +34,10 @@ class ScheduleController extends Controller
         $sites = Site::orderBy('name')->get();
 
         return view('admin.schedules.index', compact(
-            'schedules', 
-            'employees', 
-            'sites', 
-            'weekStart', 
+            'schedules',
+            'employees',
+            'sites',
+            'weekStart',
             'weekEnd'
         ));
     }
@@ -49,31 +49,74 @@ class ScheduleController extends Controller
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'site_id' => 'required|exists:sites,id',
+            'site_ids' => 'required|array',
+            'site_ids.*' => 'exists:sites,id',
             'week_start_date' => 'required|date',
         ]);
 
         $weekStart = Carbon::parse($request->week_start_date)->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
 
-        // Check if already assigned
-        $exists = Schedule::where([
-            'user_id' => $request->user_id,
-            'site_id' => $request->site_id,
-            'week_start_date' => $weekStart
-        ])->exists();
+        foreach ($request->site_ids as $site_id) {
+            // Check if already assigned
+            $exists = Schedule::where([
+                'user_id' => $request->user_id,
+                'site_id' => $site_id,
+                'week_start_date' => $weekStart
+            ])->exists();
 
-        if ($exists) {
-            return back()->with('error', 'This employee is already assigned to this site for the selected week.');
+            if (!$exists) {
+                Schedule::create([
+                    'user_id' => $request->user_id,
+                    'site_id' => $site_id,
+                    'week_start_date' => $weekStart,
+                    'notes' => $request->notes,
+                ]);
+            }
         }
 
-        Schedule::create([
-            'user_id' => $request->user_id,
-            'site_id' => $request->site_id,
-            'week_start_date' => $weekStart,
-            'notes' => $request->notes,
+        return back()->with('success', 'Assignments created successfully.');
+    }
+
+    /**
+     * Update/Sync assignments for a specific user and week.
+     */
+    public function update(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'site_ids' => 'nullable|array',
+            'site_ids.*' => 'exists:sites,id',
+            'week_start_date' => 'required|date',
         ]);
 
-        return back()->with('success', 'Assignment created successfully.');
+        $weekStart = Carbon::parse($request->week_start_date)->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
+        $newSiteIds = $request->site_ids ?? [];
+
+        // Delete assignments that are not in the new list
+        Schedule::where('user_id', $request->user_id)
+            ->where('week_start_date', $weekStart)
+            ->whereNotIn('site_id', $newSiteIds)
+            ->delete();
+
+        // Add assignments that are in the new list but don't exist yet
+        foreach ($newSiteIds as $site_id) {
+            $exists = Schedule::where([
+                'user_id' => $request->user_id,
+                'site_id' => $site_id,
+                'week_start_date' => $weekStart
+            ])->exists();
+
+            if (!$exists) {
+                Schedule::create([
+                    'user_id' => $request->user_id,
+                    'site_id' => $site_id,
+                    'week_start_date' => $weekStart,
+                    'notes' => $request->notes,
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Assignments updated successfully.');
     }
 
     /**
