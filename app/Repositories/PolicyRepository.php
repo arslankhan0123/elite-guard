@@ -35,7 +35,7 @@ class PolicyRepository
         $data = $request->all();
         if ($request->hasFile('document')) {
             $file = $request->file('document');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileName = 'user_' . auth()->id() . '_' . time() . '_' . rand(1111, 9999) . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('documents/policies'), $fileName);
             $data['document'] = url('documents/policies/' . $fileName);
         }
@@ -59,7 +59,7 @@ class PolicyRepository
                 }
             }
             $file = $request->file('document');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileName = 'user_' . auth()->id() . '_' . time() . '_' . rand(1111, 9999) . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('documents/policies'), $fileName);
             $data['document'] = url('documents/policies/' . $fileName);
         }

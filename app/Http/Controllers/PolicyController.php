@@ -37,9 +37,11 @@ class PolicyController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'type' => 'required|string|max:255',
+            'type' => 'required|string|max:255|unique:policies,type',
             'status' => 'required|boolean',
             'document' => 'required|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120', // Max 5MB
+        ], [
+            'type.unique' => 'This policy type is already saved.',
         ]);
 
         $this->policyRepo->createPolicy($request);
@@ -62,9 +64,11 @@ class PolicyController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'type' => 'required|string|max:255',
+            'type' => 'required|string|max:255|unique:policies,type,' . $id,
             'status' => 'required|boolean',
             'document' => 'nullable|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120',
+        ], [
+            'type.unique' => 'This policy type is already saved.',
         ]);
 
         $this->policyRepo->updatePolicy($request, $id);
