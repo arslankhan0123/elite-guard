@@ -646,6 +646,77 @@
                 ]
             }
         },
+        "/api/policies": {
+            "get": {
+                "tags": [
+                    "Policies"
+                ],
+                "summary": "Get all policies",
+                "operationId": "7d526b88090fdd60ecab9754ae0e157d",
+                "responses": {
+                    "200": {
+                        "description": "Policies fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Policies fetched successfully."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "example": "Employment Policies"
+                                                    },
+                                                    "status": {
+                                                        "type": "boolean",
+                                                        "example": true
+                                                    },
+                                                    "document": {
+                                                        "type": "string",
+                                                        "example": "http://example.com/documents/policies/filename.pdf"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/schedules": {
             "get": {
                 "tags": [
@@ -1441,6 +1512,10 @@
         {
             "name": "Panic",
             "description": "Panic"
+        },
+        {
+            "name": "Policies",
+            "description": "Policies"
         },
         {
             "name": "Schedules",

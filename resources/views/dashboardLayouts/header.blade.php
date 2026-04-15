@@ -145,9 +145,8 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('nfc.index')}}"
-                                id="topnav-nfc" role="button" data-toggle="dropdown" aria-haspopup="true"
-                                aria-expanded="false">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('nfc.index')}}" id="topnav-nfc"
+                                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="rss"></i>
                                 <span data-key="t-nfc">NFC Tags</span>
                             </a>
@@ -191,6 +190,18 @@
                                 <i class="icon nav-icon" data-feather="phone"></i>
                                 <span data-key="t-numbers">Numbers</span>
                             </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-components" role="button"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="monitor"></i>
+                                <span data-key="t-components">Profile</span>
+                                <div class="arrow-down"></div>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="topnav-components">
+                                <a href="{{route('policies.index')}}" class="dropdown-item"
+                                    data-key="t-widgets">Policies</a>
+                            </div>
                         </li>
                     </ul>
                 </div>

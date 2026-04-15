@@ -6,6 +6,7 @@ use App\Http\Controllers\DegreeController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NfcTagController;
+use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
@@ -95,6 +96,15 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
 
     Route::group(['prefix' => '/time-clocks'], function () {
         Route::get('/', [TimeClockController::class, 'index'])->name('time-clocks.index');
+    });
+
+    Route::group(['prefix' => '/profile/policies'], function () {
+        Route::get('/', [PolicyController::class, 'index'])->name('policies.index');
+        Route::get('/create', [PolicyController::class, 'create'])->name('policies.create');
+        Route::post('/store', [PolicyController::class, 'store'])->name('policies.store');
+        Route::get('/edit/{id}', [PolicyController::class, 'edit'])->name('policies.edit');
+        Route::post('/update/{id}', [PolicyController::class, 'update'])->name('policies.update');
+        Route::get('/delete/{id}', [PolicyController::class, 'delete'])->name('policies.delete');
     });
 });
 
