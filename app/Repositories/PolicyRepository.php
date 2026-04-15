@@ -3,6 +3,8 @@
 namespace App\Repositories;
 
 use App\Models\Policy;
+use App\Models\SignedPolicy;
+use Illuminate\Support\Facades\Auth;
 
 class PolicyRepository
 {
@@ -81,5 +83,48 @@ class PolicyRepository
             }
         }
         return $policy->delete();
+    }
+
+    /**
+     * Store a signed policy.
+     */
+    public function storeSignedPolicies($request)
+    {
+        $user_id = Auth::id();
+        $policy_id = $request->input('policy_id');
+
+        // Check if the user has already signed this policy
+        $exists = SignedPolicy::where('user_id', $user_id)
+            ->where('policy_id', $policy_id)
+            ->exists();
+
+        if ($exists) {
+            return [
+                'status' => false,
+                'message' => 'You have already signed this policy.'
+            ];
+        }
+
+        $data = [
+            'user_id' => $user_id,
+            'policy_id' => $policy_id,
+            'agreed' => $request->input('agreed'),
+        ];
+
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            // Custom naming: user_[id]_policy_[id]_[timestamp]_[rand].[extension]
+            $fileName = 'user_' . $user_id . '_policy_' . $policy_id . '_' . time() . '_' . rand(1111, 9999) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('documents/signed_policies'), $fileName);
+            $data['document'] = url('documents/signed_policies/' . $fileName);
+        }
+
+        $signedPolicy = SignedPolicy::create($data);
+
+        return [
+            'status' => true,
+            'message' => 'Policy signed successfully.',
+            'signedPolicy' => $signedPolicy
+        ];
     }
 }

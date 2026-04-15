@@ -53,4 +53,64 @@ class PolicyApiController extends Controller
         $policies = $this->policyRepo->getAllPolicies();
         return $this->successResponse($policies, 'Policies fetched successfully.');
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/policies/signed",
+     *     summary="Sign a policy",
+     *     tags={"Policies"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="policy_id", type="string", example="1"),
+     *                 @OA\Property(property="agreed", type="string", example="yes"),
+     *                 @OA\Property(property="document", type="string", format="binary", description="Signed document file (PDF/Image)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Policy signed successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Policy signed successfully."),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation Error or Already Signed",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="You have already signed this policy.")
+     *         )
+     *     )
+     * )
+     */
+    public function signedPolicy(Request $request)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'policy_id' => 'required|exists:policies,id',
+            'agreed' => 'required|string|in:yes,no',
+            'document' => 'required|file|mimes:pdf,doc,docx,png,jpg,jpeg|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first()
+            ], 400);
+        }
+
+        $result = $this->policyRepo->storeSignedPolicies($request);
+
+        if (!$result['status']) {
+            return response()->json($result, 400);
+        }
+
+        return $this->successResponse($result, $result['message']);
+    }
 }

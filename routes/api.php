@@ -65,6 +65,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/policies'], function () {
         Route::get('/', [PolicyApiController::class, 'index']);
+        Route::post('/signedPolicy', [PolicyApiController::class, 'signedPolicy']);
     });
 });
 
