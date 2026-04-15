@@ -125,6 +125,7 @@ class AuthController extends Controller
             ], 401);
         }
 
+        /** @var User $user */
         $user = Auth::user();
         if ($request->has('fcm_token')) {
             $user->update(['fcm_token' => $request->fcm_token]);
