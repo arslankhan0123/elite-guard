@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompanyApiController;
 use App\Http\Controllers\Api\ForgotPasswordApiController;
 use App\Http\Controllers\Api\NumberApiController;
+use App\Http\Controllers\Api\PanicApiController;
 use App\Http\Controllers\Api\ScheduleApiController;
 use App\Http\Controllers\Api\SiteApiController;
 use App\Http\Controllers\Api\TagsApiController;
@@ -43,6 +44,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/schedules'], function () {
         Route::get('/', [ScheduleApiController::class, 'index']);
+    });
+
+    Route::group(['prefix' => '/panic'], function () {
+        Route::get('/', [PanicApiController::class, 'panicNotifications']);
     });
 
     Route::group(['prefix' => '/nfc-tags'], function () {

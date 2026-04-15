@@ -24,6 +24,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'real_password',
         'role',
+        'fcm_token',
     ];
 
     /**
@@ -97,5 +98,15 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    /**
+     * Route notifications for the FCM channel.
+     *
+     * @return string|array
+     */
+    public function routeNotificationForFcm()
+    {
+        return $this->fcm_token;
     }
 }

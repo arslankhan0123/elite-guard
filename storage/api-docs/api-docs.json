@@ -602,6 +602,46 @@
                 ]
             }
         },
+        "/api/panic": {
+            "get": {
+                "tags": [
+                    "Panic"
+                ],
+                "summary": "Trigger panic notifications",
+                "description": "Sends a panic notification to all currently logged-in users (active sessions) who have an FCM token. Includes the sender's name in the message.",
+                "operationId": "c81eb70ba20dd9c0e5e26e3ca448b5fc",
+                "responses": {
+                    "200": {
+                        "description": "Panic notifications sent successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Panic notifications sent successfully to all registered devices."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/schedules": {
             "get": {
                 "tags": [
@@ -1393,6 +1433,10 @@
         {
             "name": "Numbers",
             "description": "Numbers"
+        },
+        {
+            "name": "Panic",
+            "description": "Panic"
         },
         {
             "name": "Schedules",
