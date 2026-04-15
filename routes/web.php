@@ -6,6 +6,7 @@ use App\Http\Controllers\DegreeController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NfcTagController;
+use App\Http\Controllers\OrientationController;
 use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -84,6 +85,15 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
             Route::post('/update/{id}', [PolicyController::class, 'update'])->name('policies.update');
             Route::get('/delete/{id}', [PolicyController::class, 'delete'])->name('policies.delete');
             Route::get('/{id}/signed', [PolicyController::class, 'signedPolicies'])->name('policies.signed');
+        });
+
+        Route::group(['prefix' => '/orientations'], function () {
+            Route::get('/', [OrientationController::class, 'index'])->name('orientations.index');
+            Route::get('/create', [OrientationController::class, 'create'])->name('orientations.create');
+            Route::post('/store', [OrientationController::class, 'store'])->name('orientations.store');
+            Route::get('/edit/{id}', [OrientationController::class, 'edit'])->name('orientations.edit');
+            Route::post('/update/{id}', [OrientationController::class, 'update'])->name('orientations.update');
+            Route::get('/delete/{id}', [OrientationController::class, 'delete'])->name('orientations.delete');
         });
 
         Route::group(['prefix' => '/employee'], function () {

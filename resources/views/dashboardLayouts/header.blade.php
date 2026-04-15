@@ -200,6 +200,7 @@
                             </a>
                             <div class="dropdown-menu" aria-labelledby="topnav-components">
                                 <a href="{{route('policies.index')}}" class="dropdown-item" data-key="t-widgets"> <i class="icon nav-icon" data-feather="file-text"></i> Policies</a>
+                                <a href="{{route('orientations.index')}}" class="dropdown-item" data-key="t-widgets"> <i class="icon nav-icon" data-feather="layers"></i> Orientations</a>
                                 <a href="{{route('employees.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="users"></i> Employees</a>
                                 <a href="{{route('reports.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="bar-chart"></i> Reports</a>
                                 <a href="{{route('numbers.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="phone"></i> Numbers</a>
