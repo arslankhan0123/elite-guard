@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CompanyApiController;
 use App\Http\Controllers\Api\ForgotPasswordApiController;
 use App\Http\Controllers\Api\NumberApiController;
 use App\Http\Controllers\Api\PanicApiController;
+use App\Http\Controllers\Api\PolicyApiController;
 use App\Http\Controllers\Api\ScheduleApiController;
 use App\Http\Controllers\Api\SiteApiController;
 use App\Http\Controllers\Api\TagsApiController;
@@ -60,6 +61,11 @@ Route::middleware('auth:api')->group(function () {
     Route::group(['prefix' => '/time-clock'], function () {
         Route::get('/', [TimeClockApiController::class, 'index']);
         Route::post('/store', [TimeClockApiController::class, 'store']);
+    });
+
+    Route::group(['prefix' => '/policies'], function () {
+        Route::get('/', [PolicyApiController::class, 'index']);
+        Route::post('/signedPolicy', [PolicyApiController::class, 'signedPolicy']);
     });
 });
 
