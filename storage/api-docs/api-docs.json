@@ -125,6 +125,10 @@
                                         "type": "string",
                                         "format": "password",
                                         "example": "password"
+                                    },
+                                    "fcm_token": {
+                                        "type": "string",
+                                        "example": "eNoWKNiLTb6TDhIexS-IVT:APA91b..."
                                     }
                                 },
                                 "type": "object"

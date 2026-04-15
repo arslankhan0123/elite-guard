@@ -90,7 +90,8 @@ class AuthController extends Controller
      *         @OA\JsonContent(
      *             required={"email","password"},
      *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="password")
+     *             @OA\Property(property="password", type="string", format="password", example="password"),
+     *             @OA\Property(property="fcm_token", type="string", example="eNoWKNiLTb6TDhIexS-IVT:APA91b...")
      *         )
      *     ),
      *     @OA\Response(
@@ -124,11 +125,16 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $user = Auth::user();
+        if ($request->has('fcm_token')) {
+            $user->update(['fcm_token' => $request->fcm_token]);
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Login successful',
             'token' => $token,
-            'user' => Auth::user()
+            'user' => $user
         ]);
     }
 }
