@@ -10,6 +10,8 @@ class Number extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
+        'designation',
         'label',
         'number',
         'number_with_code',

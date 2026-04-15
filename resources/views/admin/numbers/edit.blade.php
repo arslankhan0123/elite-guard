@@ -25,12 +25,20 @@
 
                     <div class="row mt-3">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Label <span class="text-danger">*</span></label>
-                            <input type="text" name="label" class="form-control" value="{{ old('label', $number->label) }}" required placeholder="e.g. WhatsApp, Office, Support">
-                            @error('label') <span class="text-danger">{{ $message }}</span> @enderror
+                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" value="{{ old('name', $number->name) }}" required placeholder="e.g. John Doe">
+                            @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
+                            <label class="form-label">Designation <span class="text-danger">*</span></label>
+                            <input type="text" name="designation" class="form-control" value="{{ old('designation', $number->designation) }}" required placeholder="e.g. Manager, Support Agent">
+                            @error('designation') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
                             <label class="form-label">Number <span class="text-danger">*</span></label>
                             <input type="text" name="number" class="form-control" value="{{ old('number', $number->number) }}" required placeholder="e.g. 123456789">
                             @error('number') <span class="text-danger">{{ $message }}</span> @enderror
