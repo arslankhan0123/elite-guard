@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\PanicNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class PanicApiController extends Controller
@@ -35,9 +36,10 @@ class PanicApiController extends Controller
     public function panicNotifications(Request $request)
     {
         $sender = $request->user();
-
-        // Fetch all users who have an FCM token
-        // $users = User::whereNotNull('fcm_token')->get();
+        Log::info("Panic Alert Triggered", [
+            'sender_id' => $sender->id,
+            'sender_name' => $sender->name
+        ]);
 
         // Fetch all users who have an FCM token AND an active session
         $users = User::whereNotNull('fcm_token')
@@ -48,13 +50,41 @@ class PanicApiController extends Controller
             })
             ->get();
 
-        if ($users->isNotEmpty()) {
-            Notification::send($users, new PanicNotification($sender->name));
+        Log::info("Panic Alert: Target users fetched", [
+            'count' => $users->count(),
+            'users' => $users->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'token' => substr($u->fcm_token, 0, 10) . '...'])->toArray()
+        ]);
+
+        $successCount = 0;
+        $failedCount = 0;
+
+        foreach ($users as $user) {
+            try {
+                Log::info("Panic Alert: Attempting push to user", ['user_id' => $user->id]);
+
+                Notification::send($user, new PanicNotification($sender->name));
+
+                $successCount++;
+                Log::info("Panic Alert: Push success", ['user_id' => $user->id]);
+            } catch (\Exception $e) {
+                $failedCount++;
+                Log::error("Panic Alert: Push failed", [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                    'trace' => substr($e->getTraceAsString(), 0, 500)
+                ]);
+            }
         }
+
+        Log::info("Panic Alert: Dispatch completed", [
+            'total' => $users->count(),
+            'success' => $successCount,
+            'failed' => $failedCount
+        ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Panic notifications sent successfully to all registered devices.',
+            'message' => "Panic notifications dispatched. Success: $successCount, Failed: $failedCount.",
         ]);
     }
 }
