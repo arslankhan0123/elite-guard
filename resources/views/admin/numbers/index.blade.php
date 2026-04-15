@@ -24,7 +24,8 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Label</th>
+                                <th>Name</th>
+                                <th>Designation</th>
                                 <th>Number</th>
                                 <th>Number with Code</th>
                                 <th>Type</th>
@@ -36,7 +37,8 @@
                             @foreach($numbers['numbers'] as $number)
                             <tr>
                                 <td>{{ $number->id }}</td>
-                                <td>{{ $number->label }}</td>
+                                <td>{{ $number->name }}</td>
+                                <td>{{ $number->designation }}</td>
                                 <td>{{ $number->number }}</td>
                                 <td>{{ $number->number_with_code }}</td>
                                 <td>{{ $number->type }}</td>

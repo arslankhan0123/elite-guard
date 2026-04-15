@@ -29,7 +29,9 @@ class NumberController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'label'            => 'required|string|max:255',
+            'name'             => 'required|string|max:255',
+            'designation'      => 'required|string|max:255',
+            'label'            => 'nullable|string|max:255',
             'number'           => 'required|string|max:20',
             'number_with_code' => 'nullable|string|max:30',
             'type'             => 'nullable|string|max:100',
@@ -53,7 +55,9 @@ class NumberController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'label'            => 'required|string|max:255',
+            'name'             => 'required|string|max:255',
+            'designation'      => 'required|string|max:255',
+            'label'            => 'nullable|string|max:255',
             'number'           => 'required|string|max:20',
             'number_with_code' => 'nullable|string|max:30',
             'type'             => 'nullable|string|max:100',
