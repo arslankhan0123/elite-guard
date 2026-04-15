@@ -159,14 +159,14 @@
                                 <span data-key="t-schedules">Schedule</span>
                             </a>
                         </li>
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('employees.index')}}"
                                 id="topnav-employees" role="button" data-toggle="dropdown" aria-haspopup="true"
                                 aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="users"></i>
                                 <span data-key="t-employees">Employees</span>
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('time-clocks.index')}}"
                                 id="topnav-time-clocks" role="button" data-toggle="dropdown" aria-haspopup="true"
@@ -175,22 +175,22 @@
                                 <span data-key="t-time-clocks">Time Clock</span>
                             </a>
                         </li>
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('reports.index')}}"
                                 id="topnav-reports" role="button" data-toggle="dropdown" aria-haspopup="true"
                                 aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="bar-chart"></i>
                                 <span data-key="t-reports">Reports</span>
                             </a>
-                        </li>
-                        <li class="nav-item dropdown">
+                        </li> -->
+                        <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('numbers.index')}}"
                                 id="topnav-numbers" role="button" data-toggle="dropdown" aria-haspopup="true"
                                 aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="phone"></i>
                                 <span data-key="t-numbers">Numbers</span>
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-components" role="button"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -199,8 +199,10 @@
                                 <div class="arrow-down"></div>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="topnav-components">
-                                <a href="{{route('policies.index')}}" class="dropdown-item"
-                                    data-key="t-widgets">Policies</a>
+                                <a href="{{route('policies.index')}}" class="dropdown-item" data-key="t-widgets"> <i class="icon nav-icon" data-feather="file-text"></i> Policies</a>
+                                <a href="{{route('employees.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="users"></i> Employees</a>
+                                <a href="{{route('reports.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="bar-chart"></i> Reports</a>
+                                <a href="{{route('numbers.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="phone"></i> Numbers</a>
                             </div>
                         </li>
                     </ul>

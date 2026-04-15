@@ -37,7 +37,7 @@ class PolicyRepository
         $data = $request->all();
         if ($request->hasFile('document')) {
             $file = $request->file('document');
-            $fileName = 'user_' . auth()->id() . '_' . time() . '_' . rand(1111, 9999) . '.' . $file->getClientOriginalExtension();
+            $fileName = 'user_' . Auth::id() . '_' . time() . '_' . rand(1111, 9999) . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('documents/policies'), $fileName);
             $data['document'] = url('documents/policies/' . $fileName);
         }
@@ -61,7 +61,7 @@ class PolicyRepository
                 }
             }
             $file = $request->file('document');
-            $fileName = 'user_' . auth()->id() . '_' . time() . '_' . rand(1111, 9999) . '.' . $file->getClientOriginalExtension();
+            $fileName = 'user_' . Auth::id() . '_' . time() . '_' . rand(1111, 9999) . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('documents/policies'), $fileName);
             $data['document'] = url('documents/policies/' . $fileName);
         }
@@ -125,6 +125,19 @@ class PolicyRepository
             'status' => true,
             'message' => 'Policy signed successfully.',
             'signedPolicy' => $signedPolicy
+        ];
+    }
+
+    /**
+     * Get all signed policies for admin view.
+     */
+    public function getAllSignedPolicies()
+    {
+        $signedPolicies = SignedPolicy::with(['user', 'policy'])->orderBy('id', 'desc')->get();
+        return [
+            'status' => true,
+            'message' => 'Policy signed successfully.',
+            'signedPolicies' => $signedPolicies
         ];
     }
 }

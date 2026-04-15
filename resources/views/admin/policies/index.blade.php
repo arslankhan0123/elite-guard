@@ -55,6 +55,10 @@
                                         <td>{{ $policy->created_at->format('Y-m-d') }}</td>
                                         <td>
                                             <div class="btn-group" role="group" aria-label="Policy Actions">
+                                                <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('policies.signed', $policy->id) }}" data-bs-toggle="tooltip" title="Get Signed Policies">
+                                                    <button class="view_btn me-2" fdprocessedid="pxicc">
+                                                    </button>
+                                                </a>
                                                 <a class="text-decoration-none me-2 text-dark ml-1"
                                                     href="{{ route('policies.edit', $policy->id) }}" data-bs-toggle="tooltip"
                                                     title="Edit Policy">

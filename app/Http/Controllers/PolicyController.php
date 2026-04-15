@@ -84,4 +84,13 @@ class PolicyController extends Controller
         $this->policyRepo->deletePolicy($id);
         return redirect()->route('policies.index')->with('success', 'Policy deleted successfully.');
     }
+
+    /**
+     * Display a listing of signed policies.
+     */
+    public function signedPolicies()
+    {
+        $signedPolicies = $this->policyRepo->getAllSignedPolicies();
+        return view('admin.policies.signed', compact('signedPolicies'));
+    }
 }
