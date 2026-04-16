@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Orientation;
 use App\Models\SignedOrientation;
+use App\Models\OrientationAttempt;
 use Illuminate\Support\Facades\Auth;
 
 class OrientationRepository
@@ -13,12 +14,37 @@ class OrientationRepository
      */
     public function getAllOrientations()
     {
+        $userId = Auth::id();
         $orientations = Orientation::with(['questions.options'])->orderBy('id', 'desc')->get();
-        return [
-            'status' => true,
-            'message' => 'Orientations retrieved successfully',
-            'orientations' => $orientations
-        ];
+
+        foreach ($orientations as $orientation) {
+            $lastAttempt = OrientationAttempt::where('user_id', $userId)
+                ->where('orientation_id', $orientation->id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $orientation->last_attempt = $lastAttempt;
+
+            if ($lastAttempt && is_array($lastAttempt->answers)) {
+                foreach ($orientation->questions as $question) {
+                    // Find user answer for this question
+                    $userAnswer = collect($lastAttempt->answers)->first(function ($ans) use ($question) {
+                        return isset($ans['question_id']) && $ans['question_id'] == $question->id;
+                    });
+
+                    if ($userAnswer && isset($userAnswer['option_id'])) {
+                        foreach ($question->options as $option) {
+                            if ($option->id == $userAnswer['option_id']) {
+                                // Mark this option as the one the user selected
+                                $option->is_user_selected = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $orientations;
     }
 
     /**
@@ -128,6 +154,88 @@ class OrientationRepository
     }
 
     /**
+     * Helper to validate quiz answers and calculate score.
+     */
+    public function validateQuizAnswers($orientation, $answers)
+    {
+        $totalQuestions = $orientation->questions->count();
+        $correctAnswersCount = 0;
+        $incorrect_questions = [];
+
+        if ($totalQuestions > 0) {
+            foreach ($orientation->questions as $question) {
+                // Find matching answer for this question
+                $userAnswer = collect($answers)->first(function ($ans) use ($question) {
+                    return isset($ans['question_id']) && $ans['question_id'] == $question->id;
+                });
+
+                $isCorrect = false;
+                if ($userAnswer && isset($userAnswer['option_id'])) {
+                    $selectedOption = $question->options->find($userAnswer['option_id']);
+                    if ($selectedOption && $selectedOption->is_correct) {
+                        $correctAnswersCount++;
+                        $isCorrect = true;
+                    }
+                }
+
+                if (!$isCorrect) {
+                    $incorrect_questions[] = [
+                        'question_id' => $question->id,
+                        'question_text' => $question->question_text,
+                        'user_provided_option_id' => $userAnswer['option_id'] ?? null,
+                    ];
+                }
+            }
+
+            $score = ($correctAnswersCount / $totalQuestions) * 100;
+        } else {
+            $score = 100; // No questions means automatic pass
+        }
+
+        return [
+            'total_questions' => $totalQuestions,
+            'correct_count' => $correctAnswersCount,
+            'score' => $score,
+            'is_passed' => $score >= $orientation->passing_percentage,
+            'incorrect_questions' => $incorrect_questions
+        ];
+    }
+
+    /**
+     * Submit a quiz attempt without signing.
+     */
+    public function submitQuizAttempt($request)
+    {
+        $user_id = Auth::id();
+        $orientation_id = $request->input('orientation_id');
+        $orientation = Orientation::with('questions.options')->findOrFail($orientation_id);
+        $answers = $request->input('answers', []);
+
+        $validationResult = $this->validateQuizAnswers($orientation, $answers);
+
+        // Save Attempt
+        $attempt = OrientationAttempt::create([
+            'user_id' => $user_id,
+            'orientation_id' => $orientation_id,
+            'score' => $validationResult['score'],
+            'is_passed' => $validationResult['is_passed'],
+            'answers' => $answers,
+        ]);
+
+        return [
+            'status' => true,
+            'message' => $validationResult['is_passed'] ? 'You passed the quiz!' : 'You did not achieve the required passing score.',
+            'data' => [
+                'attempt_id' => $attempt->id,
+                'score' => round($validationResult['score'], 2),
+                'passing_percentage' => $orientation->passing_percentage,
+                'is_passed' => $validationResult['is_passed'],
+                'incorrect_questions' => $validationResult['incorrect_questions']
+            ]
+        ];
+    }
+
+    /**
      * Store a signed orientation.
      */
     public function storeSignedOrientations($request)
@@ -148,35 +256,18 @@ class OrientationRepository
             ];
         }
 
-        // Validate Quiz if questions exist
+        // Validate Quiz
         $answers = $request->input('answers', []);
-        $totalQuestions = $orientation->questions->count();
-        $correctAnswersCount = 0;
+        $validationResult = $this->validateQuizAnswers($orientation, $answers);
 
-        if ($totalQuestions > 0) {
-            foreach ($orientation->questions as $question) {
-                // Find matching answer for this question
-                $userAnswer = collect($answers)->first(function ($ans) use ($question) {
-                    return isset($ans['question_id']) && $ans['question_id'] == $question->id;
-                });
-
-                if ($userAnswer && isset($userAnswer['option_id'])) {
-                    $selectedOption = $question->options->find($userAnswer['option_id']);
-                    if ($selectedOption && $selectedOption->is_correct) {
-                        $correctAnswersCount++;
-                    }
-                }
-            }
-
-            $score = ($correctAnswersCount / $totalQuestions) * 100;
-            if ($score < $orientation->passing_percentage) {
-                return [
-                    'status' => false,
-                    'message' => 'You did not achieve the required passing score of ' . $orientation->passing_percentage . '%. Your score: ' . round($score, 2) . '%',
-                    'score' => $score,
-                    'passing_percentage' => $orientation->passing_percentage
-                ];
-            }
+        if (!$validationResult['is_passed']) {
+            return [
+                'status' => false,
+                'message' => 'You did not achieve the required passing score of ' . $orientation->passing_percentage . '%. Your score: ' . round($validationResult['score'], 2) . '%',
+                'score' => $validationResult['score'],
+                'passing_percentage' => $orientation->passing_percentage,
+                'incorrect_questions' => $validationResult['incorrect_questions']
+            ];
         }
 
         $data = [
@@ -210,6 +301,15 @@ class OrientationRepository
                 ]);
             }
         }
+
+        // Also save as an attempt for tracking
+        OrientationAttempt::create([
+            'user_id' => $user_id,
+            'orientation_id' => $orientation_id,
+            'score' => $validationResult['score'],
+            'is_passed' => $validationResult['is_passed'],
+            'answers' => $answers,
+        ]);
 
         return [
             'status' => true,

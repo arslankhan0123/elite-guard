@@ -71,6 +71,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/orientations'], function () {
         Route::get('/', [OrientationApiController::class, 'index']);
+        Route::post('/submit-quiz', [OrientationApiController::class, 'submitQuiz']);
         Route::post('/signedOrientation', [OrientationApiController::class, 'signedOrientation']);
     });
 });
