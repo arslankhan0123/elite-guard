@@ -56,7 +56,7 @@ class OrientationApiController extends Controller
     public function index()
     {
         $orientations = $this->orientationRepo->getAllOrientations();
-        $orientations = $orientations->where('status', true)->values();
+        $orientations['orientations'] = $orientations['orientations']->where('status', true)->values();
         return $this->successResponse($orientations, 'Orientations fetched successfully.');
     }
 
