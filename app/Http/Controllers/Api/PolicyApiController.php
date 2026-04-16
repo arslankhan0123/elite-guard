@@ -67,7 +67,8 @@ class PolicyApiController extends Controller
      *             @OA\Schema(
      *                 @OA\Property(property="policy_id", type="string", example="1"),
      *                 @OA\Property(property="agreed", type="string", example="yes"),
-     *                 @OA\Property(property="document", type="string", format="binary", description="Signed document file (PDF/Image)")
+     *                 @OA\Property(property="document", type="string", format="binary", description="Signed document file (PDF/Image)"),
+     *                 @OA\Property(property="signature", type="string", description="Digital signature (Base64 image, text, etc.)")
      *             )
      *         )
      *     ),
@@ -95,7 +96,8 @@ class PolicyApiController extends Controller
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'policy_id' => 'required|exists:policies,id',
             'agreed' => 'required|string|in:yes,no',
-            'document' => 'required|file|mimes:pdf,doc,docx,png,jpg,jpeg|max:5120',
+            // 'document' => 'required|file|mimes:pdf,doc,docx,png,jpg,jpeg|max:5120',
+            'signature' => 'sometimes|nullable|string',
         ]);
 
         if ($validator->fails()) {

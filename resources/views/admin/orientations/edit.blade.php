@@ -65,6 +65,14 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Orientation Details / Description</label>
+                                <textarea name="description" id="editor" class="form-control">{{ old('description', $orientation->description) }}</textarea>
+                                @error('description') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
                         <div class="row mt-4">
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary px-4">Update Orientation</button>
@@ -76,4 +84,26 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+<script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
+<script>
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            toolbar: [
+                'heading', '|', 
+                'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|',
+                'undo', 'redo'
+            ]
+        })
+        .catch(error => {
+            console.error(error);
+        });
+</script>
+<style>
+    .ck-editor__editable {
+        min-height: 250px;
+    }
+</style>
 @endsection

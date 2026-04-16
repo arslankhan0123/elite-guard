@@ -13,5 +13,6 @@ class Policy extends Model
         'type',
         'status',
         'document',
+        'description',
     ];
 }

@@ -14,6 +14,7 @@ class SignedOrientation extends Model
         'orientation_id',
         'agreed',
         'document',
+        'signature',
     ];
 
     /**

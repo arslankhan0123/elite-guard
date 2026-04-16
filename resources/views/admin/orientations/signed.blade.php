@@ -30,6 +30,7 @@
                                     <th>Agreed</th>
                                     <th>Signed Date</th>
                                     <th>Signed Document</th>
+                                    <th>Digital Signature</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -63,8 +64,19 @@
                                             @if($signed->document)
                                                 <a href="{{ $signed->document }}" target="_blank"
                                                     class="btn btn-sm btn-soft-primary">
-                                                    <i class="mdi mdi-file-document-edit-outline"></i> View Signature
+                                                    <i class="mdi mdi-file-document-edit-outline"></i> View Document
                                                 </a>
+                                            @else
+                                                <span class="text-muted">No Document</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($signed->signature)
+                                                @if(strpos($signed->signature, 'data:image') === 0)
+                                                    <img src="{{ $signed->signature }}" alt="Signature" style="max-height: 50px; border: 1px solid #ddd; padding: 2px;">
+                                                @else
+                                                    <span class="text-info">{{ $signed->signature }}</span>
+                                                @endif
                                             @else
                                                 <span class="text-muted">No Signature</span>
                                             @endif

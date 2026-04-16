@@ -40,6 +40,7 @@ class OrientationController extends Controller
             'type' => 'required|string|max:255|unique:orientations,type',
             'status' => 'required|boolean',
             'document' => 'required|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120', // Max 5MB
+            'description' => 'nullable|string',
         ], [
             'type.unique' => 'This orientation type is already saved.',
         ]);
@@ -67,6 +68,7 @@ class OrientationController extends Controller
             'type' => 'required|string|max:255|unique:orientations,type,' . $id,
             'status' => 'required|boolean',
             'document' => 'nullable|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120',
+            'description' => 'nullable|string',
         ], [
             'type.unique' => 'This orientation type is already saved.',
         ]);

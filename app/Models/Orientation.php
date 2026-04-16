@@ -13,6 +13,7 @@ class Orientation extends Model
         'type',
         'status',
         'document',
+        'description',
     ];
 
     protected $casts = [

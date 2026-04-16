@@ -55,7 +55,8 @@ class OrientationApiController extends Controller
      *             @OA\Schema(
      *                 @OA\Property(property="orientation_id", type="string", example="1"),
      *                 @OA\Property(property="agreed", type="string", example="yes"),
-     *                 @OA\Property(property="document", type="string", format="binary", description="Signed orientation file (PDF/Image)")
+     *                 @OA\Property(property="document", type="string", format="binary", description="Signed orientation file (PDF/Image)"),
+     *                 @OA\Property(property="signature", type="string", description="Digital signature (Base64 image, text, etc.)")
      *             )
      *         )
      *     ),
@@ -84,6 +85,7 @@ class OrientationApiController extends Controller
             'orientation_id' => 'required|exists:orientations,id',
             'agreed' => 'required|string|in:yes,no',
             'document' => 'required|file|mimes:pdf,doc,docx,png,jpg,jpeg|max:5120',
+            'signature' => 'sometimes|nullable|string',
         ]);
 
         if ($validator->fails()) {

@@ -39,7 +39,8 @@ class PolicyController extends Controller
         $request->validate([
             'type' => 'required|string|max:255|unique:policies,type',
             'status' => 'required|boolean',
-            'document' => 'required|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120', // Max 5MB
+            // 'document' => 'required|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120', // Max 5MB
+            'description' => 'nullable|string',
         ], [
             'type.unique' => 'This policy type is already saved.',
         ]);
@@ -66,7 +67,8 @@ class PolicyController extends Controller
         $request->validate([
             'type' => 'required|string|max:255|unique:policies,type,' . $id,
             'status' => 'required|boolean',
-            'document' => 'nullable|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120',
+            // 'document' => 'nullable|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120',
+            'description' => 'nullable|string',
         ], [
             'type.unique' => 'This policy type is already saved.',
         ]);
