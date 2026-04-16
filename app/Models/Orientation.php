@@ -14,9 +14,16 @@ class Orientation extends Model
         'status',
         'document',
         'description',
+        'passing_percentage',
     ];
 
     protected $casts = [
         'status' => 'boolean',
+        'passing_percentage' => 'integer',
     ];
+
+    public function questions()
+    {
+        return $this->hasMany(OrientationQuestion::class);
+    }
 }

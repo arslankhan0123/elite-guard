@@ -39,10 +39,16 @@ class OrientationController extends Controller
         $request->validate([
             'type' => 'required|string|max:255|unique:orientations,type',
             'status' => 'required|boolean',
-            'document' => 'required|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120', // Max 5MB
+            // 'document' => 'required|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120', // Max 5MB
             'description' => 'nullable|string',
+            'passing_percentage' => 'required|integer|min:0|max:100',
+            'questions' => 'nullable|array',
+            'questions.*.text' => 'required_with:questions|string',
+            'questions.*.options' => 'required_with:questions|array|min:2',
+            'questions.*.options.*.text' => 'required_with:questions|string',
         ], [
             'type.unique' => 'This orientation type is already saved.',
+            'questions.*.options.min' => 'Each question must have at least 2 options.',
         ]);
 
         $this->orientationRepo->createOrientation($request);
@@ -67,10 +73,16 @@ class OrientationController extends Controller
         $request->validate([
             'type' => 'required|string|max:255|unique:orientations,type,' . $id,
             'status' => 'required|boolean',
-            'document' => 'nullable|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120',
+            // 'document' => 'nullable|file|mimes:pdf,doc,docx,txt,png,jpg,jpeg|max:5120',
             'description' => 'nullable|string',
+            'passing_percentage' => 'required|integer|min:0|max:100',
+            'questions' => 'nullable|array',
+            'questions.*.text' => 'required_with:questions|string',
+            'questions.*.options' => 'required_with:questions|array|min:2',
+            'questions.*.options.*.text' => 'required_with:questions|string',
         ], [
             'type.unique' => 'This orientation type is already saved.',
+            'questions.*.options.min' => 'Each question must have at least 2 options.',
         ]);
 
         $this->orientationRepo->updateOrientation($request, $id);
