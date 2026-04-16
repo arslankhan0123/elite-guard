@@ -45,7 +45,7 @@
                         </div>
 
                         <div class="row mt-3">
-                            <div class="col-md-12 mb-3">
+                            <!-- <div class="col-md-6 mb-3">
                                 <label class="form-label">Orientation Document</label>
                                 <input type="file" name="document" class="form-control"
                                     accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg">
@@ -62,15 +62,70 @@
                                 @error('document')
                                     <br><span class="text-danger">{{ $message }}</span>
                                 @enderror
+                            </div> -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Passing Percentage (%) <span class="text-danger">*</span></label>
+                                <input type="number" name="passing_percentage" class="form-control" value="{{ old('passing_percentage', $orientation->passing_percentage) }}"
+                                    required min="0" max="100">
+                                <small class="text-muted">User must achieve this score to sign the orientation.</small>
+                                @error('passing_percentage')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Orientation Details / Description</label>
-                                <textarea name="description" id="editor" class="form-control">{{ old('description', $orientation->description) }}</textarea>
-                                @error('description') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Orientation Details / Description</label>
+                            <textarea name="description" rows="8" class="form-control">{{ old('description', $orientation->description) }}</textarea>
+                            @error('description') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Quiz Questions (MCQs)</h5>
+                            <button type="button" id="add-question" class="btn btn-sm btn-success">
+                                <i class="mdi mdi-plus me-1"></i> Add Question
+                            </button>
+                        </div>
+
+                        <div id="questions-container">
+                            @foreach($orientation->questions as $qIndex => $question)
+                                <div class="card mb-3 border question-item" data-index="{{ $qIndex }}">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Question #{{ $qIndex + 1 }}</h6>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-question">
+                                            <i class="mdi mdi-delete"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Question Text</label>
+                                            <input type="text" name="questions[{{ $qIndex }}][text]" class="form-control" 
+                                                value="{{ $question->question_text }}" required placeholder="Enter question here...">
+                                        </div>
+                                        <div class="options-container ms-4">
+                                            <h6>Options</h6>
+                                            <div class="option-list">
+                                                @foreach($question->options as $oIndex => $option)
+                                                    <div class="input-group mb-2 option-item">
+                                                        <div class="input-group-text">
+                                                            <input class="form-check-input mt-0" type="radio" 
+                                                                name="questions[{{ $qIndex }}][correct_option]" value="{{ $oIndex }}" 
+                                                                {{ $option->is_correct ? 'checked' : '' }} required title="Mark as correct">
+                                                        </div>
+                                                        <input type="text" name="questions[{{ $qIndex }}][options][{{ $oIndex }}][text]" 
+                                                            class="form-control" value="{{ $option->option_text }}" placeholder="Option text..." required>
+                                                        <button class="btn btn-outline-danger remove-option" type="button"><i class="mdi mdi-close"></i></button>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-soft-primary add-option">
+                                                <i class="mdi mdi-plus me-1"></i> Add Option
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
 
                         <div class="row mt-4">
@@ -87,23 +142,105 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
 <script>
-    ClassicEditor
-        .create(document.querySelector('#editor'), {
-            toolbar: [
-                'heading', '|', 
-                'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|',
-                'undo', 'redo'
-            ]
-        })
-        .catch(error => {
-            console.error(error);
-        });
-</script>
-<style>
-    .ck-editor__editable {
-        min-height: 250px;
+    let questionIndex = {{ $orientation->questions->count() }};
+
+    document.getElementById('add-question').addEventListener('click', function() {
+        const container = document.getElementById('questions-container');
+        const questionHtml = `
+            <div class="card mb-3 border question-item" data-index="${questionIndex}">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Question #${questionIndex + 1}</h6>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-question">
+                        <i class="mdi mdi-delete"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Question Text</label>
+                        <input type="text" name="questions[${questionIndex}][text]" class="form-control" required placeholder="Enter question here...">
+                    </div>
+                    <div class="options-container ms-4">
+                        <h6>Options</h6>
+                        <div class="option-list"></div>
+                        <button type="button" class="btn btn-sm btn-soft-primary add-option">
+                            <i class="mdi mdi-plus me-1"></i> Add Option
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', questionHtml);
+        
+        // Add initial 2 options for the new question
+        const questionItem = container.querySelector(`[data-index="${questionIndex}"]`);
+        addOption(questionItem, questionIndex);
+        addOption(questionItem, questionIndex);
+
+        questionIndex++;
+    });
+
+    function addOption(questionItem, qIndex) {
+        const list = questionItem.querySelector('.option-list');
+        const oIndex = list.children.length;
+        const optionHtml = `
+            <div class="input-group mb-2 option-item">
+                <div class="input-group-text">
+                    <input class="form-check-input mt-0" type="radio" name="questions[${qIndex}][correct_option]" value="${oIndex}" required title="Mark as correct">
+                </div>
+                <input type="text" name="questions[${qIndex}][options][${oIndex}][text]" class="form-control" placeholder="Option text..." required>
+                <button class="btn btn-outline-danger remove-option" type="button"><i class="mdi mdi-close"></i></button>
+            </div>
+        `;
+        list.insertAdjacentHTML('beforeend', optionHtml);
     }
-</style>
+
+    document.getElementById('questions-container').addEventListener('click', function(e) {
+        if (e.target.closest('.remove-question')) {
+            e.target.closest('.question-item').remove();
+            reIndexQuestions();
+        }
+
+        if (e.target.closest('.add-option')) {
+            const questionItem = e.target.closest('.question-item');
+            const qIndex = questionItem.getAttribute('data-index');
+            addOption(questionItem, qIndex);
+        }
+
+        if (e.target.closest('.remove-option')) {
+            const optionList = e.target.closest('.option-list');
+            const questionItem = e.target.closest('.question-item');
+            const qIndex = questionItem.getAttribute('data-index');
+            e.target.closest('.option-item').remove();
+            reIndexOptions(optionList, qIndex);
+        }
+    });
+
+    function reIndexQuestions() {
+        const questions = document.querySelectorAll('.question-item');
+        questionIndex = 0;
+        questions.forEach((q, idx) => {
+            q.setAttribute('data-index', idx);
+            q.querySelector('h6').textContent = `Question #${idx + 1}`;
+            q.querySelector('input[name*="[text]"]').setAttribute('name', `questions[${idx}][text]`);
+            
+            const options = q.querySelectorAll('.option-item');
+            options.forEach((o, oIdx) => {
+                o.querySelector('input[type="radio"]').setAttribute('name', `questions[${idx}][correct_option]`);
+                o.querySelector('input[type="radio"]').value = oIdx;
+                o.querySelector('input[type="text"]').setAttribute('name', `questions[${idx}][options][${oIdx}][text]`);
+            });
+            questionIndex = idx + 1;
+        });
+    }
+
+    function reIndexOptions(list, qIndex) {
+        const options = list.querySelectorAll('.option-item');
+        options.forEach((o, idx) => {
+            o.querySelector('input[type="radio"]').value = idx;
+            o.querySelector('input[type="text"]').setAttribute('name', `questions[${qIndex}][options][${idx}][text]`);
+        });
+    }
+</script>
+
 @endsection
