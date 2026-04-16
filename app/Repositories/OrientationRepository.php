@@ -44,7 +44,11 @@ class OrientationRepository
             }
         }
 
-        return $orientations;
+        return [
+            'status' => true,
+            'message' => 'Orientations retrieved successfully',
+            'orientations' => $orientations
+        ];
     }
 
     /**
