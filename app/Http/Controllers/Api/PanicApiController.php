@@ -50,6 +50,19 @@ class PanicApiController extends Controller
             })
             ->get();
 
+        // Fetch all users who have an FCM token AND an active session (within session lifetime)
+        // $sessionLifetime = config('session.lifetime', 120);
+        // $activeThreshold = now()->subMinutes($sessionLifetime)->getTimestamp();
+
+        // $users = User::whereNotNull('fcm_token')
+        //     ->whereExists(function ($query) use ($activeThreshold) {
+        //         $query->select(DB::raw(1))
+        //             ->from('sessions')
+        //             ->whereRaw('sessions.user_id = users.id')
+        //             ->where('last_activity', '>=', $activeThreshold);
+        //     })
+        //     ->get();
+
         Log::info("Panic Alert: Target users fetched", [
             'count' => $users->count(),
             'users' => $users->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'token' => substr($u->fcm_token, 0, 10) . '...'])->toArray()

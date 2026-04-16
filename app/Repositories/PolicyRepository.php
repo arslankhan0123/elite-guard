@@ -109,6 +109,7 @@ class PolicyRepository
             'user_id' => $user_id,
             'policy_id' => $policy_id,
             'agreed' => $request->input('agreed'),
+            'signature' => $request->input('signature'),
         ];
 
         if ($request->hasFile('document')) {

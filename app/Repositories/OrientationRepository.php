@@ -109,6 +109,7 @@ class OrientationRepository
             'user_id' => $user_id,
             'orientation_id' => $orientation_id,
             'agreed' => $request->input('agreed'),
+            'signature' => $request->input('signature'),
         ];
 
         if ($request->hasFile('document')) {

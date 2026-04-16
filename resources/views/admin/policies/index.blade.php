@@ -24,7 +24,7 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Type</th>
-                                    <th>Document</th>
+                                    <!-- <th>Document</th> -->
                                     <th>Status</th>
                                     <th>Created</th>
                                     <th>Actions</th>
@@ -35,7 +35,7 @@
                                     <tr>
                                         <td>{{ $policy->id }}</td>
                                         <td>{{ $policy->type }}</td>
-                                        <td>
+                                        <!-- <td>
                                             @if($policy->document)
                                                 <a href="{{ $policy->document }}" target="_blank"
                                                     class="btn btn-sm btn-soft-primary">
@@ -44,7 +44,7 @@
                                             @else
                                                 <span class="text-muted">No Document</span>
                                             @endif
-                                        </td>
+                                        </td> -->
                                         <td>
                                             @if($policy->status)
                                                 <span class="badge bg-success">Active</span>

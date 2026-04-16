@@ -14,6 +14,7 @@ class SignedPolicy extends Model
         'policy_id',
         'agreed',
         'document',
+        'signature',
     ];
 
     /**
