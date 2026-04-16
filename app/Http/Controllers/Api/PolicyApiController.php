@@ -65,8 +65,9 @@ class PolicyApiController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/policies/signed",
+     *     path="/api/policies/signedPolicy",
      *     summary="Sign a policy",
+     *     description="Allows a user to sign a specific policy by providing their agreement, a signature, and optionally a signed document file.",
      *     tags={"Policies"},
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
@@ -74,10 +75,11 @@ class PolicyApiController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 @OA\Property(property="policy_id", type="string", example="1"),
-     *                 @OA\Property(property="agreed", type="string", example="yes"),
-     *                 @OA\Property(property="document", type="string", format="binary", description="Signed document file (PDF/Image)"),
-     *                 @OA\Property(property="signature", type="string", description="Digital signature (Base64 image, text, etc.)")
+     *                 required={"policy_id","agreed"},
+     *                 @OA\Property(property="policy_id", type="integer", example=1, description="ID of the policy to be signed"),
+     *                 @OA\Property(property="agreed", type="string", enum={"yes", "no"}, example="yes", description="Whether the user agrees to the policy"),
+     *                 @OA\Property(property="document", type="string", format="binary", description="Optional signed document file (PDF/Image)"),
+     *                 @OA\Property(property="signature", type="string", example="John Doe", description="Digital signature (text or encoded signature)")
      *             )
      *         )
      *     ),
@@ -87,7 +89,9 @@ class PolicyApiController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Policy signed successfully."),
-     *             @OA\Property(property="data", type="object")
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="signedPolicy", type="object")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -97,6 +101,10 @@ class PolicyApiController extends Controller
      *             @OA\Property(property="status", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="You have already signed this policy.")
      *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
      *     )
      * )
      */
