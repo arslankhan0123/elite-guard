@@ -16,7 +16,7 @@ return new class extends Migration
             $blueprint->unsignedBigInteger('user_id');
             $blueprint->unsignedBigInteger('policy_id');
             $blueprint->string('agreed'); // "yes" or "no"
-            $blueprint->string('document'); // Path to signed document
+            $blueprint->string('document')->nullable(); // Path to signed document
             $blueprint->timestamps();
 
             $blueprint->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
