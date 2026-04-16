@@ -39,9 +39,15 @@ class OrientationApiController extends Controller
      *                     @OA\Property(property="question_text", type="string", example="What is..."),
      *                     @OA\Property(property="options", type="array", @OA\Items(
      *                         @OA\Property(property="id", type="integer", example=5),
-     *                         @OA\Property(property="option_text", type="string", example="Opt 1")
+     *                         @OA\Property(property="option_text", type="string", example="Opt 1"),
+     *                         @OA\Property(property="is_correct", type="boolean", example=false),
+     *                         @OA\Property(property="is_user_selected", type="boolean", example=true, description="True if the user picked this option in their last attempt.")
      *                     ))
-     *                 ))
+     *                 )),
+     *                 @OA\Property(property="last_attempt", type="object", nullable=true,
+     *                     @OA\Property(property="score", type="number", format="float", example=85.0),
+     *                     @OA\Property(property="is_passed", type="boolean", example=true)
+     *                 )
      *             ))
      *         )
      *     )
@@ -49,9 +55,9 @@ class OrientationApiController extends Controller
      */
     public function index()
     {
-        $result = $this->orientationRepo->getAllOrientations();
-        $result['orientations'] = $result['orientations']->where('status', true)->values();
-        return $this->successResponse($result, 'Orientations fetched successfully.');
+        $orientations = $this->orientationRepo->getAllOrientations();
+        $orientations = $orientations->where('status', true)->values();
+        return $this->successResponse($orientations, 'Orientations fetched successfully.');
     }
 
     /**

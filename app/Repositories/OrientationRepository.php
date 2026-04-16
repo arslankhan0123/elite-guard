@@ -14,12 +14,37 @@ class OrientationRepository
      */
     public function getAllOrientations()
     {
+        $userId = Auth::id();
         $orientations = Orientation::with(['questions.options'])->orderBy('id', 'desc')->get();
-        return [
-            'status' => true,
-            'message' => 'Orientations retrieved successfully',
-            'orientations' => $orientations
-        ];
+
+        foreach ($orientations as $orientation) {
+            $lastAttempt = OrientationAttempt::where('user_id', $userId)
+                ->where('orientation_id', $orientation->id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $orientation->last_attempt = $lastAttempt;
+
+            if ($lastAttempt && is_array($lastAttempt->answers)) {
+                foreach ($orientation->questions as $question) {
+                    // Find user answer for this question
+                    $userAnswer = collect($lastAttempt->answers)->first(function ($ans) use ($question) {
+                        return isset($ans['question_id']) && $ans['question_id'] == $question->id;
+                    });
+
+                    if ($userAnswer && isset($userAnswer['option_id'])) {
+                        foreach ($question->options as $option) {
+                            if ($option->id == $userAnswer['option_id']) {
+                                // Mark this option as the one the user selected
+                                $option->is_user_selected = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $orientations;
     }
 
     /**
