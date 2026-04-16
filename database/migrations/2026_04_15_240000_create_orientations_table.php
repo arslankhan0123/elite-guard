@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('type');
             $table->boolean('status')->default(true);
-            $table->string('document'); // stores full URL to public/documents/orientations
+            $table->string('document')->nullable(); // stores full URL to public/documents/orientations
             $table->timestamps();
         });
     }
