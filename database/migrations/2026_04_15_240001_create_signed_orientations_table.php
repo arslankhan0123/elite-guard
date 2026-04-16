@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('orientation_id');
             $table->string('agreed'); // "yes" or "no"
-            $table->string('document'); // Path to signed document in public/documents/signed_orientations
+            $table->string('document')->nullable(); // Path to signed document in public/documents/signed_orientations
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
