@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\PolicyRepository;
 use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PolicyApiController extends Controller
 {
@@ -51,6 +52,14 @@ class PolicyApiController extends Controller
     public function index()
     {
         $policies = $this->policyRepo->getAllPolicies();
+        
+        $userId = Auth::id();
+        foreach ($policies['policies'] as $policy) {
+            $policy->signed_policy = \App\Models\SignedPolicy::where('user_id', $userId)
+                ->where('policy_id', $policy->id)
+                ->first();
+        }
+
         return $this->successResponse($policies, 'Policies fetched successfully.');
     }
 
