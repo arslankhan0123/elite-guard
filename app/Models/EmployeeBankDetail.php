@@ -20,6 +20,10 @@ class EmployeeBankDetail extends Model
         'void_cheque_file',
     ];
 
+    protected $casts = [
+        'void_cheque_file' => 'array',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
