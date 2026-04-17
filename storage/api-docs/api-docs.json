@@ -228,6 +228,90 @@
                 ]
             }
         },
+        "/api/documents/upload": {
+            "post": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload user documents (Bank and License details)",
+                "operationId": "8c1bdcede89f7467917122e877831ea4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "bank_detail[void_cheque_file]": {
+                                        "description": "Void Cheque File (PDF/Image)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[security_license_file]": {
+                                        "description": "Security License File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[drivers_license_file]": {
+                                        "description": "Drivers License File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[work_eligibility_file]": {
+                                        "description": "Work Eligibility File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[other_documents_file]": {
+                                        "description": "Other Documents File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Documents uploaded successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User documents updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/forgot-password": {
             "post": {
                 "tags": [
@@ -2076,6 +2160,10 @@
         {
             "name": "Company",
             "description": "Company"
+        },
+        {
+            "name": "Documents",
+            "description": "Documents"
         },
         {
             "name": "Forgot Password",

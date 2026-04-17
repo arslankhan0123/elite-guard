@@ -14,10 +14,40 @@ class DocumentsApiController extends Controller
     use ApiResponser;
 
     /**
-     * Handle document uploads for bank and license details.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Post(
+     *     path="/api/documents/upload",
+     *     summary="Upload user documents (Bank and License details)",
+     *     tags={"Documents"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="bank_detail[void_cheque_file]", type="string", format="binary", description="Void Cheque File (PDF/Image)"),
+     *                 @OA\Property(property="license_detail[security_license_file]", type="string", format="binary", description="Security License File"),
+     *                 @OA\Property(property="license_detail[drivers_license_file]", type="string", format="binary", description="Drivers License File"),
+     *                 @OA\Property(property="license_detail[work_eligibility_file]", type="string", format="binary", description="Work Eligibility File"),
+     *                 @OA\Property(property="license_detail[other_documents_file]", type="string", format="binary", description="Other Documents File")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Documents uploaded successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Success"),
+     *             @OA\Property(property="message", type="string", example="User documents updated successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="user", type="object")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
      */
     public function documentsUpload(Request $request)
     {
