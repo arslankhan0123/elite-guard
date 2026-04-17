@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompanyApiController;
+use App\Http\Controllers\Api\DocumentsApiController;
 use App\Http\Controllers\Api\ForgotPasswordApiController;
 use App\Http\Controllers\Api\NumberApiController;
 use App\Http\Controllers\Api\PanicApiController;
 use App\Http\Controllers\Api\OrientationApiController;
 use App\Http\Controllers\Api\PolicyApiController;
 use App\Http\Controllers\Api\ScheduleApiController;
+use App\Http\Controllers\Api\SettingsApiController;
 use App\Http\Controllers\Api\SiteApiController;
 use App\Http\Controllers\Api\TagsApiController;
 use App\Http\Controllers\Api\TimeClockApiController;
@@ -17,8 +19,8 @@ use App\Http\Controllers\CompanyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('register', [AuthController::class,'register']);
-Route::post('login', [AuthController::class,'login']);
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
 
 // Forgot Password Flow
 Route::post('forgot-password', [ForgotPasswordApiController::class, 'forgotPassword']);
@@ -31,9 +33,9 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [UserApiController::class, 'user']);
         Route::post('/update', [UserApiController::class, 'userUpdate']);
     });
-    
+
     Route::group(['prefix' => '/company'], function () {
-        Route::get('/', [CompanyApiController::class,'index']);
+        Route::get('/', [CompanyApiController::class, 'index']);
     });
 
     Route::group(['prefix' => '/sites'], function () {
@@ -50,6 +52,14 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/panic'], function () {
         Route::get('/', [PanicApiController::class, 'panicNotifications']);
+    });
+
+    Route::group(['prefix' => '/settings'], function () {
+        Route::post('/password-update', [SettingsApiController::class, 'passwordUpdate']);
+    });
+
+    Route::group(['prefix' => '/documents'], function () {
+        Route::post('/upload', [DocumentsApiController::class, 'documentsUpload']);
     });
 
     Route::group(['prefix' => '/nfc-tags'], function () {

@@ -228,6 +228,90 @@
                 ]
             }
         },
+        "/api/documents/upload": {
+            "post": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload user documents (Bank and License details)",
+                "operationId": "8c1bdcede89f7467917122e877831ea4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "bank_detail[void_cheque_file]": {
+                                        "description": "Void Cheque File (PDF/Image)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[security_license_file]": {
+                                        "description": "Security License File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[drivers_license_file]": {
+                                        "description": "Drivers License File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[work_eligibility_file]": {
+                                        "description": "Work Eligibility File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "license_detail[other_documents_file]": {
+                                        "description": "Other Documents File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Documents uploaded successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User documents updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/forgot-password": {
             "post": {
                 "tags": [
@@ -606,6 +690,358 @@
                 ]
             }
         },
+        "/api/orientations": {
+            "get": {
+                "tags": [
+                    "Orientations"
+                ],
+                "summary": "Get all active orientations",
+                "operationId": "4d4e224328989a5415ca2c45547506d0",
+                "responses": {
+                    "200": {
+                        "description": "Orientations fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Orientations fetched successfully."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "example": "Safety"
+                                                    },
+                                                    "passing_percentage": {
+                                                        "type": "integer",
+                                                        "example": 80
+                                                    },
+                                                    "questions": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer",
+                                                                    "example": 1
+                                                                },
+                                                                "question_text": {
+                                                                    "type": "string",
+                                                                    "example": "What is..."
+                                                                },
+                                                                "options": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "properties": {
+                                                                            "id": {
+                                                                                "type": "integer",
+                                                                                "example": 5
+                                                                            },
+                                                                            "option_text": {
+                                                                                "type": "string",
+                                                                                "example": "Opt 1"
+                                                                            },
+                                                                            "is_correct": {
+                                                                                "type": "boolean",
+                                                                                "example": false
+                                                                            },
+                                                                            "is_user_selected": {
+                                                                                "description": "True if the user picked this option in their last attempt.",
+                                                                                "type": "boolean",
+                                                                                "example": true
+                                                                            }
+                                                                        },
+                                                                        "type": "object"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "last_attempt": {
+                                                        "properties": {
+                                                            "score": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 85
+                                                            },
+                                                            "is_passed": {
+                                                                "type": "boolean",
+                                                                "example": true
+                                                            }
+                                                        },
+                                                        "type": "object",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/orientations/signed": {
+            "post": {
+                "tags": [
+                    "Orientations"
+                ],
+                "summary": "Sign an orientation",
+                "operationId": "b0f1793ee9dcdd437fcf99bb95f0d006",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "orientation_id": {
+                                        "type": "string",
+                                        "example": "1"
+                                    },
+                                    "agreed": {
+                                        "type": "string",
+                                        "example": "yes"
+                                    },
+                                    "document": {
+                                        "description": "Signed orientation file (PDF/Image)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "signature": {
+                                        "description": "Digital signature (Base64 image, text, etc.)",
+                                        "type": "string"
+                                    },
+                                    "answers": {
+                                        "description": "Quiz answers array",
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "question_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "option_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Orientation signed successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Orientation signed successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error, Already Signed, or Quiz Failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You did not achieve the required passing score."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/orientations/submit-quiz": {
+            "post": {
+                "tags": [
+                    "Orientations"
+                ],
+                "summary": "Submit orientation quiz answers and calculate score",
+                "description": "Allows users to submit their answers for an orientation quiz. It calculates the score, determines pass/fail status, saves the attempt, and provides feedback on incorrect questions.",
+                "operationId": "0394c0b45cf9ddcad12683f689bcc659",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "orientation_id",
+                                    "answers"
+                                ],
+                                "properties": {
+                                    "orientation_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "answers": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "question_id": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "option_id": {
+                                                    "type": "integer",
+                                                    "example": 20
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Quiz result returned successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You passed the quiz!"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "attempt_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "score": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 85.5
+                                                },
+                                                "passing_percentage": {
+                                                    "type": "integer",
+                                                    "example": 80
+                                                },
+                                                "is_passed": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "incorrect_questions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "question_id": {
+                                                                "type": "integer",
+                                                                "example": 12
+                                                            },
+                                                            "question_text": {
+                                                                "type": "string",
+                                                                "example": "What is..."
+                                                            },
+                                                            "user_provided_option_id": {
+                                                                "type": "integer",
+                                                                "example": 20
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The orientation id field is required."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/panic": {
             "get": {
                 "tags": [
@@ -717,6 +1153,114 @@
                 ]
             }
         },
+        "/api/policies/signedPolicy": {
+            "post": {
+                "tags": [
+                    "Policies"
+                ],
+                "summary": "Sign a policy",
+                "description": "Allows a user to sign a specific policy by providing their agreement, a signature, and optionally a signed document file.",
+                "operationId": "53243d1b81f4e11757ae4a3f40a55c6e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "policy_id",
+                                    "agreed"
+                                ],
+                                "properties": {
+                                    "policy_id": {
+                                        "description": "ID of the policy to be signed",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "agreed": {
+                                        "description": "Whether the user agrees to the policy",
+                                        "type": "string",
+                                        "enum": [
+                                            "yes",
+                                            "no"
+                                        ],
+                                        "example": "yes"
+                                    },
+                                    "document": {
+                                        "description": "Optional signed document file (PDF/Image)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "signature": {
+                                        "description": "Digital signature (text or encoded signature)",
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Policy signed successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Policy signed successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "signedPolicy": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error or Already Signed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You have already signed this policy."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/schedules": {
             "get": {
                 "tags": [
@@ -774,6 +1318,122 @@
                                                 }
                                             },
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/settings/password-update": {
+            "post": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Change user password from settings",
+                "operationId": "5e3745eabea262f17c02392249aff69b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "old_password": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    },
+                                    "confirm_password": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password updated successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password updated successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Password updated successfully."
+                                                },
+                                                "user": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Old password mismatch",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Old password does not match."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The confirm password and new password must match."
                                         }
                                     },
                                     "type": "object"
@@ -1502,12 +2162,20 @@
             "description": "Company"
         },
         {
+            "name": "Documents",
+            "description": "Documents"
+        },
+        {
             "name": "Forgot Password",
             "description": "Forgot Password"
         },
         {
             "name": "Numbers",
             "description": "Numbers"
+        },
+        {
+            "name": "Orientations",
+            "description": "Orientations"
         },
         {
             "name": "Panic",
@@ -1520,6 +2188,10 @@
         {
             "name": "Schedules",
             "description": "Schedules"
+        },
+        {
+            "name": "Settings",
+            "description": "Settings"
         },
         {
             "name": "Sites",

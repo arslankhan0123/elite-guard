@@ -26,6 +26,13 @@ class EmployeeLicenseDetail extends Model
         'other_documents_file',
     ];
 
+    protected $casts = [
+        'security_license_file' => 'array',
+        'drivers_license_file' => 'array',
+        'work_eligibility_file' => 'array',
+        'other_documents_file' => 'array',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
