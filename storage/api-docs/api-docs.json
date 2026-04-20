@@ -1279,6 +1279,114 @@
                 ]
             }
         },
+        "/api/pay-slips/user": {
+            "get": {
+                "tags": [
+                    "Pay Slips"
+                ],
+                "summary": "Get pay slips for the authenticated user",
+                "operationId": "f3c0d36c5854b81c62c0d4e3f4193a99",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "description": "Filter by month (1-12)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "description": "Filter by year (e.g. 2024)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pay slips fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pay slips fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Pay slips retrieved successfully"
+                                                },
+                                                "paySlips": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "user_id": {
+                                                                "type": "integer",
+                                                                "example": 5
+                                                            },
+                                                            "month": {
+                                                                "type": "integer",
+                                                                "example": 4
+                                                            },
+                                                            "year": {
+                                                                "type": "integer",
+                                                                "example": 2024
+                                                            },
+                                                            "file_path": {
+                                                                "type": "string",
+                                                                "example": "http://localhost:8000/documents/pay_slips/user_5_1713600000.pdf"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/policies": {
             "get": {
                 "tags": [
@@ -2381,6 +2489,10 @@
         {
             "name": "Panic",
             "description": "Panic"
+        },
+        {
+            "name": "Pay Slips",
+            "description": "Pay Slips"
         },
         {
             "name": "Policies",

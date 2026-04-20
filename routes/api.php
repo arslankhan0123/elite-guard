@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\NumberApiController;
 use App\Http\Controllers\Api\OfferLetterApiController;
 use App\Http\Controllers\Api\PanicApiController;
 use App\Http\Controllers\Api\OrientationApiController;
+use App\Http\Controllers\Api\PaySlipApiController;
 use App\Http\Controllers\Api\PolicyApiController;
 use App\Http\Controllers\Api\ScheduleApiController;
 use App\Http\Controllers\Api\SettingsApiController;
@@ -68,6 +69,10 @@ Route::middleware('auth:api')->group(function () {
             Route::get('/', [OfferLetterApiController::class, 'getUserOfferLetter']);
             Route::post('/accepted', [OfferLetterApiController::class, 'acceptedOfferLetter']);
         });
+    });
+
+    Route::group(['prefix' => '/pay-slips'], function () {
+        Route::get('/user', [PaySlipApiController::class, 'getUserPaySlips']);
     });
 
     Route::group(['prefix' => '/nfc-tags'], function () {
