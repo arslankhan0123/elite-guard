@@ -202,6 +202,7 @@
                                 <a href="{{route('policies.index')}}" class="dropdown-item" data-key="t-widgets"> <i class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i> Policies</a>
                                 <a href="{{route('orientations.index')}}" class="dropdown-item" data-key="t-widgets"> <i class="icon nav-icon" data-feather="layers" style="width:16px; height:16px;"></i> Orientations</a>
                                 <a href="{{route('employees.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="users" style="width:16px; height:16px;"></i> Employees</a>
+                                <a href="{{route('pay-slips.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i> Pay Slips</a>
                                 <a href="{{route('reports.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="bar-chart" style="width:16px; height:16px;"></i> Reports</a>
                                 <a href="{{route('numbers.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="phone" style="width:16px; height:16px;"></i> Numbers</a>
                             </div>

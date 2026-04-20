@@ -30,4 +30,26 @@ class PaySlipRepository
             'paySlips' => $paySlips
         ];
     }
+
+    public function getPaySlips($request)
+    {
+        $paySlips = PaySlip::with('user')
+            ->when($request->filled('user_id'), function ($query) use ($request) {
+                return $query->where('user_id', $request->user_id);
+            })
+            ->when($request->filled('month'), function ($query) use ($request) {
+                return $query->where('month', $request->month);
+            })
+            ->when($request->filled('year'), function ($query) use ($request) {
+                return $query->where('year', $request->year);
+            })
+            ->latest()
+            ->get();
+
+        return [
+            'status' => true,
+            'message' => 'Pay slips retrieved successfully',
+            'paySlips' => $paySlips
+        ];
+    }
 }
