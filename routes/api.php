@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CompanyApiController;
 use App\Http\Controllers\Api\DocumentsApiController;
 use App\Http\Controllers\Api\ForgotPasswordApiController;
 use App\Http\Controllers\Api\NumberApiController;
+use App\Http\Controllers\Api\OfferLetterApiController;
 use App\Http\Controllers\Api\PanicApiController;
 use App\Http\Controllers\Api\OrientationApiController;
 use App\Http\Controllers\Api\PolicyApiController;
@@ -60,6 +61,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/documents'], function () {
         Route::post('/upload', [DocumentsApiController::class, 'documentsUpload']);
+    });
+
+    Route::group(['prefix' => '/offer-letter'], function () {
+        Route::get('/user', [OfferLetterApiController::class, 'getUserOfferLetter']);
     });
 
     Route::group(['prefix' => '/nfc-tags'], function () {
