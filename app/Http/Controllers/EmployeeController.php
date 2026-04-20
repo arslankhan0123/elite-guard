@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class EmployeeController extends Controller
 {
@@ -79,7 +80,10 @@ class EmployeeController extends Controller
             ]);
 
             // Part 2: Bank Details
-            $voidChequePath = $request->hasFile('void_cheque_file') ? $request->file('void_cheque_file')->store('employee_documents/cheques', 'public') : null;
+            $voidChequeFile = $request->hasFile('void_cheque_file') 
+                ? $this->uploadDocument($request->file('void_cheque_file'), $user->id, 'bank_details_documents', []) 
+                : [];
+
             EmployeeBankDetail::create([
                 'user_id' => $user->id,
                 'bank_name' => $request->bank_name,
@@ -88,14 +92,22 @@ class EmployeeController extends Controller
                 'account_number' => $request->account_number,
                 'bank_address' => $request->bank_address,
                 'interac_email' => $request->interac_email,
-                'void_cheque_file' => $voidChequePath,
+                'void_cheque_file' => $voidChequeFile,
             ]);
 
             // Part 3: License Information
-            $securityFile = $request->hasFile('security_license_file') ? $request->file('security_license_file')->store('employee_documents/licenses', 'public') : null;
-            $driversFile = $request->hasFile('drivers_license_file') ? $request->file('drivers_license_file')->store('employee_documents/licenses', 'public') : null;
-            $workFile = $request->hasFile('work_eligibility_file') ? $request->file('work_eligibility_file')->store('employee_documents/licenses', 'public') : null;
-            $otherFile = $request->hasFile('other_documents_file') ? $request->file('other_documents_file')->store('employee_documents/others', 'public') : null;
+            $securityFile = $request->hasFile('security_license_file') 
+                ? $this->uploadDocument($request->file('security_license_file'), $user->id, 'license_detail_documents', []) 
+                : [];
+            $driversFile = $request->hasFile('drivers_license_file') 
+                ? $this->uploadDocument($request->file('drivers_license_file'), $user->id, 'license_detail_documents', []) 
+                : [];
+            $workFile = $request->hasFile('work_eligibility_file') 
+                ? $this->uploadDocument($request->file('work_eligibility_file'), $user->id, 'license_detail_documents', []) 
+                : [];
+            $otherFile = $request->hasFile('other_documents_file') 
+                ? $this->uploadDocument($request->file('other_documents_file'), $user->id, 'license_detail_documents', []) 
+                : [];
 
             EmployeeLicenseDetail::create([
                 'user_id' => $user->id,
@@ -206,10 +218,13 @@ class EmployeeController extends Controller
                 'interac_email' => $request->interac_email,
             ];
             if ($request->hasFile('void_cheque_file')) {
-                if ($user->bankDetail && $user->bankDetail->void_cheque_file) {
-                    Storage::disk('public')->delete($user->bankDetail->void_cheque_file);
-                }
-                $bankData['void_cheque_file'] = $request->file('void_cheque_file')->store('employee_documents/cheques', 'public');
+                $existingFiles = $user->bankDetail->void_cheque_file ?? [];
+                $bankData['void_cheque_file'] = $this->uploadDocument(
+                    $request->file('void_cheque_file'), 
+                    $user->id, 
+                    'bank_details_documents', 
+                    $existingFiles
+                );
             }
             $user->bankDetail()->updateOrCreate(['user_id' => $user->id], $bankData);
 
@@ -226,14 +241,22 @@ class EmployeeController extends Controller
                 'other_certificates' => $request->other_certificates,
             ];
             
-            $fileFields = ['security_license_file', 'drivers_license_file', 'work_eligibility_file', 'other_documents_file'];
-            foreach ($fileFields as $field) {
+            $fileFields = [
+                'security_license_file' => 'license_detail_documents',
+                'drivers_license_file' => 'license_detail_documents',
+                'work_eligibility_file' => 'license_detail_documents',
+                'other_documents_file' => 'license_detail_documents'
+            ];
+
+            foreach ($fileFields as $field => $directory) {
                 if ($request->hasFile($field)) {
-                    if ($user->licenseDetail && $user->licenseDetail->$field) {
-                        Storage::disk('public')->delete($user->licenseDetail->$field);
-                    }
-                    $folder = $field == 'other_documents_file' ? 'others' : ($field == 'void_cheque_file' ? 'cheques' : 'licenses');
-                    $licenseData[$field] = $request->file($field)->store('employee_documents/' . $folder, 'public');
+                    $existingFiles = $user->licenseDetail->{$field} ?? [];
+                    $licenseData[$field] = $this->uploadDocument(
+                        $request->file($field),
+                        $user->id,
+                        $directory,
+                        $existingFiles
+                    );
                 }
             }
             $user->licenseDetail()->updateOrCreate(['user_id' => $user->id], $licenseData);
@@ -287,5 +310,27 @@ class EmployeeController extends Controller
         $user->sites()->sync($siteData);
 
         return redirect()->route('employees.index')->with('success', 'Sites assigned to ' . $user->name . ' successfully!');
+    }
+
+    /**
+     * Helper to handle file movement and path generation.
+     */
+    private function uploadDocument($file, $userId, $subDir, $existingFiles)
+    {
+        $filename = $userId . '_' . time() . '_' . substr(uniqid(), -10) . '.' . $file->getClientOriginalExtension();
+        $relativeDir = "documents/{$subDir}";
+        $destinationPath = public_path($relativeDir);
+
+        if (!File::exists($destinationPath)) {
+            File::makeDirectory($destinationPath, 0777, true);
+        }
+
+        $file->move($destinationPath, $filename);
+
+        $baseUrl = rtrim(config('app.url'), '/');
+        // If existingFiles is a string (legacy), convert to array
+        $existingFiles = is_array($existingFiles) ? $existingFiles : ($existingFiles ? [$existingFiles] : []);
+        
+        return array_merge($existingFiles, ["{$baseUrl}/{$relativeDir}/{$filename}"]);
     }
 }
