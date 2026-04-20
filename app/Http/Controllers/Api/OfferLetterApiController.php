@@ -59,4 +59,10 @@ class OfferLetterApiController extends Controller
         $result = $this->offerLetterRepo->getUserOfferLetter();
         return $this->successResponse($result, 'Offer letter fetched successfully.');
     }
+
+    public function acceptedOfferLetter(Request $request)
+    {
+        $result = $this->offerLetterRepo->acceptedOfferLetter($request);
+        return $this->successResponse($result, 'Offer letter signed successfully.');
+    }
 }

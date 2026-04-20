@@ -64,7 +64,10 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::group(['prefix' => '/offer-letter'], function () {
-        Route::get('/user', [OfferLetterApiController::class, 'getUserOfferLetter']);
+        Route::group(['prefix' => '/user'], function () {
+            Route::get('/', [OfferLetterApiController::class, 'getUserOfferLetter']);
+            Route::post('/accepted', [OfferLetterApiController::class, 'acceptedOfferLetter']);
+        });
     });
 
     Route::group(['prefix' => '/nfc-tags'], function () {

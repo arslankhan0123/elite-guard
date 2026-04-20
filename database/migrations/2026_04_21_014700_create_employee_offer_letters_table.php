@@ -21,6 +21,9 @@ return new class extends Migration {
             $blueprint->string('salary')->nullable();
             $blueprint->longText('description')->nullable();
             $blueprint->boolean('is_email_sent')->default(false);
+            $blueprint->boolean('is_accepted')->default(false);
+            $blueprint->timestamp('signed_at')->nullable();
+            $blueprint->string('signature')->nullable();
             $blueprint->timestamps();
         });
     }

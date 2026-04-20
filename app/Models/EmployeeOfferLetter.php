@@ -16,6 +16,9 @@ class EmployeeOfferLetter extends Model
         'salary',
         'description',
         'is_email_sent',
+        'is_accepted',
+        'signed_at',
+        'signature'
     ];
 
     public function user()
