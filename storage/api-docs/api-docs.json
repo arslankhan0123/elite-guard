@@ -785,6 +785,108 @@
                 ]
             }
         },
+        "/api/offer-letter/user/accepted": {
+            "post": {
+                "tags": [
+                    "Offer Letter"
+                ],
+                "summary": "Accept and sign the offer letter for the authenticated user",
+                "operationId": "eabca8197738721513b5921b5bdcc9a9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "is_accepted": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "signature": {
+                                        "type": "string",
+                                        "example": "User Name / Base64 Image string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Offer letter signed successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Offer letter signed successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Offer letter signed successfully"
+                                                },
+                                                "offerLetter": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "user_id": {
+                                                            "type": "integer",
+                                                            "example": 5
+                                                        },
+                                                        "job_title": {
+                                                            "type": "string",
+                                                            "example": "Security Guard"
+                                                        },
+                                                        "is_accepted": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        },
+                                                        "signed_at": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2024-05-01 10:00:00"
+                                                        },
+                                                        "signature": {
+                                                            "type": "string",
+                                                            "example": "John Doe"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/orientations": {
             "get": {
                 "tags": [

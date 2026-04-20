@@ -60,6 +60,45 @@ class OfferLetterApiController extends Controller
         return $this->successResponse($result, 'Offer letter fetched successfully.');
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/offer-letter/user/accepted",
+     *     summary="Accept and sign the offer letter for the authenticated user",
+     *     tags={"Offer Letter"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="is_accepted", type="boolean", example=true),
+     *             @OA\Property(property="signature", type="string", example="User Name / Base64 Image string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Offer letter signed successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Success"),
+     *             @OA\Property(property="message", type="string", example="Offer letter signed successfully."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="status", type="boolean", example=true),
+     *                 @OA\Property(property="message", type="string", example="Offer letter signed successfully"),
+     *                 @OA\Property(property="offerLetter", type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="user_id", type="integer", example=5),
+     *                     @OA\Property(property="job_title", type="string", example="Security Guard"),
+     *                     @OA\Property(property="is_accepted", type="boolean", example=true),
+     *                     @OA\Property(property="signed_at", type="string", format="date-time", example="2024-05-01 10:00:00"),
+     *                     @OA\Property(property="signature", type="string", example="John Doe")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
     public function acceptedOfferLetter(Request $request)
     {
         $result = $this->offerLetterRepo->acceptedOfferLetter($request);

@@ -116,7 +116,10 @@
                                                     data-joining-date="{{ $employee->user->offerLetter->joining_date ?? '' }}"
                                                     data-salary="{{ $employee->user->offerLetter->salary ?? '' }}"
                                                     data-description="{{ $employee->user->offerLetter->description ?? '' }}"
-                                                    data-is-email-sent="{{ ($employee->user->offerLetter->is_email_sent ?? false) ? '1' : '0' }}">
+                                                    data-is-email-sent="{{ ($employee->user->offerLetter->is_email_sent ?? false) ? '1' : '0' }}"
+                                                    data-is-accepted="{{ ($employee->user->offerLetter->is_accepted ?? false) ? '1' : '0' }}"
+                                                    data-signed-at="{{ $employee->user->offerLetter->signed_at ?? '' }}"
+                                                    data-signature="{{ $employee->user->offerLetter->signature ?? '' }}">
                                                     <i data-feather="mail" style="width: 14px; height: 14px;"></i>
                                                 </button>
                                                 <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('employees.edit', $employee->id) }}" data-bs-toggle="tooltip" title="Edit Employee">
@@ -218,8 +221,28 @@
                     <input type="hidden" name="user_id" id="offer_user_id">
                     
                     <div class="modal-body">
-                        <p class="text-muted mb-4">Managing offer letter details for <strong id="offerEmployeeName"></strong></p>
-                        
+                        <p class="text-muted">Managing offer letter details for <strong id="offerEmployeeName"></strong></p>
+
+                        <!-- Accepted Details (Signature & Signed At) -->
+                        <div id="offer_accepted_section" class="col-12 mt-3 d-none">
+                            <div class="p-3 rounded-4 border bg-light">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-success">
+                                            <i data-feather="check-circle" class="me-1" style="width: 14px;"></i> Signed At
+                                        </label>
+                                        <input type="text" id="offer_signed_at" class="form-control rounded-3 bg-white" disabled>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-success">
+                                            <i data-feather="edit-3" class="me-1" style="width: 14px;"></i> Signature
+                                        </label>
+                                        <input type="text" id="offer_signature" class="form-control rounded-3 bg-white" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small">Joining Date</label>
@@ -341,6 +364,9 @@
                 const salary = button.getAttribute('data-salary');
                 const description = button.getAttribute('data-description');
                 const isEmailSent = button.getAttribute('data-is-email-sent') === '1';
+                const isAccepted = button.getAttribute('data-is-accepted') === '1';
+                const signedAt = button.getAttribute('data-signed-at');
+                const signature = button.getAttribute('data-signature');
 
                 document.getElementById('offer_user_id').value = userId;
                 document.getElementById('offerEmployeeName').textContent = employeeName;
@@ -349,6 +375,16 @@
                 document.getElementById('offer_salary').value = salary;
                 document.getElementById('offer_description').value = description;
                 document.getElementById('offer_send_email').checked = isEmailSent;
+
+                // Handle Accepted Section
+                const acceptedSection = document.getElementById('offer_accepted_section');
+                if (isAccepted || signedAt || signature) {
+                    acceptedSection.classList.remove('d-none');
+                    document.getElementById('offer_signed_at').value = signedAt || 'N/A';
+                    document.getElementById('offer_signature').value = signature || 'Digital Signature N/A';
+                } else {
+                    acceptedSection.classList.add('d-none');
+                }
 
                 feather.replace();
             });
