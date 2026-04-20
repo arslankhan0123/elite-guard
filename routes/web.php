@@ -8,11 +8,13 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NfcTagController;
 use App\Http\Controllers\OrientationController;
 use App\Http\Controllers\PaySlipController;
+use App\Http\Controllers\TaxDocumentController;
 use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\TaxDocController;
 use App\Http\Controllers\TimeClockController;
 use App\Http\Controllers\UniversityController;
 use App\Models\Company;
@@ -110,6 +112,15 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
             Route::group(['prefix' => '/pay-slips'], function () {
                 Route::get('/', [PaySlipController::class, 'index'])->name('pay-slips.index');
             });
+        });
+
+        Route::group(['prefix' => '/tax-docs'], function () {
+            Route::get('/', [TaxDocumentController::class, 'index'])->name('tax-docs.index');
+            Route::get('/create', [TaxDocumentController::class, 'create'])->name('tax-docs.create');
+            Route::post('/store', [TaxDocumentController::class, 'store'])->name('tax-docs.store');
+            Route::get('/edit/{id}', [TaxDocumentController::class, 'edit'])->name('tax-docs.edit');
+            Route::post('/update/{id}', [TaxDocumentController::class, 'update'])->name('tax-docs.update');
+            Route::get('/delete/{id}', [TaxDocumentController::class, 'delete'])->name('tax-docs.delete');
         });
 
         Route::group(['prefix' => '/numbers'], function () {
