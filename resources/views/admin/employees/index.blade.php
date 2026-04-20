@@ -115,7 +115,8 @@
                                                     data-job-title="{{ $employee->user->offerLetter->job_title ?? '' }}"
                                                     data-joining-date="{{ $employee->user->offerLetter->joining_date ?? '' }}"
                                                     data-salary="{{ $employee->user->offerLetter->salary ?? '' }}"
-                                                    data-description="{{ $employee->user->offerLetter->description ?? '' }}">
+                                                    data-description="{{ $employee->user->offerLetter->description ?? '' }}"
+                                                    data-is-email-sent="{{ ($employee->user->offerLetter->is_email_sent ?? false) ? '1' : '0' }}">
                                                     <i data-feather="mail" style="width: 14px; height: 14px;"></i>
                                                 </button>
                                                 <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('employees.edit', $employee->id) }}" data-bs-toggle="tooltip" title="Edit Employee">
@@ -236,6 +237,17 @@
                                 <label class="form-label fw-bold small">Description / Terms & Conditions</label>
                                 <textarea name="description" id="offer_description" class="form-control rounded-3" rows="6" placeholder="Detailed job description and terms..."></textarea>
                             </div>
+                            
+                            <!-- Send Email Checkbox -->
+                            <div class="col-12 mt-3 p-3 rounded-4" style="background-color: #f5f3ff; border: 1px dashed #7c3aed;">
+                                <div class="form-check form-switch d-flex align-items-center gap-3">
+                                    <input class="form-check-input" type="checkbox" name="send_email" id="offer_send_email" value="1" style="width: 45px; height: 22px; cursor: pointer;">
+                                    <label class="form-check-label fw-bold text-primary mb-0" for="offer_send_email" style="cursor: pointer;">
+                                        <i data-feather="send" class="me-1" style="width: 14px;"></i> Send Offer Letter to Employee via Email
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block mt-2 ms-5">If enabled, the employee will receive a professional offer email with the details above.</small>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-0">
@@ -328,6 +340,7 @@
                 const joiningDate = button.getAttribute('data-joining-date');
                 const salary = button.getAttribute('data-salary');
                 const description = button.getAttribute('data-description');
+                const isEmailSent = button.getAttribute('data-is-email-sent') === '1';
 
                 document.getElementById('offer_user_id').value = userId;
                 document.getElementById('offerEmployeeName').textContent = employeeName;
@@ -335,6 +348,7 @@
                 document.getElementById('offer_joining_date').value = joiningDate;
                 document.getElementById('offer_salary').value = salary;
                 document.getElementById('offer_description').value = description;
+                document.getElementById('offer_send_email').checked = isEmailSent;
 
                 feather.replace();
             });

@@ -13,11 +13,13 @@ use App\Models\EmployeeOfficeDetail;
 use App\Models\EmployeeOfferLetter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
 use App\Traits\CommonTrait;
+use App\Mail\OfferLetterMail;
+use Illuminate\Support\Facades\DB;
 
 class EmployeeController extends Controller
 {
@@ -329,7 +331,7 @@ class EmployeeController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        EmployeeOfferLetter::updateOrCreate(
+        $offer = EmployeeOfferLetter::updateOrCreate(
             ['user_id' => $request->user_id],
             [
                 'job_title' => $request->job_title,
@@ -339,7 +341,18 @@ class EmployeeController extends Controller
             ]
         );
 
-        return redirect()->back()->with('success', 'Offer letter updated successfully!');
+        $isEmailSent = false;
+        if ($request->has('send_email') && $request->send_email == '1') {
+            $user = User::find($request->user_id);
+            if ($user && $user->email) {
+                Mail::to($user->email)->send(new OfferLetterMail($user, $offer));
+                $isEmailSent = true;
+            }
+        }
+
+        $offer->update(['is_email_sent' => $isEmailSent]);
+
+        return redirect()->back()->with('success', 'Offer letter updated' . ($isEmailSent ? ' and sent via email' : '') . ' successfully!');
     }
 
     /**

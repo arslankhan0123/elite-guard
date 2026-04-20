@@ -20,6 +20,7 @@ return new class extends Migration {
             $blueprint->date('joining_date')->nullable();
             $blueprint->string('salary')->nullable();
             $blueprint->longText('description')->nullable();
+            $blueprint->boolean('is_email_sent')->default(false);
             $blueprint->timestamps();
         });
     }
