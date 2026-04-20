@@ -105,6 +105,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
             Route::get('/delete/{id}', [EmployeeController::class, 'delete'])->name('employees.delete');
             Route::post('/assign-sites/{user_id}', [EmployeeController::class, 'assignSites'])->name('employees.assignSites');
             Route::post('/update-offer-letter', [EmployeeController::class, 'updateOfferLetter'])->name('employees.updateOfferLetter');
+            Route::post('/update-pay-slip', [EmployeeController::class, 'updatePaySlip'])->name('employees.updatePaySlip');
         });
 
         Route::group(['prefix' => '/numbers'], function () {

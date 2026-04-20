@@ -122,6 +122,13 @@
                                                     data-signature="{{ $employee->user->offerLetter->signature ?? '' }}">
                                                     <i data-feather="mail" style="width: 14px; height: 14px;"></i>
                                                 </button>
+                                                <button type="button" class="btn btn-sm me-2 btn-outline-info rounded-pill px-3"
+                                                    title="Pay Slip" data-bs-toggle="modal"
+                                                    data-bs-target="#paySlipModal"
+                                                    data-user-id="{{ $employee->user->id }}"
+                                                    data-name="{{ $employee->user->name }}">
+                                                    <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
+                                                </button>
                                                 <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('employees.edit', $employee->id) }}" data-bs-toggle="tooltip" title="Edit Employee">
                                                     <button class="editBtn">
                                                         <svg height="1em" viewBox="0 0 512 512">
@@ -284,6 +291,69 @@
         </div>
     </div>
 
+        </div>
+    </div>
+
+    <!-- Pay Slip Modal -->
+    <div class="modal fade" id="paySlipModal" tabindex="-1" aria-labelledby="paySlipModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="paySlipModalLabel">
+                        <i data-feather="file-text" class="me-2 text-info"></i> Employee Pay Slip
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="paySlipForm" action="{{ route('employees.updatePaySlip') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="user_id" id="payslip_user_id">
+                    
+                    <div class="modal-body">
+                        <p class="text-muted mb-4">Upload monthly pay slip for <strong id="payslipEmployeeName"></strong> (<strong id="userIdText"></strong>)</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Select Month</label>
+                                <select name="month" id="payslip_month" class="form-select rounded-3">
+                                    @for($i = 1; $i <= 12; $i++)
+                                        <option value="{{ $i }}" {{ date('n') == $i ? 'selected' : '' }}>
+                                            {{ date('F', mktime(0, 0, 0, $i, 1)) }}
+                                        </option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Select Year</label>
+                                <select name="year" id="payslip_year" class="form-select rounded-3">
+                                    <option value="{{ date('Y') }}" selected>{{ date('Y') }}</option>
+                                    <option value="{{ date('Y') - 1 }}">{{ date('Y') - 1 }}</option>
+                                    <option value="{{ date('Y') + 1 }}">{{ date('Y') + 1 }}</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <label class="form-label fw-bold small">Pay Slip File (PDF, DOC, PNG, JPG)</label>
+                                <div class="input-group">
+                                    <input type="file" name="file" id="payslip_file" class="form-control rounded-3" required
+                                        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
+                                </div>
+                                <small class="text-muted d-block mt-2">
+                                    <i data-feather="info" style="width: 12px; height: 12px;"></i>
+                                    If a pay slip already exists for the selected month/year, it will be updated.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-info text-white rounded-pill px-4 fw-bold">
+                            <i data-feather="upload" style="width: 16px; height: 16px;" class="me-1"></i> Upload Pay Slip
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <style>
         .site-check-item {
             transition: all 0.25s ease;
@@ -385,6 +455,19 @@
                 } else {
                     acceptedSection.classList.add('d-none');
                 }
+
+                feather.replace();
+            });
+
+            const payslipModal = document.getElementById('paySlipModal');
+            payslipModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const userId = button.getAttribute('data-user-id');
+                const employeeName = button.getAttribute('data-name');
+
+                document.getElementById('payslip_user_id').value = userId;
+                document.getElementById('userIdText').textContent = userId;
+                document.getElementById('payslipEmployeeName').textContent = employeeName;
 
                 feather.replace();
             });

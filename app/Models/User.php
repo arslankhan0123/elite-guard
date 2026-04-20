@@ -95,6 +95,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Schedule::class);
     }
 
+    public function paySlips()
+    {
+        return $this->hasMany(PaySlip::class);
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

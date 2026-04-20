@@ -11,6 +11,7 @@ use App\Models\EmployeeLicenseDetail;
 use App\Models\EmployeeAvailability;
 use App\Models\EmployeeOfficeDetail;
 use App\Models\EmployeeOfferLetter;
+use App\Models\PaySlip;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -375,5 +376,71 @@ class EmployeeController extends Controller
         $existingFiles = is_array($existingFiles) ? $existingFiles : ($existingFiles ? [$existingFiles] : []);
         
         return array_merge($existingFiles, ["{$baseUrl}/{$relativeDir}/{$filename}"]);
+    }
+
+    public function updatePaySlip(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2000|max:2100',
+            'file' => 'required|file|mimes:pdf,doc,docx,png,jpg,jpeg|max:5120',
+        ]);
+
+        $user_id = $request->user_id;
+        $month = $request->month;
+        $year = $request->year;
+        $file = $request->file('file');
+
+        // Check for existing pay slip for this month/year
+        $existing = PaySlip::where('user_id', $user_id)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->first();
+
+        if ($existing) {
+            // Delete old physical file
+            $baseUrl = rtrim(config('app.url'), '/');
+            $relativePath = str_replace($baseUrl . '/', '', $existing->file_path);
+            $relativePath = ltrim($relativePath, '/');
+            $fullPath = public_path($relativePath);
+            
+            if (File::exists($fullPath)) {
+                File::delete($fullPath);
+            }
+        }
+
+        // Custom naming: user_id, timestamp and unique string of 20 digits
+        $timestamp = time();
+        $uniqueStr = bin2hex(random_bytes(10)); // 20 hex characters
+        $extension = $file->getClientOriginalExtension();
+        $filename = "{$user_id}_{$timestamp}_{$uniqueStr}.{$extension}";
+
+        $relativeDir = "documents/pay_slips";
+        $destinationPath = public_path($relativeDir);
+
+        if (!File::exists($destinationPath)) {
+            File::makeDirectory($destinationPath, 0777, true);
+        }
+
+        $file->move($destinationPath, $filename);
+
+        $baseUrl = rtrim(config('app.url'), '/');
+        $filePath = "{$baseUrl}/{$relativeDir}/{$filename}";
+
+        if ($existing) {
+            $existing->update(['file_path' => $filePath]);
+            $message = 'Pay slip updated successfully!';
+        } else {
+            PaySlip::create([
+                'user_id' => $user_id,
+                'month' => $month,
+                'year' => $year,
+                'file_path' => $filePath,
+            ]);
+            $message = 'Pay slip uploaded successfully!';
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 }
