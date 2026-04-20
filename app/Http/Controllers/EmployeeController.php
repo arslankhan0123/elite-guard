@@ -10,6 +10,7 @@ use App\Models\EmployeeBankDetail;
 use App\Models\EmployeeLicenseDetail;
 use App\Models\EmployeeAvailability;
 use App\Models\EmployeeOfficeDetail;
+use App\Models\EmployeeOfferLetter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,7 @@ class EmployeeController extends Controller
     {
         $currentMonday = Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
         
-        $employees = Employee::with(['user', 'user.schedules' => function($query) use ($currentMonday) {
+        $employees = Employee::with(['user', 'user.offerLetter', 'user.schedules' => function($query) use ($currentMonday) {
             $query->where('week_start_date', $currentMonday);
         }, 'user.schedules.site'])->get();
         
@@ -316,6 +317,29 @@ class EmployeeController extends Controller
         $user->sites()->sync($siteData);
 
         return redirect()->route('employees.index')->with('success', 'Sites assigned to ' . $user->name . ' successfully!');
+    }
+
+    public function updateOfferLetter(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'job_title' => 'nullable|string|max:255',
+            'joining_date' => 'nullable|date',
+            'salary' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        EmployeeOfferLetter::updateOrCreate(
+            ['user_id' => $request->user_id],
+            [
+                'job_title' => $request->job_title,
+                'joining_date' => $request->joining_date,
+                'salary' => $request->salary,
+                'description' => $request->description,
+            ]
+        );
+
+        return redirect()->back()->with('success', 'Offer letter updated successfully!');
     }
 
     /**

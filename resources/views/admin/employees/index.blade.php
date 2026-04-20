@@ -107,6 +107,17 @@
                                                     data-notes="{{ $weeklyNote }}">
                                                     <i data-feather="map" style="width: 14px; height: 14px;"></i>
                                                 </button>
+                                                <button type="button" class="btn btn-sm me-2 btn-outline-success rounded-pill px-3"
+                                                    title="Offer Letter" data-bs-toggle="modal"
+                                                    data-bs-target="#offerLetterModal"
+                                                    data-user-id="{{ $employee->user->id }}"
+                                                    data-name="{{ $employee->user->name }}"
+                                                    data-job-title="{{ $employee->user->offerLetter->job_title ?? '' }}"
+                                                    data-joining-date="{{ $employee->user->offerLetter->joining_date ?? '' }}"
+                                                    data-salary="{{ $employee->user->offerLetter->salary ?? '' }}"
+                                                    data-description="{{ $employee->user->offerLetter->description ?? '' }}">
+                                                    <i data-feather="mail" style="width: 14px; height: 14px;"></i>
+                                                </button>
                                                 <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('employees.edit', $employee->id) }}" data-bs-toggle="tooltip" title="Edit Employee">
                                                     <button class="editBtn">
                                                         <svg height="1em" viewBox="0 0 512 512">
@@ -142,6 +153,7 @@
 
     <!-- Assign Sites Modal -->
     <div class="modal fade" id="assignSitesModal" tabindex="-1" aria-labelledby="assignSitesModalLabel" aria-hidden="true">
+        <!-- ... same as before, no change needed here ... -->
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 rounded-4 shadow">
                 <div class="modal-header border-0 pb-0">
@@ -183,6 +195,53 @@
                             data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
                             <i data-feather="check" style="width: 16px; height: 16px;" class="me-1"></i> Save Assignment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offer Letter Modal -->
+    <div class="modal fade" id="offerLetterModal" tabindex="-1" aria-labelledby="offerLetterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="offerLetterModalLabel">
+                        <i data-feather="mail" class="me-2 text-success"></i> Employee Offer Letter
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="offerLetterForm" action="{{ route('employees.updateOfferLetter') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="user_id" id="offer_user_id">
+                    
+                    <div class="modal-body">
+                        <p class="text-muted mb-4">Managing offer letter details for <strong id="offerEmployeeName"></strong></p>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Joining Date</label>
+                                <input type="date" name="joining_date" id="offer_joining_date" class="form-control rounded-3">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Job Title</label>
+                                <input type="text" name="job_title" id="offer_job_title" class="form-control rounded-3" placeholder="e.g. Security Guard">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small">Salary / Wage</label>
+                                <input type="text" name="salary" id="offer_salary" class="form-control rounded-3" placeholder="e.g. $20/hr or $4000/month">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">Description / Terms & Conditions</label>
+                                <textarea name="description" id="offer_description" class="form-control rounded-3" rows="6" placeholder="Detailed job description and terms..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
+                            <i data-feather="save" style="width: 16px; height: 16px;" class="me-1"></i> Save Offer Details
                         </button>
                     </div>
                 </form>
@@ -256,9 +315,27 @@
                     if (cb) cb.checked = true;
                 });
 
-                document.getElementById('modal_notes_employee').value = '';
-
                 updateItemStyles();
+                feather.replace();
+            });
+
+            const offerModal = document.getElementById('offerLetterModal');
+            offerModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const userId = button.getAttribute('data-user-id');
+                const employeeName = button.getAttribute('data-name');
+                const jobTitle = button.getAttribute('data-job-title');
+                const joiningDate = button.getAttribute('data-joining-date');
+                const salary = button.getAttribute('data-salary');
+                const description = button.getAttribute('data-description');
+
+                document.getElementById('offer_user_id').value = userId;
+                document.getElementById('offerEmployeeName').textContent = employeeName;
+                document.getElementById('offer_job_title').value = jobTitle;
+                document.getElementById('offer_joining_date').value = joiningDate;
+                document.getElementById('offer_salary').value = salary;
+                document.getElementById('offer_description').value = description;
+
                 feather.replace();
             });
         });
