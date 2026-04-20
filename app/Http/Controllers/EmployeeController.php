@@ -16,9 +16,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use App\Traits\CommonTrait;
 
 class EmployeeController extends Controller
 {
+    use CommonTrait;
     public function index()
     {
         $currentMonday = Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
@@ -290,11 +292,15 @@ class EmployeeController extends Controller
         $user = $employee->user;
         
         DB::transaction(function () use ($employee, $user) {
+            // Use CommonTrait to delete all associated physical documents
+            $this->DeleteEmployeeDocuments($user);
+
+            // Delete DB records
             $employee->delete();
             $user->delete();
         });
 
-        return redirect()->route('employees.index')->with('success', 'Employee deleted successfully!');
+        return redirect()->route('employees.index')->with('success', 'Employee and associated documents deleted successfully!');
     }
 
     public function assignSites(Request $request, $user_id)
