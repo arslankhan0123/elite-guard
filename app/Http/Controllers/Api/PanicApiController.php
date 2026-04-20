@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class PanicApiController extends Controller
 {
@@ -42,7 +43,7 @@ class PanicApiController extends Controller
         ]);
 
         // Fetch all users who have an FCM token AND an active session
-        $users = User::whereNotNull('fcm_token')->get();
+        $users = User::whereNotNull('fcm_token')->where('id', '!=', Auth::user()->id)->get();
         // $users = User::whereNotNull('fcm_token')
         //     ->whereExists(function ($query) {
         //         $query->select(DB::raw(1))
