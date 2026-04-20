@@ -42,13 +42,14 @@ class PanicApiController extends Controller
         ]);
 
         // Fetch all users who have an FCM token AND an active session
-        $users = User::whereNotNull('fcm_token')
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('sessions')
-                    ->whereRaw('sessions.user_id = users.id');
-            })
-            ->get();
+        $users = User::whereNotNull('fcm_token')->get();
+        // $users = User::whereNotNull('fcm_token')
+        //     ->whereExists(function ($query) {
+        //         $query->select(DB::raw(1))
+        //             ->from('sessions')
+        //             ->whereRaw('sessions.user_id = users.id');
+        //     })
+        //     ->get();
 
         // Fetch all users who have an FCM token AND an active session (within session lifetime)
         // $sessionLifetime = config('session.lifetime', 120);
