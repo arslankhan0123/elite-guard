@@ -80,6 +80,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(EmployeeOfficeDetail::class);
     }
 
+    public function offerLetter()
+    {
+        return $this->hasOne(EmployeeOfferLetter::class);
+    }
+
     public function sites()
     {
         return $this->belongsToMany(Site::class, 'site_user')->withPivot('assigned_at')->withTimestamps();

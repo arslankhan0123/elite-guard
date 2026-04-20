@@ -248,7 +248,24 @@
                                         <p class="mb-0 small text-muted">Click to update Void Cheque (PDF/Image)</p>
                                     </label>
                                     @if($bank && $bank->void_cheque_file)
-                                        <a href="{{ Storage::url($bank->void_cheque_file) }}" target="_blank" class="current-file"><i data-feather="eye" style="width: 12px;"></i> View Current File</a>
+                                        <div class="mt-2 d-flex flex-wrap gap-2">
+                                            @php
+                                                $voidFiles = is_array($bank->void_cheque_file) ? $bank->void_cheque_file : [$bank->void_cheque_file];
+                                                $ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+                                            @endphp
+                                            @foreach($voidFiles as $index => $file)
+                                                @php
+                                                    $url = filter_var($file, FILTER_VALIDATE_URL) ? $file : Storage::url($file);
+                                                    $label = count($voidFiles) > 1 
+                                                        ? "View " . ($ordinals[$index] ?? ($index + 1)) . " Void Cheque Document" 
+                                                        : "View Void Cheque Document";
+                                                @endphp
+                                                <a href="{{ $url }}" target="_blank" class="current-file">
+                                                    <i data-feather="file-text" style="width: 14px;"></i> 
+                                                    {{ $label }}
+                                                </a>
+                                            @endforeach
+                                        </div>
                                     @endif
                                 </div>
                             </div>
@@ -277,7 +294,24 @@
                                         <input type="file" name="security_license_file" id="security_file" class="d-none">
                                         <label for="security_file" class="attach-label">Click to update doc</label>
                                         @if($license && $license->security_license_file)
-                                            <a href="{{ Storage::url($license->security_license_file) }}" target="_blank" class="current-file">View Current File</a>
+                                            <div class="mt-2 d-flex flex-wrap gap-2">
+                                                @php
+                                                    $securityFiles = is_array($license->security_license_file) ? $license->security_license_file : [$license->security_license_file];
+                                                    $ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+                                                @endphp
+                                                @foreach($securityFiles as $index => $file)
+                                                    @php
+                                                        $url = filter_var($file, FILTER_VALIDATE_URL) ? $file : Storage::url($file);
+                                                        $label = count($securityFiles) > 1 
+                                                            ? "View " . ($ordinals[$index] ?? ($index + 1)) . " Security License Document" 
+                                                            : "View Security License Document";
+                                                    @endphp
+                                                    <a href="{{ $url }}" target="_blank" class="current-file">
+                                                        <i data-feather="shield" style="width: 14px;"></i> 
+                                                        {{ $label }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -300,7 +334,24 @@
                                         <input type="file" name="drivers_license_file" id="drivers_file" class="d-none">
                                         <label for="drivers_file" class="attach-label">Click to update doc</label>
                                         @if($license && $license->drivers_license_file)
-                                            <a href="{{ Storage::url($license->drivers_license_file) }}" target="_blank" class="current-file">View Current File</a>
+                                            <div class="mt-2 d-flex flex-wrap gap-2">
+                                                @php
+                                                    $driversFiles = is_array($license->drivers_license_file) ? $license->drivers_license_file : [$license->drivers_license_file];
+                                                    $ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+                                                @endphp
+                                                @foreach($driversFiles as $index => $file)
+                                                    @php
+                                                        $url = filter_var($file, FILTER_VALIDATE_URL) ? $file : Storage::url($file);
+                                                        $label = count($driversFiles) > 1 
+                                                            ? "View " . ($ordinals[$index] ?? ($index + 1)) . " Driver's License Document" 
+                                                            : "View Driver's License Document";
+                                                    @endphp
+                                                    <a href="{{ $url }}" target="_blank" class="current-file">
+                                                        <i data-feather="truck" style="width: 14px;"></i> 
+                                                        {{ $label }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -323,7 +374,24 @@
                                         <input type="file" name="work_eligibility_file" id="work_file" class="d-none">
                                         <label for="work_file" class="attach-label">Click to update doc</label>
                                         @if($license && $license->work_eligibility_file)
-                                            <a href="{{ Storage::url($license->work_eligibility_file) }}" target="_blank" class="current-file">View Current File</a>
+                                            <div class="mt-2 d-flex flex-wrap gap-2">
+                                                @php
+                                                    $workFiles = is_array($license->work_eligibility_file) ? $license->work_eligibility_file : [$license->work_eligibility_file];
+                                                    $ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+                                                @endphp
+                                                @foreach($workFiles as $index => $file)
+                                                    @php
+                                                        $url = filter_var($file, FILTER_VALIDATE_URL) ? $file : Storage::url($file);
+                                                        $label = count($workFiles) > 1 
+                                                            ? "View " . ($ordinals[$index] ?? ($index + 1)) . " Work Eligibility Document" 
+                                                            : "View Work Eligibility Document";
+                                                    @endphp
+                                                    <a href="{{ $url }}" target="_blank" class="current-file">
+                                                        <i data-feather="globe" style="width: 14px;"></i> 
+                                                        {{ $label }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -354,7 +422,24 @@
                                         <input type="file" name="other_documents_file" id="other_docs_file" class="d-none">
                                         <label for="other_docs_file" class="attach-label">Click to upload docs</label>
                                         @if($license && $license->other_documents_file)
-                                            <a href="{{ Storage::url($license->other_documents_file) }}" target="_blank" class="current-file">View Current File</a>
+                                            <div class="mt-2 d-flex flex-wrap gap-2">
+                                                @php
+                                                    $otherFiles = is_array($license->other_documents_file) ? $license->other_documents_file : [$license->other_documents_file];
+                                                    $ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+                                                @endphp
+                                                @foreach($otherFiles as $index => $file)
+                                                    @php
+                                                        $url = filter_var($file, FILTER_VALIDATE_URL) ? $file : Storage::url($file);
+                                                        $label = count($otherFiles) > 1 
+                                                            ? "View " . ($ordinals[$index] ?? ($index + 1)) . " Other Certificate" 
+                                                            : "View Other Certificate";
+                                                    @endphp
+                                                    <a href="{{ $url }}" target="_blank" class="current-file">
+                                                        <i data-feather="file" style="width: 14px;"></i> 
+                                                        {{ $label }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
