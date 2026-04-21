@@ -12,14 +12,22 @@ class TaxDocsRepository
     {
         $user = Auth::user();
 
-        // Get all tax_document_ids already submitted by this user
-        $submittedIds = TaxDocumentSubmission::where('user_id', $user->id)
-            ->pluck('tax_document_id')
-            ->toArray();
+        // Get all submissions of this user (indexed by tax_document_id)
+        $submissions = TaxDocumentSubmission::where('user_id', $user->id)
+            ->get()
+            ->keyBy('tax_document_id');
 
-        // Attach 'submitted' flag to each tax document
-        $taxDocs = TaxDocument::latest()->get()->map(function ($doc) use ($submittedIds) {
+        // Get IDs (same as before)
+        $submittedIds = $submissions->keys()->toArray();
+
+        // Attach submitted + submission object
+        $taxDocs = TaxDocument::latest()->get()->map(function ($doc) use ($submittedIds, $submissions) {
+
             $doc->submitted = in_array($doc->id, $submittedIds);
+
+            // ✅ add submission OR null
+            $doc->submission = $submissions[$doc->id] ?? null;
+
             return $doc;
         });
 

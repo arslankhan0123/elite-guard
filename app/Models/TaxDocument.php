@@ -15,4 +15,9 @@ class TaxDocument extends Model
         'type',
         'file_path',
     ];
+
+    public function submissions()
+    {
+        return $this->hasMany(TaxDocumentSubmission::class, 'tax_document_id');
+    }
 }
