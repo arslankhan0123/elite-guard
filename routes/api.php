@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\ScheduleApiController;
 use App\Http\Controllers\Api\SettingsApiController;
 use App\Http\Controllers\Api\SiteApiController;
 use App\Http\Controllers\Api\TagsApiController;
+use App\Http\Controllers\Api\TaxDocsApiController;
 use App\Http\Controllers\Api\TimeClockApiController;
 use App\Http\Controllers\Api\TimeClockController;
 use App\Http\Controllers\Api\UserApiController;
@@ -73,6 +74,11 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/pay-slips'], function () {
         Route::get('/user', [PaySlipApiController::class, 'getUserPaySlips']);
+    });
+
+    Route::group(['prefix' => '/tax-docs'], function () {
+        Route::get('/', [TaxDocsApiController::class, 'getUserTaxDocs']);
+        Route::post('/submit', [TaxDocsApiController::class, 'submitUserTaxDocs']);
     });
 
     Route::group(['prefix' => '/nfc-tags'], function () {
