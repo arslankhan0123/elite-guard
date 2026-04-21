@@ -82,7 +82,7 @@
                             <div class="contact-icon"><i class="fas fa-envelope"></i></div>
                             <div class="ps-2">
                                 <strong>Support:</strong><br>
-                                info@eliteguardinc.ca
+                                info@eliteguardinc.com
                             </div>
                         </div>
                     </div>

@@ -282,7 +282,7 @@
                 <div class="company-footer text-center">
                     <p class="mb-1"><strong>ELITE GUARD INC. LEGAL DEPARTMENT</strong></p>
                     <p class="mb-1">3961 52 Ave, NE #2104, Calgary, AB T3J0J8</p>
-                    <p class="mb-0">Contact for Legal Inquiries: saqib@eliteguardinc.ca | +1 403-830-7772</p>
+                    <p class="mb-0">Contact for Legal Inquiries: saqib@eliteguardinc.com | +1 403-830-7772</p>
                 </div>
             </div>
         </div>

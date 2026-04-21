@@ -339,7 +339,7 @@
                         <h3>Reporting Procedures</h3>
                         <p>Workers must immediately report incidents to a supervisor, site lead, or safety officer.</p>
                         <ul class="policy-list">
-                            <li><strong>How:</strong> Verbally, Incident Report Form, or email to saqib@eliteguardinc.ca</li>
+                            <li><strong>How:</strong> Verbally, Incident Report Form, or email to saqib@eliteguardinc.com</li>
                             <li><strong>OHS Reporting:</strong> Mandatory notification if serious injury occurs or potential for serious harm exists.</li>
                         </ul>
                     </div>
@@ -402,7 +402,7 @@
                             <p class="mb-0">
                                 Elite Guard Inc. Complaint Handling Department<br>
                                 2104-3961 52nd Ave NE Calgary, AB T3J 0K7<br>
-                                Phone: (403) 830-7772 | Email for Complaints: saqib@eliteguardinc.ca
+                                Phone: (403) 830-7772 | Email for Complaints: saqib@eliteguardinc.com
                             </p>
                         </div>
                     </div>
@@ -414,7 +414,7 @@
                     <p>All policies are reviewed annually and may be updated to reflect changes in laws, regulations, or company requirements.</p>
                     <p class="mb-1"><strong>ELITE GUARD INC.</strong></p>
                     <p class="mb-1">3961 52 Ave, NE #2104, Calgary, AB T3J0J8</p>
-                    <p class="mb-0">Contact No: 403-830-7772 | Email for General Inquiries: info@eliteguardinc.ca</p>
+                    <p class="mb-0">Contact No: 403-830-7772 | Email for General Inquiries: info@eliteguardinc.com</p>
                 </div>
             </div>
         </div>
