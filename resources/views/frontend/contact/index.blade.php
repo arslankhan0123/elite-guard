@@ -172,7 +172,7 @@
                         <div class="info-icon"><i class="fas fa-envelope"></i></div>
                         <div class="info-text">
                             <h4>Operations Mail</h4>
-                            <p>info@eliteguardinc.ca</p>
+                            <p>info@eliteguardinc.com</p>
                         </div>
                     </div>
 

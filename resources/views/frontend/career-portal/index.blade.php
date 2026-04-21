@@ -134,7 +134,7 @@
                             <span><i class="fas fa-vault"></i> $22 - $28 / hr</span>
                         </div>
                     </div>
-                    <a href="mailto:careers@eliteguardinc.ca" class="btn-apply">Apply Now</a>
+                    <a href="mailto:careers@eliteguardinc.com" class="btn-apply">Apply Now</a>
                 </div>
 
                 <div class="job-card" data-aos="fade-up" data-aos-delay="200">
@@ -146,7 +146,7 @@
                             <span><i class="fas fa-vault"></i> $25 - $30 / hr</span>
                         </div>
                     </div>
-                    <a href="mailto:careers@eliteguardinc.ca" class="btn-apply">Apply Now</a>
+                    <a href="mailto:careers@eliteguardinc.com" class="btn-apply">Apply Now</a>
                 </div>
 
                 <div class="job-card" data-aos="fade-up" data-aos-delay="300">
@@ -158,7 +158,7 @@
                             <span><i class="fas fa-vault"></i> Competitive Salary</span>
                         </div>
                     </div>
-                    <a href="mailto:careers@eliteguardinc.ca" class="btn-apply">Apply Now</a>
+                    <a href="mailto:careers@eliteguardinc.com" class="btn-apply">Apply Now</a>
                 </div>
             </div>
         </div>
