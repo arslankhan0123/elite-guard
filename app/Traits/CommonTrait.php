@@ -46,6 +46,13 @@ trait CommonTrait
             }
         }
         
+        if (!$user->relationLoaded('paySlips')) {
+            $user->load('paySlips');
+        }
+        foreach ($user->paySlips as $paySlip) {
+            $allFiles[] = $paySlip->file_path;
+        }
+        
         // 2. Delete physical files from public/documents/
         $baseUrl = rtrim(config('app.url'), '/');
         foreach ($allFiles as $fileUrl) {

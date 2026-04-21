@@ -8,11 +8,13 @@ use App\Http\Controllers\Api\NumberApiController;
 use App\Http\Controllers\Api\OfferLetterApiController;
 use App\Http\Controllers\Api\PanicApiController;
 use App\Http\Controllers\Api\OrientationApiController;
+use App\Http\Controllers\Api\PaySlipApiController;
 use App\Http\Controllers\Api\PolicyApiController;
 use App\Http\Controllers\Api\ScheduleApiController;
 use App\Http\Controllers\Api\SettingsApiController;
 use App\Http\Controllers\Api\SiteApiController;
 use App\Http\Controllers\Api\TagsApiController;
+use App\Http\Controllers\Api\TaxDocsApiController;
 use App\Http\Controllers\Api\TimeClockApiController;
 use App\Http\Controllers\Api\TimeClockController;
 use App\Http\Controllers\Api\UserApiController;
@@ -68,6 +70,15 @@ Route::middleware('auth:api')->group(function () {
             Route::get('/', [OfferLetterApiController::class, 'getUserOfferLetter']);
             Route::post('/accepted', [OfferLetterApiController::class, 'acceptedOfferLetter']);
         });
+    });
+
+    Route::group(['prefix' => '/pay-slips'], function () {
+        Route::get('/user', [PaySlipApiController::class, 'getUserPaySlips']);
+    });
+
+    Route::group(['prefix' => '/tax-docs'], function () {
+        Route::get('/', [TaxDocsApiController::class, 'getUserTaxDocs']);
+        Route::post('/submit', [TaxDocsApiController::class, 'submitUserTaxDocs']);
     });
 
     Route::group(['prefix' => '/nfc-tags'], function () {
