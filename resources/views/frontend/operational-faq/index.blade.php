@@ -25,18 +25,23 @@
         padding: 25px 35px;
         cursor: pointer;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         font-weight: 700;
         color: var(--text-main);
-        font-size: 1.1rem;
+        font-size: 1.2rem;
+        text-align: center;
+        position: relative;
     }
 
     .faq-answer {
-        padding: 0 35px 25px;
+        padding: 0 35px 35px;
         color: var(--text-dim);
-        line-height: 1.7;
+        line-height: 1.8;
         display: none;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
     }
 
     .faq-item.active .faq-answer {
@@ -51,6 +56,8 @@
     .faq-question i {
         transition: transform 0.3s ease;
         font-size: 0.9rem;
+        position: absolute;
+        right: 35px;
     }
 
     .faq-categories {
@@ -83,7 +90,7 @@
 
 <div class="faq-container py-hq">
     <div class="container">
-        <div class="career-hero" data-aos="fade-down">
+        <div class="faq-hero text-center" data-aos="fade-down">
             <span class="badge-os">Intelligence Database</span>
             <h1 class="title-hq text-glow">Operational FAQ.</h1>
             <p class="desc-hq mx-auto">Get detailed intelligence on how Elite Guard operates and how we protect your assets.</p>
