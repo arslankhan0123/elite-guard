@@ -16,7 +16,7 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\TaxDocController;
 use App\Http\Controllers\TimeClockController;
-use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\FrontendController;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\NfcTag;
@@ -26,6 +26,15 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/privacy-policy', [FrontendController::class, 'privacyPolicy'])->name('privacy-policy');
+Route::get('/terms-conditions', [FrontendController::class, 'termsConditions'])->name('terms-conditions');
+Route::get('/security-protocol', [FrontendController::class, 'securityProtocol'])->name('security-protocol');
+Route::get('/career-portal', [FrontendController::class, 'careerPortal'])->name('career-portal');
+Route::get('/operational-faq', [FrontendController::class, 'operationalFaq'])->name('operational-faq');
+Route::get('/about', [FrontendController::class, 'about'])->name('about');
+Route::get('/services', [FrontendController::class, 'services'])->name('services');
+Route::get('/contact', [FrontendController::class, 'contact'])->name('contact');
 
 Route::get('/architecture', function () {
     return view('architecture');
