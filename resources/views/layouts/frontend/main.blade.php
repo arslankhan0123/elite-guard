@@ -112,22 +112,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 768px) {
-            .brand-name {
-                font-size: 1.2rem;
-                letter-spacing: -0.5px;
-            }
-
-            .nav-elite {
-                padding: 8px 0;
-            }
-
-            .nav-elite .fs-3 {
-                font-size: 1.5rem !important;
-            }
         }
 
         .nav-link-elite {
@@ -163,18 +147,6 @@
             width: 100%;
         }
 
-        @media (max-width: 991px) {
-            .nav-elite .btn-action-hub {
-                padding: 8px 15px;
-                font-size: 0.75rem;
-                border-radius: 12px;
-            }
-
-            .nav-elite .btn-action-hub i {
-                display: none;
-            }
-        }
-
         /* --- Hero Section --- */
         .hero-section {
             min-height: 100vh;
@@ -205,35 +177,6 @@
             line-height: 0.9;
             margin-bottom: 25px;
             letter-spacing: -5px;
-        }
-
-        @media (max-width: 768px) {
-            .title-hq {
-                font-size: 2.2rem;
-                letter-spacing: -1px;
-                line-height: 1.2;
-            }
-
-            .desc-hq {
-                font-size: 0.9rem;
-                margin-bottom: 2rem;
-            }
-
-            .hero-section {
-                padding-top: 100px;
-                text-align: center;
-            }
-
-            .hero-section .d-flex {
-                justify-content: center;
-            }
-
-            .footer-bottom {
-                justify-content: center;
-                text-align: center;
-                gap: 15px;
-                flex-direction: column;
-            }
         }
 
         .text-glow {
@@ -526,27 +469,6 @@
             color: var(--primary);
             display: block;
             margin-bottom: 10px;
-        }
-
-        /* Offcanvas Refinement */
-        .offcanvas-header {
-            padding: 10px 15px;
-        }
-
-        .offcanvas .nav-link-elite {
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: block;
-            font-size: 1.1rem !important;
-        }
-
-        .offcanvas .nav-link-elite::after {
-            display: none;
-        }
-
-        .offcanvas .nav-link-elite.active {
-            color: var(--primary);
-            font-weight: 800;
         }
     </style>
 </head>

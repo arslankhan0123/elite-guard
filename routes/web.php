@@ -16,7 +16,7 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\TaxDocController;
 use App\Http\Controllers\TimeClockController;
-use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\FrontendController;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\NfcTag;
@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/privacy-policy', [FrontendController::class, 'privacyPolicy'])->name('privacy-policy');
+Route::get('/terms-conditions', [FrontendController::class, 'termsConditions'])->name('terms-conditions');
 
 Route::get('/architecture', function () {
     return view('architecture');

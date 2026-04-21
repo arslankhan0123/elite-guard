@@ -8,7 +8,9 @@
                         <i class="fas fa-shield-halved text-primary"></i> ELITE GUARD
                     </a>
                     <p class="footer-about-text">
-                        Elite Guard provides military-grade security infrastructure and personnel management for high-stakes operations. We synchronize technology and human intelligence to ensure maximum protection.
+                        Elite Guard provides military-grade security infrastructure and personnel management for
+                        high-stakes operations. We synchronize technology and human intelligence to ensure maximum
+                        protection.
                     </p>
                     <div class="social-links">
                         <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
@@ -28,7 +30,8 @@
                         <a href="#about" class="footer-link"><i class="fas fa-chevron-right"></i> About Us</a>
                         <a href="#services" class="footer-link"><i class="fas fa-chevron-right"></i> Our Services</a>
                         <a href="#contact" class="footer-link"><i class="fas fa-chevron-right"></i> Contact Us</a>
-                        <a href="{{ route('architecture') }}" class="footer-link"><i class="fas fa-chevron-right"></i> Architecture</a>
+                        <a href="{{ route('architecture') }}" class="footer-link"><i class="fas fa-chevron-right"></i>
+                            Architecture</a>
                     </div>
                 </div>
             </div>
@@ -38,8 +41,10 @@
                 <div class="footer-column">
                     <h4>Resources</h4>
                     <div class="footer-links-list">
-                        <a href="#" class="footer-link"><i class="fas fa-chevron-right"></i> Privacy Policy</a>
-                        <a href="#" class="footer-link"><i class="fas fa-chevron-right"></i> Terms of Service</a>
+                        <a href="{{ route('privacy-policy') }}" class="footer-link"><i class="fas fa-chevron-right"></i>
+                            Privacy Policy</a>
+                        <a href="{{ route('terms-conditions') }}" class="footer-link"><i
+                                class="fas fa-chevron-right"></i> Terms of Service</a>
                         <a href="#" class="footer-link"><i class="fas fa-chevron-right"></i> Security Protocol</a>
                         <a href="#" class="footer-link"><i class="fas fa-chevron-right"></i> Career Portal</a>
                         <a href="#" class="footer-link"><i class="fas fa-chevron-right"></i> Operational FAQ</a>
