@@ -15,4 +15,19 @@ class FrontendController extends Controller
     {
         return view('frontend.terms-conditions.index');
     }
+
+    public function securityProtocol()
+    {
+        return view('frontend.security-protocol.index');
+    }
+
+    public function careerPortal()
+    {
+        return view('frontend.career-portal.index');
+    }
+
+    public function operationalFaq()
+    {
+        return view('frontend.operational-faq.index');
+    }
 }

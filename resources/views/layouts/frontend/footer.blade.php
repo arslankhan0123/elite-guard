@@ -45,9 +45,12 @@
                             Privacy Policy</a>
                         <a href="{{ route('terms-conditions') }}" class="footer-link"><i
                                 class="fas fa-chevron-right"></i> Terms of Service</a>
-                        <a href="#" class="footer-link"><i class="fas fa-chevron-right"></i> Security Protocol</a>
-                        <a href="#" class="footer-link"><i class="fas fa-chevron-right"></i> Career Portal</a>
-                        <a href="#" class="footer-link"><i class="fas fa-chevron-right"></i> Operational FAQ</a>
+                        <a href="{{ route('security-protocol') }}" class="footer-link"><i
+                                class="fas fa-chevron-right"></i> Security Protocol</a>
+                        <a href="{{ route('career-portal') }}" class="footer-link"><i class="fas fa-chevron-right"></i>
+                            Career Portal</a>
+                        <a href="{{ route('operational-faq') }}" class="footer-link"><i
+                                class="fas fa-chevron-right"></i> Operational FAQ</a>
                     </div>
                 </div>
             </div>
