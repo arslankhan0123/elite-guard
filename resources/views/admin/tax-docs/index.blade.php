@@ -70,24 +70,6 @@
         </div>
     </div>
 
-    {{-- Flash messages --}}
-    @if(session('success'))
-    <div class="col-12">
-        <div class="alert alert-success alert-dismissible fade show rounded-3 border-0 shadow-sm" role="alert">
-            <i data-feather="check-circle" class="me-2" style="width:16px;"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    </div>
-    @endif
-    @if(session('warning'))
-    <div class="col-12">
-        <div class="alert alert-warning alert-dismissible fade show rounded-3 border-0 shadow-sm" role="alert">
-            <i data-feather="alert-circle" class="me-2" style="width:16px;"></i>{{ session('warning') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    </div>
-    @endif
-
     {{-- Cards --}}
     @if($taxDocs->isEmpty())
     <div class="col-12">
