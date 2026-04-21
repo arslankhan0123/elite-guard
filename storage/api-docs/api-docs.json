@@ -1992,6 +1992,215 @@
                 ]
             }
         },
+        "/api/tax-docs": {
+            "get": {
+                "tags": [
+                    "Tax Documents"
+                ],
+                "summary": "Get all tax documents with submission status for the authenticated user",
+                "operationId": "02ab772e42cfbcdb61a66ddc6c228e37",
+                "responses": {
+                    "200": {
+                        "description": "Tax documents fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tax documents fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Tax documents retrieved successfully"
+                                                },
+                                                "taxDocs": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "example": "Td1-Fill"
+                                                            },
+                                                            "file_path": {
+                                                                "type": "string",
+                                                                "example": "http://localhost/documents/tax_docs/form.pdf"
+                                                            },
+                                                            "submitted": {
+                                                                "description": "True if the authenticated user has already submitted this document",
+                                                                "type": "boolean",
+                                                                "example": true
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tax-docs/submit": {
+            "post": {
+                "tags": [
+                    "Tax Documents"
+                ],
+                "summary": "Submit a tax document for the authenticated user",
+                "operationId": "2082ad06e63a1f2dd4f0b66622aa08ba",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "tax_document_id",
+                                    "document"
+                                ],
+                                "properties": {
+                                    "tax_document_id": {
+                                        "description": "ID of the tax document type from tax_documents table",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "document": {
+                                        "description": "PDF file to upload (max 2MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tax document submitted successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tax documents submitted successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Tax document uploaded successfully"
+                                                },
+                                                "taxDoc": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 3
+                                                        },
+                                                        "user_id": {
+                                                            "type": "integer",
+                                                            "example": 5
+                                                        },
+                                                        "tax_document_id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "document_path": {
+                                                            "type": "string",
+                                                            "example": "http://localhost/documents/tax_docs/submissions/5_1_1745200000.pdf"
+                                                        },
+                                                        "created_at": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        },
+                                                        "updated_at": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Validation error or already submitted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You have already submitted this tax document."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/time-clock": {
             "get": {
                 "tags": [
@@ -2513,6 +2722,10 @@
         {
             "name": "NFC Tags",
             "description": "NFC Tags"
+        },
+        {
+            "name": "Tax Documents",
+            "description": "Tax Documents"
         },
         {
             "name": "TimeClock",
