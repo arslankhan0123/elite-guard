@@ -5,10 +5,10 @@
         </a>
 
         <div class="d-none d-lg-flex align-items-center gap-5">
-            <a href="{{ url('/') }}" class="nav-link-elite active">Home</a>
-            <a href="#about" class="nav-link-elite">About</a>
-            <a href="#services" class="nav-link-elite">Services</a>
-            <a href="#contact" class="nav-link-elite">Contact Us</a>
+            <a href="{{ url('/') }}" class="nav-link-elite {{ Request::is('/') ? 'active' : '' }}">Home</a>
+            <a href="{{ route('about') }}" class="nav-link-elite {{ Request::is('about') ? 'active' : '' }}">About</a>
+            <a href="{{ route('services') }}" class="nav-link-elite {{ Request::is('services') ? 'active' : '' }}">Services</a>
+            <a href="{{ route('contact') }}" class="nav-link-elite {{ Request::is('contact') ? 'active' : '' }}">Contact Us</a>
         </div>
 
         <div class="d-flex align-items-center gap-3">
@@ -40,10 +40,10 @@
     </div>
     <div class="offcanvas-body">
         <div class="d-flex flex-column gap-4 py-3">
-            <a href="{{ url('/') }}" class="nav-link-elite active">Home</a>
-            <a href="#about" class="nav-link-elite">About</a>
-            <a href="#services" class="nav-link-elite">Services</a>
-            <a href="#contact" class="nav-link-elite">Contact Us</a>
+            <a href="{{ url('/') }}" class="nav-link-elite {{ Request::is('/') ? 'active' : '' }}">Home</a>
+            <a href="{{ route('about') }}" class="nav-link-elite {{ Request::is('about') ? 'active' : '' }}">About</a>
+            <a href="{{ route('services') }}" class="nav-link-elite {{ Request::is('services') ? 'active' : '' }}">Services</a>
+            <a href="{{ route('contact') }}" class="nav-link-elite {{ Request::is('contact') ? 'active' : '' }}">Contact Us</a>
             <hr class="border-secondary opacity-20">
             @auth
             <a href="{{ url('/dashboard') }}" class="btn-action-hub btn-primary-hub justify-content-center">DASHBOARD</a>

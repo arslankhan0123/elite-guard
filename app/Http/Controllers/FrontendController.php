@@ -30,4 +30,19 @@ class FrontendController extends Controller
     {
         return view('frontend.operational-faq.index');
     }
+
+    public function about()
+    {
+        return view('frontend.about.index');
+    }
+
+    public function services()
+    {
+        return view('frontend.services.index');
+    }
+
+    public function contact()
+    {
+        return view('frontend.contact.index');
+    }
 }

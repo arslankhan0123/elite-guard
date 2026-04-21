@@ -176,7 +176,7 @@
             font-weight: 950;
             line-height: 0.9;
             margin-bottom: 25px;
-            letter-spacing: -5px;
+            letter-spacing: -1.5px;
         }
 
         .text-glow {

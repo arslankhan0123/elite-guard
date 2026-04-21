@@ -32,6 +32,9 @@ Route::get('/terms-conditions', [FrontendController::class, 'termsConditions'])-
 Route::get('/security-protocol', [FrontendController::class, 'securityProtocol'])->name('security-protocol');
 Route::get('/career-portal', [FrontendController::class, 'careerPortal'])->name('career-portal');
 Route::get('/operational-faq', [FrontendController::class, 'operationalFaq'])->name('operational-faq');
+Route::get('/about', [FrontendController::class, 'about'])->name('about');
+Route::get('/services', [FrontendController::class, 'services'])->name('services');
+Route::get('/contact', [FrontendController::class, 'contact'])->name('contact');
 
 Route::get('/architecture', function () {
     return view('architecture');

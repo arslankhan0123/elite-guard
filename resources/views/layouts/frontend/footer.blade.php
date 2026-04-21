@@ -27,9 +27,12 @@
                     <h4>Quick Links</h4>
                     <div class="footer-links-list">
                         <a href="{{ url('/') }}" class="footer-link"><i class="fas fa-chevron-right"></i> Home</a>
-                        <a href="#about" class="footer-link"><i class="fas fa-chevron-right"></i> About Us</a>
-                        <a href="#services" class="footer-link"><i class="fas fa-chevron-right"></i> Our Services</a>
-                        <a href="#contact" class="footer-link"><i class="fas fa-chevron-right"></i> Contact Us</a>
+                        <a href="{{ route('about') }}" class="footer-link"><i class="fas fa-chevron-right"></i> About
+                            Us</a>
+                        <a href="{{ route('services') }}" class="footer-link"><i class="fas fa-chevron-right"></i> Our
+                            Services</a>
+                        <a href="{{ route('contact') }}" class="footer-link"><i class="fas fa-chevron-right"></i>
+                            Contact Us</a>
                         <a href="{{ route('architecture') }}" class="footer-link"><i class="fas fa-chevron-right"></i>
                             Architecture</a>
                     </div>
