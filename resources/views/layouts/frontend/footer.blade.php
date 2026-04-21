@@ -65,24 +65,24 @@
                     <div class="contact-info">
                         <div class="contact-item">
                             <div class="contact-icon"><i class="fas fa-location-dot"></i></div>
-                            <div>
-                                <strong>Location:</strong><br>
-                                123 Security Avenue, Tech Plaza,<br>
-                                London, UK
+                            <div class="ps-2">
+                                <strong>Headquarters:</strong><br>
+                                3961 52 Ave, NE #2104,<br>
+                                Calgary, AB T3J0J8
                             </div>
                         </div>
                         <div class="contact-item">
                             <div class="contact-icon"><i class="fas fa-phone"></i></div>
-                            <div>
-                                <strong>Phone:</strong><br>
-                                +44 (0) 20 1234 5678
+                            <div class="ps-2">
+                                <strong>Operations:</strong><br>
+                                +1 403-830-7772
                             </div>
                         </div>
                         <div class="contact-item">
                             <div class="contact-icon"><i class="fas fa-envelope"></i></div>
-                            <div>
-                                <strong>Email:</strong><br>
-                                ops@eliteguard.com
+                            <div class="ps-2">
+                                <strong>Support:</strong><br>
+                                info@eliteguardinc.ca
                             </div>
                         </div>
                     </div>

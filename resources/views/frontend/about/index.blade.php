@@ -71,7 +71,7 @@
     }
 </style>
 
-<div class="about-container">
+<div class="about-container py-hq">
     <div class="container">
         <div class="vision-card" data-aos="zoom-in">
             <div class="row align-items-center">

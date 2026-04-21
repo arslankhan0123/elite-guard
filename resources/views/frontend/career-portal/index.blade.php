@@ -115,7 +115,7 @@
     }
 </style>
 
-<div class="career-container">
+<div class="career-container py-hq">
     <div class="container">
         <div class="career-hero" data-aos="fade-down">
             <span class="badge-os">Recruitment Phase active</span>

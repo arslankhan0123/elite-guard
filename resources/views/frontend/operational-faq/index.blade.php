@@ -81,7 +81,7 @@
     }
 </style>
 
-<div class="faq-container">
+<div class="faq-container py-hq">
     <div class="container">
         <div class="career-hero" data-aos="fade-down">
             <span class="badge-os">Intelligence Database</span>

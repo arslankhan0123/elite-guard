@@ -33,6 +33,8 @@
             --glass-border: rgba(255, 255, 255, 0.08);
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
+            --title-spacing: -0.5px;
+            --section-gap: 120px;
         }
 
         * {
@@ -175,8 +177,16 @@
             font-size: clamp(3rem, 10vw, 6.5rem);
             font-weight: 950;
             line-height: 0.9;
-            margin-bottom: 25px;
-            letter-spacing: -1.5px;
+            margin-bottom: 30px;
+            letter-spacing: var(--title-spacing);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            letter-spacing: var(--title-spacing);
+        }
+
+        .section-padding {
+            padding: var(--section-gap) 0;
         }
 
         .text-glow {
@@ -470,6 +480,11 @@
             display: block;
             margin-bottom: 10px;
         }
+
+        /* --- Global Utility --- */
+        .mt-hq { margin-top: var(--section-gap); }
+        .mb-hq { margin-bottom: var(--section-gap); }
+        .py-hq { padding-top: var(--section-gap); padding-bottom: var(--section-gap); }
     </style>
 </head>
 
