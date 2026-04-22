@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\WeeklyScheduleMail;
+use Illuminate\Support\Facades\Log;
 
 class ScheduleController extends Controller
 {
@@ -97,55 +98,64 @@ class ScheduleController extends Controller
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'site_ids' => 'nullable|array',
-            'site_ids.*' => 'exists:sites,id',
             'week_start_date' => 'required|date',
+            'shifts' => 'nullable|array',
+            'shifts.*.site_id' => 'required|exists:sites,id',
+            'shifts.*.shift_name' => 'nullable|string',
+            'shifts.*.start_time' => 'required',
+            'shifts.*.end_time' => 'required',
+            'shifts.*.dates' => 'required|array',
         ]);
 
         $weekStart = Carbon::parse($request->week_start_date)->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
-        $newSiteIds = $request->site_ids ?? [];
+        
+        DB::beginTransaction();
+        try {
+            // Delete all existing schedules for this user and week to sync
+            Schedule::where('user_id', $request->user_id)
+                ->where('week_start_date', $weekStart)
+                ->delete();
 
-        // Delete assignments that are not in the new list
-        Schedule::where('user_id', $request->user_id)
-            ->where('week_start_date', $weekStart)
-            ->whereNotIn('site_id', $newSiteIds)
-            ->delete();
-
-        // Update notes for all remaining existing assignments
-        Schedule::where('user_id', $request->user_id)
-            ->where('week_start_date', $weekStart)
-            ->update(['notes' => $request->notes]);
-
-        // Add assignments that are in the new list but don't exist yet
-        foreach ($newSiteIds as $site_id) {
-            $exists = Schedule::where([
-                'user_id' => $request->user_id,
-                'site_id' => $site_id,
-                'week_start_date' => $weekStart
-            ])->exists();
-
-            if (!$exists) {
-                Schedule::create([
-                    'user_id' => $request->user_id,
-                    'site_id' => $site_id,
-                    'week_start_date' => $weekStart,
-                    'notes' => $request->notes,
-                ]);
+            if ($request->has('shifts')) {
+                foreach ($request->shifts as $shiftData) {
+                    foreach ($shiftData['dates'] as $date) {
+                        Schedule::create([
+                            'user_id' => $request->user_id,
+                            'site_id' => $shiftData['site_id'],
+                            'date' => $date,
+                            'shift_name' => $shiftData['shift_name'] ?? 'Regular Shift',
+                            'start_time' => $shiftData['start_time'],
+                            'end_time' => $shiftData['end_time'],
+                            'week_start_date' => $weekStart,
+                            'notes' => $request->notes,
+                        ]);
+                    }
+                }
             }
+
+            DB::commit();
+
+            // Send Notification Email
+            $user = User::findOrFail($request->user_id);
+            $allSchedules = Schedule::with('site.company')
+                ->where('user_id', $user->id)
+                ->where('week_start_date', $weekStart)
+                ->get();
+
+            if ($allSchedules->count() > 0) {
+                try {
+                    Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $allSchedules));
+                } catch (\Exception $e) {
+                    // Log error but don't fail the request
+                    Log::error("Failed to send schedule email: " . $e->getMessage());
+                }
+            }
+
+            return back()->with('success', 'Shifts updated and employee notified.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to update shifts: ' . $e->getMessage());
         }
-
-        // Send Notification Email
-        $user = User::findOrFail($request->user_id);
-        $allSchedules = Schedule::with('site.company')
-            ->where('user_id', $user->id)
-            ->where('week_start_date', $weekStart)
-            ->get();
-
-        if ($allSchedules->count() > 0) {
-            Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $allSchedules));
-        }
-
-        return back()->with('success', 'Assignments updated and employee notified.');
     }
 
     /**

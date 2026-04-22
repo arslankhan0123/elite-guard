@@ -103,7 +103,7 @@
                                                     data-bs-target="#assignSitesModal"
                                                     data-employee-id="{{ $employee->user->id }}"
                                                     data-employee-name="{{ $employee->user->name }}"
-                                                    data-assigned-sites="{{ $employee->user->schedules->pluck('site_id')->toJson() }}"
+                                                    data-schedules="{{ $employee->user->schedules->toJson() }}"
                                                     data-notes="{{ $weeklyNote }}">
                                                     <i data-feather="map" style="width: 14px; height: 14px;"></i>
                                                 </button>
@@ -179,33 +179,29 @@
                     <input type="hidden" name="week_start_date" value="{{ $currentMonday }}">
 
                     <div class="modal-body">
-                        <p class="text-muted mb-3">Assign sites to <strong id="modalEmployeeName"></strong> for week <span
+                        <p class="text-muted mb-3">Manage shifts for <strong id="modalEmployeeName"></strong> for week <span
                                 class="badge bg-light text-primary">{{ \Carbon\Carbon::parse($currentMonday)->format('d M') }}
                                 - {{ \Carbon\Carbon::parse($currentMonday)->addDays(6)->format('d M, Y') }}</span></p>
-                        <div class="site-checklist" style="max-height: 300px; overflow-y: auto;">
-                            @foreach($sites as $site)
-                                <div class="form-check site-check-item mb-2 p-2 rounded border bg-light">
-                                    <input class="form-check-input site-checkbox" type="checkbox" name="site_ids[]"
-                                        value="{{ $site->id }}" id="site_{{ $site->id }}">
-                                    <label class="form-check-label fw-semibold" for="site_{{ $site->id }}">
-                                        {{ $site->name }}
-                                        <small class="text-muted d-block">{{ $site->address ?? $site->city ?? '' }}</small>
-                                    </label>
-                                </div>
-                            @endforeach
+                        
+                        <div id="shifts-container" class="mb-3">
+                            <!-- Shift rows will be added here dynamically -->
                         </div>
 
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill w-100 mb-3 fw-bold" onclick="addShiftRow()">
+                            <i data-feather="plus-circle" style="width: 14px; height: 14px;"></i> Add Another Shift
+                        </button>
+
                         <div class="mt-3">
-                            <label class="form-label fw-bold small">Notes (Optional)</label>
+                            <label class="form-label fw-bold small">Weekly Notes (Optional)</label>
                             <textarea name="notes" id="modal_notes_employee" class="form-control rounded-3" rows="2"
-                                placeholder="Instructions for this week..."></textarea>
+                                placeholder="General instructions for the week..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-light rounded-pill px-4"
                             data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
-                            <i data-feather="check" style="width: 16px; height: 16px;" class="me-1"></i> Save Assignment
+                            <i data-feather="check" style="width: 16px; height: 16px;" class="me-1"></i> Save All Shifts
                         </button>
                     </div>
                 </form>
@@ -355,72 +351,178 @@
     </div>
 
     <style>
-        .site-check-item {
-            transition: all 0.25s ease;
+        .shift-row {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .shift-row:hover {
+            border-color: #7c3aed;
+            background: #fdfcff;
+        }
+
+        .btn-remove-shift {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.2rem 0.5rem;
+            color: #ef4444;
             cursor: pointer;
+            opacity: 0.6;
         }
 
-        .site-check-item.active {
-            background: #ede9fe !important;
-            border-color: #7c3aed !important;
+        .btn-remove-shift:hover {
+            opacity: 1;
         }
 
-        .site-check-item.active .form-check-label {
-            color: #5b21b6;
+        .day-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 1px solid #e2e8f0;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .day-btn.active {
+            background: #7c3aed;
+            border-color: #7c3aed;
+            color: white;
         }
     </style>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const modal = document.getElementById('assignSitesModal');
+        let shiftCount = 0;
+        const currentMonday = "{{ $currentMonday }}";
+        const sites = @json($sites);
 
-            function updateItemStyles() {
-                document.querySelectorAll('.site-checkbox').forEach(cb => {
-                    const wrapper = cb.closest('.site-check-item');
-                    if (cb.checked) {
-                        wrapper.classList.add('active');
-                    } else {
-                        wrapper.classList.remove('active');
-                    }
-                });
+        function addShiftRow(data = null) {
+            const container = document.getElementById('shifts-container');
+            const index = shiftCount++;
+            
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const dayValues = [];
+            for(let i=0; i<7; i++) {
+                dayValues.push(moment(currentMonday).add(i, 'days').format('YYYY-MM-DD'));
             }
 
-            // Toggle style on checkbox click
-            document.querySelectorAll('.site-checkbox').forEach(cb => {
-                cb.addEventListener('change', updateItemStyles);
+            const row = document.createElement('div');
+            row.className = 'shift-row';
+            row.id = `shift-row-${index}`;
+            
+            let sitesHtml = `<option value="">Select Site</option>`;
+            sites.forEach(site => {
+                sitesHtml += `<option value="${site.id}" ${data && data.site_id == site.id ? 'selected' : ''}>${site.name}</option>`;
             });
 
-            // Also toggle on clicking the whole row (but not on input or label)
-            document.querySelectorAll('.site-check-item').forEach(item => {
-                item.addEventListener('click', function (e) {
-                    if (e.target.closest('input') || e.target.closest('label')) return;
-                    const cb = item.querySelector('.site-checkbox');
-                    cb.checked = !cb.checked;
-                    updateItemStyles();
-                });
-            });
+            row.innerHTML = `
+                <div class="btn-remove-shift" onclick="this.closest('.shift-row').remove()">
+                    <i data-feather="x-circle" style="width: 16px;"></i>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <label class="small fw-bold">Site</label>
+                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3" required>
+                            ${sitesHtml}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold">Shift Name</label>
+                        <input type="text" name="shifts[${index}][shift_name]" class="form-control form-control-sm rounded-3" value="${data ? data.shift_name : 'Morning Shift'}" placeholder="e.g. Morning Shift">
+                    </div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="small fw-bold">Start Time</label>
+                        <input type="time" name="shifts[${index}][start_time]" class="form-control form-control-sm rounded-3" value="${data ? data.start_time : '08:00'}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold">End Time</label>
+                        <input type="time" name="shifts[${index}][end_time]" class="form-control form-control-sm rounded-3" value="${data ? data.end_time : '16:00'}" required>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between gap-1">
+                    ${days.map((day, i) => `
+                        <div class="text-center">
+                            <div class="day-btn ${data && data.dates.includes(dayValues[i]) ? 'active' : ''}" 
+                                 onclick="toggleDay(this)" 
+                                 title="${moment(dayValues[i]).format('DD MMM')}">
+                                ${day[0]}
+                            </div>
+                            <input type="checkbox" name="shifts[${index}][dates][]" value="${dayValues[i]}" 
+                                   class="day-checkbox d-none" ${data && data.dates.includes(dayValues[i]) ? 'checked' : ''}>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.appendChild(row);
+            feather.replace();
+        }
+
+
+        function toggleDay(btn) {
+            const checkbox = btn.parentElement.querySelector('.day-checkbox');
+            checkbox.checked = !checkbox.checked;
+            if (checkbox.checked) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('assignSitesModal');
 
             modal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 const employeeId = button.getAttribute('data-employee-id');
                 const employeeName = button.getAttribute('data-employee-name');
-                const assignedSites = JSON.parse(button.getAttribute('data-assigned-sites') || '[]');
+                const schedules = JSON.parse(button.getAttribute('data-schedules') || '[]');
                 const notes = button.getAttribute('data-notes')?.trim() || '';
 
                 document.getElementById('modalEmployeeName').textContent = employeeName;
                 document.getElementById('modal_user_id').value = employeeId;
                 document.getElementById('modal_notes_employee').value = notes;
 
-                // Reset all checkboxes
-                document.querySelectorAll('.site-checkbox').forEach(cb => cb.checked = false);
+                // Clear existing shift rows
+                document.getElementById('shifts-container').innerHTML = '';
+                shiftCount = 0;
 
-                // Check assigned sites
-                assignedSites.forEach(siteId => {
-                    const cb = document.getElementById('site_' + siteId);
-                    if (cb) cb.checked = true;
-                });
+                if (schedules.length > 0) {
+                    // Group schedules by shift pattern (site, start_time, end_time, shift_name)
+                    const groups = {};
+                    schedules.forEach(s => {
+                        const key = `${s.site_id}-${s.start_time}-${s.end_time}-${s.shift_name}`;
+                        if (!groups[key]) {
+                            groups[key] = {
+                                site_id: s.site_id,
+                                start_time: s.start_time ? s.start_time.substring(0, 5) : '08:00',
+                                end_time: s.end_time ? s.end_time.substring(0, 5) : '16:00',
+                                shift_name: s.shift_name,
+                                dates: []
+                            };
+                        }
+                        groups[key].dates.push(s.date);
+                    });
 
-                updateItemStyles();
+                    Object.values(groups).forEach(group => addShiftRow(group));
+                } else {
+                    addShiftRow(); // Add one empty row by default
+                }
+
                 feather.replace();
             });
 
