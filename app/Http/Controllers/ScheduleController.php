@@ -109,11 +109,12 @@ class ScheduleController extends Controller
             'shifts.*.shift_name' => 'nullable|string',
             'shifts.*.start_time' => 'required',
             'shifts.*.end_time' => 'required',
-            'shifts.*.dates' => 'required|array',
+            'shifts.*.date' => 'nullable|date',
+            'shifts.*.dates' => 'nullable|array',
         ]);
 
         $weekStart = Carbon::parse($request->week_start_date)->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
-        
+
         DB::beginTransaction();
         try {
             // Find or create the schedule for this user and week
@@ -130,14 +131,26 @@ class ScheduleController extends Controller
 
             if ($request->has('shifts')) {
                 foreach ($request->shifts as $shiftData) {
-                    foreach ($shiftData['dates'] as $date) {
+                    if (isset($shiftData['date'])) {
+                        // Handle day-based assignment (single date)
                         $schedule->shifts()->create([
                             'site_id' => $shiftData['site_id'],
-                            'date' => $date,
+                            'date' => $shiftData['date'],
                             'shift_name' => $shiftData['shift_name'] ?? 'Regular Shift',
                             'start_time' => $shiftData['start_time'],
                             'end_time' => $shiftData['end_time'],
                         ]);
+                    } elseif (isset($shiftData['dates']) && is_array($shiftData['dates'])) {
+                        // Handle pattern-based assignment (multiple dates)
+                        foreach ($shiftData['dates'] as $date) {
+                            $schedule->shifts()->create([
+                                'site_id' => $shiftData['site_id'],
+                                'date' => $date,
+                                'shift_name' => $shiftData['shift_name'] ?? 'Regular Shift',
+                                'start_time' => $shiftData['start_time'],
+                                'end_time' => $shiftData['end_time'],
+                            ]);
+                        }
                     }
                 }
             }
