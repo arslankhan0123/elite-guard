@@ -21,12 +21,20 @@ class ScheduleRepository
             ->where('week_start_date', $weekStartStr)
             ->get()
             ->map(function ($schedule) use ($weekStart) {
-                $groupedShifts = [];
+                $days = [];
                 for ($i = 0; $i < 7; $i++) {
-                    $currentDate = $weekStart->copy()->addDays($i)->format('Y-m-d');
-                    $groupedShifts[$currentDate] = $schedule->shifts->where('date', $currentDate)->values();
+                    $currentDate = $weekStart->copy()->addDays($i);
+                    $dateStr = $currentDate->format('Y-m-d');
+                    $dayName = $currentDate->format('l'); // e.g. Monday
+                    
+                    $days[] = [
+                        'date' => $dateStr,
+                        'day' => $dayName,
+                        'shifts' => $schedule->shifts->where('date', $dateStr)->values()
+                    ];
                 }
-                $schedule->grouped_shifts = $groupedShifts;
+                $schedule->days = $days;
+                unset($schedule->shifts); // Optional: remove flat list to keep response clean
                 return $schedule;
             });
 
