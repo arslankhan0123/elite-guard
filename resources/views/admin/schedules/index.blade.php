@@ -68,6 +68,9 @@
                             </thead>
                             <tbody>
                                 @forelse($schedules as $schedule)
+                                    @php
+                                        $assignedSites = $schedule->shifts->pluck('site.name')->unique();
+                                    @endphp
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
@@ -82,10 +85,15 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-soft-primary text-primary rounded-pill px-3 py-2 fw-semibold">
-                                                <i data-feather="map-pin" style="width: 12px; height: 12px;" class="me-1"></i>
-                                                {{ $schedule->site->name }}
-                                            </span>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach($assignedSites as $siteName)
+                                                    <span class="badge bg-soft-primary text-primary rounded-pill px-2 py-1 fw-semibold" style="font-size: 0.75rem;">
+                                                        <i data-feather="map-pin" style="width: 10px; height: 10px;" class="me-1"></i>
+                                                        {{ $siteName }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                            <small class="text-muted mt-1 d-block">{{ $schedule->shifts->count() }} total shifts this week</small>
                                         </td>
                                         <td>
                                             <small class="text-muted fw-bold">
@@ -99,8 +107,10 @@
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <button type="button" class="editBtn edit-schedule-btn" title="Edit Assignments"
-                                                    data-user-id="{{ $schedule->user_id }}" data-notes="{{ $schedule->notes }}"
-                                                    data-sites="{{ json_encode($schedules->where('user_id', $schedule->user_id)->pluck('site_id')->toArray()) }}">
+                                                    data-user-id="{{ $schedule->user_id }}" 
+                                                    data-user-name="{{ $schedule->user->name }}"
+                                                    data-notes="{{ $schedule->notes }}"
+                                                    data-schedules="{{ $schedule->toJson() }}">
                                                     <svg viewBox="0 0 512 512">
                                                         <path
                                                             d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 490.7c-3.9 13 2.3 27.2 14.9 31.2s27.2-2.3 31.2-14.9L72 401.7c4.1-14.1 11.7-27 22.2-37.4L293.4 165.1l22.6-22.6 11.3-11.3 22.6-22.6 40.4 40.4 11.3 11.3 11.3-11.3zM461.1 117.8L394.2 50.9c-31.2-31.2-82.1-31.2-113.3 0l-11.3 11.3 96.2 96.2 11.3-11.3c31.2-31.2 31.2-82.1 0-113.3z">
@@ -109,7 +119,7 @@
                                                 </button>
                                                 <a href="{{ route('schedules.delete', $schedule->id) }}" class="bin-button"
                                                     title="Delete"
-                                                    onclick="return confirm('Are you sure you want to remove this assignment?');">
+                                                    onclick="return confirm('Are you sure you want to remove all assignments for this employee this week?');">
                                                     <svg class="bin-top" viewBox="0 0 39 7">
                                                         <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
                                                         <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white"
@@ -151,60 +161,61 @@
         </div>
     </div>
 
-    <!-- Assign Modal -->
+    <!-- Assign Sites Modal -->
     <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 rounded-4 shadow">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold" id="assignModalLabel">
-                        <i data-feather="calendar" class="me-2 text-primary"></i> New Weekly Assignment
+                        <i data-feather="map-pin" class="me-2 text-primary"></i> Assign Shifts
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="assignForm" action="{{ route('schedules.store') }}" method="POST">
+                <form id="assignForm" action="{{ route('schedules.update') }}" method="POST">
                     @csrf
+                    <input type="hidden" name="user_id" id="modal_user_id">
                     <input type="hidden" name="week_start_date" value="{{ $weekStart->format('Y-m-d') }}">
 
-                    <div class="modal-body">
-                        <div class="alert bg-soft-primary text-primary border-0 rounded-3 mb-4">
-                            <small>Assigning for week: <strong>{{ $weekStart->format('d M, Y') }} -
-                                    {{ $weekEnd->format('d M, Y') }}</strong></small>
+                    <div class="modal-body p-0">
+                        <div class="px-4 pt-3 pb-2 bg-light border-bottom">
+                            <div class="mb-3" id="employee_select_container">
+                                <label class="form-label fw-bold small text-muted">Select Employee</label>
+                                <select name="user_id_select" id="modal_user_id_select" class="form-select rounded-3 p-2 border-0 shadow-sm">
+                                    <option value="">Choose an employee...</option>
+                                    @foreach($employees as $employee)
+                                        <option value="{{ $employee->id }}">{{ $employee->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <p class="text-muted mb-2">Manage shifts for <strong id="modalEmployeeName" class="text-dark">the selected employee</strong></p>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill">
+                                    <i data-feather="calendar" class="me-1" style="width: 14px;"></i>
+                                    {{ $weekStart->format('d M') }} - {{ $weekEnd->format('d M, Y') }}
+                                </span>
+                            </div>
                         </div>
+                        
+                        <div class="modal-body-scroll" style="max-height: 60vh; overflow-y: auto; padding: 1.5rem;">
+                            <div id="days-container">
+                                <!-- Day sections will be generated here -->
+                            </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Select Employee</label>
-                            <select name="user_id" id="modal_user_id" class="form-select rounded-3 p-2" required>
-                                <option value="">Choose an employee...</option>
-                                @foreach($employees as $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Select Sites</label>
-                            <select name="site_ids[]" id="modal_site_ids" class="form-select rounded-3 p-2 select2-multiple"
-                                multiple required>
-                                @foreach($sites as $site)
-                                    <option value="{{ $site->id }}">{{ $site->name }} ({{ $site->company->name ?? 'N/A' }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            <small class="text-muted">Click to add or remove sites.</small>
-                        </div>
-
-                        <div class="mb-0">
-                            <label class="form-label fw-bold">Notes (Optional)</label>
-                            <textarea name="notes" id="modal_notes" class="form-control rounded-3" rows="2"
-                                placeholder="Any specific instructions for this week..."></textarea>
+                            <div class="mt-4 p-3 bg-soft-secondary rounded-4">
+                                <label class="form-label fw-bold small text-secondary uppercase tracking-wider">
+                                    <i data-feather="file-text" class="me-1" style="width: 14px;"></i> Weekly Notes
+                                </label>
+                                <textarea name="notes" id="modal_notes" class="form-control border-0 rounded-3" rows="2"
+                                    placeholder="Add any general instructions for the employee this week..."></textarea>
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-light rounded-pill px-4"
+                    <div class="modal-footer border-0 bg-light p-3">
+                        <button type="button" class="btn btn-light rounded-pill px-4 fw-bold"
                             data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                            <i data-feather="check" style="width: 16px; height: 16px;" class="me-1"></i> <span
-                                id="submit_btn_text">Create Assignment</span>
+                            <i data-feather="check" style="width: 18px; height: 18px;" class="me-1"></i> <span id="submit_btn_text">Save Schedule</span>
                         </button>
                     </div>
                 </form>
@@ -213,41 +224,243 @@
     </div>
 
     <style>
-        .bg-soft-primary {
-            background-color: rgba(124, 58, 237, 0.1) !important;
-            color: #7c3aed !important;
+        .day-section {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            border-radius: 1.25rem;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
 
-        .bg-soft-info {
-            background-color: rgba(14, 165, 233, 0.1) !important;
-            color: #0ea5e9 !important;
+        .day-section:hover {
+            border-color: #cbd5e0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .day-header {
+            padding: 0.75rem 1.25rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .day-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #2d3748;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .day-date {
+            font-weight: 500;
+            font-size: 0.75rem;
+            color: #718096;
+        }
+
+        .shifts-list {
+            padding: 1rem;
+        }
+
+        .shift-item {
+            background: #fdfcff;
+            border: 1px solid #e9ecef;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-remove-shift {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ef4444;
+            background: #fee2e2;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-remove-shift:hover {
+            background: #ef4444;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .add-shift-btn {
+            color: #7c3aed;
+            background: #f5f3ff;
+            border: 1px dashed #c4b5fd;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            width: 100%;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .add-shift-btn:hover {
+            background: #ede9fe;
+            border-style: solid;
+        }
+
+        .empty-day-placeholder {
+            text-align: center;
+            padding: 1rem;
+            color: #a0aec0;
+            font-size: 0.8rem;
+            font-style: italic;
         }
     </style>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
     <script>
+        let shiftIndex = 0;
+        const currentMonday = "{{ $weekStart->format('Y-m-d') }}";
+        const sites = @json($sites);
+
+        function generateDaySections() {
+            const container = document.getElementById('days-container');
+            container.innerHTML = '';
+            
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            days.forEach((day, i) => {
+                const date = moment(currentMonday).add(i, 'days').format('YYYY-MM-DD');
+                const isToday = moment().format('YYYY-MM-DD') === date;
+                
+                const section = document.createElement('div');
+                section.className = 'day-section';
+                section.id = `day-section-${date}`;
+                
+                section.innerHTML = `
+                    <div class="day-header ${isToday ? 'bg-soft-primary' : ''}">
+                        <h6 class="day-title">
+                            <i data-feather="calendar" style="width: 14px; height: 14px;" class="${isToday ? 'text-primary' : 'text-muted'}"></i>
+                            ${day} ${isToday ? '<span class="badge bg-primary ms-2" style="font-size: 0.6rem;">TODAY</span>' : ''}
+                        </h6>
+                        <span class="day-date">${moment(date).format('DD MMM, YYYY')}</span>
+                    </div>
+                    <div class="shifts-list" id="shifts-for-${date}">
+                        <div class="empty-day-placeholder">No shifts assigned for this day</div>
+                    </div>
+                    <div class="px-3 pb-3">
+                        <button type="button" class="btn add-shift-btn" onclick="addShiftToDay('${date}')">
+                            <i data-feather="plus" style="width: 14px; height: 14px;" class="me-1"></i> Add Shift
+                        </button>
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+            feather.replace();
+        }
+
+        function addShiftToDay(date, data = null) {
+            const container = document.getElementById(`shifts-for-${date}`);
+            const placeholder = container.querySelector('.empty-day-placeholder');
+            if (placeholder) placeholder.remove();
+            
+            const index = shiftIndex++;
+            const shiftItem = document.createElement('div');
+            shiftItem.className = 'shift-item';
+            
+            let sitesHtml = `<option value="">Select Site</option>`;
+            sites.forEach(site => {
+                sitesHtml += `<option value="${site.id}" ${data && data.site_id == site.id ? 'selected' : ''}>${site.name}</option>`;
+            });
+
+            shiftItem.innerHTML = `
+                <button type="button" class="btn-remove-shift" onclick="removeShift(this, '${date}')">
+                    <i data-feather="x" style="width: 12px; height: 12px;"></i>
+                </button>
+                <input type="hidden" name="shifts[${index}][date]" value="${date}">
+                <div class="row g-2 mb-2">
+                    <div class="col-md-7">
+                        <label class="small fw-bold text-muted mb-1">Assigned Site</label>
+                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light" required>
+                            ${sitesHtml}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="small fw-bold text-muted mb-1">Shift Name</label>
+                        <input type="text" name="shifts[${index}][shift_name]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                               value="${data ? data.shift_name : 'Regular Shift'}" placeholder="e.g. Day Shift">
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="small fw-bold text-muted mb-1">Start Time</label>
+                        <input type="time" name="shifts[${index}][start_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                               value="${data ? (data.start_time ? data.start_time.substring(0,5) : '08:00') : '08:00'}" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="small fw-bold text-muted mb-1">End Time</label>
+                        <input type="time" name="shifts[${index}][end_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                               value="${data ? (data.end_time ? data.end_time.substring(0,5) : '16:00') : '16:00'}" required>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(shiftItem);
+            feather.replace();
+        }
+
+        function removeShift(btn, date) {
+            const item = btn.closest('.shift-item');
+            const container = document.getElementById(`shifts-for-${date}`);
+            item.remove();
+            
+            if (container.children.length === 0) {
+                container.innerHTML = `<div class="empty-day-placeholder">No shifts assigned for this day</div>`;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             feather.replace();
 
-            // Initialize Select2 in the modal
-            $('#modal_site_ids').select2({
-                dropdownParent: $('#assignModal'),
-                placeholder: 'Choose site(s)...',
-                width: '100%'
-            });
-
-            const assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
+            const assignModalEl = document.getElementById('assignModal');
+            const assignModal = new bootstrap.Modal(assignModalEl);
             const assignForm = document.getElementById('assignForm');
             const modalTitle = document.getElementById('assignModalLabel');
             const submitBtnText = document.getElementById('submit_btn_text');
+            const userSelect = document.getElementById('modal_user_id_select');
+            const userIdHidden = document.getElementById('modal_user_id');
+
+            userSelect.addEventListener('change', function() {
+                userIdHidden.value = this.value;
+                const name = this.options[this.selectedIndex].text;
+                document.getElementById('modalEmployeeName').textContent = this.value ? name : 'the selected employee';
+            });
 
             // Reset modal for New Assignment
             document.querySelector('[data-bs-target="#assignModal"]').addEventListener('click', function () {
-                assignForm.action = "{{ route('schedules.store') }}";
-                modalTitle.innerHTML = '<i data-feather="calendar" class="me-2 text-primary"></i> New Weekly Assignment';
-                submitBtnText.innerText = 'Create Assignment';
                 assignForm.reset();
-                $('#modal_user_id').val('').trigger('change');
-                $('#modal_site_ids').val([]).trigger('change');
+                modalTitle.innerHTML = '<i data-feather="map-pin" class="me-2 text-primary"></i> Assign Shifts';
+                submitBtnText.innerText = 'Save Schedule';
+                document.getElementById('employee_select_container').classList.remove('d-none');
+                document.getElementById('modalEmployeeName').textContent = 'the selected employee';
+                
+                shiftIndex = 0;
+                generateDaySections();
                 feather.replace();
             });
 
@@ -255,16 +468,27 @@
             document.querySelectorAll('.edit-schedule-btn').forEach(btn => {
                 btn.addEventListener('click', function () {
                     const userId = this.getAttribute('data-user-id');
-                    const siteIds = JSON.parse(this.getAttribute('data-sites'));
+                    const userName = this.getAttribute('data-user-name');
                     const notes = this.getAttribute('data-notes');
+                    const scheduleData = JSON.parse(this.getAttribute('data-schedules'));
 
-                    assignForm.action = "{{ route('schedules.update') }}";
-                    modalTitle.innerHTML = '<i data-feather="edit" class="me-2 text-warning"></i> Edit Assignments';
-                    submitBtnText.innerText = 'Update Assignments';
-
-                    $('#modal_user_id').val(userId).trigger('change');
-                    $('#modal_site_ids').val(siteIds).trigger('change');
+                    modalTitle.innerHTML = '<i data-feather="edit" class="me-2 text-warning"></i> Edit Shifts';
+                    submitBtnText.innerText = 'Update Schedule';
+                    
+                    document.getElementById('employee_select_container').classList.add('d-none');
+                    document.getElementById('modalEmployeeName').textContent = userName;
+                    userIdHidden.value = userId;
                     document.getElementById('modal_notes').value = notes;
+
+                    // Reset and populate
+                    shiftIndex = 0;
+                    generateDaySections();
+
+                    if (scheduleData.shifts && scheduleData.shifts.length > 0) {
+                        scheduleData.shifts.forEach(s => {
+                            addShiftToDay(s.date, s);
+                        });
+                    }
 
                     assignModal.show();
                     feather.replace();

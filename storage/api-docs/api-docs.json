@@ -1613,11 +1613,59 @@
                                                 },
                                                 "week_start_date": {
                                                     "type": "string",
-                                                    "example": "2026-04-13"
+                                                    "example": "2026-04-20"
                                                 },
                                                 "schedules": {
                                                     "type": "array",
                                                     "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 40
+                                                            },
+                                                            "user_id": {
+                                                                "type": "integer",
+                                                                "example": 6
+                                                            },
+                                                            "week_start_date": {
+                                                                "type": "string",
+                                                                "example": "2026-04-20"
+                                                            },
+                                                            "notes": {
+                                                                "type": "string",
+                                                                "example": "Notes for the week"
+                                                            },
+                                                            "days": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "date": {
+                                                                            "type": "string",
+                                                                            "example": "2026-04-20"
+                                                                        },
+                                                                        "day": {
+                                                                            "type": "string",
+                                                                            "example": "Monday"
+                                                                        },
+                                                                        "total_duration": {
+                                                                            "type": "string",
+                                                                            "example": "12h 30m"
+                                                                        },
+                                                                        "total_minutes": {
+                                                                            "type": "integer",
+                                                                            "example": 750
+                                                                        },
+                                                                        "shifts": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "object"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
                                                         "type": "object"
                                                     }
                                                 }

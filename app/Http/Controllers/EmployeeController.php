@@ -31,7 +31,7 @@ class EmployeeController extends Controller
         
         $employees = Employee::with(['user', 'user.offerLetter', 'user.schedules' => function($query) use ($currentMonday) {
             $query->where('week_start_date', $currentMonday);
-        }, 'user.schedules.site'])->get();
+        }, 'user.schedules.shifts.site'])->get();
         
         $sites = Site::orderBy('name')->get();
         return view('admin.employees.index', compact('employees', 'sites', 'currentMonday'));

@@ -16,17 +16,17 @@ class WeeklyScheduleMail extends Mailable
     public $user;
     public $weekStart;
     public $weekEnd;
-    public $schedules;
+    public $schedule;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user, $weekStart, $schedules)
+    public function __construct(User $user, $weekStart, $schedule)
     {
         $this->user = $user;
         $this->weekStart = Carbon::parse($weekStart);
         $this->weekEnd = $this->weekStart->copy()->endOfWeek(Carbon::SUNDAY);
-        $this->schedules = $schedules;
+        $this->schedule = $schedule;
     }
 
     /**

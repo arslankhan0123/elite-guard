@@ -45,20 +45,7 @@ class SiteApiController extends Controller
     public function index(Request $request)
     {
         $dateString = $request->query('date');
-        $date = $dateString ? Carbon::parse($dateString) : Carbon::now();
-        $weekStart = $date->copy()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
-
-        $schedules = Schedule::with(['site.company'])
-            ->where('user_id', Auth::id())
-            ->where('week_start_date', $weekStart)
-            ->get();
-
-        $data = [
-            'status' => true,
-            'message' => 'Schedules retrieved successfully',
-            'week_start_date' => $weekStart,
-            'sites' => $schedules
-        ];
+        $data = $this->scheduleRepo->getSchedulesByWeek(Auth::id(), $dateString);
 
         return $this->successResponse($data, 'Scheduled Sites of the week fetched.');
     }
