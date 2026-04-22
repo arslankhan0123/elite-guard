@@ -41,8 +41,24 @@ class ScheduleApiController extends Controller
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="status", type="boolean", example=true),
      *                 @OA\Property(property="message", type="string", example="Schedules retrieved successfully"),
-     *                 @OA\Property(property="week_start_date", type="string", example="2026-04-13"),
-     *                 @OA\Property(property="schedules", type="array", @OA\Items(type="object"))
+     *                 @OA\Property(property="week_start_date", type="string", example="2026-04-20"),
+     *                 @OA\Property(property="schedules", type="array",
+     *                     @OA\Items(type="object",
+     *                         @OA\Property(property="id", type="integer", example=40),
+     *                         @OA\Property(property="user_id", type="integer", example=6),
+     *                         @OA\Property(property="week_start_date", type="string", example="2026-04-20"),
+     *                         @OA\Property(property="notes", type="string", example="Notes for the week"),
+     *                         @OA\Property(property="days", type="array",
+     *                             @OA\Items(type="object",
+     *                                 @OA\Property(property="date", type="string", example="2026-04-20"),
+     *                                 @OA\Property(property="day", type="string", example="Monday"),
+     *                                 @OA\Property(property="total_duration", type="string", example="12h 30m"),
+     *                                 @OA\Property(property="total_minutes", type="integer", example=750),
+     *                                 @OA\Property(property="shifts", type="array", @OA\Items(type="object"))
+     *                             )
+     *                         )
+     *                     )
+     *                 )
      *             )
      *         )
      *     )
