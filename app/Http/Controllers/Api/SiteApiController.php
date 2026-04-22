@@ -3,21 +3,26 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Schedule;
 use App\Models\Site;
+use App\Repositories\ScheduleRepository;
 use Illuminate\Http\Request;
 use App\Repositories\SiteRepository;
 use App\Traits\ApiResponser;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class SiteApiController extends Controller
 {
     use ApiResponser;
     protected $siteRepo;
+    protected $scheduleRepo;
 
     // Inject the repository via constructor
-    public function __construct(SiteRepository $siteRepo)
+    public function __construct(SiteRepository $siteRepo, ScheduleRepository $scheduleRepo)
     {
         $this->siteRepo = $siteRepo;
+        $this->scheduleRepo = $scheduleRepo;
     }
 
     /**
@@ -37,17 +42,24 @@ class SiteApiController extends Controller
      *     )
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
-        $user = Auth::user();
-        $sites = $user->sites()->with('company')->orderBy('id', 'desc')->get();
+        $dateString = $request->query('date');
+        $date = $dateString ? Carbon::parse($dateString) : Carbon::now();
+        $weekStart = $date->copy()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
+
+        $schedules = Schedule::with(['site.company'])
+            ->where('user_id', Auth::id())
+            ->where('week_start_date', $weekStart)
+            ->get();
 
         $data = [
             'status' => true,
-            'message' => 'Assigned sites retrieved successfully',
-            'sites' => $sites
+            'message' => 'Schedules retrieved successfully',
+            'week_start_date' => $weekStart,
+            'sites' => $schedules
         ];
 
-        return $this->successResponse($data, 'Assigned sites fetched.');
+        return $this->successResponse($data, 'Scheduled Sites of the week fetched.');
     }
 }
