@@ -25,12 +25,32 @@ class ScheduleRepository
                 for ($i = 0; $i < 7; $i++) {
                     $currentDate = $weekStart->copy()->addDays($i);
                     $dateStr = $currentDate->format('Y-m-d');
-                    $dayName = $currentDate->format('l'); // e.g. Monday
+                    $dayName = $currentDate->format('l');
+                    $dayShifts = $schedule->shifts->where('date', $dateStr)->values();
                     
+                    $totalMinutes = 0;
+                    foreach ($dayShifts as $shift) {
+                        $start = Carbon::parse($shift->start_time);
+                        $end = Carbon::parse($shift->end_time);
+                        
+                        // If end time is before start time, assume it ends the next day
+                        if ($end->lessThan($start)) {
+                            $end->addDay();
+                        }
+                        
+                        $totalMinutes += $start->diffInMinutes($end);
+                    }
+                    
+                    $totalHours = floor($totalMinutes / 60);
+                    $remainingMinutes = $totalMinutes % 60;
+                    $formattedDuration = $totalHours . "h" . ($remainingMinutes > 0 ? " " . $remainingMinutes . "m" : "");
+
                     $days[] = [
                         'date' => $dateStr,
                         'day' => $dayName,
-                        'shifts' => $schedule->shifts->where('date', $dateStr)->values()
+                        'total_duration' => $formattedDuration,
+                        'total_minutes' => $totalMinutes,
+                        'shifts' => $dayShifts
                     ];
                 }
                 $schedule->days = $days;
