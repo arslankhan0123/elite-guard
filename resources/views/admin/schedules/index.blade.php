@@ -163,7 +163,7 @@
 
     <!-- Assign Sites Modal -->
     <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content border-0 rounded-4 shadow">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold" id="assignModalLabel">
@@ -238,6 +238,10 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
+        .modal-xl {
+            max-width: 90%;
+        }
+
         .day-header {
             padding: 0.75rem 1.25rem;
             background: #f8fafc;
@@ -265,6 +269,9 @@
 
         .shifts-list {
             padding: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .shift-item {
@@ -272,9 +279,21 @@
             border: 1px solid #e9ecef;
             border-radius: 1rem;
             padding: 1rem;
-            margin-bottom: 0.75rem;
+            flex: 0 0 calc(33.33% - 0.7rem);
             position: relative;
             animation: slideIn 0.3s ease-out;
+        }
+
+        @media (max-width: 992px) {
+            .shift-item {
+                flex: 0 0 calc(50% - 0.5rem);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .shift-item {
+                flex: 0 0 100%;
+            }
         }
 
         @keyframes slideIn {
