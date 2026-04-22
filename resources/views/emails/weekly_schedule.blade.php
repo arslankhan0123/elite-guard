@@ -25,20 +25,32 @@
         </div>
 
         <p>Hello <strong>{{ $user->name }}</strong>,</p>
-        <p>You have been assigned to <strong>{{ $schedules->count() }}</strong> sites for the upcoming week. Please find the details below:</p>
+        <p>Your roster for the week of <strong>{{ $weekStart->format('d M') }} - {{ $weekEnd->format('d M, Y') }}</strong> has been updated. Please find your assigned shifts below:</p>
 
-        @foreach($schedules as $schedule)
+        @foreach($schedule->shifts->sortBy('date') as $shift)
             <div class="site-card">
-                <div class="site-name">{{ $schedule->site->name }}</div>
-                <div class="site-company">Company: {{ $schedule->site->company->name ?? 'N/A' }}</div>
-                <div class="site-address">
-                    Address: {{ $schedule->site->address }}, {{ $schedule->site->city }}, {{ $schedule->site->country }}
+                <div class="site-name">
+                    {{ \Carbon\Carbon::parse($shift->date)->format('l, d M') }} - {{ $shift->shift_name }}
                 </div>
-                @if($schedule->notes)
-                    <div class="notes">Notes: {{ $schedule->notes }}</div>
-                @endif
+                <div class="site-company">
+                    <strong>Site:</strong> {{ $shift->site->name }} <br>
+                    <strong>Company:</strong> {{ $shift->site->company->name ?? 'N/A' }}
+                </div>
+                <div class="site-address">
+                    <strong>Time:</strong> {{ \Carbon\Carbon::parse($shift->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($shift->end_time)->format('h:i A') }}
+                </div>
+                <div class="site-address" style="margin-top: 5px; font-size: 13px;">
+                    <strong>Location:</strong> {{ $shift->site->address }}, {{ $shift->site->city }}
+                </div>
             </div>
         @endforeach
+
+        @if($schedule->notes)
+            <div style="background: #fff8e1; border: 1px solid #ffe082; padding: 15px; border-radius: 6px; margin-top: 20px;">
+                <strong>Weekly Notes:</strong><br>
+                <span class="text-muted small italic">{{ $schedule->notes }}</span>
+            </div>
+        @endif
 
         <p>Please ensure you are present at your assigned sites on time. If you have any questions, contact your supervisor.</p>
 

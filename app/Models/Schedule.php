@@ -11,11 +11,6 @@ class Schedule extends Model
 
     protected $fillable = [
         'user_id',
-        'site_id',
-        'date',
-        'shift_name',
-        'start_time',
-        'end_time',
         'week_start_date',
         'notes',
     ];
@@ -29,10 +24,10 @@ class Schedule extends Model
     }
 
     /**
-     * Get the site assigned in this schedule.
+     * Get the shifts for this schedule.
      */
-    public function site()
+    public function shifts()
     {
-        return $this->belongsTo(Site::class);
+        return $this->hasMany(Shift::class);
     }
 }

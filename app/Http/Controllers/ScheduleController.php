@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Schedule;
+use App\Models\Shift;
 use App\Models\User;
 use App\Models\Site;
 use App\Models\Employee;
@@ -28,7 +29,7 @@ class ScheduleController extends Controller
         $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
 
         // Fetch schedules for this week
-        $schedules = Schedule::with(['user', 'site'])
+        $schedules = Schedule::with(['user', 'shifts.site.company'])
             ->where('week_start_date', $weekStart->format('Y-m-d'))
             ->get();
 
@@ -59,33 +60,37 @@ class ScheduleController extends Controller
 
         $weekStart = Carbon::parse($request->week_start_date)->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
 
+        $schedule = Schedule::firstOrCreate([
+            'user_id' => $request->user_id,
+            'week_start_date' => $weekStart,
+        ]);
+
+        // Update notes if provided
+        if ($request->notes) {
+            $schedule->update(['notes' => $request->notes]);
+        }
+
         foreach ($request->site_ids as $site_id) {
-            // Check if already assigned
-            $exists = Schedule::where([
-                'user_id' => $request->user_id,
-                'site_id' => $site_id,
-                'week_start_date' => $weekStart
-            ])->exists();
+            // Check if this site is already assigned as a shift for this week
+            $exists = $schedule->shifts()->where('site_id', $site_id)->exists();
 
             if (!$exists) {
-                Schedule::create([
-                    'user_id' => $request->user_id,
+                $schedule->shifts()->create([
                     'site_id' => $site_id,
-                    'week_start_date' => $weekStart,
-                    'notes' => $request->notes,
+                    'date' => $weekStart, // Default to Monday if no specific date is given in simple store
+                    'shift_name' => 'Regular Shift',
+                    'start_time' => '08:00:00',
+                    'end_time' => '16:00:00',
                 ]);
             }
         }
 
         // Send Notification Email
         $user = User::findOrFail($request->user_id);
-        $allSchedules = Schedule::with('site.company')
-            ->where('user_id', $user->id)
-            ->where('week_start_date', $weekStart)
-            ->get();
+        $schedule->load('shifts.site.company');
 
-        if ($allSchedules->count() > 0) {
-            Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $allSchedules));
+        if ($schedule->shifts->count() > 0) {
+            Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $schedule));
         }
 
         return back()->with('success', 'Assignments created and employee notified.');
@@ -111,23 +116,27 @@ class ScheduleController extends Controller
         
         DB::beginTransaction();
         try {
-            // Delete all existing schedules for this user and week to sync
-            Schedule::where('user_id', $request->user_id)
-                ->where('week_start_date', $weekStart)
-                ->delete();
+            // Find or create the schedule for this user and week
+            $schedule = Schedule::firstOrCreate([
+                'user_id' => $request->user_id,
+                'week_start_date' => $weekStart,
+            ]);
+
+            // Update notes
+            $schedule->update(['notes' => $request->notes]);
+
+            // Clear existing shifts to sync
+            $schedule->shifts()->delete();
 
             if ($request->has('shifts')) {
                 foreach ($request->shifts as $shiftData) {
                     foreach ($shiftData['dates'] as $date) {
-                        Schedule::create([
-                            'user_id' => $request->user_id,
+                        $schedule->shifts()->create([
                             'site_id' => $shiftData['site_id'],
                             'date' => $date,
                             'shift_name' => $shiftData['shift_name'] ?? 'Regular Shift',
                             'start_time' => $shiftData['start_time'],
                             'end_time' => $shiftData['end_time'],
-                            'week_start_date' => $weekStart,
-                            'notes' => $request->notes,
                         ]);
                     }
                 }
@@ -137,14 +146,11 @@ class ScheduleController extends Controller
 
             // Send Notification Email
             $user = User::findOrFail($request->user_id);
-            $allSchedules = Schedule::with('site.company')
-                ->where('user_id', $user->id)
-                ->where('week_start_date', $weekStart)
-                ->get();
+            $schedule->load('shifts.site.company');
 
-            if ($allSchedules->count() > 0) {
+            if ($schedule->shifts->count() > 0) {
                 try {
-                    Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $allSchedules));
+                    Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $schedule));
                 } catch (\Exception $e) {
                     // Log error but don't fail the request
                     Log::error("Failed to send schedule email: " . $e->getMessage());

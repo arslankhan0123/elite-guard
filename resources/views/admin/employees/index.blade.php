@@ -65,20 +65,25 @@
                                         </td>
                                         <td>{{ $employee->phone ?? 'N/A' }}</td>
                                         <td>
-                                            @if($employee->user->schedules->isNotEmpty())
+                                            @php
+                                                $currentSchedule = $employee->user->schedules->where('week_start_date', $currentMonday)->first();
+                                                $assignedSites = $currentSchedule ? $currentSchedule->shifts->pluck('site.name')->unique() : collect();
+                                                $weeklyNote = $currentSchedule->notes ?? '';
+                                            @endphp
+                                            @if($assignedSites->isNotEmpty())
                                                 <div class="d-flex flex-wrap gap-1 mb-1">
-                                                    @foreach($employee->user->schedules as $schedule)
+                                                    @foreach($assignedSites as $siteName)
                                                         <span class="badge bg-soft-primary text-primary rounded-pill px-2 py-1"
                                                             style="font-size: 0.75rem;">
                                                             <i data-feather="map-pin" style="width: 10px; height: 10px;"></i>
-                                                            {{ $schedule->site->name }}
+                                                            {{ $siteName }}
                                                         </span>
                                                     @endforeach
                                                 </div>
                                                 @if($weeklyNote)
                                                     <div class="text-muted small italic" style="font-size: 0.7rem;">
                                                         <i data-feather="file-text" style="width: 10px; height: 10px;"></i>
-                                                        {{ Str::limit($weeklyNote ?? '', 30) }}
+                                                        {{ Str::limit($weeklyNote, 30) }}
                                                     </div>
                                                 @endif
                                             @else
@@ -103,7 +108,7 @@
                                                     data-bs-target="#assignSitesModal"
                                                     data-employee-id="{{ $employee->user->id }}"
                                                     data-employee-name="{{ $employee->user->name }}"
-                                                    data-schedules="{{ $employee->user->schedules->toJson() }}"
+                                                    data-schedules="{{ $currentSchedule ? $currentSchedule->toJson() : '[]' }}"
                                                     data-notes="{{ $weeklyNote }}">
                                                     <i data-feather="map" style="width: 14px; height: 14px;"></i>
                                                 </button>
@@ -490,7 +495,7 @@
                 const button = event.relatedTarget;
                 const employeeId = button.getAttribute('data-employee-id');
                 const employeeName = button.getAttribute('data-employee-name');
-                const schedules = JSON.parse(button.getAttribute('data-schedules') || '[]');
+                const scheduleData = JSON.parse(button.getAttribute('data-schedules') || '[]');
                 const notes = button.getAttribute('data-notes')?.trim() || '';
 
                 document.getElementById('modalEmployeeName').textContent = employeeName;
@@ -501,10 +506,10 @@
                 document.getElementById('shifts-container').innerHTML = '';
                 shiftCount = 0;
 
-                if (schedules.length > 0) {
-                    // Group schedules by shift pattern (site, start_time, end_time, shift_name)
+                if (scheduleData && scheduleData.shifts && scheduleData.shifts.length > 0) {
+                    // Group shifts by shift pattern (site, start_time, end_time, shift_name)
                     const groups = {};
-                    schedules.forEach(s => {
+                    scheduleData.shifts.forEach(s => {
                         const key = `${s.site_id}-${s.start_time}-${s.end_time}-${s.shift_name}`;
                         if (!groups[key]) {
                             groups[key] = {

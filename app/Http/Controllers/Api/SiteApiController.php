@@ -48,7 +48,7 @@ class SiteApiController extends Controller
         $date = $dateString ? Carbon::parse($dateString) : Carbon::now();
         $weekStart = $date->copy()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
 
-        $schedules = Schedule::with(['site.company'])
+        $schedules = Schedule::with(['shifts.site.company'])
             ->where('user_id', Auth::id())
             ->where('week_start_date', $weekStart)
             ->get();
