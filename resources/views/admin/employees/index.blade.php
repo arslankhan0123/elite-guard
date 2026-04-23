@@ -205,6 +205,17 @@
                                 <textarea name="notes" id="modal_notes_employee" class="form-control border-0 rounded-3" rows="2"
                                     placeholder="Add any general instructions for the employee this week..."></textarea>
                             </div>
+
+                            <!-- Send Email Toggle -->
+                            <div class="mt-3 p-3 rounded-4" style="background-color: #f5f3ff; border: 1px dashed #7c3aed;">
+                                <div class="form-check form-switch d-flex align-items-center gap-3">
+                                    <input class="form-check-input" type="checkbox" name="send_email" id="modal_send_email" value="1" style="width: 45px; height: 22px; cursor: pointer;">
+                                    <label class="form-check-label fw-bold text-primary mb-0" for="modal_send_email" style="cursor: pointer;">
+                                        <i data-feather="send" class="me-1" style="width: 14px;"></i> Send Schedule to Employee via Email
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block mt-2 ms-5">If enabled, the employee will receive their professional weekly schedule email.</small>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-0 bg-light p-3">
@@ -612,6 +623,9 @@
                         addShiftToDay(s.date, s);
                     });
                 }
+
+                // Set email toggle state
+                document.getElementById('modal_send_email').checked = scheduleData.is_email_sent == 1;
 
                 feather.replace();
             });

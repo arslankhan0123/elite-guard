@@ -123,8 +123,11 @@ class ScheduleController extends Controller
                 'week_start_date' => $weekStart,
             ]);
 
-            // Update notes
-            $schedule->update(['notes' => $request->notes]);
+            // Update notes and email status
+            $schedule->update([
+                'notes' => $request->notes,
+                'is_email_sent' => $request->has('send_email') ? true : false
+            ]);
 
             // Clear existing shifts to sync
             $schedule->shifts()->delete();
@@ -157,20 +160,18 @@ class ScheduleController extends Controller
 
             DB::commit();
 
-            // Send Notification Email
-            $user = User::findOrFail($request->user_id);
-            $schedule->load('shifts.site.company');
-
-            if ($schedule->shifts->count() > 0) {
+            // Send Notification Email if requested
+            if ($request->has('send_email') && $schedule->shifts->count() > 0) {
+                $user = User::findOrFail($request->user_id);
+                $schedule->load('shifts.site.company');
                 try {
                     Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $schedule));
                 } catch (\Exception $e) {
-                    // Log error but don't fail the request
                     Log::error("Failed to send schedule email: " . $e->getMessage());
                 }
             }
 
-            return back()->with('success', 'Shifts updated and employee notified.');
+            return back()->with('success', 'Shifts updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to update shifts: ' . $e->getMessage());

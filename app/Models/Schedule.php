@@ -13,6 +13,7 @@ class Schedule extends Model
         'user_id',
         'week_start_date',
         'notes',
+        'is_email_sent',
     ];
 
     /**
