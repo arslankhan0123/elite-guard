@@ -12,7 +12,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\WeeklyScheduleMail;
+use App\Notifications\ScheduleUpdatedNotification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class ScheduleController extends Controller
 {
@@ -123,10 +125,11 @@ class ScheduleController extends Controller
                 'week_start_date' => $weekStart,
             ]);
 
-            // Update notes and email status
+            // Update notes, email status, and notification status
             $schedule->update([
                 'notes' => $request->notes,
-                'is_email_sent' => $request->has('send_email') ? true : false
+                'is_email_sent' => $request->has('send_email') ? true : false,
+                'is_notification_sent' => $request->has('send_notification') ? true : false
             ]);
 
             // Clear existing shifts to sync
@@ -168,6 +171,19 @@ class ScheduleController extends Controller
                     Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $schedule));
                 } catch (\Exception $e) {
                     Log::error("Failed to send schedule email: " . $e->getMessage());
+                }
+            }
+
+            // Send FCM Notification if requested
+            $user = User::findOrFail($request->user_id);
+            if ($request->has('send_notification') && $user->fcm_token && $schedule->shifts->count() > 0) {
+                try {
+                    $weekEnd = Carbon::parse($weekStart)->endOfWeek(Carbon::SUNDAY)->format('d M, Y');
+                    $formattedWeekDates = Carbon::parse($weekStart)->format('d M') . " - " . $weekEnd;
+                    
+                    Notification::send($user, new ScheduleUpdatedNotification($formattedWeekDates, !$schedule->wasRecentlyCreated));
+                } catch (\Exception $e) {
+                    Log::error("Failed to send schedule FCM: " . $e->getMessage());
                 }
             }
 

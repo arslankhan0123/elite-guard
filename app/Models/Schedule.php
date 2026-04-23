@@ -14,6 +14,7 @@ class Schedule extends Model
         'week_start_date',
         'notes',
         'is_email_sent',
+        'is_notification_sent',
     ];
 
     /**
