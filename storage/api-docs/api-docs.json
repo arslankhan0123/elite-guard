@@ -1802,6 +1802,137 @@
                 ]
             }
         },
+        "/api/shift/{id}": {
+            "get": {
+                "tags": [
+                    "Shift"
+                ],
+                "summary": "Get shift details by ID",
+                "description": "Fetches detailed information about a specific shift, including associated schedule, user, and site data.",
+                "operationId": "58f4c492b401d8dbb671cca9c04162aa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the shift to fetch",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Shift data fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Shift data fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Shift data fetched successfully."
+                                                },
+                                                "shift": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "schedule_id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "site_id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "date": {
+                                                            "type": "string",
+                                                            "format": "date",
+                                                            "example": "2024-04-23"
+                                                        },
+                                                        "shift_name": {
+                                                            "type": "string",
+                                                            "example": "Morning Shift"
+                                                        },
+                                                        "start_time": {
+                                                            "type": "string",
+                                                            "example": "08:00:00"
+                                                        },
+                                                        "end_time": {
+                                                            "type": "string",
+                                                            "example": "16:00:00"
+                                                        },
+                                                        "schedule": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer",
+                                                                    "example": 1
+                                                                },
+                                                                "user_id": {
+                                                                    "type": "integer",
+                                                                    "example": 1
+                                                                },
+                                                                "user": {
+                                                                    "type": "object"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        },
+                                                        "site": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer",
+                                                                    "example": 1
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "example": "Main Site"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Shift not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/sites": {
             "get": {
                 "tags": [
@@ -2762,6 +2893,10 @@
         {
             "name": "Settings",
             "description": "Settings"
+        },
+        {
+            "name": "Shift",
+            "description": "Shift"
         },
         {
             "name": "Sites",
