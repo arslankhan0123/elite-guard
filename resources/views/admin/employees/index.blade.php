@@ -90,7 +90,7 @@
                                                 <span class="text-muted small">No sites assigned this week</span>
                                             @endif
                                         </td>
-                                        <td>{{ $employee->joining_date ? \Carbon\Carbon::parse($employee->joining_date)->format('d M, Y') : 'N/A' }}
+                                        <td>{{ $employee->user->offerLetter ? \Carbon\Carbon::parse($employee->user->offerLetter->joining_date)->format('d M, Y') : 'N/A' }}
                                         </td>
                                         <td>
                                             @if($employee->status)
