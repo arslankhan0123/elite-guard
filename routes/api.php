@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\PaySlipApiController;
 use App\Http\Controllers\Api\PolicyApiController;
 use App\Http\Controllers\Api\ScheduleApiController;
 use App\Http\Controllers\Api\SettingsApiController;
+use App\Http\Controllers\Api\ShiftApiController;
 use App\Http\Controllers\Api\SiteApiController;
 use App\Http\Controllers\Api\TagsApiController;
 use App\Http\Controllers\Api\TaxDocsApiController;
@@ -51,6 +52,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/schedules'], function () {
         Route::get('/', [ScheduleApiController::class, 'index']);
+    });
+
+    Route::group(['prefix' => '/shift'], function () {
+        Route::get('/{id}', [ShiftApiController::class, 'index']);
     });
 
     Route::group(['prefix' => '/panic'], function () {
