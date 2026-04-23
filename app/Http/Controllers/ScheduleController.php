@@ -12,7 +12,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\WeeklyScheduleMail;
+use App\Notifications\ScheduleUpdatedNotification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class ScheduleController extends Controller
 {
@@ -123,8 +125,12 @@ class ScheduleController extends Controller
                 'week_start_date' => $weekStart,
             ]);
 
-            // Update notes
-            $schedule->update(['notes' => $request->notes]);
+            // Update notes, email status, and notification status
+            $schedule->update([
+                'notes' => $request->notes,
+                'is_email_sent' => $request->has('send_email') ? true : false,
+                'is_notification_sent' => $request->has('send_notification') ? true : false
+            ]);
 
             // Clear existing shifts to sync
             $schedule->shifts()->delete();
@@ -157,20 +163,31 @@ class ScheduleController extends Controller
 
             DB::commit();
 
-            // Send Notification Email
-            $user = User::findOrFail($request->user_id);
-            $schedule->load('shifts.site.company');
-
-            if ($schedule->shifts->count() > 0) {
+            // Send Notification Email if requested
+            if ($request->has('send_email') && $schedule->shifts->count() > 0) {
+                $user = User::findOrFail($request->user_id);
+                $schedule->load('shifts.site.company');
                 try {
                     Mail::to($user->email)->send(new WeeklyScheduleMail($user, $weekStart, $schedule));
                 } catch (\Exception $e) {
-                    // Log error but don't fail the request
                     Log::error("Failed to send schedule email: " . $e->getMessage());
                 }
             }
 
-            return back()->with('success', 'Shifts updated and employee notified.');
+            // Send FCM Notification if requested
+            $user = User::findOrFail($request->user_id);
+            if ($request->has('send_notification') && $user->fcm_token && $schedule->shifts->count() > 0) {
+                try {
+                    $weekEnd = Carbon::parse($weekStart)->endOfWeek(Carbon::SUNDAY)->format('d M, Y');
+                    $formattedWeekDates = Carbon::parse($weekStart)->format('d M') . " - " . $weekEnd;
+                    
+                    Notification::send($user, new ScheduleUpdatedNotification($formattedWeekDates, !$schedule->wasRecentlyCreated));
+                } catch (\Exception $e) {
+                    Log::error("Failed to send schedule FCM: " . $e->getMessage());
+                }
+            }
+
+            return back()->with('success', 'Shifts updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to update shifts: ' . $e->getMessage());
