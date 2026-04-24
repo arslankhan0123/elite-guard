@@ -17,11 +17,15 @@ class Site extends Model
         'city',
         'country',
         'address',
+        'latitude',
+        'longitude',
         'status',
     ];
 
     protected $casts = [
-        'status' => 'boolean',
+        'status'    => 'boolean',
+        'latitude'  => 'float',
+        'longitude' => 'float',
     ];
 
     public function company()

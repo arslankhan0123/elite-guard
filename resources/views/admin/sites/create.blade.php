@@ -91,6 +91,36 @@
                         </div>
                     </div>
 
+                    <!-- ================= GPS COORDINATES ================= -->
+                    <h5 class="text-primary mt-4">🛰️ GPS Coordinates <small class="text-muted fs-12 fw-normal">(Check-in ke liye zaroori)</small></h5>
+
+                    <div class="row mt-3">
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label">Latitude</label>
+                            <input type="number" step="any" name="latitude" id="create_latitude"
+                                   class="form-control" value="{{ old('latitude') }}"
+                                   placeholder="e.g. 31.5204">
+                            @error('latitude') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label">Longitude</label>
+                            <input type="number" step="any" name="longitude" id="create_longitude"
+                                   class="form-control" value="{{ old('longitude') }}"
+                                   placeholder="e.g. 74.3587">
+                            @error('longitude') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="button" id="btn_get_location_create"
+                                    class="btn btn-outline-success w-100"
+                                    onclick="getCurrentLocation('create_latitude','create_longitude','create_location_status')">
+                                <i class="mdi mdi-crosshairs-gps me-1"></i> My Location
+                            </button>
+                        </div>
+                    </div>
+                    <div id="create_location_status" class="text-muted small mb-3" style="display:none;"></div>
+
                     <div class="row mt-4">
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary px-4">Create Site</button>
@@ -103,4 +133,40 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    function getCurrentLocation(latInputId, lngInputId, statusDivId) {
+        var statusDiv = document.getElementById(statusDivId);
+        statusDiv.style.display = 'block';
+        statusDiv.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Location fetch ho rahi hai...';
+        statusDiv.className = 'text-muted small mb-3';
+
+        if (!navigator.geolocation) {
+            statusDiv.innerHTML = '<i class="mdi mdi-alert-circle me-1"></i> Aapka browser geolocation support nahi karta.';
+            statusDiv.className = 'text-danger small mb-3';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                document.getElementById(latInputId).value  = position.coords.latitude.toFixed(7);
+                document.getElementById(lngInputId).value = position.coords.longitude.toFixed(7);
+                statusDiv.innerHTML = '<i class="mdi mdi-check-circle me-1"></i> Location set ho gayi! (' +
+                    position.coords.latitude.toFixed(5) + ', ' + position.coords.longitude.toFixed(5) + ')';
+                statusDiv.className = 'text-success small mb-3';
+            },
+            function (error) {
+                var msg = 'Location mil nahi saki.';
+                if (error.code === error.PERMISSION_DENIED)    msg = 'Location permission denied. Browser settings check karein.';
+                if (error.code === error.POSITION_UNAVAILABLE) msg = 'Location unavailable hai.';
+                if (error.code === error.TIMEOUT)              msg = 'Location timeout ho gayi.';
+                statusDiv.innerHTML = '<i class="mdi mdi-alert me-1"></i> ' + msg;
+                statusDiv.className = 'text-danger small mb-3';
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    }
+</script>
 @endsection
