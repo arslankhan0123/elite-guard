@@ -17,10 +17,25 @@ class AvailabilityRepository
             ->orderByDesc('date')
             ->get();
 
+        $pendingCount = Availability::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->count();
+
+        $approvedCount = Availability::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->count();
+
+        $rejectedCount = Availability::where('user_id', $user->id)
+            ->where('status', 'rejected')
+            ->count();
+
         return [
             'status' => true,
             'message' => 'Availabilities retrieved successfully',
-            'availabilities' => $availabilities
+            'availabilities' => $availabilities,
+            'pending_count' => $pendingCount,
+            'approved_count' => $approvedCount,
+            'rejected_count' => $rejectedCount,
         ];
     }
 
