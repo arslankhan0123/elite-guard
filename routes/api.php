@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ForgotPasswordApiController;
 use App\Http\Controllers\Api\NumberApiController;
 use App\Http\Controllers\Api\OfferLetterApiController;
 use App\Http\Controllers\Api\PanicApiController;
+use App\Http\Controllers\Api\OpenShiftApiController;
 use App\Http\Controllers\Api\OrientationApiController;
 use App\Http\Controllers\Api\PaySlipApiController;
 use App\Http\Controllers\Api\PolicyApiController;
@@ -107,6 +108,12 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [OrientationApiController::class, 'index']);
         Route::post('/submit-quiz', [OrientationApiController::class, 'submitQuiz']);
         Route::post('/signedOrientation', [OrientationApiController::class, 'signedOrientation']);
+    });
+
+    Route::group(['prefix' => '/open-shifts'], function () {
+        Route::get('/', [OpenShiftApiController::class, 'index']);
+        Route::post('/{id}/claim', [OpenShiftApiController::class, 'claim']);
+        Route::get('/my-claims', [OpenShiftApiController::class, 'myClaims']);
     });
 });
 

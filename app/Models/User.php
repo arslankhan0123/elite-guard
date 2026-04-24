@@ -100,6 +100,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(PaySlip::class);
     }
 
+    public function openShiftClaims()
+    {
+        return $this->hasMany(OpenShiftClaim::class);
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

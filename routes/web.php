@@ -13,6 +13,7 @@ use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\OpenShiftController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\TaxDocController;
 use App\Http\Controllers\TimeClockController;
@@ -42,12 +43,13 @@ Route::get('/architecture', function () {
 
 Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
     Route::get('/dashboard', function () {
-        $companyCount = Company::count();
-        $siteCount = Site::count();
-        $nfcCount = NfcTag::count();
-        $employeeCount = Employee::count();
+        $companyCount = \App\Models\Company::count();
+        $siteCount = \App\Models\Site::count();
+        $nfcCount = \App\Models\NfcTag::count();
+        $employeeCount = \App\Models\Employee::count();
+        $pendingOpenShiftClaimsCount = \App\Models\OpenShiftClaim::where('status', 'pending')->count();
 
-        return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount'));
+        return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount', 'pendingOpenShiftClaimsCount'));
     })->name('dashboard');
 
     Route::group(['prefix' => '/company'], function () {
@@ -82,6 +84,18 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/store', [ScheduleController::class, 'store'])->name('schedules.store');
         Route::post('/update', [ScheduleController::class, 'update'])->name('schedules.update');
         Route::get('/delete/{id}', [ScheduleController::class, 'destroy'])->name('schedules.delete');
+    });
+
+    Route::group(['prefix' => '/open-shifts'], function () {
+        Route::get('/', [OpenShiftController::class, 'index'])->name('open-shifts.index');
+        Route::get('/create', [OpenShiftController::class, 'create'])->name('open-shifts.create');
+        Route::post('/store', [OpenShiftController::class, 'store'])->name('open-shifts.store');
+        Route::get('/edit/{id}', [OpenShiftController::class, 'edit'])->name('open-shifts.edit');
+        Route::post('/update/{id}', [OpenShiftController::class, 'update'])->name('open-shifts.update');
+        Route::get('/delete/{id}', [OpenShiftController::class, 'delete'])->name('open-shifts.delete');
+        Route::get('/claims', [OpenShiftController::class, 'claims'])->name('open-shifts.claims');
+        Route::post('/claims/{id}/approve', [OpenShiftController::class, 'approveClaim'])->name('open-shifts.approve');
+        Route::post('/claims/{id}/reject', [OpenShiftController::class, 'rejectClaim'])->name('open-shifts.reject');
     });
 
     Route::group(['prefix' => '/time-clocks'], function () {

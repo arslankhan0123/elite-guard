@@ -249,6 +249,49 @@
         </div>
     </div>
 
+    <!-- Open Shift Management Section -->
+    <div class="row g-4 mt-2">
+        <div class="col-xl-4 col-md-6">
+            <a href="{{ route('open-shifts.claims') }}" class="text-decoration-none">
+                <div class="vibrant-card p-4" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <div class="stat-label">Pending Claims</div>
+                    <div class="stat-value">{{ $pendingOpenShiftClaimsCount }}</div>
+                    <div class="stat-icon"><i data-feather="bell"></i></div>
+                    <div class="mt-3 fs-6 d-flex align-items-center gap-1 opacity-75">
+                        Review Claim Requests <i data-feather="arrow-right" style="width: 16px;"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <a href="{{ route('open-shifts.index') }}" class="text-decoration-none">
+                <div class="vibrant-card p-4" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">
+                    <div class="stat-label">Active Open Shifts</div>
+                    <div class="stat-value">{{ \App\Models\OpenShift::where('status', 'open')->count() }}</div>
+                    <div class="stat-icon"><i data-feather="layers"></i></div>
+                    <div class="mt-3 fs-6 d-flex align-items-center gap-1 opacity-75">
+                        Manage Open Shifts <i data-feather="arrow-right" style="width: 16px;"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-xl-4 col-md-12">
+            <a href="{{ route('open-shifts.create') }}" class="text-decoration-none">
+                <div class="vibrant-card p-4" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); min-height: 100px;">
+                    <div class="d-flex align-items-center justify-content-between h-100">
+                        <div>
+                            <div class="stat-label mb-1">Quick Action</div>
+                            <h3 class="fw-bold text-white mb-0">Post New Shift</h3>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-3 rounded-circle">
+                            <i data-feather="plus-circle" style="width: 40px; height: 40px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
     <!-- Secondary Info Grid -->
     <div class="row g-4 mt-4 mb-5">
         <div class="col-lg-6">

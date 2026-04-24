@@ -50,6 +50,7 @@ class ScheduleRepository
                         'day' => $dayName,
                         'total_duration' => $formattedDuration,
                         'total_minutes' => $totalMinutes,
+                        'total_shifts' => $dayShifts->count(),
                         'shifts' => $dayShifts
                     ];
                 }
