@@ -159,6 +159,30 @@
                                 <span data-key="t-schedules">Schedule</span>
                             </a>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none position-relative" href="{{route('open-shifts.index')}}"
+                                id="topnav-open-shifts" role="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="layers"></i>
+                                <span data-key="t-open-shifts">Open Shifts</span>
+                                @php $pendingOpenShiftClaims = \App\Models\OpenShiftClaim::where('status','pending')->count(); @endphp
+                                @if($pendingOpenShiftClaims > 0)
+                                    <span class="badge bg-danger rounded-pill ms-1" style="font-size:.65rem;">{{ $pendingOpenShiftClaims }}</span>
+                                @endif
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none position-relative" href="{{route('availabilities.index')}}"
+                                id="topnav-availabilities" role="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="calendar"></i>
+                                <span data-key="t-availabilities">Availability</span>
+                                @php $pendingAvailCount = \App\Models\Availability::where('status','pending')->count(); @endphp
+                                @if($pendingAvailCount > 0)
+                                    <span class="badge bg-warning rounded-pill ms-1" style="font-size:.65rem; color:#000;">{{ $pendingAvailCount }}</span>
+                                @endif
+                            </a>
+                        </li>
                         <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('employees.index')}}"
                                 id="topnav-employees" role="button" data-toggle="dropdown" aria-haspopup="true"
