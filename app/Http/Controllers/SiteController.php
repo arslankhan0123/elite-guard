@@ -40,6 +40,9 @@ class SiteController extends Controller
             'phone'      => 'nullable|string|max:20',
             'city'       => 'nullable|string|max:100',
             'country'    => 'nullable|string|max:100',
+            'address'    => 'nullable|string',
+            'latitude'   => 'nullable|numeric|between:-90,90',
+            'longitude'  => 'nullable|numeric|between:-180,180',
             'status'     => 'required|boolean',
         ]);
 
@@ -64,6 +67,9 @@ class SiteController extends Controller
             'phone'      => 'nullable|string|max:20',
             'city'       => 'nullable|string|max:100',
             'country'    => 'nullable|string|max:100',
+            'address'    => 'nullable|string',
+            'latitude'   => 'nullable|numeric|between:-90,90',
+            'longitude'  => 'nullable|numeric|between:-180,180',
             'status'     => 'required|boolean',
         ]);
 
