@@ -887,6 +887,309 @@
                 ]
             }
         },
+        "/api/open-shifts": {
+            "get": {
+                "tags": [
+                    "Open Shifts"
+                ],
+                "summary": "List all available open shifts",
+                "description": "Fetches a list of open shifts that the authenticated employee can claim.",
+                "operationId": "327404dcaaf7c568c5b3cdee51c739da",
+                "responses": {
+                    "200": {
+                        "description": "Open shifts retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Open shifts fetched."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Open shifts retrieved successfully"
+                                                },
+                                                "open_shifts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "site": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 2
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Main Site"
+                                                                    },
+                                                                    "address": {
+                                                                        "type": "string",
+                                                                        "example": "123 Street"
+                                                                    },
+                                                                    "city": {
+                                                                        "type": "string",
+                                                                        "example": "London"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "date": {
+                                                                "type": "string",
+                                                                "example": "2026-04-24"
+                                                            },
+                                                            "shift_name": {
+                                                                "type": "string",
+                                                                "example": "Night Shift"
+                                                            },
+                                                            "start_time": {
+                                                                "type": "string",
+                                                                "example": "22:00:00"
+                                                            },
+                                                            "end_time": {
+                                                                "type": "string",
+                                                                "example": "06:00:00"
+                                                            },
+                                                            "slots": {
+                                                                "type": "integer",
+                                                                "example": 5
+                                                            },
+                                                            "approved_count": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "slots_remaining": {
+                                                                "type": "integer",
+                                                                "example": 4
+                                                            },
+                                                            "notes": {
+                                                                "type": "string",
+                                                                "example": "Uniform required"
+                                                            },
+                                                            "is_full": {
+                                                                "type": "boolean",
+                                                                "example": false
+                                                            },
+                                                            "my_claim": {
+                                                                "type": "object",
+                                                                "nullable": true
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/open-shifts/{id}/claim": {
+            "post": {
+                "tags": [
+                    "Open Shifts"
+                ],
+                "summary": "Claim an open shift",
+                "description": "Employee sends a request to claim a specific open shift. Subject to admin approval.",
+                "operationId": "9a629311be818030d43e1466349b80ef",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the open shift",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Shift claimed successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Shift claimed successfully! ..."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Shift claimed successfully"
+                                                },
+                                                "claim": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 10
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "example": "pending"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error (e.g. shift full or already claimed)."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/open-shifts/my-claims": {
+            "get": {
+                "tags": [
+                    "Open Shifts"
+                ],
+                "summary": "Get personal claim history",
+                "description": "Fetches a list of all claims made by the authenticated employee, including their status.",
+                "operationId": "9dad2dcc1840de2093c6c15debf6eab6",
+                "responses": {
+                    "200": {
+                        "description": "Claims retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Claims fetched."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Claims retrieved successfully"
+                                                },
+                                                "claims": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 5
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "example": "approved"
+                                                            },
+                                                            "admin_note": {
+                                                                "type": "string",
+                                                                "example": "Good job"
+                                                            },
+                                                            "claimed_at": {
+                                                                "type": "string",
+                                                                "example": "2026-04-24 10:00:00"
+                                                            },
+                                                            "shift": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 1
+                                                                    },
+                                                                    "site": {
+                                                                        "type": "string",
+                                                                        "example": "Main Site"
+                                                                    },
+                                                                    "date": {
+                                                                        "type": "string",
+                                                                        "example": "2026-04-24"
+                                                                    },
+                                                                    "shift_name": {
+                                                                        "type": "string",
+                                                                        "example": "Night Shift"
+                                                                    },
+                                                                    "start_time": {
+                                                                        "type": "string",
+                                                                        "example": "22:00:00"
+                                                                    },
+                                                                    "end_time": {
+                                                                        "type": "string",
+                                                                        "example": "06:00:00"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/orientations": {
             "get": {
                 "tags": [
@@ -1807,110 +2110,35 @@
                 "tags": [
                     "Shift"
                 ],
-                "summary": "Get shift details by ID",
-                "description": "Fetches detailed information about a specific shift, including associated schedule, user, and site data.",
+                "summary": "Get shift details",
                 "operationId": "58f4c492b401d8dbb671cca9c04162aa",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID of the shift to fetch",
+                        "description": "Shift ID",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 1
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Shift data fetched successfully.",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "status": {
-                                            "type": "string",
-                                            "example": "Success"
+                                            "type": "boolean",
+                                            "example": true
                                         },
                                         "message": {
                                             "type": "string",
                                             "example": "Shift data fetched successfully."
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "status": {
-                                                    "type": "boolean",
-                                                    "example": true
-                                                },
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "Shift data fetched successfully."
-                                                },
-                                                "shift": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "integer",
-                                                            "example": 1
-                                                        },
-                                                        "schedule_id": {
-                                                            "type": "integer",
-                                                            "example": 1
-                                                        },
-                                                        "site_id": {
-                                                            "type": "integer",
-                                                            "example": 1
-                                                        },
-                                                        "date": {
-                                                            "type": "string",
-                                                            "format": "date",
-                                                            "example": "2024-04-23"
-                                                        },
-                                                        "shift_name": {
-                                                            "type": "string",
-                                                            "example": "Morning Shift"
-                                                        },
-                                                        "start_time": {
-                                                            "type": "string",
-                                                            "example": "08:00:00"
-                                                        },
-                                                        "end_time": {
-                                                            "type": "string",
-                                                            "example": "16:00:00"
-                                                        },
-                                                        "schedule": {
-                                                            "properties": {
-                                                                "id": {
-                                                                    "type": "integer",
-                                                                    "example": 1
-                                                                },
-                                                                "user_id": {
-                                                                    "type": "integer",
-                                                                    "example": 1
-                                                                },
-                                                                "user": {
-                                                                    "type": "object"
-                                                                }
-                                                            },
-                                                            "type": "object"
-                                                        },
-                                                        "site": {
-                                                            "properties": {
-                                                                "id": {
-                                                                    "type": "integer",
-                                                                    "example": 1
-                                                                },
-                                                                "name": {
-                                                                    "type": "string",
-                                                                    "example": "Main Site"
-                                                                }
-                                                            },
-                                                            "type": "object"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
+                                        "shift": {
                                             "type": "object"
                                         }
                                     },
@@ -2847,6 +3075,10 @@
     },
     "tags": [
         {
+            "name": "Shift",
+            "description": "API Endpoints for Shift Management"
+        },
+        {
             "name": "Authentication",
             "description": "Authentication"
         },
@@ -2871,6 +3103,10 @@
             "description": "Offer Letter"
         },
         {
+            "name": "Open Shifts",
+            "description": "Open Shifts"
+        },
+        {
             "name": "Orientations",
             "description": "Orientations"
         },
@@ -2893,10 +3129,6 @@
         {
             "name": "Settings",
             "description": "Settings"
-        },
-        {
-            "name": "Shift",
-            "description": "Shift"
         },
         {
             "name": "Sites",
