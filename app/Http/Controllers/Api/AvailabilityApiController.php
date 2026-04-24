@@ -28,9 +28,9 @@ class AvailabilityApiController extends Controller
      *     @OA\Parameter(
      *         name="status",
      *         in="query",
-     *         description="Filter by status (pending, approved, rejected, all)",
+     *         description="Filter by status (pending, approved, rejected)",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"pending", "approved", "rejected", "all"})
+     *         @OA\Schema(type="string", enum={"pending", "approved", "rejected"})
      *     ),
      *     @OA\Response(
      *         response=200,
