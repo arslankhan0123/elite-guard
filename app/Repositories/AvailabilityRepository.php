@@ -10,12 +10,18 @@ class AvailabilityRepository
     /**
      * Get all availabilities for the authenticated user (API).
      */
-    public function getUserAvailabilities()
+    public function getUserAvailabilities($status = null)
     {
         $user = Auth::user();
-        $availabilities = Availability::where('user_id', $user->id)
-            ->orderByDesc('date')
-            ->get();
+
+        $query = Availability::where('user_id', $user->id)
+            ->orderByDesc('date');
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $availabilities = $query->get();
 
         $pendingCount = Availability::where('user_id', $user->id)
             ->where('status', 'pending')
@@ -45,7 +51,7 @@ class AvailabilityRepository
     public function createAvailability(array $data)
     {
         $user = Auth::user();
-        
+
         $availability = Availability::create([
             'user_id' => $user->id,
             'date' => $data['date'],
@@ -158,7 +164,7 @@ class AvailabilityRepository
     public function processAvailability($id, array $data)
     {
         $availability = Availability::findOrFail($id);
-        
+
         $availability->update([
             'status' => $data['status'] ?? $availability->status,
             'admin_notes' => $data['admin_notes'] ?? $availability->admin_notes,

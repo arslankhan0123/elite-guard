@@ -22,9 +22,16 @@ class AvailabilityApiController extends Controller
      * @OA\Get(
      *     path="/api/availabilities",
      *     summary="List all personal availabilities",
-     *     description="Fetches a list of availability submissions for the authenticated employee.",
+     *     description="Fetches a list of availability submissions for the authenticated employee. Can be filtered by status.",
      *     tags={"Availability"},
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by status (pending, approved, rejected, all)",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"pending", "approved", "rejected", "all"})
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Availabilities retrieved successfully.",
@@ -34,6 +41,9 @@ class AvailabilityApiController extends Controller
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="status", type="boolean", example=true),
      *                 @OA\Property(property="message", type="string", example="Availabilities retrieved successfully"),
+     *                 @OA\Property(property="pending_count", type="integer", example=2),
+     *                 @OA\Property(property="approved_count", type="integer", example=5),
+     *                 @OA\Property(property="rejected_count", type="integer", example=1),
      *                 @OA\Property(property="availabilities", type="array",
      *                     @OA\Items(type="object",
      *                         @OA\Property(property="id", type="integer", example=1),
@@ -49,9 +59,10 @@ class AvailabilityApiController extends Controller
      *     )
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
-        $result = $this->availabilityRepo->getUserAvailabilities();
+        $status = $request->query('status');
+        $result = $this->availabilityRepo->getUserAvailabilities($status);
         return $this->successResponse($result, 'Availabilities fetched.');
     }
 
