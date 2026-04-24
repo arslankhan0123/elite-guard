@@ -15,6 +15,7 @@ class AvailabilityRepository
         $user = Auth::user();
 
         $query = Availability::where('user_id', $user->id)
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
             ->orderByDesc('date');
 
         if ($status) {
