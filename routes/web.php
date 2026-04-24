@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\OpenShiftController;
+use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\TaxDocController;
 use App\Http\Controllers\TimeClockController;
@@ -48,8 +49,9 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         $nfcCount = \App\Models\NfcTag::count();
         $employeeCount = \App\Models\Employee::count();
         $pendingOpenShiftClaimsCount = \App\Models\OpenShiftClaim::where('status', 'pending')->count();
+        $pendingAvailCount = \App\Models\Availability::where('status', 'pending')->count();
 
-        return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount', 'pendingOpenShiftClaimsCount'));
+        return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount', 'pendingOpenShiftClaimsCount', 'pendingAvailCount'));
     })->name('dashboard');
 
     Route::group(['prefix' => '/company'], function () {
@@ -96,6 +98,12 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/claims', [OpenShiftController::class, 'claims'])->name('open-shifts.claims');
         Route::post('/claims/{id}/approve', [OpenShiftController::class, 'approveClaim'])->name('open-shifts.approve');
         Route::post('/claims/{id}/reject', [OpenShiftController::class, 'rejectClaim'])->name('open-shifts.reject');
+    });
+
+    Route::group(['prefix' => '/availabilities'], function () {
+        Route::get('/', [AvailabilityController::class, 'index'])->name('availabilities.index');
+        Route::put('/{id}', [AvailabilityController::class, 'update'])->name('availabilities.update');
+        Route::delete('/{id}', [AvailabilityController::class, 'destroy'])->name('availabilities.destroy');
     });
 
     Route::group(['prefix' => '/time-clocks'], function () {

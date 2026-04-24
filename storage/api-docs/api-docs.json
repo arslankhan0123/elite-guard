@@ -186,6 +186,247 @@
                 }
             }
         },
+        "/api/availabilities": {
+            "get": {
+                "tags": [
+                    "Availability"
+                ],
+                "summary": "List all personal availabilities",
+                "description": "Fetches a list of availability submissions for the authenticated employee.",
+                "operationId": "53951be7242ad5b3ecf959802c7326ce",
+                "responses": {
+                    "200": {
+                        "description": "Availabilities retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Availabilities fetched."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Availabilities retrieved successfully"
+                                                },
+                                                "availabilities": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "date": {
+                                                                "type": "string",
+                                                                "example": "2026-05-01"
+                                                            },
+                                                            "shift": {
+                                                                "type": "string",
+                                                                "example": "Morning"
+                                                            },
+                                                            "user_notes": {
+                                                                "type": "string",
+                                                                "example": "Available for extra hours"
+                                                            },
+                                                            "admin_notes": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "example": "pending"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/availabilities/store": {
+            "post": {
+                "tags": [
+                    "Availability"
+                ],
+                "summary": "Submit new availability",
+                "description": "Employee submits their availability for a specific date and shift.",
+                "operationId": "5ac1314bd7915f4720ea07ff3c4acc2b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "date",
+                                    "shift"
+                                ],
+                                "properties": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-05-01"
+                                    },
+                                    "shift": {
+                                        "description": "Morning, Afternoon, Evening, Night",
+                                        "type": "string",
+                                        "example": "Morning"
+                                    },
+                                    "user_notes": {
+                                        "type": "string",
+                                        "example": "Can work anytime"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Availability submitted successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Availability submitted successfully"
+                                                },
+                                                "availability": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/availabilities/update/{id}": {
+            "post": {
+                "tags": [
+                    "Availability"
+                ],
+                "summary": "Update pending availability",
+                "description": "Update a previously submitted availability if it is still pending.",
+                "operationId": "6478ce4431952aafce2494ef285f8159",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "shift": {
+                                        "type": "string"
+                                    },
+                                    "user_notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/availabilities/delete/{id}": {
+            "get": {
+                "tags": [
+                    "Availability"
+                ],
+                "summary": "Delete pending availability",
+                "operationId": "cc9ea55d029e7e96c197684642a5bb61",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted successfully."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/company": {
             "get": {
                 "tags": [
@@ -3081,6 +3322,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Availability",
+            "description": "Availability"
         },
         {
             "name": "Company",

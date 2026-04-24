@@ -292,6 +292,27 @@
         </div>
     </div>
 
+    <!-- Availability Section -->
+    <div class="row g-4 mt-2">
+        <div class="col-12">
+            <a href="{{ route('availabilities.index') }}" class="text-decoration-none">
+                <div class="vibrant-card p-4" style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%); min-height: 120px;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label text-info">Resource Planning</div>
+                            <h2 class="fw-bold text-white mb-1">Employee Availability</h2>
+                            <p class="text-white-50 mb-0">Review {{ $pendingAvailCount }} pending availability submissions from your team.</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="stat-value text-info">{{ $pendingAvailCount }}</div>
+                            <div class="small fw-bold text-info opacity-75">PENDING</div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
     <!-- Secondary Info Grid -->
     <div class="row g-4 mt-4 mb-5">
         <div class="col-lg-6">
