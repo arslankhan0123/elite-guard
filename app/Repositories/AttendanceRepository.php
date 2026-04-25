@@ -36,7 +36,7 @@ class AttendanceRepository
         }
 
         // 2. Check if it's too early (allowed only from 30 mins before start_time)
-        $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time);
+        $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time, 'Asia/Karachi');
         $earliestAllowed = $startTime->copy()->subMinutes(30);
 
         if ($now->lt($earliestAllowed)) {
