@@ -24,7 +24,7 @@ class AttendanceRepository
             ];
         }
 
-        $now = Carbon::now();
+        $now = Carbon::now('Asia/Karachi');
         $shiftDate = Carbon::parse($shift->date);
 
         // 1. Check if the date matches
@@ -90,7 +90,7 @@ class AttendanceRepository
         $attendance = ShiftAttendance::create([
             'user_id' => $user->id,
             'shift_id' => $shiftId,
-            'clock_in_at' => Carbon::now(),
+            'clock_in_at' => Carbon::now('Asia/Karachi'),
             'clock_in_latitude' => $lat,
             'clock_in_longitude' => $long,
             'status' => 'active',
@@ -137,7 +137,7 @@ class AttendanceRepository
         }
 
         $attendance->update([
-            'clock_out_at' => Carbon::now(),
+            'clock_out_at' => Carbon::now('Asia/Karachi'),
             'clock_out_latitude' => $lat,
             'clock_out_longitude' => $long,
             'status' => 'completed',
@@ -190,7 +190,7 @@ class AttendanceRepository
      */
     private function getDateRange($filter)
     {
-        $now = Carbon::now();
+        $now = Carbon::now('Asia/Karachi');
         $start = null;
         $end = null;
 
