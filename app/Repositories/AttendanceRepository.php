@@ -6,6 +6,7 @@ use App\Models\Shift;
 use App\Models\ShiftAttendance;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class AttendanceRepository
 {
@@ -24,7 +25,8 @@ class AttendanceRepository
             ];
         }
 
-        $now = Carbon::now('Asia/Karachi');
+        $timezone = $this->getUserTimezone();
+        $now = Carbon::now($timezone);
         $shiftDate = Carbon::parse($shift->date);
 
         // 1. Check if the date matches
@@ -36,7 +38,7 @@ class AttendanceRepository
         }
 
         // 2. Check if it's too early (allowed only from 30 mins before start_time)
-        $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time, 'Asia/Karachi');
+        $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time, $timezone);
         $earliestAllowed = $startTime->copy()->subMinutes(30);
 
         if ($now->lt($earliestAllowed)) {
@@ -90,7 +92,7 @@ class AttendanceRepository
         $attendance = ShiftAttendance::create([
             'user_id' => $user->id,
             'shift_id' => $shiftId,
-            'clock_in_at' => Carbon::now('Asia/Karachi'),
+            'clock_in_at' => Carbon::now($this->getUserTimezone()),
             'clock_in_latitude' => $lat,
             'clock_in_longitude' => $long,
             'status' => 'active',
@@ -137,7 +139,7 @@ class AttendanceRepository
         }
 
         $attendance->update([
-            'clock_out_at' => Carbon::now('Asia/Karachi'),
+            'clock_out_at' => Carbon::now($this->getUserTimezone()),
             'clock_out_latitude' => $lat,
             'clock_out_longitude' => $long,
             'status' => 'completed',
@@ -190,7 +192,8 @@ class AttendanceRepository
      */
     private function getDateRange($filter)
     {
-        $now = Carbon::now('Asia/Karachi');
+        $timezone = $this->getUserTimezone();
+        $now = Carbon::now($timezone);
         $start = null;
         $end = null;
 
@@ -249,5 +252,30 @@ class AttendanceRepository
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c;
+    }
+    /**
+     * Get user's timezone based on IP address.
+     */
+    private function getUserTimezone()
+    {
+        try {
+            $ip = request()->ip();
+
+            // Handle local development
+            if ($ip === '127.0.0.1' || $ip === '::1') {
+                return 'Asia/Karachi'; 
+            }
+
+            // Using free IP-API service
+            $response = Http::timeout(3)->get("http://ip-api.com/json/{$ip}?fields=timezone");
+            
+            if ($response->successful()) {
+                return $response->json('timezone') ?? config('app.timezone', 'UTC');
+            }
+            
+            return config('app.timezone', 'UTC');
+        } catch (\Exception $e) {
+            return config('app.timezone', 'UTC');
+        }
     }
 }
