@@ -40,7 +40,7 @@
             <div class="card-body p-3">
                 <div class="d-flex gap-2 flex-wrap">
                     @foreach(['all' => 'All', 'pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected'] as $val => $label)
-                        <a href="{{ route('open-shifts.claims', ['status' => $val]) }}"
+                        <a href="{{ route('open-shifts.claims', ['shift_id' => $shiftId, 'status' => $val]) }}"
                            class="btn rounded-pill px-4 fw-semibold {{ $statusFilter === $val ? 'btn-primary' : 'btn-outline-secondary' }}">
                             {{ $label }}
                             @if($val === 'pending' && $pendingClaimsCount > 0)
