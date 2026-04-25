@@ -14,15 +14,15 @@ class AvailabilityRepository
     {
         $user = Auth::user();
 
-        $query = Availability::where('user_id', $user->id)
-            ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
-            ->orderByDesc('date');
+        $query = Availability::where('user_id', $user->id);
 
         if ($status) {
             $query->where('status', $status);
         }
 
-        $availabilities = $query->get();
+        $availabilities = $query->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+            ->orderBy('date', 'desc')
+            ->get();
 
         $pendingCount = Availability::where('user_id', $user->id)
             ->where('status', 'pending')

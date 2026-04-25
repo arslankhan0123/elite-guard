@@ -15,6 +15,10 @@ class OpenShiftRepository
 
         $openShifts = OpenShift::with('site.company')
             ->where('status', 'open')
+            ->whereDoesntHave('claims', function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->whereIn('status', ['approved', 'rejected']);
+            })
             ->orderBy('date')
             ->get()
             ->map(function ($shift) use ($user) {
