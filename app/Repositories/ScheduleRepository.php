@@ -16,7 +16,9 @@ class ScheduleRepository
         $weekStart = $date->copy()->startOfWeek(Carbon::MONDAY);
         $weekStartStr = $weekStart->format('Y-m-d');
 
-        $schedules = Schedule::with(['shifts.site.company'])
+        $schedules = Schedule::with(['shifts.site.company', 'shifts.attendances' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
             ->where('user_id', $userId)
             ->where('week_start_date', $weekStartStr)
             ->get()
@@ -39,6 +41,22 @@ class ScheduleRepository
                         }
                         
                         $totalMinutes += $start->diffInMinutes($end);
+
+                        // Attendance Logic
+                        $attendance = $shift->attendances->first(); // Since we filtered by user_id in with()
+                        $shift->checked_in = $attendance ? true : false;
+                        $shift->checked_out = ($attendance && $attendance->clock_out_at) ? true : false;
+                        
+                        if (!$shift->checked_in) {
+                            $shift->Next = "Check In";
+                        } elseif (!$shift->checked_out) {
+                            $shift->Next = "Check Out";
+                        } else {
+                            $shift->Next = "Completed";
+                        }
+
+                        $shift->attendance = $attendance;
+                        unset($shift->attendances); // Remove the collection and keep the single object
                     }
                     
                     $totalHours = floor($totalMinutes / 60);

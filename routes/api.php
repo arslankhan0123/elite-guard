@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\OfferLetterApiController;
 use App\Http\Controllers\Api\PanicApiController;
 use App\Http\Controllers\Api\OpenShiftApiController;
 use App\Http\Controllers\Api\AvailabilityApiController;
+use App\Http\Controllers\Api\AttendanceApiController;
 use App\Http\Controllers\Api\OrientationApiController;
 use App\Http\Controllers\Api\PaySlipApiController;
 use App\Http\Controllers\Api\PolicyApiController;
@@ -122,6 +123,11 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/store', [AvailabilityApiController::class, 'store']);
         Route::post('/update/{id}', [AvailabilityApiController::class, 'update']);
         Route::get('/delete/{id}', [AvailabilityApiController::class, 'destroy']);
+    });
+
+    Route::group(['prefix' => '/attendance'], function () {
+        Route::post('/clock-in', [AttendanceApiController::class, 'clockIn']);
+        Route::post('/clock-out', [AttendanceApiController::class, 'clockOut']);
     });
 });
 
