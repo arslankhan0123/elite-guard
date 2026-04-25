@@ -248,6 +248,27 @@
             </a>
         </div>
     </div>
+    
+    <!-- Attendance Section -->
+    <div class="row g-4 mt-2">
+        <div class="col-12">
+            <a href="{{ route('attendance.index') }}" class="text-decoration-none">
+                <div class="vibrant-card p-4" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); min-height: 120px;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label text-white">Live Operations</div>
+                            <h2 class="fw-bold text-white mb-1">Shift Attendance</h2>
+                            <p class="text-white-50 mb-0">Monitor real-time clock-in/out activity across all sites.</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="stat-value text-white">{{ $todayAttendanceCount }}</div>
+                            <div class="small fw-bold text-white opacity-75">TODAY</div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
 
     <!-- Open Shift Management Section -->
     <div class="row g-4 mt-2">

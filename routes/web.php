@@ -50,8 +50,9 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         $employeeCount = \App\Models\Employee::count();
         $pendingOpenShiftClaimsCount = \App\Models\OpenShiftClaim::where('status', 'pending')->count();
         $pendingAvailCount = \App\Models\Availability::where('status', 'pending')->count();
+        $todayAttendanceCount = \App\Models\ShiftAttendance::whereDate('clock_in_at', \Carbon\Carbon::today())->count();
 
-        return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount', 'pendingOpenShiftClaimsCount', 'pendingAvailCount'));
+        return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount', 'pendingOpenShiftClaimsCount', 'pendingAvailCount', 'todayAttendanceCount'));
     })->name('dashboard');
 
     Route::group(['prefix' => '/company'], function () {
@@ -108,6 +109,10 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
 
     Route::group(['prefix' => '/time-clocks'], function () {
         Route::get('/', [TimeClockController::class, 'index'])->name('time-clocks.index');
+    });
+
+    Route::group(['prefix' => '/attendance'], function () {
+        Route::get('/', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('attendance.index');
     });
 
     Route::group(['prefix' => '/profile'], function () {
