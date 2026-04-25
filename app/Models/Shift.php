@@ -33,4 +33,12 @@ class Shift extends Model
     {
         return $this->belongsTo(Site::class);
     }
+
+    /**
+     * Get all attendance records for this shift.
+     */
+    public function attendances()
+    {
+        return $this->hasMany(ShiftAttendance::class);
+    }
 }
