@@ -116,8 +116,9 @@ class OpenShiftController extends Controller
     public function claims(Request $request)
     {
         $statusFilter = $request->input('status', 'all');
+        $shiftId     = $request->shift_id;
 
-        $claimsQuery = OpenShiftClaim::with('user.employee', 'openShift.site')
+        $claimsQuery = OpenShiftClaim::with('user.employee', 'openShift.site')->where('open_shift_id', $shiftId)
             ->orderByRaw("FIELD(status, 'pending', 'approved', 'rejected')")
             ->orderByDesc('created_at');
 
@@ -128,7 +129,7 @@ class OpenShiftController extends Controller
         $claims             = $claimsQuery->get();
         $pendingClaimsCount = OpenShiftClaim::where('status', 'pending')->count();
 
-        return view('admin.open-shifts.claims', compact('claims', 'pendingClaimsCount', 'statusFilter'));
+        return view('admin.open-shifts.claims', compact('claims', 'pendingClaimsCount', 'statusFilter', 'shiftId'));
     }
 
     /**
