@@ -57,7 +57,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/', [ScheduleApiController::class, 'index']);
     });
 
-    Route::group(['prefix' => '/shift'], function () {
+    Route::group(['prefix' => '/shifts'], function () {
         Route::get('/', [ShiftApiController::class, 'userShifts']);
         Route::get('/{id}', [ShiftApiController::class, 'index']);
     });

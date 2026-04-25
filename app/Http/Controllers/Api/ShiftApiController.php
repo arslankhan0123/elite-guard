@@ -28,7 +28,7 @@ class ShiftApiController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/shift/{id}",
+     *     path="/api/shifts/{id}",
      *     summary="Get shift details",
      *     tags={"Shift"},
      *     security={{"bearerAuth":{}}},
@@ -67,7 +67,7 @@ class ShiftApiController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/shift",
+     *     path="/api/shifts",
      *     summary="Get all shifts for the logged-in user",
      *     description="Returns a list of shifts for the current week (starting Monday) assigned to the authenticated user.",
      *     tags={"Shift"},
