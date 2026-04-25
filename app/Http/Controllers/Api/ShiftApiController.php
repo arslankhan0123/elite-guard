@@ -26,7 +26,7 @@ class ShiftApiController extends Controller
         $this->shiftRepo = $shiftRepo;
     }
 
-     /**
+    /**
      * @OA\Get(
      *     path="/api/shift/{id}",
      *     summary="Get shift details",
@@ -63,5 +63,39 @@ class ShiftApiController extends Controller
         $shift = $this->shiftRepo->getShiftData($id);
 
         return $this->successResponse($shift, 'Shift data fetched successfully.');
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/shift",
+     *     summary="Get all shifts for the logged-in user",
+     *     description="Returns a list of shifts for the current week (starting Monday) assigned to the authenticated user.",
+     *     tags={"Shift"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Success"),
+     *             @OA\Property(property="message", type="string", example="Shift data fetched successfully."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="status", type="boolean", example=true),
+     *                 @OA\Property(property="message", type="string", example="Shifts data fetched successfully."),
+     *                 @OA\Property(property="total", type="integer", example=1),
+     *                 @OA\Property(property="shifts", type="array", @OA\Items(type="object"))
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function userShifts()
+    {
+        $shifts = $this->shiftRepo->getUserShiftData();
+
+        return $this->successResponse($shifts, 'Shift data fetched successfully.');
     }
 }
