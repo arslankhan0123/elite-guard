@@ -24,6 +24,28 @@ class AttendanceRepository
             ];
         }
 
+        $now = Carbon::now();
+        $shiftDate = Carbon::parse($shift->date);
+
+        // 1. Check if the date matches
+        if (!$now->isSameDay($shiftDate)) {
+            return [
+                'status' => false,
+                'message' => 'You can only clock in on the date assigned to this shift: ' . $shift->date
+            ];
+        }
+
+        // 2. Check if it's too early (allowed only from 30 mins before start_time)
+        $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time);
+        $earliestAllowed = $startTime->copy()->subMinutes(30);
+
+        if ($now->lt($earliestAllowed)) {
+            return [
+                'status' => false,
+                'message' => 'You can only clock in starting from 30 minutes before the shift start time (' . $shift->start_time . ').'
+            ];
+        }
+
         // Verify if user is assigned to this shift
         // Assuming shift -> schedule -> user relationship
         if ($shift->schedule->user_id !== $user->id) {
@@ -87,7 +109,7 @@ class AttendanceRepository
     public function clockOut($shiftId, $lat, $long)
     {
         $user = Auth::user();
-        
+
         $attendance = ShiftAttendance::where('shift_id', $shiftId)
             ->where('user_id', $user->id)
             ->where('status', 'active')
@@ -103,7 +125,7 @@ class AttendanceRepository
         // Geofencing Check for Clock-Out (Optional but good practice)
         $shift = Shift::with('site')->find($shiftId);
         $site = $shift->site;
-        
+
         $distance = $this->calculateDistance($lat, $long, $site->latitude, $site->longitude);
 
         if ($distance > 100) {
@@ -221,9 +243,9 @@ class AttendanceRepository
         $lonDelta = deg2rad($lon2 - $lon1);
 
         $a = sin($latDelta / 2) * sin($latDelta / 2) +
-             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-             sin($lonDelta / 2) * sin($lonDelta / 2);
-             
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($lonDelta / 2) * sin($lonDelta / 2);
+
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c;
