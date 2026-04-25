@@ -129,6 +129,88 @@ class AttendanceRepository
     }
 
     /**
+     * Get attendance report for admin panel with filters.
+     */
+    public function getAttendanceReport($request)
+    {
+        $query = ShiftAttendance::with(['user', 'shift.site.company']);
+
+        // Filter by User
+        if ($request->has('user_id') && $request->user_id) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Filter by Site
+        if ($request->has('site_id') && $request->site_id) {
+            $query->whereHas('shift', function ($q) use ($request) {
+                $q->where('site_id', $request->site_id);
+            });
+        }
+
+        // Filter by Status
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by Date Range
+        if ($request->has('date_filter') && $request->date_filter) {
+            $range = $this->getDateRange($request->date_filter);
+            if ($range['start'] && $range['end']) {
+                $query->whereBetween('clock_in_at', [$range['start'], $range['end']]);
+            }
+        }
+
+        return $query->orderBy('clock_in_at', 'desc')->get();
+    }
+
+    /**
+     * Helper to get date range based on filter string.
+     */
+    private function getDateRange($filter)
+    {
+        $now = Carbon::now();
+        $start = null;
+        $end = null;
+
+        switch ($filter) {
+            case 'today':
+                $start = $now->copy()->startOfDay();
+                $end = $now->copy()->endOfDay();
+                break;
+            case 'yesterday':
+                $start = $now->copy()->subDay()->startOfDay();
+                $end = $now->copy()->subDay()->endOfDay();
+                break;
+            case 'current_week':
+                $start = $now->copy()->startOfWeek();
+                $end = $now->copy()->endOfWeek();
+                break;
+            case 'last_week':
+                $start = $now->copy()->subWeek()->startOfWeek();
+                $end = $now->copy()->subWeek()->endOfWeek();
+                break;
+            case 'current_month':
+                $start = $now->copy()->startOfMonth();
+                $end = $now->copy()->endOfMonth();
+                break;
+            case 'last_month':
+                $start = $now->copy()->subMonth()->startOfMonth();
+                $end = $now->copy()->subMonth()->endOfMonth();
+                break;
+            case 'current_year':
+                $start = $now->copy()->startOfYear();
+                $end = $now->copy()->endOfYear();
+                break;
+            case 'last_year':
+                $start = $now->copy()->subYear()->startOfYear();
+                $end = $now->copy()->subYear()->endOfYear();
+                break;
+        }
+
+        return ['start' => $start, 'end' => $end];
+    }
+
+    /**
      * Calculate distance using Haversine formula.
      */
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
