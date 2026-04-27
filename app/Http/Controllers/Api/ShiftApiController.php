@@ -100,7 +100,7 @@ class ShiftApiController extends Controller
     }
 
     /**
-     * @OA\Post(
+     * @OA\Get(
      *     path="/api/shifts/{id}/reject",
      *     summary="Reject an assigned shift",
      *     description="Allows a user to reject a shift assigned to them. The shift will be removed from their schedule and moved to open shifts.",
