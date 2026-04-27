@@ -2,10 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Models\OpenShift;
 use App\Models\Schedule;
 use App\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ShiftRepository
 {
@@ -88,5 +90,69 @@ class ShiftRepository
             'message' => 'Shift data fetched successfully.',
             'shift' => $shift
         ];
+    }
+
+    public function rejectShift($id)
+    {
+        $userId = Auth::id();
+        $shift = Shift::with(['schedule', 'attendances'])->find($id);
+
+        if (!$shift) {
+            return [
+                'status' => false,
+                'message' => 'Shift not found.',
+                'code' => 404
+            ];
+        }
+
+        // Verify shift belongs to the user
+        if ($shift->schedule->user_id !== $userId) {
+            return [
+                'status' => false,
+                'message' => 'You are not authorized to reject this shift.',
+                'code' => 403
+            ];
+        }
+
+        // Check if shift has attendance records (checked in)
+        if ($shift->attendances->count() > 0) {
+            return [
+                'status' => false,
+                'message' => 'You cannot reject a shift that has already started or been checked into.',
+                'code' => 422
+            ];
+        }
+
+        DB::beginTransaction();
+        try {
+            // Create OpenShift record
+            OpenShift::create([
+                'site_id'    => $shift->site_id,
+                'date'       => $shift->date,
+                'shift_name' => $shift->shift_name,
+                'start_time' => $shift->start_time,
+                'end_time'   => $shift->end_time,
+                'slots'      => 1,
+                'status'     => 'open',
+                'notes'      => 'Shift rejected by user ' . Auth::user()->name,
+            ]);
+
+            // Delete the assigned shift
+            $shift->delete();
+
+            DB::commit();
+
+            return [
+                'status' => true,
+                'message' => 'Shift rejected successfully and moved to open shifts.'
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'status' => false,
+                'message' => 'Failed to reject shift: ' . $e->getMessage(),
+                'code' => 500
+            ];
+        }
     }
 }
