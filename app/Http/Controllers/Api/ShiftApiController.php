@@ -98,4 +98,51 @@ class ShiftApiController extends Controller
 
         return $this->successResponse($shifts, 'Shift data fetched successfully.');
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/shifts/{id}/reject",
+     *     summary="Reject an assigned shift",
+     *     description="Allows a user to reject a shift assigned to them. The shift will be removed from their schedule and moved to open shifts.",
+     *     tags={"Shift"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Shift ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Shift rejected successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Shift not found"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error (e.g. shift already started)"
+     *     )
+     * )
+     */
+    public function rejectShift($id)
+    {
+        $result = $this->shiftRepo->rejectShift($id);
+
+        if (!$result['status']) {
+            return $this->errorResponse($result['message'], null, $result['code'] ?? 422);
+        }
+
+        return $this->successResponse(null, $result['message']);
+    }
 }
