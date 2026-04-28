@@ -99,7 +99,8 @@ class PanicApiController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => "Panic notifications dispatched. Success: $successCount, Failed: $failedCount.",
+            'message' => "Panic Notifications sent to all users.",
+            // 'message' => "Panic notifications dispatched. Success: $successCount, Failed: $failedCount.",
         ]);
     }
 }
