@@ -14,36 +14,46 @@ class AvailabilityRepository
     {
         $user = Auth::user();
 
-        $query = Availability::where('user_id', $user->id);
-
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        $availabilities = $query->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
-            ->orderBy('date', 'desc')
+        $availabilities = Availability::where('user_id', $user->id)
+            ->orderBy('date', 'desc') // ya 'asc' agar oldest pehle chahiye
             ->get();
-
-        $pendingCount = Availability::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->count();
-
-        $approvedCount = Availability::where('user_id', $user->id)
-            ->where('status', 'approved')
-            ->count();
-
-        $rejectedCount = Availability::where('user_id', $user->id)
-            ->where('status', 'rejected')
-            ->count();
 
         return [
             'status' => true,
             'message' => 'Availabilities retrieved successfully',
             'availabilities' => $availabilities,
-            'pending_count' => $pendingCount,
-            'approved_count' => $approvedCount,
-            'rejected_count' => $rejectedCount,
         ];
+
+        // $query = Availability::where('user_id', $user->id);
+
+        // if ($status) {
+        //     $query->where('status', $status);
+        // }
+
+        // $availabilities = $query->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+        //     ->orderBy('date', 'desc')
+        //     ->get();
+
+        // $pendingCount = Availability::where('user_id', $user->id)
+        //     ->where('status', 'pending')
+        //     ->count();
+
+        // $approvedCount = Availability::where('user_id', $user->id)
+        //     ->where('status', 'approved')
+        //     ->count();
+
+        // $rejectedCount = Availability::where('user_id', $user->id)
+        //     ->where('status', 'rejected')
+        //     ->count();
+
+        // return [
+        //     'status' => true,
+        //     'message' => 'Availabilities retrieved successfully',
+        //     'availabilities' => $availabilities,
+        //     'pending_count' => $pendingCount,
+        //     'approved_count' => $approvedCount,
+        //     'rejected_count' => $rejectedCount,
+        // ];
     }
 
     /**
@@ -58,7 +68,7 @@ class AvailabilityRepository
             'date' => $data['date'],
             'shift' => $data['shift'],
             'user_notes' => $data['user_notes'] ?? null,
-            'status' => 'pending'
+            'status' => 'approved'
         ]);
 
         return [
