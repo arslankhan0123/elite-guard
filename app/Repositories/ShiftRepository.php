@@ -17,19 +17,39 @@ class ShiftRepository
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
         $endOfWeek = Carbon::now()->endOfWeek(Carbon::SUNDAY)->toDateString();
 
-        $shifts = Shift::with(['schedule.user', 'site.company', 'attendances' => function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        }])
-        ->whereHas('schedule', function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        })
-        ->whereBetween('date', [$startOfWeek, $endOfWeek])
-        ->orderBy('date', 'asc')
-        ->orderBy('start_time', 'asc')
-        ->get();
+        $shifts = Shift::with([
+            'schedule.user',
+            'site.company',
+            'attendances' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }
+        ])
+            ->whereHas('schedule', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->whereBetween('date', [$startOfWeek, $endOfWeek])
+            ->orderBy('date', 'asc')
+            ->orderBy('start_time', 'asc')
+            ->get();
+
+        $totalMinutes = 0; // 👈 total time accumulator
 
         foreach ($shifts as $shift) {
-            // Attendance Logic
+
+            // 🟢 Shift Duration Calculation
+            $start = Carbon::parse($shift->start_time);
+            $end = Carbon::parse($shift->end_time);
+
+            $minutes = $start->diffInMinutes($end);
+            $totalMinutes += $minutes;
+
+            // format: 3h 43m
+            $hours = floor($minutes / 60);
+            $remainingMinutes = $minutes % 60;
+
+            $shift->duration = "{$hours}h {$remainingMinutes}m";
+
+            // 🟢 Attendance Logic
             $attendance = $shift->attendances->first();
             $shift->checked_in = $attendance ? true : false;
             $shift->checked_out = ($attendance && $attendance->clock_out_at) ? true : false;
@@ -46,11 +66,30 @@ class ShiftRepository
             unset($shift->attendances);
         }
 
+        // 🟢 Total Time Format
+        $totalHours = floor($totalMinutes / 60);
+        $totalRemainingMinutes = $totalMinutes % 60;
+
+        $totalDuration = "{$totalHours}h {$totalRemainingMinutes}m";
+
+        // 🟢 Open Shifts Count for current week
+        $openShiftsCount = OpenShift::whereBetween('date', [$startOfWeek, $endOfWeek])
+            ->where('status', 'open')
+            ->get()
+            ->filter(function ($shift) {
+                return !$shift->is_full;
+            })
+            ->count();
+
         return [
             'status' => true,
             'message' => 'Shifts data fetched successfully.',
             'total' => $shifts->count(),
-            'shifts' => $shifts
+            'open_shifts_count' => $openShiftsCount, // 👈 added
+            'startOfWeek' => $startOfWeek,
+            'endOfWeek' => $endOfWeek,
+            'totalDuration' => $totalDuration, // 👈 added
+            'shifts' => $shifts,
         ];
     }
 
