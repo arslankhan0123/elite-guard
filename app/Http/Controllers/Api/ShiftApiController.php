@@ -82,6 +82,10 @@ class ShiftApiController extends Controller
      *                 @OA\Property(property="status", type="boolean", example=true),
      *                 @OA\Property(property="message", type="string", example="Shifts data fetched successfully."),
      *                 @OA\Property(property="total", type="integer", example=1),
+     *                 @OA\Property(property="open_shifts_count", type="integer", example=2),
+     *                 @OA\Property(property="startOfWeek", type="string", example="2024-04-22"),
+     *                 @OA\Property(property="endOfWeek", type="string", example="2024-04-28"),
+     *                 @OA\Property(property="totalDuration", type="string", example="40h 0m"),
      *                 @OA\Property(property="shifts", type="array", @OA\Items(type="object"))
      *             )
      *         )
