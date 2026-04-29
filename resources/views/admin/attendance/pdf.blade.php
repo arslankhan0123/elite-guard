@@ -1,230 +1,327 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Attendance Report - Elite Guard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Guard - Official Attendance Report</title>
     <style>
+        /* PDF Specific Reset */
         @page {
-            margin: 0.5cm;
+            margin: 0;
         }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
-            font-size: 11px;
-            color: #333;
-            line-height: 1.4;
+            font-size: 10px;
+            color: #2c3e50;
             margin: 0;
             padding: 0;
+            background-color: #fff;
         }
-        .header-container {
-            padding: 20px;
-            border-bottom: 3px solid #1a237e;
-            margin-bottom: 20px;
+
+        /* Top Accent Bar */
+        .top-accent {
+            height: 8px;
+            background-color: #1a237e;
+            width: 100%;
         }
-        .logo {
+
+        /* Header Layout */
+        .header {
+            padding: 40px 50px 20px;
+        }
+        .logo-section {
             float: left;
-            width: 150px;
+            width: 50%;
         }
-        .report-title {
+        .meta-section {
             float: right;
+            width: 50%;
             text-align: right;
         }
-        .report-title h1 {
-            margin: 0;
+        .logo-img {
+            max-height: 70px;
+        }
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
             color: #1a237e;
-            font-size: 24px;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+        .report-label {
+            font-size: 28px;
+            font-weight: 300;
+            color: #bdc3c7;
             text-transform: uppercase;
+            margin-bottom: 5px;
         }
-        .report-title p {
-            margin: 5px 0 0;
-            color: #666;
+        .report-id {
             font-size: 12px;
+            color: #7f8c8d;
         }
-        .clearfix {
-            clear: both;
-        }
-        .info-section {
-            padding: 0 20px;
-            margin-bottom: 20px;
-        }
-        .info-box {
+
+        /* Summary Dashboard */
+        .dashboard {
+            margin: 0 50px 30px;
             background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 10px;
-            width: 30%;
+            border-radius: 5px;
+            padding: 20px 40px;
+            border: 1px solid #ebedef;
+        }
+        .dash-item {
             float: left;
-            margin-right: 2%;
+            width: 25%;
+            border-right: 1px solid #ebedef;
+            padding: 0 15px;
         }
-        .info-box:last-child {
-            margin-right: 0;
+        .dash-item:last-child {
+            border-right: none;
         }
-        .info-label {
+        .dash-val {
+            font-size: 16px;
             font-weight: bold;
             color: #1a237e;
             display: block;
-            margin-bottom: 3px;
+        }
+        .dash-label {
+            font-size: 9px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Table Styling */
+        .content {
+            padding: 0 50px;
         }
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+            border-collapse: separate;
+            border-spacing: 0 8px;
         }
         th {
-            background-color: #1a237e;
-            color: white;
-            text-align: left;
-            padding: 10px 8px;
-            font-size: 10px;
-            text-transform: uppercase;
-        }
-        td {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-        }
-        tr:nth-child(even) {
-            background-color: #fcfcfc;
-        }
-        .badge {
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-size: 9px;
+            background-color: #f1f4f9;
+            color: #1a237e;
             font-weight: bold;
-            color: white;
+            text-transform: uppercase;
+            font-size: 9px;
+            padding: 12px 15px;
+            border: none;
+        }
+        th:first-child {
+            border-top-left-radius: 40px;
+            border-bottom-left-radius: 40px;
+        }
+        th:last-child {
+            border-top-right-radius: 40px;
+            border-bottom-right-radius: 40px;
+        }
+        tr.data-row td {
+            background-color: #fff;
+            border-top: 1px solid #f1f4f9;
+            border-bottom: 1px solid #f1f4f9;
+            padding: 12px 15px;
+        }
+        tr.data-row td:first-child {
+            border-left: 1px solid #f1f4f9;
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+        tr.data-row td:last-child {
+            border-right: 1px solid #f1f4f9;
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+        .emp-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .site-info {
+            color: #7f8c8d;
+            font-size: 9px;
+        }
+        .duration-pill {
+            background-color: #e8eaf6;
+            color: #1a237e;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 8px;
             text-transform: uppercase;
         }
-        .badge-active { background-color: #4caf50; }
-        .badge-completed { background-color: #757575; }
-        
-        .total-section {
+        .bg-active { background-color: #27ae60; }
+        .bg-completed { background-color: #95a5a6; }
+
+        /* Grand Total */
+        .grand-total {
             margin-top: 30px;
-            padding: 20px;
             background-color: #1a237e;
-            color: white;
+            color: #fff;
+            padding: 15px 40px;
+            border-radius: 40px;
             text-align: right;
         }
-        .total-label {
-            font-size: 14px;
-            margin-right: 10px;
+        .total-text {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-right: 15px;
         }
-        .total-value {
-            font-size: 20px;
+        .total-val {
+            font-size: 22px;
             font-weight: bold;
         }
-        .footer {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
-            text-align: center;
-            font-size: 9px;
-            color: #999;
+
+        /* Signatures */
+        .signatures {
+            margin-top: 50px;
+            padding: 0 50px;
         }
-        .text-muted { color: #888; }
-        .small { font-size: 9px; }
+        .sig-box {
+            float: left;
+            width: 30%;
+            text-align: center;
+        }
+        .sig-line {
+            border-top: 1px solid #bdc3c7;
+            margin-top: 40px;
+            padding-top: 5px;
+            color: #7f8c8d;
+            font-size: 9px;
+        }
+
+        /* Utils */
+        .clearfix { clear: both; }
+        .footer {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: #bdc3c7;
+            font-size: 8px;
+        }
     </style>
 </head>
 <body>
-    <div class="header-container">
-        <div class="logo">
+    <div class="top-accent"></div>
+
+    <div class="header">
+        <div class="logo-section">
             @if(file_exists(public_path('logo.png')))
-                <img src="{{ public_path('logo.png') }}" style="max-height: 60px;">
+                <img src="{{ public_path('logo.png') }}" class="logo-img">
             @else
-                <h2 style="color: #1a237e; margin: 0;">ELITE GUARD</h2>
+                <div class="company-name">ELITE GUARD</div>
             @endif
         </div>
-        <div class="report-title">
-            <h1>Attendance Report</h1>
-            <p>Generated on: {{ now()->format('M d, Y h:i A') }}</p>
+        <div class="meta-section">
+            <div class="report-label">Attendance Report</div>
+            <div class="report-id">Ref: EG-{{ now()->format('Ymd-His') }}</div>
+            <div class="report-id">Date: {{ now()->format('F d, Y') }}</div>
         </div>
         <div class="clearfix"></div>
     </div>
 
-    <div class="info-section">
-        <div class="info-box">
-            <span class="info-label">Report Period</span>
-            <span>All Records</span>
+    <div class="dashboard">
+        <div class="dash-item">
+            <span class="dash-val">{{ count($attendances) }}</span>
+            <span class="dash-label">Total Logs</span>
         </div>
-        <div class="info-box">
-            <span class="info-label">Total Records</span>
-            <span>{{ count($attendances) }} Entries</span>
+        <div class="dash-item">
+            <span class="dash-val">{{ $attendances->where('status', 'active')->count() }}</span>
+            <span class="dash-label">Active Shifts</span>
         </div>
-        <div class="info-box">
-            <span class="info-label">Status</span>
-            <span>Official Report</span>
+        <div class="dash-item">
+            <span class="dash-val">{{ $attendances->where('status', 'completed')->count() }}</span>
+            <span class="dash-label">Completed</span>
+        </div>
+        <div class="dash-item">
+            <span class="dash-val">{{ now()->format('H:i') }}</span>
+            <span class="dash-label">Export Time</span>
         </div>
         <div class="clearfix"></div>
     </div>
 
-    <div style="padding: 0 20px;">
+    <div class="content">
         <table>
             <thead>
                 <tr>
-                    <th width="20%">Employee</th>
-                    <th width="20%">Site (Company)</th>
-                    <th width="15%">Shift Name</th>
-                    <th width="15%">Clock In</th>
-                    <th width="15%">Clock Out</th>
-                    <th width="10%">Duration</th>
-                    <th width="5%">Status</th>
+                    <th align="left">Employee Details</th>
+                    <th align="left">Location & Shift</th>
+                    <th align="center">Time Log</th>
+                    <th align="center">Duration</th>
+                    <th align="center">Status</th>
                 </tr>
             </thead>
             <tbody>
                 @php $totalMinutes = 0; @endphp
-                @forelse($attendances as $attendance)
-                    <tr>
+                @foreach($attendances as $attendance)
+                    <tr class="data-row">
                         <td>
-                            <strong>{{ $attendance->user->name }}</strong><br>
-                            <span class="text-muted small">{{ $attendance->user->email }}</span>
+                            <span class="emp-name">{{ $attendance->user->name }}</span><br>
+                            <span class="site-info">{{ $attendance->user->email }}</span>
                         </td>
                         <td>
-                            {{ $attendance->shift->site->name ?? 'N/A' }}<br>
-                            <span class="text-muted small">({{ $attendance->shift->site->company->name ?? 'N/A' }})</span>
+                            <span class="emp-name">{{ $attendance->shift->site->name ?? 'N/A' }}</span><br>
+                            <span class="site-info">{{ $attendance->shift->shift_name ?? 'N/A' }}</span>
                         </td>
-                        <td>{{ $attendance->shift->shift_name ?? 'N/A' }}</td>
-                        <td>{{ $attendance->clock_in_at ? $attendance->clock_in_at->format('Y-m-d H:i') : 'N/A' }}</td>
-                        <td>{{ $attendance->clock_out_at ? $attendance->clock_out_at->format('Y-m-d H:i') : '-' }}</td>
-                        <td>
+                        <td align="center">
+                            <span class="site-info">In: {{ $attendance->clock_in_at ? $attendance->clock_in_at->format('H:i') : '-' }}</span><br>
+                            <span class="site-info">Out: {{ $attendance->clock_out_at ? $attendance->clock_out_at->format('H:i') : '-' }}</span>
+                        </td>
+                        <td align="center">
                             @if($attendance->clock_in_at && $attendance->clock_out_at)
                                 @php
                                     $diff = $attendance->clock_in_at->diff($attendance->clock_out_at);
                                     $totalMinutes += ($diff->h * 60) + $diff->i + ($diff->days * 24 * 60);
-                                    echo $diff->format('%hh %im');
                                 @endphp
+                                <span class="duration-pill">{{ $diff->format('%hh %im') }}</span>
                             @else
-                                -
+                                <span class="site-info">-</span>
                             @endif
                         </td>
-                        <td>
+                        <td align="center">
                             @if($attendance->status == 'active')
-                                <span class="badge badge-active">In</span>
+                                <span class="status-badge bg-active">Active</span>
                             @else
-                                <span class="badge badge-completed">Done</span>
+                                <span class="status-badge bg-completed">Completed</span>
                             @endif
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 20px;">No records found.</td>
-                    </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
+
+        <div class="grand-total">
+            @php
+                $hours = floor($totalMinutes / 60);
+                $minutes = $totalMinutes % 60;
+            @endphp
+            <span class="total-text">TOTAL ACCUMULATED WORK HOURS</span>
+            <span class="total-val">{{ $hours }}h {{ $minutes }}m</span>
+        </div>
     </div>
 
-    <div class="total-section">
-        @php
-            $hours = floor($totalMinutes / 60);
-            $minutes = $totalMinutes % 60;
-        @endphp
-        <span class="total-label">TOTAL ACCUMULATED DURATION:</span>
-        <span class="total-value">{{ $hours }}h {{ $minutes }}m</span>
+    <div class="signatures">
+        <div class="sig-box">
+            <div class="sig-line">Prepared By</div>
+        </div>
+        <div class="sig-box" style="margin-left: 5%;">
+            <div class="sig-line">Manager Review</div>
+        </div>
+        <div class="sig-box" style="float: right;">
+            <div class="sig-line">Company Stamp</div>
+        </div>
+        <div class="clearfix"></div>
     </div>
 
     <div class="footer">
-        This is an electronically generated report by Elite Guard Management System. 
-        &copy; {{ date('Y') }} Elite Guard. Page 1 of 1
+        Elite Guard Security Management - Confidential Document - Page 1 of 1
     </div>
 </body>
 </html>
