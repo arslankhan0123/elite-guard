@@ -65,9 +65,24 @@
             </div>
         </div>
 
+        @php
+            $totalMinutes = 0;
+            foreach($attendances as $attendance) {
+                if($attendance->clock_in_at && $attendance->clock_out_at) {
+                    $diff = $attendance->clock_in_at->diff($attendance->clock_out_at);
+                    $totalMinutes += ($diff->h * 60) + $diff->i + ($diff->days * 24 * 60);
+                }
+            }
+            $totalHours = floor($totalMinutes / 60);
+            $totalMins = $totalMinutes % 60;
+        @endphp
+
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title shine">Attendance Table</h4>
+                <div class="total-hours-badge">
+                    <h5 class="mb-0">Total Hours: <span class="badge bg-primary" style="font-size: 1.1rem;">{{ $totalHours }}h {{ $totalMins }}m</span></h5>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
