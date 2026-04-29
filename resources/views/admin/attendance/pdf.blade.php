@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
         @page {
             margin: 0;
         }
+
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 10px;
@@ -29,18 +31,22 @@
         .header {
             padding: 40px 50px 20px;
         }
+
         .logo-section {
             float: left;
             width: 50%;
         }
+
         .meta-section {
             float: right;
             width: 50%;
             text-align: right;
         }
+
         .logo-img {
             max-height: 70px;
         }
+
         .company-name {
             font-size: 20px;
             font-weight: bold;
@@ -48,6 +54,7 @@
             margin-top: 10px;
             letter-spacing: 1px;
         }
+
         .report-label {
             font-size: 28px;
             font-weight: 300;
@@ -55,6 +62,7 @@
             text-transform: uppercase;
             margin-bottom: 5px;
         }
+
         .report-id {
             font-size: 12px;
             color: #7f8c8d;
@@ -68,21 +76,25 @@
             padding: 20px 40px;
             border: 1px solid #ebedef;
         }
+
         .dash-item {
             float: left;
             width: 25%;
             border-right: 1px solid #ebedef;
             padding: 0 15px;
         }
+
         .dash-item:last-child {
             border-right: none;
         }
+
         .dash-val {
             font-size: 16px;
             font-weight: bold;
             color: #1a237e;
             display: block;
         }
+
         .dash-label {
             font-size: 9px;
             color: #95a5a6;
@@ -94,11 +106,13 @@
         .content {
             padding: 0 50px;
         }
+
         table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0 8px;
         }
+
         th {
             background-color: #f1f4f9;
             color: #1a237e;
@@ -108,39 +122,47 @@
             padding: 12px 15px;
             border: none;
         }
+
         th:first-child {
             border-top-left-radius: 40px;
             border-bottom-left-radius: 40px;
         }
+
         th:last-child {
             border-top-right-radius: 40px;
             border-bottom-right-radius: 40px;
         }
+
         tr.data-row td {
             background-color: #fff;
             border-top: 1px solid #f1f4f9;
             border-bottom: 1px solid #f1f4f9;
             padding: 12px 15px;
         }
+
         tr.data-row td:first-child {
             border-left: 1px solid #f1f4f9;
             border-top-left-radius: 4px;
             border-bottom-left-radius: 4px;
         }
+
         tr.data-row td:last-child {
             border-right: 1px solid #f1f4f9;
             border-top-right-radius: 4px;
             border-bottom-right-radius: 4px;
         }
+
         .emp-name {
             font-size: 11px;
             font-weight: bold;
             color: #2c3e50;
         }
+
         .site-info {
             color: #7f8c8d;
             font-size: 9px;
         }
+
         .duration-pill {
             background-color: #e8eaf6;
             color: #1a237e;
@@ -148,6 +170,7 @@
             border-radius: 12px;
             font-weight: bold;
         }
+
         .status-badge {
             padding: 4px 10px;
             border-radius: 4px;
@@ -156,8 +179,14 @@
             font-size: 8px;
             text-transform: uppercase;
         }
-        .bg-active { background-color: #27ae60; }
-        .bg-completed { background-color: #95a5a6; }
+
+        .bg-active {
+            background-color: #27ae60;
+        }
+
+        .bg-completed {
+            background-color: #95a5a6;
+        }
 
         /* Grand Total */
         .grand-total {
@@ -168,11 +197,13 @@
             border-radius: 40px;
             text-align: right;
         }
+
         .total-text {
             font-size: 12px;
             opacity: 0.8;
             margin-right: 15px;
         }
+
         .total-val {
             font-size: 22px;
             font-weight: bold;
@@ -183,11 +214,13 @@
             margin-top: 50px;
             padding: 0 50px;
         }
+
         .sig-box {
             float: left;
             width: 30%;
             text-align: center;
         }
+
         .sig-line {
             border-top: 1px solid #bdc3c7;
             margin-top: 40px;
@@ -197,7 +230,10 @@
         }
 
         /* Utils */
-        .clearfix { clear: both; }
+        .clearfix {
+            clear: both;
+        }
+
         .footer {
             position: absolute;
             bottom: 30px;
@@ -208,6 +244,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="top-accent"></div>
 
@@ -271,8 +308,10 @@
                             <span class="site-info">{{ $attendance->shift->shift_name ?? 'N/A' }}</span>
                         </td>
                         <td align="center">
-                            <span class="site-info">In: {{ $attendance->clock_in_at ? $attendance->clock_in_at->format('H:i') : '-' }}</span><br>
-                            <span class="site-info">Out: {{ $attendance->clock_out_at ? $attendance->clock_out_at->format('H:i') : '-' }}</span>
+                            <span class="site-info">In:
+                                {{ $attendance->clock_in_at ? $attendance->clock_in_at->format('H:i') : '-' }}</span><br>
+                            <span class="site-info">Out:
+                                {{ $attendance->clock_out_at ? $attendance->clock_out_at->format('H:i') : '-' }}</span>
                         </td>
                         <td align="center">
                             @if($attendance->clock_in_at && $attendance->clock_out_at)
@@ -324,4 +363,5 @@
         Elite Guard Security Management - Confidential Document - Page 1 of 1
     </div>
 </body>
+
 </html>
