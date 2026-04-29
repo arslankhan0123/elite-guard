@@ -12,8 +12,26 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title shine">Filters</h4>
+                @if(count($attendances) > 0)
+                <div class="export-buttons">
+                    <form action="{{ route('attendance.export.excel') }}" method="POST" class="d-inline">
+                        @csrf
+                        <input type="hidden" name="attendance_ids" value="{{ $attendances->pluck('id')->implode(',') }}">
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="mdi mdi-file-excel"></i> Export Excel
+                        </button>
+                    </form>
+                    <form action="{{ route('attendance.export.pdf') }}" method="POST" class="d-inline ms-2">
+                        @csrf
+                        <input type="hidden" name="attendance_ids" value="{{ $attendances->pluck('id')->implode(',') }}">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="mdi mdi-file-pdf"></i> Export PDF
+                        </button>
+                    </form>
+                </div>
+                @endif
             </div>
             <div class="card-body">
                 <form id="filterForm" action="{{ route('attendance.index') }}" method="GET" class="row">
@@ -65,9 +83,25 @@
             </div>
         </div>
 
+        @php
+            $totalMinutes = 0;
+            foreach($attendances as $attendance) {
+                if($attendance->clock_in_at && $attendance->clock_out_at) {
+                    $diff = $attendance->clock_in_at->diff($attendance->clock_out_at);
+                    $minutes = ($diff->h * 60) + $diff->i + ($diff->days * 24 * 60);
+                    $totalMinutes += $minutes + ($attendance->manual_adjustment ?? 0);
+                }
+            }
+            $totalHours = floor($totalMinutes / 60);
+            $totalMins = $totalMinutes % 60;
+        @endphp
+
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title shine">Attendance Table</h4>
+                <div class="total-hours-badge">
+                    <h5 class="mb-0">Total Hours: <span class="badge bg-primary" style="font-size: 1.1rem;">{{ $totalHours }}h {{ $totalMins }}m</span></h5>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -79,8 +113,10 @@
                                 <th>Shift Name</th>
                                 <th>Clock In</th>
                                 <th>Clock Out</th>
+                                <th>Adj (mins)</th>
                                 <th>Duration</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,10 +144,19 @@
                                     @endif
                                 </td>
                                 <td>
+                                    {{ $attendance->manual_adjustment ?? 0 }}m
+                                    @if($attendance->admin_note)
+                                        <br><small class="text-info" title="{{ $attendance->admin_note }}"><i class="mdi mdi-information-outline"></i> Note</small>
+                                    @endif
+                                </td>
+                                <td>
                                     @if($attendance->clock_in_at && $attendance->clock_out_at)
                                         @php
                                             $diff = $attendance->clock_in_at->diff($attendance->clock_out_at);
-                                            echo $diff->format('%hh %im');
+                                            $mins = ($diff->h * 60) + $diff->i + ($diff->days * 24 * 60) + ($attendance->manual_adjustment ?? 0);
+                                            $h = floor($mins / 60);
+                                            $m = $mins % 60;
+                                            echo "{$h}h {$m}m";
                                         @endphp
                                     @else
                                         -
@@ -124,10 +169,19 @@
                                         <span class="badge bg-secondary">Completed</span>
                                     @endif
                                 </td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm edit-adjustment" 
+                                            data-id="{{ $attendance->id }}" 
+                                            data-adjustment="{{ $attendance->manual_adjustment ?? 0 }}"
+                                            data-note="{{ $attendance->admin_note ?? '' }}"
+                                            data-bs-toggle="modal" data-bs-target="#adjustmentModal">
+                                        <i class="mdi mdi-clock-edit"></i>
+                                    </button>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="text-center">No attendance records found.</td>
+                                <td colspan="9" class="text-center">No attendance records found.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -135,6 +189,37 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Adjustment Modal -->
+<div class="modal fade" id="adjustmentModal" tabindex="-1" aria-labelledby="adjustmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ route('attendance.updateAdjustment') }}" method="POST">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adjustmentModalLabel">Adjust Attendance Time</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="attendance_id" id="modal_attendance_id">
+                    <div class="mb-3">
+                        <label for="manual_adjustment" class="form-label">Adjustment (Minutes)</label>
+                        <input type="number" class="form-control" name="manual_adjustment" id="modal_manual_adjustment" required>
+                        <small class="text-muted">Use positive values to add time (e.g., 30) and negative values to subtract (e.g., -15).</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="admin_note" class="form-label">Admin Note</label>
+                        <textarea class="form-control" name="admin_note" id="modal_admin_note" rows="3" placeholder="Reason for adjustment..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
@@ -145,6 +230,16 @@
         // Auto-submit form when Select2 values change
         $('.select2').on('change', function() {
             $('#filterForm').submit();
+        });
+
+        // Edit adjustment button handler
+        $('.edit-adjustment').on('click', function() {
+            var id = $(this).data('id');
+            var adjustment = $(this).data('adjustment');
+            var note = $(this).data('note');
+            $('#modal_attendance_id').val(id);
+            $('#modal_manual_adjustment').val(adjustment);
+            $('#modal_admin_note').val(note);
         });
     });
 </script>
