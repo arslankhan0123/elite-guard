@@ -34,6 +34,7 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping
             'Shift Name',
             'Clock In',
             'Clock Out',
+            'Adjustment (mins)',
             'Duration',
             'Status'
         ];
@@ -44,7 +45,10 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping
         $duration = '-';
         if ($attendance->clock_in_at && $attendance->clock_out_at) {
             $diff = $attendance->clock_in_at->diff($attendance->clock_out_at);
-            $duration = $diff->format('%hh %im');
+            $mins = ($diff->h * 60) + $diff->i + ($diff->days * 24 * 60) + ($attendance->manual_adjustment ?? 0);
+            $h = floor($mins / 60);
+            $m = $mins % 60;
+            $duration = "{$h}h {$m}m";
         }
 
         return [
@@ -55,6 +59,7 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping
             $attendance->shift->shift_name ?? 'N/A',
             $attendance->clock_in_at ? $attendance->clock_in_at->format('Y-m-d H:i') : 'N/A',
             $attendance->clock_out_at ? $attendance->clock_out_at->format('Y-m-d H:i') : '-',
+            $attendance->manual_adjustment ?? 0,
             $duration,
             $attendance->status == 'active' ? 'Clocked In' : 'Completed'
         ];

@@ -291,6 +291,7 @@
                     <th align="left">Employee Details</th>
                     <th align="left">Location & Shift</th>
                     <th align="center">Time Log</th>
+                    <th align="center">Adj</th>
                     <th align="center">Duration</th>
                     <th align="center">Status</th>
                 </tr>
@@ -314,12 +315,18 @@
                                 {{ $attendance->clock_out_at ? $attendance->clock_out_at->format('H:i') : '-' }}</span>
                         </td>
                         <td align="center">
+                            <span class="site-info">{{ $attendance->manual_adjustment ?? 0 }}m</span>
+                        </td>
+                        <td align="center">
                             @if($attendance->clock_in_at && $attendance->clock_out_at)
                                 @php
                                     $diff = $attendance->clock_in_at->diff($attendance->clock_out_at);
-                                    $totalMinutes += ($diff->h * 60) + $diff->i + ($diff->days * 24 * 60);
+                                    $mins = ($diff->h * 60) + $diff->i + ($diff->days * 24 * 60) + ($attendance->manual_adjustment ?? 0);
+                                    $totalMinutes += $mins;
+                                    $h = floor($mins / 60);
+                                    $m = $mins % 60;
                                 @endphp
-                                <span class="duration-pill">{{ $diff->format('%hh %im') }}</span>
+                                <span class="duration-pill">{{ $h }}h {{ $m }}m</span>
                             @else
                                 <span class="site-info">-</span>
                             @endif

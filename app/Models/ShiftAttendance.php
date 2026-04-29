@@ -21,6 +21,8 @@ class ShiftAttendance extends Model
         'clock_out_latitude',
         'clock_out_longitude',
         'status',
+        'manual_adjustment',
+        'admin_note',
     ];
 
     protected $casts = [

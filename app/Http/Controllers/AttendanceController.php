@@ -46,4 +46,21 @@ class AttendanceController extends Controller
         $ids = explode(',', $request->attendance_ids);
         return Excel::download(new AttendanceExport($ids), 'attendance_report_' . now()->format('Y-m-d_H-i') . '.xlsx');
     }
+
+    public function updateAdjustment(Request $request)
+    {
+        $request->validate([
+            'attendance_id' => 'required|exists:shift_attendance,id',
+            'manual_adjustment' => 'required|integer',
+            'admin_note' => 'nullable|string',
+        ]);
+
+        $attendance = ShiftAttendance::findOrFail($request->attendance_id);
+        $attendance->update([
+            'manual_adjustment' => $request->manual_adjustment,
+            'admin_note' => $request->admin_note
+        ]);
+
+        return back()->with('success', 'Attendance adjustment updated successfully.');
+    }
 }
