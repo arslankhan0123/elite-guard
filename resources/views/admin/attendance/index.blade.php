@@ -12,8 +12,26 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title shine">Filters</h4>
+                @if(count($attendances) > 0)
+                <div class="export-buttons">
+                    <form action="{{ route('attendance.export.excel') }}" method="POST" class="d-inline">
+                        @csrf
+                        <input type="hidden" name="attendance_ids" value="{{ $attendances->pluck('id')->implode(',') }}">
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="mdi mdi-file-excel"></i> Export Excel
+                        </button>
+                    </form>
+                    <form action="{{ route('attendance.export.pdf') }}" method="POST" class="d-inline ms-2">
+                        @csrf
+                        <input type="hidden" name="attendance_ids" value="{{ $attendances->pluck('id')->implode(',') }}">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="mdi mdi-file-pdf"></i> Export PDF
+                        </button>
+                    </form>
+                </div>
+                @endif
             </div>
             <div class="card-body">
                 <form id="filterForm" action="{{ route('attendance.index') }}" method="GET" class="row">

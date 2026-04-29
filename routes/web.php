@@ -113,6 +113,8 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
 
     Route::group(['prefix' => '/attendance'], function () {
         Route::get('/', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('attendance.index');
+        Route::post('/export/pdf', [\App\Http\Controllers\AttendanceController::class, 'exportPdf'])->name('attendance.export.pdf');
+        Route::post('/export/excel', [\App\Http\Controllers\AttendanceController::class, 'exportExcel'])->name('attendance.export.excel');
     });
 
     Route::group(['prefix' => '/profile'], function () {
