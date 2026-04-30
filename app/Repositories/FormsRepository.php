@@ -3,7 +3,9 @@
 namespace App\Repositories;
 
 use App\Models\Assessment;
+use App\Models\DailyVehicleChecklist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class FormsRepository
 {
@@ -33,6 +35,47 @@ class FormsRepository
             'status' => true,
             'message' => 'Assessment stored successfully.',
             'assessment' => $assessment,
+        ];
+    }
+
+    public function storeDailyVehicleChecklist(Request $request)
+    {
+        $user = auth()->user();
+
+        $documentPath = null;
+        if ($request->hasFile('documents')) {
+            $file = $request->file('documents');
+            $fileName = $user->id . '_' . time() . '_' . Str::random(32) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('documents/DailyVehicleChecklist'), $fileName);
+            $documentPath = url('documents/DailyVehicleChecklist/' . $fileName);
+        }
+
+        $checklist = DailyVehicleChecklist::create([
+            'user_id' => $user->id,
+            'date' => $request->date,
+            'time' => $request->time,
+            'vehicle' => $request->vehicle,
+            'odometer_reading' => $request->odometer_reading,
+            'fuel' => $request->fuel,
+            'assigned_site' => $request->assigned_site,
+            'driver' => $request->driver,
+            'signature' => $request->signature,
+            'cosmetic_issues' => $request->cosmetic_issues,
+            'tires' => $request->tires,
+            'windows' => $request->windows,
+            'staff_care' => $request->staff_care,
+            'dash_lights_gauges' => $request->dash_lights_gauges,
+            'documents' => $documentPath,
+            'engine' => $request->engine,
+            'oil_life_percentage' => $request->oil_life_percentage,
+            'equipment' => $request->equipment,
+            'bwc_used_for_inspection' => $request->bwc_used_for_inspection,
+        ]);
+
+        return [
+            'status' => true,
+            'message' => 'Daily Vehicle Checklist stored successfully.',
+            'checklist' => $checklist,
         ];
     }
 }

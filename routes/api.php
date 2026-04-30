@@ -72,6 +72,9 @@ Route::middleware('auth:api')->group(function () {
         Route::group(['prefix' => '/assessments'], function () {
             Route::post('/store', [FormsApiController::class, 'storeUserAssessments']);
         });
+        Route::group(['prefix' => '/daily-vehicle-checklist'], function () {
+            Route::post('/store', [FormsApiController::class, 'storeDailyVehicleChecklist']);
+        });
     });
 
     Route::group(['prefix' => '/settings'], function () {
