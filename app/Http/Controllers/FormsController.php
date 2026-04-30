@@ -40,6 +40,14 @@ class FormsController extends Controller
             $this->applyDateFilter($query, $request->date_range);
         }
 
+        if ($request->document_status) {
+            if ($request->document_status == 'uploaded') {
+                $query->whereNotNull('documents');
+            } elseif ($request->document_status == 'not_uploaded') {
+                $query->whereNull('documents');
+            }
+        }
+
         $checklists = $query->latest()->get();
         $users = User::all();
 

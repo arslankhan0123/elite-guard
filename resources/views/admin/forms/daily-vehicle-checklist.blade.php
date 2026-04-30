@@ -42,13 +42,21 @@
                             <option value="last_year" {{ request('date_range') == 'last_year' ? 'selected' : '' }}>Last Year</option>
                         </select>
                     </div>
+                    <div class="col-md-4 mb-3 d-flex flex-column">
+                        <label for="document_status" class="form-label fw-bold">Document Status</label>
+                        <select name="document_status" id="document_status" class="form-select" onchange="this.form.submit()">
+                            <option value="">Both</option>
+                            <option value="uploaded" {{ request('document_status') == 'uploaded' ? 'selected' : '' }}>Document Uploaded</option>
+                            <option value="not_uploaded" {{ request('document_status') == 'not_uploaded' ? 'selected' : '' }}>Document Not Uploaded</option>
+                        </select>
+                    </div>
                 </form>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title shine">Vehicle Checklist Table</h4>
+                <h4 class="card-title shine">Vehicle Checklist Table ({{ $checklists->count() }})</h4>
             </div>
             <div class="card-body">
                 <div class="table-responsive">

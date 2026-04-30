@@ -48,7 +48,7 @@
 
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title shine">Assessments Table</h4>
+                <h4 class="card-title shine">Assessments Table ({{ $assessments->count() }})</h4>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
