@@ -18,6 +18,10 @@ class Assessment extends Model
         'location',
         'start_time',
         'end_time',
+        'client',
+        'supervisor_first_name',
+        'supervisor_last_name',
+        'position_today',
         'compliance_fit_for_duty',
         'any_injuries',
         'physically_prepared',
@@ -25,6 +29,11 @@ class Assessment extends Model
         'understand_unethical_work_sick',
         'up_to_date_orders',
         'believe_fit_for_duty',
+        'safety_concerns',
+        'hazards_identified',
+        'right_to_refuse',
+        'right_to_participate',
+        'signature',
     ];
 
     protected $casts = [
@@ -35,7 +44,8 @@ class Assessment extends Model
         'understand_unethical_work_sick' => 'boolean',
         'up_to_date_orders' => 'boolean',
         'believe_fit_for_duty' => 'boolean',
-        'shift_date' => 'date',
+        'safety_concerns' => 'boolean',
+        'hazards_identified' => 'boolean',
     ];
 
     public function user()

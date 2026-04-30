@@ -22,6 +22,10 @@ class FormsRepository
             'location' => $request->location,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
+            'client' => $request->client,
+            'supervisor_first_name' => $request->supervisor_first_name,
+            'supervisor_last_name' => $request->supervisor_last_name,
+            'position_today' => $request->position_today,
             'compliance_fit_for_duty' => $request->compliance_fit_for_duty,
             'any_injuries' => $request->any_injuries,
             'physically_prepared' => $request->physically_prepared,
@@ -29,6 +33,11 @@ class FormsRepository
             'understand_unethical_work_sick' => $request->understand_unethical_work_sick,
             'up_to_date_orders' => $request->up_to_date_orders,
             'believe_fit_for_duty' => $request->believe_fit_for_duty,
+            'safety_concerns' => $request->safety_concerns,
+            'hazards_identified' => $request->hazards_identified,
+            'right_to_refuse' => $request->right_to_refuse,
+            'right_to_participate' => $request->right_to_participate,
+            'signature' => $request->signature,
         ]);
 
         return [
