@@ -12,6 +12,146 @@
         }
     ],
     "paths": {
+        "/api/attendance/clock-in": {
+            "post": {
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Clock-in for a shift",
+                "description": "User clocks in for a shift with geofencing verification.",
+                "operationId": "e1026cd04658d750c45101272bbd6612",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "shift_id",
+                                    "latitude",
+                                    "longitude"
+                                ],
+                                "properties": {
+                                    "shift_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 51.5074
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -0.1278
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Clock-in status.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/attendance/clock-out": {
+            "post": {
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Clock-out for a shift",
+                "description": "User clocks out from an active shift with geofencing verification.",
+                "operationId": "384bf116b9abf08646f8cd78ed536c03",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "shift_id",
+                                    "latitude",
+                                    "longitude"
+                                ],
+                                "properties": {
+                                    "shift_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 51.5074
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -0.1278
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Clock-out status.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/register": {
             "post": {
                 "tags": [
@@ -192,8 +332,24 @@
                     "Availability"
                 ],
                 "summary": "List all personal availabilities",
-                "description": "Fetches a list of availability submissions for the authenticated employee.",
+                "description": "Fetches a list of availability submissions for the authenticated employee. Can be filtered by status.",
                 "operationId": "53951be7242ad5b3ecf959802c7326ce",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status (pending, approved, rejected)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "approved",
+                                "rejected"
+                            ]
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Availabilities retrieved successfully.",
@@ -218,6 +374,18 @@
                                                 "message": {
                                                     "type": "string",
                                                     "example": "Availabilities retrieved successfully"
+                                                },
+                                                "pending_count": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "approved_count": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "rejected_count": {
+                                                    "type": "integer",
+                                                    "example": 1
                                                 },
                                                 "availabilities": {
                                                     "type": "array",
@@ -873,6 +1041,262 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/forms/assessments/store": {
+            "post": {
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Store User Assessment",
+                "operationId": "61244af0a00629323d118e59d18e44f3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "worker_email",
+                                    "shift_date",
+                                    "location",
+                                    "start_time",
+                                    "compliance_fit_for_duty",
+                                    "any_injuries",
+                                    "physically_prepared",
+                                    "any_symptoms",
+                                    "understand_unethical_work_sick",
+                                    "up_to_date_orders",
+                                    "believe_fit_for_duty"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "worker_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john.doe@example.com"
+                                    },
+                                    "shift_date": {
+                                        "type": "string",
+                                        "example": "2026-04-30"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "123 Street Name"
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "example": "08:00 AM"
+                                    },
+                                    "end_time": {
+                                        "type": "string",
+                                        "example": "04:00 PM"
+                                    },
+                                    "compliance_fit_for_duty": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "any_injuries": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "physically_prepared": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "any_symptoms": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "understand_unethical_work_sick": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "up_to_date_orders": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "believe_fit_for_duty": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Assessment stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Assessment stored successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/forms/daily-vehicle-checklist/store": {
+            "post": {
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Store Daily Vehicle Checklist",
+                "operationId": "c1aa3384e36d40471625cb22df6336f2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "date",
+                                    "time",
+                                    "vehicle",
+                                    "odometer_reading",
+                                    "fuel",
+                                    "assigned_site",
+                                    "driver"
+                                ],
+                                "properties": {
+                                    "date": {
+                                        "type": "string",
+                                        "example": "2026-04-30"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "example": "10:30 AM"
+                                    },
+                                    "vehicle": {
+                                        "type": "string",
+                                        "example": "Toyota Camry"
+                                    },
+                                    "odometer_reading": {
+                                        "type": "string",
+                                        "example": "125400"
+                                    },
+                                    "fuel": {
+                                        "type": "string",
+                                        "example": "Full Tank"
+                                    },
+                                    "assigned_site": {
+                                        "type": "string",
+                                        "example": "Downtown Mall"
+                                    },
+                                    "driver": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "signature": {
+                                        "type": "string",
+                                        "example": "Signature Text"
+                                    },
+                                    "cosmetic_issues": {
+                                        "type": "string",
+                                        "example": "No issues"
+                                    },
+                                    "tires": {
+                                        "type": "string",
+                                        "example": "Good"
+                                    },
+                                    "windows": {
+                                        "type": "string",
+                                        "example": "Clear"
+                                    },
+                                    "staff_care": {
+                                        "type": "string",
+                                        "example": "Clean"
+                                    },
+                                    "dash_lights_gauges": {
+                                        "type": "string",
+                                        "example": "Normal"
+                                    },
+                                    "documents": {
+                                        "description": "File upload (pdf, jpg, png, etc.)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "engine": {
+                                        "type": "string",
+                                        "example": "Smooth"
+                                    },
+                                    "oil_life_percentage": {
+                                        "type": "string",
+                                        "example": "90%"
+                                    },
+                                    "equipment": {
+                                        "type": "string",
+                                        "example": "All present"
+                                    },
+                                    "bwc_used_for_inspection": {
+                                        "type": "string",
+                                        "example": "Yes"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Daily Vehicle Checklist stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Daily Vehicle Checklist stored successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/numbers": {
@@ -2346,13 +2770,13 @@
                 ]
             }
         },
-        "/api/shift/{id}": {
+        "/api/shifts/{id}": {
             "get": {
                 "tags": [
                     "Shift"
                 ],
                 "summary": "Get shift details",
-                "operationId": "58f4c492b401d8dbb671cca9c04162aa",
+                "operationId": "560f2e01f135a9a93184e6e1630bdd64",
                 "parameters": [
                     {
                         "name": "id",
@@ -2393,6 +2817,142 @@
                     },
                     "404": {
                         "description": "Shift not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shifts": {
+            "get": {
+                "tags": [
+                    "Shift"
+                ],
+                "summary": "Get all shifts for the logged-in user",
+                "description": "Returns a list of shifts for the current week (starting Monday) assigned to the authenticated user.",
+                "operationId": "0844414ff969ed4d711562466ad89036",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Shift data fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Shifts data fetched successfully."
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "open_shifts_count": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "startOfWeek": {
+                                                    "type": "string",
+                                                    "example": "2024-04-22"
+                                                },
+                                                "endOfWeek": {
+                                                    "type": "string",
+                                                    "example": "2024-04-28"
+                                                },
+                                                "totalDuration": {
+                                                    "type": "string",
+                                                    "example": "40h 0m"
+                                                },
+                                                "shifts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shifts/{id}/reject": {
+            "get": {
+                "tags": [
+                    "Shift"
+                ],
+                "summary": "Reject an assigned shift",
+                "description": "Allows a user to reject a shift assigned to them. The shift will be removed from their schedule and moved to open shifts.",
+                "operationId": "6263eb663b0e42354c3523283e715069",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Shift ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Shift rejected successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Shift not found"
+                    },
+                    "422": {
+                        "description": "Validation error (e.g. shift already started)"
                     }
                 },
                 "security": [
@@ -3320,6 +3880,10 @@
             "description": "API Endpoints for Shift Management"
         },
         {
+            "name": "Attendance",
+            "description": "Attendance"
+        },
+        {
             "name": "Authentication",
             "description": "Authentication"
         },
@@ -3338,6 +3902,10 @@
         {
             "name": "Forgot Password",
             "description": "Forgot Password"
+        },
+        {
+            "name": "Forms",
+            "description": "Forms"
         },
         {
             "name": "Numbers",
