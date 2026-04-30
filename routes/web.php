@@ -174,6 +174,11 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::group(['prefix' => '/reports'], function () {
             Route::get('/', [ReportController::class, 'index'])->name('reports.index');
         });
+
+        Route::group(['prefix' => '/forms'], function () {
+            Route::get('/assessments', [\App\Http\Controllers\FormsController::class, 'assessments'])->name('forms.assessments');
+            Route::get('/daily-vehicle-checklist', [\App\Http\Controllers\FormsController::class, 'dailyVehicleChecklist'])->name('forms.daily-vehicle-checklist');
+        });
     });
 });
 

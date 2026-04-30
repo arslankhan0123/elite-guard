@@ -224,6 +224,22 @@
                             </a>
                         </li> -->
                         <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-forms" role="button"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="file-text"></i>
+                                <span data-key="t-forms">Forms</span>
+                                <div class="arrow-down"></div>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="topnav-forms">
+                                <a href="{{route('forms.assessments')}}" class="dropdown-item" data-key="t-assessments">
+                                    <i class="icon nav-icon" data-feather="clipboard" style="width:16px; height:16px;"></i> Assessment
+                                </a>
+                                <a href="{{route('forms.daily-vehicle-checklist')}}" class="dropdown-item" data-key="t-daily-vehicle-checklist">
+                                    <i class="icon nav-icon" data-feather="truck" style="width:16px; height:16px;"></i> Daily Vehicle Checklist
+                                </a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-components" role="button"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="monitor"></i>
