@@ -24,6 +24,11 @@ return new class extends Migration {
             $table->string('start_time')->nullable();
             $table->string('end_time')->nullable();
 
+            $table->string('client')->nullable();
+            $table->string('supervisor_first_name')->nullable();
+            $table->string('supervisor_last_name')->nullable();
+            $table->string('position_today')->nullable();
+
             // Boolean fields from the form
             $table->boolean('compliance_fit_for_duty')->default(false);
             $table->boolean('any_injuries')->default(false);
@@ -32,6 +37,12 @@ return new class extends Migration {
             $table->boolean('understand_unethical_work_sick')->default(false);
             $table->boolean('up_to_date_orders')->default(false);
             $table->boolean('believe_fit_for_duty')->default(false);
+            $table->boolean('safety_concerns')->default(false);
+            $table->boolean('hazards_identified')->default(false);
+
+            $table->string('right_to_refuse')->nullable();
+            $table->string('right_to_participate')->nullable();
+            $table->text('signature')->nullable();
 
             $table->timestamps();
         });

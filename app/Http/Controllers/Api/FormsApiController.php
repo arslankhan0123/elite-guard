@@ -27,7 +27,7 @@ class FormsApiController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"first_name","last_name","worker_email","shift_date","location","start_time","compliance_fit_for_duty","any_injuries","physically_prepared","any_symptoms","understand_unethical_work_sick","up_to_date_orders","believe_fit_for_duty"},
+     *             required={"first_name","last_name","worker_email","shift_date","location","start_time","compliance_fit_for_duty","any_injuries","physically_prepared","any_symptoms","understand_unethical_work_sick","up_to_date_orders","believe_fit_for_duty","client","supervisor_first_name","supervisor_last_name","position_today","safety_concerns","hazards_identified","right_to_refuse","right_to_participate","signature"},
      *             @OA\Property(property="first_name", type="string", example="John"),
      *             @OA\Property(property="last_name", type="string", example="Doe"),
      *             @OA\Property(property="worker_email", type="string", format="email", example="john.doe@example.com"),
@@ -35,13 +35,22 @@ class FormsApiController extends Controller
      *             @OA\Property(property="location", type="string", example="123 Street Name"),
      *             @OA\Property(property="start_time", type="string", example="08:00 AM"),
      *             @OA\Property(property="end_time", type="string", example="04:00 PM"),
+     *             @OA\Property(property="client", type="string", example="Client Name"),
+     *             @OA\Property(property="supervisor_first_name", type="string", example="Super"),
+     *             @OA\Property(property="supervisor_last_name", type="string", example="Visor"),
+     *             @OA\Property(property="position_today", type="string", example="Security Guard"),
      *             @OA\Property(property="compliance_fit_for_duty", type="boolean", example=true),
      *             @OA\Property(property="any_injuries", type="boolean", example=false),
      *             @OA\Property(property="physically_prepared", type="boolean", example=true),
      *             @OA\Property(property="any_symptoms", type="boolean", example=false),
      *             @OA\Property(property="understand_unethical_work_sick", type="boolean", example=true),
      *             @OA\Property(property="up_to_date_orders", type="boolean", example=true),
-     *             @OA\Property(property="believe_fit_for_duty", type="boolean", example=true)
+     *             @OA\Property(property="believe_fit_for_duty", type="boolean", example=true),
+     *             @OA\Property(property="safety_concerns", type="boolean", example=false),
+     *             @OA\Property(property="hazards_identified", type="boolean", example=false),
+     *             @OA\Property(property="right_to_refuse", type="string", example="I understand..."),
+     *             @OA\Property(property="right_to_participate", type="string", example="I understand..."),
+     *             @OA\Property(property="signature", type="string", example="Signature Text")
      *         )
      *     ),
      *     @OA\Response(
@@ -65,6 +74,10 @@ class FormsApiController extends Controller
             'location' => 'required|string',
             'start_time' => 'required|string',
             'end_time' => 'nullable|string',
+            'client' => 'required|string',
+            'supervisor_first_name' => 'required|string',
+            'supervisor_last_name' => 'required|string',
+            'position_today' => 'required|string',
             'compliance_fit_for_duty' => 'required|boolean',
             'any_injuries' => 'required|boolean',
             'physically_prepared' => 'required|boolean',
@@ -72,6 +85,11 @@ class FormsApiController extends Controller
             'understand_unethical_work_sick' => 'required|boolean',
             'up_to_date_orders' => 'required|boolean',
             'believe_fit_for_duty' => 'required|boolean',
+            'safety_concerns' => 'required|boolean',
+            'hazards_identified' => 'required|boolean',
+            'right_to_refuse' => 'required|string',
+            'right_to_participate' => 'required|string',
+            'signature' => 'required|string',
         ]);
 
         $data = $this->formsRepo->storeUserAssessments($request);

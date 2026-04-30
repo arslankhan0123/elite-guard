@@ -57,10 +57,10 @@
                             <tr class="table-dark">
                                 <th>ID</th>
                                 <th>User</th>
-                                <th>Name</th>
-                                <th>Email</th>
+                                <th>Client</th>
+                                <th>Supervisor</th>
+                                <th>Position</th>
                                 <th>Shift Date</th>
-                                <th>Location</th>
                                 <th>Fit for Duty?</th>
                                 <th>Believe Fit?</th>
                                 <th>Created</th>
@@ -74,10 +74,10 @@
                                     <strong>{{ $assessment->user->name ?? 'N/A' }}</strong><br>
                                     <small class="text-muted">{{ $assessment->user->email ?? '' }}</small>
                                 </td>
-                                <td>{{ $assessment->first_name }} {{ $assessment->last_name }}</td>
-                                <td>{{ $assessment->worker_email }}</td>
+                                <td>{{ $assessment->client }}</td>
+                                <td>{{ $assessment->supervisor_first_name }} {{ $assessment->supervisor_last_name }}</td>
+                                <td>{{ $assessment->position_today }}</td>
                                 <td>{{ $assessment->shift_date }}</td>
-                                <td>{{ $assessment->location }}</td>
                                 <td>
                                     @if($assessment->compliance_fit_for_duty)
                                     <span class="badge bg-success">Yes</span>
