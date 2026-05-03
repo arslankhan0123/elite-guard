@@ -5,13 +5,14 @@ namespace App\Repositories;
 use App\Models\Assessment;
 use App\Models\DailyVehicleChecklist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class FormsRepository
 {
     public function storeUserAssessments(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $assessment = Assessment::create([
             'user_id' => $user->id,
@@ -49,7 +50,7 @@ class FormsRepository
 
     public function storeDailyVehicleChecklist(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $documentPath = null;
         if ($request->hasFile('documents')) {

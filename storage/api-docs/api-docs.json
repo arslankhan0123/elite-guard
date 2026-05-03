@@ -1068,7 +1068,16 @@
                                     "any_symptoms",
                                     "understand_unethical_work_sick",
                                     "up_to_date_orders",
-                                    "believe_fit_for_duty"
+                                    "believe_fit_for_duty",
+                                    "client",
+                                    "supervisor_first_name",
+                                    "supervisor_last_name",
+                                    "position_today",
+                                    "safety_concerns",
+                                    "hazards_identified",
+                                    "right_to_refuse",
+                                    "right_to_participate",
+                                    "signature"
                                 ],
                                 "properties": {
                                     "first_name": {
@@ -1100,6 +1109,22 @@
                                         "type": "string",
                                         "example": "04:00 PM"
                                     },
+                                    "client": {
+                                        "type": "string",
+                                        "example": "Client Name"
+                                    },
+                                    "supervisor_first_name": {
+                                        "type": "string",
+                                        "example": "Super"
+                                    },
+                                    "supervisor_last_name": {
+                                        "type": "string",
+                                        "example": "Visor"
+                                    },
+                                    "position_today": {
+                                        "type": "string",
+                                        "example": "Security Guard"
+                                    },
                                     "compliance_fit_for_duty": {
                                         "type": "boolean",
                                         "example": true
@@ -1127,6 +1152,26 @@
                                     "believe_fit_for_duty": {
                                         "type": "boolean",
                                         "example": true
+                                    },
+                                    "safety_concerns": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "hazards_identified": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "right_to_refuse": {
+                                        "type": "string",
+                                        "example": "I understand..."
+                                    },
+                                    "right_to_participate": {
+                                        "type": "string",
+                                        "example": "I understand..."
+                                    },
+                                    "signature": {
+                                        "type": "string",
+                                        "example": "Signature Text"
                                     }
                                 },
                                 "type": "object"
@@ -2525,6 +2570,507 @@
                     },
                     "401": {
                         "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/security-guard-disciplinary-form/store": {
+            "post": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Store Security Guard Disciplinary Form",
+                "operationId": "8a59fffdd0702e98b64dfe5ccd4b8e4e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "employee_name",
+                                    "employee_id_license",
+                                    "site_property",
+                                    "warning_date"
+                                ],
+                                "properties": {
+                                    "employee_name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "employee_id_license": {
+                                        "type": "string",
+                                        "example": "LIC123456"
+                                    },
+                                    "site_property": {
+                                        "type": "string",
+                                        "example": "Downtown Mall"
+                                    },
+                                    "warning_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-05-03"
+                                    },
+                                    "supervisor": {
+                                        "type": "string",
+                                        "example": "Super Visor"
+                                    },
+                                    "shift_time": {
+                                        "type": "string",
+                                        "example": "08:00 - 16:00"
+                                    },
+                                    "department_client": {
+                                        "type": "string",
+                                        "example": "Main Office"
+                                    },
+                                    "reference_number": {
+                                        "type": "string",
+                                        "example": "REF789"
+                                    },
+                                    "violation_type": {
+                                        "type": "string",
+                                        "example": "Attendance"
+                                    },
+                                    "classification_severity": {
+                                        "type": "string",
+                                        "example": "Minor"
+                                    },
+                                    "classification_severity_other": {
+                                        "type": "string",
+                                        "example": "N/A"
+                                    },
+                                    "incident_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-05-02"
+                                    },
+                                    "incident_time": {
+                                        "type": "string",
+                                        "example": "08:30"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Gate 1"
+                                    },
+                                    "reported_by": {
+                                        "type": "string",
+                                        "example": "Guard A"
+                                    },
+                                    "incident_summary": {
+                                        "type": "string",
+                                        "example": "Arrived late..."
+                                    },
+                                    "corrective_action": {
+                                        "type": "string",
+                                        "example": "Verbal warning"
+                                    },
+                                    "action_taken": {
+                                        "type": "string",
+                                        "example": "Logged"
+                                    },
+                                    "issued_by": {
+                                        "type": "string",
+                                        "example": "Captain B"
+                                    },
+                                    "issued_by_title": {
+                                        "type": "string",
+                                        "example": "Site Supervisor"
+                                    },
+                                    "employee_signature": {
+                                        "type": "string",
+                                        "example": "Digital Signature"
+                                    },
+                                    "signature_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-05-03"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Disciplinary form stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Disciplinary form stored successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/incident-report-form/store": {
+            "post": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Store Incident Report Form",
+                "operationId": "9252f119c9899a759aaad600ef03f67b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "date_of_report",
+                                    "time_of_report",
+                                    "location",
+                                    "property",
+                                    "incident_type",
+                                    "reported_by"
+                                ],
+                                "properties": {
+                                    "date_of_report": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-05-03"
+                                    },
+                                    "time_of_report": {
+                                        "type": "string",
+                                        "example": "14:30"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Main Entrance"
+                                    },
+                                    "property": {
+                                        "type": "string",
+                                        "example": "Elite Plaza"
+                                    },
+                                    "incident_type": {
+                                        "type": "string",
+                                        "example": "Theft"
+                                    },
+                                    "reported_by": {
+                                        "type": "string",
+                                        "example": "Guard Smith"
+                                    },
+                                    "responding_authority": {
+                                        "type": "string",
+                                        "example": "Local Police"
+                                    },
+                                    "cps_case_number": {
+                                        "type": "string",
+                                        "example": "CPS-123"
+                                    },
+                                    "incident_report": {
+                                        "type": "string",
+                                        "example": "Detailed description of the incident..."
+                                    },
+                                    "subject_description": {
+                                        "type": "string",
+                                        "example": "Height 6ft, wearing blue jacket..."
+                                    },
+                                    "outcome": {
+                                        "type": "string",
+                                        "example": "Subject apprehended"
+                                    },
+                                    "reported_by_name": {
+                                        "type": "string",
+                                        "example": "Officer John"
+                                    },
+                                    "reported_by_title": {
+                                        "type": "string",
+                                        "example": "Security Guard"
+                                    },
+                                    "reviewed_by_name": {
+                                        "type": "string",
+                                        "example": "Supervisor Jane"
+                                    },
+                                    "reviewed_by_title": {
+                                        "type": "string",
+                                        "example": "Manager"
+                                    },
+                                    "images[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Incident report stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Incident report stored successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/general-report-form/store": {
+            "post": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Store General Report Form",
+                "operationId": "ccf9c875bc966dd9b0b9bd9ebf1a9301",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "report_date",
+                                    "report_time",
+                                    "property_location",
+                                    "property_name",
+                                    "reported_by"
+                                ],
+                                "properties": {
+                                    "report_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-05-03"
+                                    },
+                                    "report_time": {
+                                        "type": "string",
+                                        "example": "09:00"
+                                    },
+                                    "property_location": {
+                                        "type": "string",
+                                        "example": "Sector 7"
+                                    },
+                                    "property_name": {
+                                        "type": "string",
+                                        "example": "Industrial Complex"
+                                    },
+                                    "reported_by": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "report_type": {
+                                        "type": "string",
+                                        "example": "Maintenance"
+                                    },
+                                    "time_engaged": {
+                                        "type": "string",
+                                        "example": "08:45"
+                                    },
+                                    "time_area_cleared": {
+                                        "type": "string",
+                                        "example": "09:15"
+                                    },
+                                    "location_of_incident": {
+                                        "type": "string",
+                                        "example": "Warehouse B"
+                                    },
+                                    "observation_situation": {
+                                        "type": "string",
+                                        "example": "Broken lock observed."
+                                    },
+                                    "action_taken": {
+                                        "type": "string",
+                                        "example": "Secured with temporary chain."
+                                    },
+                                    "signature": {
+                                        "type": "string",
+                                        "example": "John's Signature"
+                                    },
+                                    "observation_image_path[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    },
+                                    "cleared_area_image_path[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "General report stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "General report stored successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/daily-shift-report-form/store": {
+            "post": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Store Daily Shift Report Form",
+                "operationId": "8d39926c310f9bed35990bc1e039a6fd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "shift_id",
+                                    "security_company",
+                                    "security_guard",
+                                    "date",
+                                    "shift_time",
+                                    "location",
+                                    "client"
+                                ],
+                                "properties": {
+                                    "shift_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "security_company": {
+                                        "type": "string",
+                                        "example": "Elite Guarding"
+                                    },
+                                    "security_guard": {
+                                        "type": "string",
+                                        "example": "Officer Smith"
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-05-03"
+                                    },
+                                    "shift_time": {
+                                        "type": "string",
+                                        "example": "08:00 - 16:00"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "North Gate"
+                                    },
+                                    "client": {
+                                        "type": "string",
+                                        "example": "ABC Corp"
+                                    },
+                                    "patrol_entries": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "time_range": {
+                                                    "type": "string",
+                                                    "example": "08:00 - 09:00"
+                                                },
+                                                "summary": {
+                                                    "type": "string",
+                                                    "example": "Initial patrol completed."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Daily shift report stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Daily shift report stored successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -3934,6 +4480,10 @@
         {
             "name": "Policies",
             "description": "Policies"
+        },
+        {
+            "name": "Reports",
+            "description": "Reports"
         },
         {
             "name": "Schedules",
