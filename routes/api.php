@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CompanyApiController;
 use App\Http\Controllers\Api\DocumentsApiController;
 use App\Http\Controllers\Api\ForgotPasswordApiController;
 use App\Http\Controllers\Api\FormsApiController;
+use App\Http\Controllers\Api\ReportsApiController;
 use App\Http\Controllers\Api\NumberApiController;
 use App\Http\Controllers\Api\OfferLetterApiController;
 use App\Http\Controllers\Api\PanicApiController;
@@ -74,6 +75,24 @@ Route::middleware('auth:api')->group(function () {
         });
         Route::group(['prefix' => '/daily-vehicle-checklist'], function () {
             Route::post('/store', [FormsApiController::class, 'storeDailyVehicleChecklist']);
+        });
+    });
+
+    Route::group(['prefix' => '/reports'], function () {
+        Route::group(['prefix' => '/security-guard-disciplinary-form'], function () {
+            Route::post('/store', [ReportsApiController::class, 'storeSecurityGuardDisciplinaryForm']);
+        });
+
+        Route::group(['prefix' => '/incident-report-form'], function () {
+            Route::post('/store', [ReportsApiController::class, 'storeIncidentReportForm']);
+        });
+
+        Route::group(['prefix' => '/general-report-form'], function () {
+            Route::post('/store', [ReportsApiController::class, 'storeGeneralReportForm']);
+        });
+
+        Route::group(['prefix' => '/daily-shift-report-form'], function () {
+            Route::post('/store', [ReportsApiController::class, 'storeDailyShiftReportForm']);
         });
     });
 
