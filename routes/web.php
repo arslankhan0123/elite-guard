@@ -179,6 +179,13 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
             Route::get('/assessments', [\App\Http\Controllers\FormsController::class, 'assessments'])->name('forms.assessments');
             Route::get('/daily-vehicle-checklist', [\App\Http\Controllers\FormsController::class, 'dailyVehicleChecklist'])->name('forms.daily-vehicle-checklist');
         });
+
+        Route::group(['prefix' => '/security-reports'], function () {
+            Route::get('/disciplinary', [\App\Http\Controllers\Admin\SecurityReportController::class, 'disciplinary'])->name('security-reports.disciplinary');
+            Route::get('/incident', [\App\Http\Controllers\Admin\SecurityReportController::class, 'incident'])->name('security-reports.incident');
+            Route::get('/general', [\App\Http\Controllers\Admin\SecurityReportController::class, 'general'])->name('security-reports.general');
+            Route::get('/daily-shift', [\App\Http\Controllers\Admin\SecurityReportController::class, 'dailyShift'])->name('security-reports.daily-shift');
+        });
     });
 });
 

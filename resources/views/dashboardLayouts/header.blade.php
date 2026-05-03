@@ -160,26 +160,28 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none position-relative" href="{{route('open-shifts.index')}}"
-                                id="topnav-open-shifts" role="button" data-toggle="dropdown" aria-haspopup="true"
-                                aria-expanded="false">
+                            <a class="nav-link dropdown-toggle arrow-none position-relative"
+                                href="{{route('open-shifts.index')}}" id="topnav-open-shifts" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="layers"></i>
                                 <span data-key="t-open-shifts">Open Shifts</span>
-                                @php $pendingOpenShiftClaims = \App\Models\OpenShiftClaim::where('status','pending')->count(); @endphp
+                                @php $pendingOpenShiftClaims = \App\Models\OpenShiftClaim::where('status', 'pending')->count(); @endphp
                                 @if($pendingOpenShiftClaims > 0)
-                                    <span class="badge bg-danger rounded-pill ms-1" style="font-size:.65rem;">{{ $pendingOpenShiftClaims }}</span>
+                                    <span class="badge bg-danger rounded-pill ms-1"
+                                        style="font-size:.65rem;">{{ $pendingOpenShiftClaims }}</span>
                                 @endif
                             </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none position-relative" href="{{route('availabilities.index')}}"
-                                id="topnav-availabilities" role="button" data-toggle="dropdown" aria-haspopup="true"
-                                aria-expanded="false">
+                            <a class="nav-link dropdown-toggle arrow-none position-relative"
+                                href="{{route('availabilities.index')}}" id="topnav-availabilities" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="calendar"></i>
                                 <span data-key="t-availabilities">Availability</span>
-                                @php $pendingAvailCount = \App\Models\Availability::where('status','pending')->count(); @endphp
+                                @php $pendingAvailCount = \App\Models\Availability::where('status', 'pending')->count(); @endphp
                                 @if($pendingAvailCount > 0)
-                                    <span class="badge bg-warning rounded-pill ms-1" style="font-size:.65rem; color:#000;">{{ $pendingAvailCount }}</span>
+                                    <span class="badge bg-warning rounded-pill ms-1"
+                                        style="font-size:.65rem; color:#000;">{{ $pendingAvailCount }}</span>
                                 @endif
                             </a>
                         </li>
@@ -232,10 +234,35 @@
                             </a>
                             <div class="dropdown-menu" aria-labelledby="topnav-forms">
                                 <a href="{{route('forms.assessments')}}" class="dropdown-item" data-key="t-assessments">
-                                    <i class="icon nav-icon" data-feather="clipboard" style="width:16px; height:16px;"></i> Assessment
+                                    <i class="icon nav-icon" data-feather="clipboard"
+                                        style="width:16px; height:16px;"></i> Assessment
                                 </a>
-                                <a href="{{route('forms.daily-vehicle-checklist')}}" class="dropdown-item" data-key="t-daily-vehicle-checklist">
-                                    <i class="icon nav-icon" data-feather="truck" style="width:16px; height:16px;"></i> Daily Vehicle Checklist
+                                <a href="{{route('forms.daily-vehicle-checklist')}}" class="dropdown-item"
+                                    data-key="t-daily-vehicle-checklist">
+                                    <i class="icon nav-icon" data-feather="truck" style="width:16px; height:16px;"></i>
+                                    Daily Vehicle Checklist
+                                </a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-security-reports" role="button"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="file-text"></i>
+                                <span data-key="t-reports">Security Reports</span>
+                                <div class="arrow-down"></div>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="topnav-security-reports">
+                                <a href="{{ route('security-reports.disciplinary') }}" class="dropdown-item" data-key="t-disciplinary">
+                                    <i class="icon nav-icon" data-feather="user-x" style="width:16px; height:16px;"></i> Disciplinary Form
+                                </a>
+                                <a href="{{ route('security-reports.incident') }}" class="dropdown-item" data-key="t-incident">
+                                    <i class="icon nav-icon" data-feather="alert-triangle" style="width:16px; height:16px;"></i> Incident Report
+                                </a>
+                                <a href="{{ route('security-reports.general') }}" class="dropdown-item" data-key="t-general">
+                                    <i class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i> General Report
+                                </a>
+                                <a href="{{ route('security-reports.daily-shift') }}" class="dropdown-item" data-key="t-daily-shift">
+                                    <i class="icon nav-icon" data-feather="clock" style="width:16px; height:16px;"></i> Daily Shift Report
                                 </a>
                             </div>
                         </li>
@@ -247,13 +274,27 @@
                                 <div class="arrow-down"></div>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="topnav-components">
-                                <a href="{{route('policies.index')}}" class="dropdown-item" data-key="t-widgets"> <i class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i> Policies</a>
-                                <a href="{{route('orientations.index')}}" class="dropdown-item" data-key="t-widgets"> <i class="icon nav-icon" data-feather="layers" style="width:16px; height:16px;"></i> Orientations</a>
-                                <a href="{{route('employees.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="users" style="width:16px; height:16px;"></i> Employees</a>
-                                <a href="{{route('pay-slips.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i> Pay Slips</a>
-                                <a href="{{route('tax-docs.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i> Tax Docs</a>
-                                <a href="{{route('reports.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="bar-chart" style="width:16px; height:16px;"></i> Reports</a>
-                                <a href="{{route('numbers.index')}}" class="dropdown-item" data-key="t-widgets"><i class="icon nav-icon" data-feather="phone" style="width:16px; height:16px;"></i> Numbers</a>
+                                <a href="{{route('policies.index')}}" class="dropdown-item" data-key="t-widgets"> <i
+                                        class="icon nav-icon" data-feather="file-text"
+                                        style="width:16px; height:16px;"></i> Policies</a>
+                                <a href="{{route('orientations.index')}}" class="dropdown-item" data-key="t-widgets"> <i
+                                        class="icon nav-icon" data-feather="layers"
+                                        style="width:16px; height:16px;"></i> Orientations</a>
+                                <a href="{{route('employees.index')}}" class="dropdown-item" data-key="t-widgets"><i
+                                        class="icon nav-icon" data-feather="users" style="width:16px; height:16px;"></i>
+                                    Employees</a>
+                                <a href="{{route('pay-slips.index')}}" class="dropdown-item" data-key="t-widgets"><i
+                                        class="icon nav-icon" data-feather="file-text"
+                                        style="width:16px; height:16px;"></i> Pay Slips</a>
+                                <a href="{{route('tax-docs.index')}}" class="dropdown-item" data-key="t-widgets"><i
+                                        class="icon nav-icon" data-feather="file-text"
+                                        style="width:16px; height:16px;"></i> Tax Docs</a>
+                                <a href="{{route('reports.index')}}" class="dropdown-item" data-key="t-widgets"><i
+                                        class="icon nav-icon" data-feather="bar-chart"
+                                        style="width:16px; height:16px;"></i> Reports</a>
+                                <a href="{{route('numbers.index')}}" class="dropdown-item" data-key="t-widgets"><i
+                                        class="icon nav-icon" data-feather="phone" style="width:16px; height:16px;"></i>
+                                    Numbers</a>
                             </div>
                         </li>
                     </ul>
