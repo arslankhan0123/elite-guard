@@ -201,6 +201,47 @@
                                 <span data-key="t-time-clocks">Time Clock</span>
                             </a>
                         </li>
+                        <!-- <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-forms" role="button"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="file-text"></i>
+                                <span data-key="t-forms">Forms</span>
+                                <div class="arrow-down"></div>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="topnav-forms">
+                                <a href="{{route('forms.assessments')}}" class="dropdown-item" data-key="t-assessments">
+                                    <i class="icon nav-icon" data-feather="clipboard"
+                                        style="width:16px; height:16px;"></i> Assessment
+                                </a>
+                                <a href="{{route('forms.daily-vehicle-checklist')}}" class="dropdown-item"
+                                    data-key="t-daily-vehicle-checklist">
+                                    <i class="icon nav-icon" data-feather="truck" style="width:16px; height:16px;"></i>
+                                    Daily Vehicle Checklist
+                                </a>
+                            </div>
+                        </li> -->
+                        <!-- <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-security-reports" role="button"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="file-text"></i>
+                                <span data-key="t-reports">Security Reports</span>
+                                <div class="arrow-down"></div>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="topnav-security-reports">
+                                <a href="{{ route('security-reports.disciplinary') }}" class="dropdown-item" data-key="t-disciplinary">
+                                    <i class="icon nav-icon" data-feather="user-x" style="width:16px; height:16px;"></i> Disciplinary Form
+                                </a>
+                                <a href="{{ route('security-reports.incident') }}" class="dropdown-item" data-key="t-incident">
+                                    <i class="icon nav-icon" data-feather="alert-triangle" style="width:16px; height:16px;"></i> Incident Report
+                                </a>
+                                <a href="{{ route('security-reports.general') }}" class="dropdown-item" data-key="t-general">
+                                    <i class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i> General Report
+                                </a>
+                                <a href="{{ route('security-reports.daily-shift') }}" class="dropdown-item" data-key="t-daily-shift">
+                                    <i class="icon nav-icon" data-feather="clock" style="width:16px; height:16px;"></i> Daily Shift Report
+                                </a>
+                            </div>
+                        </li> -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('attendance.index')}}"
                                 id="topnav-attendance" role="button" data-toggle="dropdown" aria-haspopup="true"

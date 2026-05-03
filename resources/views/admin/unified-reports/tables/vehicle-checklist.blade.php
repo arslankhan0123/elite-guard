@@ -1,33 +1,46 @@
-<table class="table table-striped table-bordered">
+<table id="custom-table" class="table table-striped table-bordered">
     <thead>
         <tr class="table-dark">
             <th>ID</th>
-            <th>Employee</th>
-            <th>Vehicle ID</th>
+            <th>User</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Vehicle</th>
             <th>Odometer</th>
-            <th>Documents</th>
-            <th>Created At</th>
+            <th>Fuel</th>
+            <th>Site</th>
+            <th>Driver</th>
+            <th>Document</th>
+            <th>Created</th>
         </tr>
     </thead>
     <tbody>
         @forelse($data['checklists'] as $checklist)
             <tr>
                 <td>{{ $checklist->id }}</td>
-                <td>{{ $checklist->user->name ?? 'N/A' }}</td>
-                <td>{{ $checklist->vehicle_id ?? 'N/A' }}</td>
-                <td>{{ $checklist->odometer_reading ?? 'N/A' }}</td>
+                <td>
+                    <strong>{{ $checklist->user->name ?? 'N/A' }}</strong><br>
+                    <small class="text-muted">{{ $checklist->user->email ?? '' }}</small>
+                </td>
+                <td>{{ $checklist->date }}</td>
+                <td>{{ $checklist->time }}</td>
+                <td>{{ $checklist->vehicle }}</td>
+                <td>{{ $checklist->odometer_reading }}</td>
+                <td>{{ $checklist->fuel }}</td>
+                <td>{{ $checklist->assigned_site }}</td>
+                <td>{{ $checklist->driver }}</td>
                 <td>
                     @if($checklist->documents)
-                        <span class="badge bg-success">Uploaded</span>
+                        <a href="{{ $checklist->documents }}" target="_blank" class="btn btn-sm btn-primary">View File</a>
                     @else
-                        <span class="badge bg-danger">Missing</span>
+                        <span class="text-muted">No File</span>
                     @endif
                 </td>
                 <td>{{ $checklist->created_at->format('j M Y H:i') }}</td>
             </tr>
         @empty
             <tr>
-                <td colspan="6" class="text-center">No checklists found.</td>
+                <td colspan="11" class="text-center">No checklists found.</td>
             </tr>
         @endforelse
     </tbody>
