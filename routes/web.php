@@ -181,6 +181,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         });
 
         Route::group(['prefix' => '/security-reports'], function () {
+            Route::get('/all', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'index'])->name('reports.all');
             Route::get('/disciplinary', [\App\Http\Controllers\Admin\SecurityReportController::class, 'disciplinary'])->name('security-reports.disciplinary');
             Route::get('/incident', [\App\Http\Controllers\Admin\SecurityReportController::class, 'incident'])->name('security-reports.incident');
             Route::get('/general', [\App\Http\Controllers\Admin\SecurityReportController::class, 'general'])->name('security-reports.general');
