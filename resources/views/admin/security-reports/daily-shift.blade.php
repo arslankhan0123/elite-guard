@@ -13,6 +13,41 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title shine">Filters</h4>
+            </div>
+            <div class="card-body">
+                <form id="filterForm" action="{{ route('security-reports.daily-shift') }}" method="GET" class="row">
+                    <div class="col-md-4 mb-3 d-flex flex-column">
+                        <label for="user_id" class="form-label fw-bold">Employee</label>
+                        <select name="user_id" id="user_id" class="form-select select2" onchange="this.form.submit()">
+                            <option value="">All Employees</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
+                                    {{ $user->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3 d-flex flex-column">
+                        <label for="date_range" class="form-label fw-bold">Date Range</label>
+                        <select name="date_range" id="date_range" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Time</option>
+                            <option value="today" {{ request('date_range') == 'today' ? 'selected' : '' }}>Today</option>
+                            <option value="yesterday" {{ request('date_range') == 'yesterday' ? 'selected' : '' }}>Yesterday</option>
+                            <option value="current_week" {{ request('date_range') == 'current_week' ? 'selected' : '' }}>Current Week</option>
+                            <option value="last_week" {{ request('date_range') == 'last_week' ? 'selected' : '' }}>Last Week</option>
+                            <option value="current_month" {{ request('date_range') == 'current_month' ? 'selected' : '' }}>Current Month</option>
+                            <option value="last_month" {{ request('date_range') == 'last_month' ? 'selected' : '' }}>Last Month</option>
+                            <option value="current_year" {{ request('date_range') == 'current_year' ? 'selected' : '' }}>Current Year</option>
+                            <option value="last_year" {{ request('date_range') == 'last_year' ? 'selected' : '' }}>Last Year</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title shine">Daily Shift Reports Table ({{ $reports->total() }})</h4>
             </div>
             <div class="card-body">
