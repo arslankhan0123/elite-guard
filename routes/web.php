@@ -19,6 +19,7 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\TaxDocController;
 use App\Http\Controllers\TimeClockController;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\NoticeBoardController;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\NfcTag;
@@ -191,6 +192,15 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
 
     Route::group(['prefix' => '/security-reports'], function () {
         Route::get('/all', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'index'])->name('reports.all');
+    });
+
+    Route::group(['prefix' => '/notice-board'], function () {
+        Route::get('/', [NoticeBoardController::class, 'index'])->name('notice-board.index');
+        Route::get('/create', [NoticeBoardController::class, 'create'])->name('notice-board.create');
+        Route::post('/store', [NoticeBoardController::class, 'store'])->name('notice-board.store');
+        Route::get('/edit/{id}', [NoticeBoardController::class, 'edit'])->name('notice-board.edit');
+        Route::post('/update/{id}', [NoticeBoardController::class, 'update'])->name('notice-board.update');
+        Route::get('/delete/{id}', [NoticeBoardController::class, 'destroy'])->name('notice-board.delete');
     });
 });
 

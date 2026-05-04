@@ -1344,6 +1344,90 @@
                 ]
             }
         },
+        "/api/notice-board": {
+            "get": {
+                "tags": [
+                    "Notice Board"
+                ],
+                "summary": "Get all notices from the Notice Board",
+                "operationId": "b5a5cd38ba0ad7cfa9a4fad361e0d7da",
+                "responses": {
+                    "200": {
+                        "description": "Notice Board Data fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Notice Board Data fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Notice Board Data fetched successfully."
+                                                },
+                                                "notices": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "date": {
+                                                                "type": "string",
+                                                                "format": "date",
+                                                                "example": "2026-05-04"
+                                                            },
+                                                            "subject": {
+                                                                "type": "string",
+                                                                "example": "Meeting Notice"
+                                                            },
+                                                            "long_description": {
+                                                                "type": "string",
+                                                                "example": "Description of the meeting..."
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2026-05-04T20:37:13Z"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2026-05-04T20:37:13Z"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/numbers": {
             "get": {
                 "tags": [
@@ -4452,6 +4536,10 @@
         {
             "name": "Forms",
             "description": "Forms"
+        },
+        {
+            "name": "Notice Board",
+            "description": "Notice Board"
         },
         {
             "name": "Numbers",

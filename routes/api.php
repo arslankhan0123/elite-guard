@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CompanyApiController;
 use App\Http\Controllers\Api\DocumentsApiController;
 use App\Http\Controllers\Api\ForgotPasswordApiController;
 use App\Http\Controllers\Api\FormsApiController;
+use App\Http\Controllers\Api\NoticeBoardApiController;
 use App\Http\Controllers\Api\ReportsApiController;
 use App\Http\Controllers\Api\NumberApiController;
 use App\Http\Controllers\Api\OfferLetterApiController;
@@ -67,6 +68,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/panic'], function () {
         Route::get('/', [PanicApiController::class, 'panicNotifications']);
+    });
+
+    Route::group(['prefix' => '/notice-board'], function () {
+        Route::get('/', [NoticeBoardApiController::class, 'index']);
     });
 
     Route::group(['prefix' => '/forms'], function () {
