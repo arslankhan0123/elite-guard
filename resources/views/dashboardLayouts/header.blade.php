@@ -250,14 +250,6 @@
                                 <span data-key="t-attendance">Attendance</span>
                             </a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('notice-board.index')}}"
-                                id="topnav-notice-board" role="button" data-toggle="dropdown" aria-haspopup="true"
-                                aria-expanded="false">
-                                <i class="icon nav-icon" data-feather="bell"></i>
-                                <span data-key="t-notice-board">Notice Board</span>
-                            </a>
-                        </li>
                         <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('reports.index')}}"
                                 id="topnav-reports" role="button" data-toggle="dropdown" aria-haspopup="true"
@@ -311,6 +303,9 @@
                                 <a href="{{route('numbers.index')}}" class="dropdown-item" data-key="t-widgets"><i
                                         class="icon nav-icon" data-feather="phone" style="width:16px; height:16px;"></i>
                                     Numbers</a>
+                                <a href="{{route('notice-board.index')}}" class="dropdown-item" data-key="t-widgets"><i
+                                        class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i>
+                                    Notice Board</a>
                             </div>
                         </li>
                     </ul>

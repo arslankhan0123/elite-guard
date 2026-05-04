@@ -103,8 +103,16 @@
                                         </td>
                                         <td>
                                             <div class="btn-group" role="group" aria-label="Employee Actions">
+                                                <button type="button" class="btn btn-sm me-2 btn-outline-dark rounded-pill px-3"
+                                                    title="Direct Assign Sites" data-bs-toggle="modal"
+                                                    data-bs-target="#assignUserSitesModal"
+                                                    data-user-id="{{ $employee->user->id }}"
+                                                    data-name="{{ $employee->user->name }}"
+                                                    data-assigned-sites="{{ $employee->user->sites->pluck('id')->toJson() }}">
+                                                    <i data-feather="map-pin" style="width: 14px; height: 14px;"></i>
+                                                </button>
                                                 <button type="button" class="btn btn-sm me-2 btn-outline-primary rounded-pill px-3"
-                                                    title="Assign Sites" data-bs-toggle="modal"
+                                                    title="Assign Shifts/Schedules" data-bs-toggle="modal"
                                                     data-bs-target="#assignSitesModal"
                                                     data-employee-id="{{ $employee->user->id }}"
                                                     data-employee-name="{{ $employee->user->name }}"
@@ -376,6 +384,50 @@
                         <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-info text-white rounded-pill px-4 fw-bold">
                             <i data-feather="upload" style="width: 16px; height: 16px;" class="me-1"></i> Upload Pay Slip
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Assign User Sites Modal (Direct Assignment) -->
+    <div class="modal fade" id="assignUserSitesModal" tabindex="-1" aria-labelledby="assignUserSitesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="assignUserSitesModalLabel">
+                        <i data-feather="map-pin" class="me-2 text-primary"></i> Direct Assign Sites
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="assignUserSitesForm" action="" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <p class="text-muted">Assign multiple sites to <strong id="assignSitesEmployeeName"></strong></p>
+                        
+                        <div class="row g-3 mt-2">
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">Select Sites</label>
+                                <div class="d-flex flex-column gap-2" style="max-height: 300px; overflow-y: auto; padding-right: 10px;">
+                                    @foreach($sites as $site)
+                                        <div class="form-check p-2 rounded-3 border bg-light d-flex align-items-center">
+                                            <input class="form-check-input ms-0 me-3 site-checkbox" type="checkbox" name="site_ids[]" value="{{ $site->id }}" id="site_{{ $site->id }}" style="width: 20px; height: 20px;">
+                                            <label class="form-check-label flex-grow-1 mb-0" for="site_{{ $site->id }}" style="cursor: pointer;">
+                                                <span class="fw-bold d-block">{{ $site->name }}</span>
+                                                <small class="text-muted">{{ $site->address }}</small>
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light p-3 mt-3">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                            <i data-feather="check" style="width: 18px; height: 18px;" class="me-1"></i> Update Assignments
                         </button>
                     </div>
                 </form>
@@ -687,6 +739,29 @@
                 document.getElementById('payslip_user_id').value = userId;
                 document.getElementById('userIdText').textContent = userId;
                 document.getElementById('payslipEmployeeName').textContent = employeeName;
+
+                feather.replace();
+            });
+
+            const assignUserSitesModal = document.getElementById('assignUserSitesModal');
+            assignUserSitesModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const userId = button.getAttribute('data-user-id');
+                const employeeName = button.getAttribute('data-name');
+                const assignedSites = JSON.parse(button.getAttribute('data-assigned-sites') || '[]');
+
+                document.getElementById('assignSitesEmployeeName').textContent = employeeName;
+                
+                // Set form action
+                const form = document.getElementById('assignUserSitesForm');
+                let routeUrl = "{{ route('employees.assignSites', ':id') }}";
+                form.action = routeUrl.replace(':id', userId);
+
+                // Reset and check checkboxes
+                const checkboxes = assignUserSitesModal.querySelectorAll('.site-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.checked = assignedSites.includes(parseInt(cb.value));
+                });
 
                 feather.replace();
             });
