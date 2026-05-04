@@ -39,7 +39,7 @@ class TagsApiController extends Controller
     public function index()
     {
         // Use the repository to get all NFC tags
-        $nfcTags = $this->nfcTagsRepo->getAllNfcTags();
+        $nfcTags = $this->nfcTagsRepo->getUserNfcTags();
         return $this->successResponse($nfcTags, 'All NFC tags fetched.');
     }
 

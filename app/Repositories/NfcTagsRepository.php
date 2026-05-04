@@ -3,10 +3,26 @@
 namespace App\Repositories;
 
 use App\Models\NfcTag;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class NfcTagsRepository
 {
+    // Get all NFC tags for the authenticated user
+    public function getUserNfcTags()
+    {
+        $user = Auth::user();
+        $sites = $user->sites()->with(['company', 'nfcTags'])->orderBy('name')->get();
+        $nfcTags = NfcTag::whereIn('site_id', $sites->pluck('id'))->with('site.company')->orderBy('id', 'desc')->get();
+        // $nfcTags = NfcTag::with('site.company')->orderBy('id', 'desc')->get();
+        $data = [
+            'status' => true,
+            'message' => 'NFC Tags retrieved successfully',
+            'nfcTags' => $nfcTags
+        ];
+        return $data;
+    }
+
     // Get all NFC tags
     public function getAllNfcTags()
     {
