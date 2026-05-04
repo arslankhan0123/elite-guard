@@ -52,4 +52,16 @@ class SiteRepository
         }
         return false;
     }
+
+    // Get sites assigned to a specific user
+    public function getUserAssignedSites($user)
+    {
+        $sites = $user->sites()->with(['company', 'nfcTags'])->orderBy('name')->get();
+        
+        return [
+            'status' => true,
+            'message' => 'Assigned sites retrieved successfully',
+            'sites' => $sites
+        ];
+    }
 }

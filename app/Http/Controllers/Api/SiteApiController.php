@@ -37,16 +37,25 @@ class SiteApiController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="Success"),
      *             @OA\Property(property="message", type="string", example="Assigned sites fetched."),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="status", type="boolean", example=true),
+     *                 @OA\Property(property="message", type="string", example="Assigned sites retrieved successfully"),
+     *                 @OA\Property(property="sites", type="array", @OA\Items(type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="Elite Plaza"),
+     *                     @OA\Property(property="company", type="object"),
+     *                     @OA\Property(property="nfc_tags", type="array", @OA\Items(type="object"))
+     *                 ))
+     *             )
      *         )
      *     )
      * )
      */
     public function index(Request $request)
     {
-        $dateString = $request->query('date');
-        $data = $this->scheduleRepo->getSchedulesByWeek(Auth::id(), $dateString);
+        $user = Auth::user();
+        $data = $this->siteRepo->getUserAssignedSites($user);
 
-        return $this->successResponse($data, 'Scheduled Sites of the week fetched.');
+        return $this->successResponse($data, 'Assigned Sites with Company and NFC Tags fetched.');
     }
 }
