@@ -29,7 +29,7 @@ class EmployeeController extends Controller
     {
         $currentMonday = Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
         
-        $employees = Employee::with(['user', 'user.offerLetter', 'user.schedules' => function($query) use ($currentMonday) {
+        $employees = Employee::with(['user', 'user.sites', 'user.offerLetter', 'user.schedules' => function($query) use ($currentMonday) {
             $query->where('week_start_date', $currentMonday);
         }, 'user.schedules.shifts.site'])->get();
         
