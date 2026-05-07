@@ -125,6 +125,11 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
+    public function runSheets()
+    {
+        return $this->hasMany(RunSheet::class);
+    }
+
     /**
      * Route notifications for the FCM channel.
      *

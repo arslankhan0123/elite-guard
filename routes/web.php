@@ -90,6 +90,8 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/delete/{id}', [ScheduleController::class, 'destroy'])->name('schedules.delete');
     });
 
+    Route::post('/run-sheets/update', [\App\Http\Controllers\RunSheetController::class, 'update'])->name('run-sheets.update');
+
     Route::group(['prefix' => '/open-shifts'], function () {
         Route::get('/', [OpenShiftController::class, 'index'])->name('open-shifts.index');
         Route::get('/create', [OpenShiftController::class, 'create'])->name('open-shifts.create');
