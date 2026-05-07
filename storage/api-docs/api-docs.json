@@ -595,6 +595,61 @@
                 ]
             }
         },
+        "/api/check-points": {
+            "get": {
+                "tags": [
+                    "Check Points"
+                ],
+                "summary": "Get all sites/check-points",
+                "operationId": "13345ee0a5c159f122218d08c45ddc76",
+                "responses": {
+                    "200": {
+                        "description": "All sites fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "All sites fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Sites retrieved successfully"
+                                                },
+                                                "sites": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/company": {
             "get": {
                 "tags": [
@@ -3164,6 +3219,136 @@
                 ]
             }
         },
+        "/api/run-sheets": {
+            "get": {
+                "tags": [
+                    "Run Sheets"
+                ],
+                "summary": "Get run sheets for the authenticated user",
+                "operationId": "d62c05af23f906bdf9c705723c701e93",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Filter by date (YYYY-MM-DD). Defaults to today if not provided.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Run sheets fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Run sheets fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Run sheets retrieved successfully"
+                                                },
+                                                "total_run_sheets": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "run_sheets": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "user_id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "site_id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "date": {
+                                                                "type": "string",
+                                                                "format": "date",
+                                                                "example": "2026-05-07"
+                                                            },
+                                                            "run_sheet_name": {
+                                                                "type": "string",
+                                                                "example": "Mobile Patrol Check"
+                                                            },
+                                                            "start_time": {
+                                                                "type": "string",
+                                                                "example": "10:00:00"
+                                                            },
+                                                            "end_time": {
+                                                                "type": "string",
+                                                                "example": "15:00:00"
+                                                            },
+                                                            "duration": {
+                                                                "type": "string",
+                                                                "example": "15 Min."
+                                                            },
+                                                            "job_type": {
+                                                                "type": "string",
+                                                                "example": "Mobile Patrol"
+                                                            },
+                                                            "sequence": {
+                                                                "type": "string",
+                                                                "example": "1 of 1"
+                                                            },
+                                                            "site": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 1
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Elite Plaza"
+                                                                    },
+                                                                    "company": {
+                                                                        "type": "object"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/schedules": {
             "get": {
                 "tags": [
@@ -3615,10 +3800,42 @@
                                             "example": "Assigned sites fetched."
                                         },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Assigned sites retrieved successfully"
+                                                },
+                                                "sites": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Elite Plaza"
+                                                            },
+                                                            "company": {
+                                                                "type": "object"
+                                                            },
+                                                            "nfc_tags": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -4522,6 +4739,10 @@
             "description": "Availability"
         },
         {
+            "name": "Check Points",
+            "description": "Check Points"
+        },
+        {
             "name": "Company",
             "description": "Company"
         },
@@ -4572,6 +4793,10 @@
         {
             "name": "Reports",
             "description": "Reports"
+        },
+        {
+            "name": "Run Sheets",
+            "description": "Run Sheets"
         },
         {
             "name": "Schedules",
