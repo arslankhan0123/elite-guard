@@ -107,6 +107,7 @@ class ScheduleController extends Controller
             'user_id' => 'required|exists:users,id',
             'week_start_date' => 'required|date',
             'shifts' => 'nullable|array',
+            'shifts.*.id' => 'nullable|exists:shifts,id',
             'shifts.*.site_id' => 'required|exists:sites,id',
             'shifts.*.shift_name' => 'nullable|string',
             'shifts.*.start_time' => 'required',
@@ -132,30 +133,31 @@ class ScheduleController extends Controller
                 'is_notification_sent' => $request->has('send_notification') ? true : false
             ]);
 
-            // Clear existing shifts to sync
-            $schedule->shifts()->delete();
+            // Get all IDs provided in the request
+            $providedIds = collect($request->shifts)->pluck('id')->filter()->toArray();
+
+            // Clear existing shifts that were NOT provided in the request
+            $schedule->shifts()->whereNotIn('id', $providedIds)->delete();
 
             if ($request->has('shifts')) {
                 foreach ($request->shifts as $shiftData) {
-                    if (isset($shiftData['date'])) {
-                        // Handle day-based assignment (single date)
-                        $schedule->shifts()->create([
-                            'site_id' => $shiftData['site_id'],
-                            'date' => $shiftData['date'],
-                            'shift_name' => $shiftData['shift_name'] ?? 'Regular Shift',
-                            'start_time' => $shiftData['start_time'],
-                            'end_time' => $shiftData['end_time'],
-                        ]);
+                    $baseData = [
+                        'site_id' => $shiftData['site_id'],
+                        'shift_name' => $shiftData['shift_name'] ?? 'Regular Shift',
+                        'start_time' => $shiftData['start_time'],
+                        'end_time' => $shiftData['end_time'],
+                    ];
+
+                    if (!empty($shiftData['id'])) {
+                        // Update existing
+                        $schedule->shifts()->where('id', $shiftData['id'])->update($baseData);
+                    } elseif (isset($shiftData['date'])) {
+                        // Create new day-based assignment
+                        $schedule->shifts()->create(array_merge($baseData, ['date' => $shiftData['date']]));
                     } elseif (isset($shiftData['dates']) && is_array($shiftData['dates'])) {
-                        // Handle pattern-based assignment (multiple dates)
+                        // Create new pattern-based assignments
                         foreach ($shiftData['dates'] as $date) {
-                            $schedule->shifts()->create([
-                                'site_id' => $shiftData['site_id'],
-                                'date' => $date,
-                                'shift_name' => $shiftData['shift_name'] ?? 'Regular Shift',
-                                'start_time' => $shiftData['start_time'],
-                                'end_time' => $shiftData['end_time'],
-                            ]);
+                            $schedule->shifts()->create(array_merge($baseData, ['date' => $date]));
                         }
                     }
                 }

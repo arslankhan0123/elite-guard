@@ -733,6 +733,7 @@
                 <button type="button" class="btn-remove-shift" onclick="removeShift(this, '${date}')">
                     <i data-feather="x" style="width: 12px; height: 12px;"></i>
                 </button>
+                <input type="hidden" name="shifts[${index}][id]" value="${data ? data.id : ''}">
                 <input type="hidden" name="shifts[${index}][date]" value="${date}">
                 <div class="row g-2 mb-2">
                     <div class="col-md-7">
