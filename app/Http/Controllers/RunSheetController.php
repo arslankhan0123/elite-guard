@@ -20,6 +20,7 @@ class RunSheetController extends Controller
             'user_id' => 'required|exists:users,id',
             'week_start_date' => 'required|date',
             'run_sheets' => 'nullable|array',
+            'run_sheets.*.id' => 'nullable|exists:run_sheets,id',
             'run_sheets.*.site_id' => 'required|exists:sites,id',
             'run_sheets.*.date' => 'required|date',
             'run_sheets.*.run_sheet_name' => 'nullable|string|max:255',
@@ -35,14 +36,18 @@ class RunSheetController extends Controller
 
         DB::beginTransaction();
         try {
-            // Clear existing run sheets for this user in this week
+            // Get all IDs provided in the request
+            $providedIds = collect($request->run_sheets)->pluck('id')->filter()->toArray();
+
+            // Delete run sheets for this user in this week that were NOT provided in the request
             RunSheet::where('user_id', $request->user_id)
                 ->whereBetween('date', [$weekStart, $weekEnd])
+                ->whereNotIn('id', $providedIds)
                 ->delete();
 
             if ($request->has('run_sheets')) {
                 foreach ($request->run_sheets as $rsData) {
-                    RunSheet::create([
+                    $data = [
                         'user_id' => $request->user_id,
                         'site_id' => $rsData['site_id'],
                         'date' => $rsData['date'],
@@ -52,7 +57,15 @@ class RunSheetController extends Controller
                         'duration' => $rsData['duration'],
                         'job_type' => $rsData['job_type'],
                         'sequence' => $rsData['sequence'],
-                    ]);
+                    ];
+
+                    if (!empty($rsData['id'])) {
+                        // Update existing
+                        RunSheet::where('id', $rsData['id'])->update($data);
+                    } else {
+                        // Create new
+                        RunSheet::create($data);
+                    }
                 }
             }
 

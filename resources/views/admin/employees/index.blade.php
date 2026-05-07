@@ -831,6 +831,7 @@
                 <button type="button" class="btn-remove-run-sheet" onclick="removeRunSheet(this, '${date}')">
                     <i data-feather="x" style="width: 12px; height: 12px;"></i>
                 </button>
+                <input type="hidden" name="run_sheets[${index}][id]" value="${data ? data.id : ''}">
                 <input type="hidden" name="run_sheets[${index}][date]" value="${date}">
                 
                 <div class="row g-3 mb-3">
