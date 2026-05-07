@@ -54,7 +54,7 @@ class SiteApiController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $data = $this->siteRepo->getUserAssignedSites($user);
+        $data = $this->siteRepo->getAllSites();
 
         return $this->successResponse($data, 'Assigned Sites with Company and NFC Tags fetched.');
     }
