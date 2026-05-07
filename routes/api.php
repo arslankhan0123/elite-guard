@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\AttendanceApiController;
 use App\Http\Controllers\Api\OrientationApiController;
 use App\Http\Controllers\Api\PaySlipApiController;
 use App\Http\Controllers\Api\PolicyApiController;
+use App\Http\Controllers\Api\RunSheetApiController;
 use App\Http\Controllers\Api\ScheduleApiController;
 use App\Http\Controllers\Api\SettingsApiController;
 use App\Http\Controllers\Api\ShiftApiController;
@@ -50,6 +51,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/sites'], function () {
         Route::get('/', [SiteApiController::class, 'index']);
+    });
+
+    Route::group(['prefix' => '/run-sheets'], function () {
+        Route::get('/', [RunSheetApiController::class, 'index']);
     });
 
     Route::group(['prefix' => '/numbers'], function () {
