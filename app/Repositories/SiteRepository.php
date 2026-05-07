@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Site;
+use App\Models\NfcTag;
 
 class SiteRepository
 {
@@ -14,6 +15,19 @@ class SiteRepository
             'status' => true,
             'message' => 'Sites retrieved successfully',
             'sites' => $sites
+        ];
+        return $data;
+    }
+
+    public function getAllSitesAndNfcTags()
+    {
+        $sites = Site::with('company', 'nfcTags')->orderBy('id', 'desc')->get();
+        $nfcTags = NfcTag::with('site')->orderBy('id', 'desc')->get();
+        $data = [
+            'status' => true,
+            'message' => 'Sites and NfcTags retrieved successfully',
+            'sites' => $sites,
+            'nfcTags' => $nfcTags
         ];
         return $data;
     }

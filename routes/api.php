@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\NumberApiController;
 use App\Http\Controllers\Api\OfferLetterApiController;
 use App\Http\Controllers\Api\PanicApiController;
 use App\Http\Controllers\Api\OpenShiftApiController;
+use App\Http\Controllers\Api\CheckPointsApiController;
 use App\Http\Controllers\Api\AvailabilityApiController;
 use App\Http\Controllers\Api\AttendanceApiController;
 use App\Http\Controllers\Api\OrientationApiController;
@@ -55,6 +56,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/run-sheets'], function () {
         Route::get('/', [RunSheetApiController::class, 'index']);
+    });
+
+    Route::group(['prefix' => '/check-points'], function () {
+        Route::get('/', [CheckPointsApiController::class, 'index']);
     });
 
     Route::group(['prefix' => '/numbers'], function () {
