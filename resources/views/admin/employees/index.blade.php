@@ -142,6 +142,14 @@
                                                     data-name="{{ $employee->user->name }}">
                                                     <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
                                                 </button>
+                                                <button type="button" class="btn btn-sm me-2 btn-outline-warning rounded-pill px-3"
+                                                    title="Assign Run Sheets" data-bs-toggle="modal"
+                                                    data-bs-target="#assignRunSheetsModal"
+                                                    data-user-id="{{ $employee->user->id }}"
+                                                    data-name="{{ $employee->user->name }}"
+                                                    data-run-sheets="{{ $employee->user->runSheets->toJson() }}">
+                                                    <i data-feather="clipboard" style="width: 14px; height: 14px;"></i>
+                                                </button>
                                                 <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('employees.edit', $employee->id) }}" data-bs-toggle="tooltip" title="Edit Employee">
                                                     <button class="editBtn">
                                                         <svg height="1em" viewBox="0 0 512 512">
@@ -392,6 +400,50 @@
     </div>
 
 
+    <!-- Assign Run Sheets Modal -->
+    <div class="modal fade" id="assignRunSheetsModal" tabindex="-1" aria-labelledby="assignRunSheetsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="assignRunSheetsModalLabel">
+                        <i data-feather="clipboard" class="me-2 text-warning"></i> Assign Run Sheets
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="assignRunSheetsForm" action="{{ route('run-sheets.update') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="user_id" id="run_modal_user_id">
+                    <input type="hidden" name="week_start_date" value="{{ $currentMonday }}">
+
+                    <div class="modal-body p-0">
+                        <div class="px-4 pt-3 pb-2 bg-light border-bottom">
+                            <p class="text-muted mb-2">Manage run sheets for <strong id="runModalEmployeeName" class="text-dark"></strong></p>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-soft-warning text-warning px-3 py-2 rounded-pill">
+                                    <i data-feather="calendar" class="me-1" style="width: 14px;"></i>
+                                    {{ \Carbon\Carbon::parse($currentMonday)->format('d M') }} - {{ \Carbon\Carbon::parse($currentMonday)->addDays(6)->format('d M, Y') }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-body-scroll" style="max-height: 60vh; overflow-y: auto; padding: 1.5rem;">
+                            <div id="run-days-container">
+                                <!-- Day sections for run sheets will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light p-3">
+                        <button type="button" class="btn btn-light rounded-pill px-4 fw-bold"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning text-dark rounded-pill px-4 fw-bold shadow-sm">
+                            <i data-feather="check" style="width: 18px; height: 18px;" class="me-1"></i> Save Run Sheets
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Assign User Sites Modal (Direct Assignment) -->
     <div class="modal fade" id="assignUserSitesModal" tabindex="-1" aria-labelledby="assignUserSitesModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -560,6 +612,65 @@
             font-size: 0.8rem;
             font-style: italic;
         }
+
+        .run-sheet-item {
+            background: #fffdf5;
+            border: 1px solid #ffecb3;
+            border-radius: 1rem;
+            padding: 1rem;
+            flex: 0 0 100%;
+            position: relative;
+            margin-bottom: 0.75rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .run-sheet-item .form-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #856404;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .btn-remove-run-sheet {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #856404;
+            background: #fff3cd;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-remove-run-sheet:hover {
+            background: #ffc107;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .add-run-sheet-btn {
+            color: #d97706;
+            background: #fffbeb;
+            border: 1px dashed #fcd34d;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            width: 100%;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .add-run-sheet-btn:hover {
+            background: #fef3c7;
+            border-style: solid;
+        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
@@ -622,6 +733,7 @@
                 <button type="button" class="btn-remove-shift" onclick="removeShift(this, '${date}')">
                     <i data-feather="x" style="width: 12px; height: 12px;"></i>
                 </button>
+                <input type="hidden" name="shifts[${index}][id]" value="${data ? data.id : ''}">
                 <input type="hidden" name="shifts[${index}][date]" value="${date}">
                 <div class="row g-2 mb-2">
                     <div class="col-md-7">
@@ -661,6 +773,122 @@
             
             if (container.children.length === 0) {
                 container.innerHTML = `<div class="empty-day-placeholder">No shifts assigned for this day</div>`;
+            }
+        }
+
+        let runSheetIndex = 0;
+
+        function generateRunSheetDaySections() {
+            const container = document.getElementById('run-days-container');
+            container.innerHTML = '';
+            
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            days.forEach((day, i) => {
+                const date = moment(currentMonday).add(i, 'days').format('YYYY-MM-DD');
+                const isToday = moment().format('YYYY-MM-DD') === date;
+                
+                const section = document.createElement('div');
+                section.className = 'day-section';
+                section.id = `run-day-section-${date}`;
+                
+                section.innerHTML = `
+                    <div class="day-header ${isToday ? 'bg-soft-warning' : ''}">
+                        <h6 class="day-title">
+                            <i data-feather="calendar" style="width: 14px; height: 14px;" class="${isToday ? 'text-warning' : 'text-muted'}"></i>
+                            ${day} ${isToday ? '<span class="badge bg-warning text-dark ms-2" style="font-size: 0.6rem;">TODAY</span>' : ''}
+                        </h6>
+                        <span class="day-date">${moment(date).format('DD MMM, YYYY')}</span>
+                    </div>
+                    <div class="shifts-list" id="run-sheets-for-${date}">
+                        <div class="empty-day-placeholder">No run sheets assigned for this day</div>
+                    </div>
+                    <div class="px-3 pb-3">
+                        <button type="button" class="btn add-run-sheet-btn" onclick="addRunSheetToDay('${date}')">
+                            <i data-feather="plus" style="width: 14px; height: 14px;" class="me-1"></i> Add Run Sheet
+                        </button>
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+            feather.replace();
+        }
+
+        function addRunSheetToDay(date, data = null) {
+            const container = document.getElementById(`run-sheets-for-${date}`);
+            const placeholder = container.querySelector('.empty-day-placeholder');
+            if (placeholder) placeholder.remove();
+            
+            const index = runSheetIndex++;
+            const runSheetItem = document.createElement('div');
+            runSheetItem.className = 'run-sheet-item';
+            
+            let sitesHtml = `<option value="">Select Site</option>`;
+            sites.forEach(site => {
+                sitesHtml += `<option value="${site.id}" ${data && data.site_id == site.id ? 'selected' : ''}>${site.name}</option>`;
+            });
+
+            runSheetItem.innerHTML = `
+                <button type="button" class="btn-remove-run-sheet" onclick="removeRunSheet(this, '${date}')">
+                    <i data-feather="x" style="width: 12px; height: 12px;"></i>
+                </button>
+                <input type="hidden" name="run_sheets[${index}][id]" value="${data ? data.id : ''}">
+                <input type="hidden" name="run_sheets[${index}][date]" value="${date}">
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Site</label>
+                        <select name="run_sheets[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light" required>
+                            ${sitesHtml}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Guard Tour Name</label>
+                        <input type="text" name="run_sheets[${index}][run_sheet_name]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                               value="${data ? data.run_sheet_name : 'Mobile Patrol Check'}" placeholder="e.g. Mobile Patrol Check">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Job Type</label>
+                        <input type="text" name="run_sheets[${index}][job_type]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                               value="${data ? data.job_type : 'Mobile Patrol'}" placeholder="e.g. Mobile Patrol">
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Start Time</label>
+                        <input type="time" name="run_sheets[${index}][start_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                               value="${data ? (data.start_time ? data.start_time.substring(0,5) : '10:00') : '10:00'}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">End Time</label>
+                        <input type="time" name="run_sheets[${index}][end_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                               value="${data ? (data.end_time ? data.end_time.substring(0,5) : '15:00') : '15:00'}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Duration</label>
+                        <input type="text" name="run_sheets[${index}][duration]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                               value="${data ? data.duration : '15 Min.'}" placeholder="e.g. 15 Min.">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Sequence</label>
+                        <input type="text" name="run_sheets[${index}][sequence]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                               value="${data ? data.sequence : '1 of 1'}" placeholder="e.g. 1 of 2">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(runSheetItem);
+            feather.replace();
+        }
+
+        function removeRunSheet(btn, date) {
+            const item = btn.closest('.run-sheet-item');
+            const container = document.getElementById(`run-sheets-for-${date}`);
+            item.remove();
+            
+            if (container.children.length === 0) {
+                container.innerHTML = `<div class="empty-day-placeholder">No run sheets assigned for this day</div>`;
             }
         }
 
@@ -762,6 +990,29 @@
                 checkboxes.forEach(cb => {
                     cb.checked = assignedSites.includes(parseInt(cb.value));
                 });
+
+                feather.replace();
+            });
+
+            const assignRunSheetsModal = document.getElementById('assignRunSheetsModal');
+            assignRunSheetsModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const userId = button.getAttribute('data-user-id');
+                const employeeName = button.getAttribute('data-name');
+                const runSheetData = JSON.parse(button.getAttribute('data-run-sheets') || '[]');
+
+                document.getElementById('runModalEmployeeName').textContent = employeeName;
+                document.getElementById('run_modal_user_id').value = userId;
+
+                // Reset and generate day sections
+                runSheetIndex = 0;
+                generateRunSheetDaySections();
+
+                if (runSheetData && runSheetData.length > 0) {
+                    runSheetData.forEach(rs => {
+                        addRunSheetToDay(rs.date, rs);
+                    });
+                }
 
                 feather.replace();
             });
