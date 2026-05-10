@@ -46,6 +46,8 @@ class RunSheetApiController extends Controller
      *                 @OA\Property(property="status", type="boolean", example=true),
      *                 @OA\Property(property="message", type="string", example="Run sheets retrieved successfully"),
      *                 @OA\Property(property="total_run_sheets", type="integer", example=2),
+     *                 @OA\Property(property="total_tags", type="integer", example=6),
+     *                 @OA\Property(property="total_scanned_tags", type="integer", example=2),
      *                 @OA\Property(property="run_sheets", type="array", @OA\Items(type="object",
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="user_id", type="integer", example=1),
@@ -62,7 +64,7 @@ class RunSheetApiController extends Controller
      *                         @OA\Property(property="name", type="string", example="Elite Plaza"),
      *                         @OA\Property(property="company", type="object")
      *                     ),
-     *                     @OA\Property(property="scan", type="object", nullable=true)
+     *                     @OA\Property(property="scans", type="array", @OA\Items(type="object"))
      *                 ))
      *             )
      *         )

@@ -14,7 +14,7 @@ class RunSheetRepository
      */
     public function getUserRunSheets($user, $date = null)
     {
-        $query = RunSheet::with('site.nfcTags', 'site.company', 'scan')
+        $query = RunSheet::with('site.nfcTags', 'site.company', 'scans')
             ->where('user_id', $user->id);
 
         if ($date) {
@@ -28,10 +28,20 @@ class RunSheetRepository
 
         $runSheets = $query->get();
 
+        $totalTags = $runSheets->sum(function($runSheet) {
+            return $runSheet->site->nfcTags->count();
+        });
+
+        $totalScannedTags = $runSheets->sum(function($runSheet) {
+            return $runSheet->scans->count();
+        });
+
         return [
             'status' => true,
             'message' => 'Run sheets retrieved successfully',
             'total_run_sheets' => $runSheets->count(),
+            'total_tags' => $totalTags,
+            'total_scanned_tags' => $totalScannedTags,
             'run_sheets' => $runSheets
         ];
     }
@@ -67,10 +77,14 @@ class RunSheetRepository
     }
 
     /**
-     * Check if a scan already exists for this run sheet.
+     * Check if the NFC tag has already been scanned for this run sheet today by the user.
      */
     public function isAlreadyScanned($data)
     {
-        return RunSheetScan::where('run_sheet_id', $data['run_sheet_id'])->exists();
+        return RunSheetScan::where('user_id', $data['user_id'])
+            ->where('run_sheet_id', $data['run_sheet_id'])
+            ->where('nfc_tag_id', $data['nfc_tag_id'])
+            ->where('date', Carbon::now()->format('Y-m-d'))
+            ->exists();
     }
 }
