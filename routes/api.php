@@ -56,6 +56,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/run-sheets'], function () {
         Route::get('/', [RunSheetApiController::class, 'index']);
+        Route::post('/scan', [RunSheetApiController::class, 'storeScan']);
     });
 
     Route::group(['prefix' => '/check-points'], function () {

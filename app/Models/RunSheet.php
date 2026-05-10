@@ -36,4 +36,12 @@ class RunSheet extends Model
     {
         return $this->belongsTo(Site::class);
     }
+
+    /**
+     * Get the scans recorded for this run sheet.
+     */
+    public function scans()
+    {
+        return $this->hasMany(RunSheetScan::class);
+    }
 }
