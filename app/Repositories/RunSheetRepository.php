@@ -28,12 +28,31 @@ class RunSheetRepository
 
         $runSheets = $query->get();
 
-        $totalTags = $runSheets->sum(function($runSheet) {
+        $totalTags = $runSheets->sum(function ($runSheet) {
             return $runSheet->site->nfcTags->count();
         });
 
-        $totalScannedTags = $runSheets->sum(function($runSheet) {
+        $totalScannedTags = $runSheets->sum(function ($runSheet) {
             return $runSheet->scans->count();
+        });
+
+        $runSheetsData = $runSheets->map(function ($runSheet) {
+            $scannedTagIds = $runSheet->scans->pluck('nfc_tag_id')->map(fn($id) => (int)$id)->toArray();
+            $sheetArray = $runSheet->toArray();
+
+            if (isset($sheetArray['site']['nfc_tags'])) {
+                foreach ($sheetArray['site']['nfc_tags'] as &$tag) {
+                    $tag['scanned'] = in_array((int)$tag['id'], $scannedTagIds);
+                }
+            }
+
+            if (isset($sheetArray['site']['nfcTags'])) {
+                foreach ($sheetArray['site']['nfcTags'] as &$tag) {
+                    $tag['scanned'] = in_array((int)$tag['id'], $scannedTagIds);
+                }
+            }
+
+            return $sheetArray;
         });
 
         return [
@@ -42,7 +61,7 @@ class RunSheetRepository
             'total_run_sheets' => $runSheets->count(),
             'total_tags' => $totalTags,
             'total_scanned_tags' => $totalScannedTags,
-            'run_sheets' => $runSheets
+            'run_sheets' => $runSheetsData
         ];
     }
 
