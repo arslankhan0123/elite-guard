@@ -61,7 +61,8 @@ class RunSheetApiController extends Controller
      *                         @OA\Property(property="id", type="integer", example=1),
      *                         @OA\Property(property="name", type="string", example="Elite Plaza"),
      *                         @OA\Property(property="company", type="object")
-     *                     )
+     *                     ),
+     *                     @OA\Property(property="scan", type="object", nullable=true)
      *                 ))
      *             )
      *         )

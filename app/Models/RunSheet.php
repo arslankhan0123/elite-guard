@@ -38,10 +38,10 @@ class RunSheet extends Model
     }
 
     /**
-     * Get the scans recorded for this run sheet.
+     * Get the scan recorded for this run sheet.
      */
-    public function scans()
+    public function scan()
     {
-        return $this->hasMany(RunSheetScan::class);
+        return $this->hasOne(RunSheetScan::class);
     }
 }
