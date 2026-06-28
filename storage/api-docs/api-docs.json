@@ -3267,6 +3267,14 @@
                                                     "type": "integer",
                                                     "example": 2
                                                 },
+                                                "total_tags": {
+                                                    "type": "integer",
+                                                    "example": 6
+                                                },
+                                                "total_scanned_tags": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
                                                 "run_sheets": {
                                                     "type": "array",
                                                     "items": {
@@ -3327,6 +3335,12 @@
                                                                     }
                                                                 },
                                                                 "type": "object"
+                                                            },
+                                                            "scans": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object"
+                                                                }
                                                             }
                                                         },
                                                         "type": "object"
@@ -3334,6 +3348,122 @@
                                                 }
                                             },
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/run-sheets/scan": {
+            "post": {
+                "tags": [
+                    "Run Sheets"
+                ],
+                "summary": "Record an NFC tag scan for a run sheet",
+                "description": "Validates scan location and prevents duplicate scans for the same day.",
+                "operationId": "e6cf6a88422aca9bb1d8321e0ec00e4f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "run_sheet_id",
+                                    "nfc_tag_id"
+                                ],
+                                "properties": {
+                                    "run_sheet_id": {
+                                        "type": "integer",
+                                        "example": 46
+                                    },
+                                    "nfc_tag_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "latitude": {
+                                        "type": "string",
+                                        "example": "31.5038682"
+                                    },
+                                    "longitude": {
+                                        "type": "string",
+                                        "example": "74.3480792"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Scan recorded successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Scan recorded successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Run sheet or Site not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Run sheet not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error (Too far from site, or already scanned)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You are too far from the site. Distance: 150.5m"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -3702,6 +3832,70 @@
                                                 }
                                             },
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shifts/active": {
+            "get": {
+                "tags": [
+                    "Shift"
+                ],
+                "summary": "Get the current active shift for the logged-in user",
+                "description": "Returns the first active shift for today whose end time has not passed yet.",
+                "operationId": "40b5078800930700e51537aabbf3c37d",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Client's local date (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "time",
+                        "in": "query",
+                        "description": "Client's local time (H:i:s)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Active shift data fetched successfully."
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"

@@ -93,6 +93,59 @@ class ShiftRepository
         ];
     }
 
+    public function getActiveShift($date = null, $time = null)
+    {
+        $userId = Auth::id();
+        $today = $date ?: Carbon::now()->toDateString();
+        $currentTime = $time ?: Carbon::now()->toTimeString();
+
+        $shift = Shift::with([
+            'schedule.user',
+            'site.company',
+            'attendances' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }
+        ])
+            ->whereHas('schedule', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->where('date', $today)
+            ->where('end_time', '>', $currentTime)
+            ->orderBy('end_time', 'asc')
+            ->first();
+
+        if ($shift) {
+            // Shift Duration Calculation
+            $start = Carbon::parse($shift->start_time);
+            $end = Carbon::parse($shift->end_time);
+
+            $minutes = $start->diffInMinutes($end);
+
+            $hours = floor($minutes / 60);
+            $remainingMinutes = $minutes % 60;
+
+            $shift->duration = "{$hours}h {$remainingMinutes}m";
+
+            // Attendance Logic
+            $attendance = $shift->attendances->first();
+            $shift->checked_in = $attendance ? true : false;
+            $shift->checked_out = ($attendance && $attendance->clock_out_at) ? true : false;
+
+            if (!$shift->checked_in) {
+                $shift->Next = "Check In";
+            } elseif (!$shift->checked_out) {
+                $shift->Next = "Check Out";
+            } else {
+                $shift->Next = "Completed";
+            }
+
+            $shift->attendance = $attendance;
+            unset($shift->attendances);
+        }
+
+        return $shift;
+    }
+
     public function getShiftData($id)
     {
         $userId = Auth::id();

@@ -105,6 +105,56 @@ class ShiftApiController extends Controller
 
     /**
      * @OA\Get(
+     *     path="/api/shifts/active",
+     *     summary="Get the current active shift for the logged-in user",
+     *     description="Returns the first active shift for today whose end time has not passed yet.",
+     *     tags={"Shift"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="date",
+     *         in="query",
+     *         required=false,
+     *         description="Client's local date (Y-m-d)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="time",
+     *         in="query",
+     *         required=false,
+     *         description="Client's local time (H:i:s)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Success"),
+     *             @OA\Property(property="message", type="string", example="Active shift data fetched successfully."),
+     *             @OA\Property(property="data", type="object", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function activeShift(Request $request)
+    {
+        $date = $request->query('date');
+        $time = $request->query('time');
+
+        $shift = $this->shiftRepo->getActiveShift($date, $time);
+
+        if (!$shift) {
+            return $this->successResponse(null, 'No active shift found.');
+        }
+
+        return $this->successResponse($shift, 'Active shift data fetched successfully.');
+    }
+
+    /**
+     * @OA\Get(
      *     path="/api/shifts/{id}/reject",
      *     summary="Reject an assigned shift",
      *     description="Allows a user to reject a shift assigned to them. The shift will be removed from their schedule and moved to open shifts.",
