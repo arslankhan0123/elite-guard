@@ -43,6 +43,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/user'], function () {
         Route::get('/', [UserApiController::class, 'user']);
+        Route::get('/profile', [UserApiController::class, 'profile']);
         Route::post('/update', [UserApiController::class, 'userUpdate']);
     });
 

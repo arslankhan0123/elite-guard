@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class UserRepository
 {
@@ -21,6 +22,32 @@ class UserRepository
             'user' => $user
         ];
         return $data;
+    }
+
+    public function getUserProfile()
+    {
+        $userId = Auth::id();
+        $user = User::find($userId);
+        $user->systemId = 'EG-'.$user->id;
+
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
+        $endOfWeek = Carbon::now()->endOfWeek(Carbon::SUNDAY)->toDateString();
+
+        $shiftsCount = \App\Models\Shift::whereHas('schedule', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->whereBetween('date', [$startOfWeek, $endOfWeek])
+            ->count();
+
+        $sitesCount = $user->sites()->count();
+
+        return [
+            'status' => true,
+            'message' => 'User profile details retrieved successfully',
+            'user' => $user,
+            'current_week_shifts_count' => $shiftsCount,
+            'assigned_sites_count' => $sitesCount,
+        ];
     }
 
     public function userUpdate($request)

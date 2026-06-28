@@ -55,6 +55,33 @@ class UserApiController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/user/profile",
+     *     summary="Get authenticated user profile details including relation to employee and current week shift/site counts",
+     *     tags={"User"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="User profile details fetched successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Success"),
+     *             @OA\Property(property="message", type="string", example="User profile fetched successfully."),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function profile(Request $request)
+    {
+        $profile = $this->userRepo->getUserProfile();
+        return $this->successResponse($profile, 'User profile fetched successfully.');
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/user/update",
      *     summary="Update user details",
