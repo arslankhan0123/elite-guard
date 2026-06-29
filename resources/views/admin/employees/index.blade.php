@@ -464,11 +464,11 @@
                                 <label class="form-label fw-bold small">Select Sites</label>
                                 <div class="d-flex flex-column gap-2" style="max-height: 300px; overflow-y: auto; padding-right: 10px;">
                                     @foreach($sites as $site)
-                                        <div class="form-check p-2 rounded-3 border bg-light d-flex align-items-center">
-                                            <input class="form-check-input ms-0 me-3 site-checkbox" type="checkbox" name="site_ids[]" value="{{ $site->id }}" id="site_{{ $site->id }}" style="width: 20px; height: 20px;">
-                                            <label class="form-check-label flex-grow-1 mb-0" for="site_{{ $site->id }}" style="cursor: pointer;">
-                                                <span class="fw-bold d-block">{{ $site->name }}</span>
-                                                <small class="text-muted">{{ $site->address }}</small>
+                                        <div class="p-2 rounded-3 border bg-light d-flex align-items-start gap-3">
+                                            <input class="form-check-input flex-shrink-0 site-checkbox" type="checkbox" name="site_ids[]" value="{{ $site->id }}" id="site_{{ $site->id }}" style="width: 20px; height: 20px; margin-top: 3px; cursor: pointer;">
+                                            <label class="flex-grow-1 mb-0" for="site_{{ $site->id }}" style="cursor: pointer; line-height: 1.4;">
+                                                <span class="fw-bold d-block text-dark" style="font-size: 0.9rem;">{{ $site->name }}</span>
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">{{ $site->address }}</small>
                                             </label>
                                         </div>
                                     @endforeach
