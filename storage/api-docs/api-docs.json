@@ -4045,6 +4045,80 @@
                 ]
             }
         },
+        "/api/sites/user": {
+            "get": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "Get sites assigned to the authenticated user",
+                "operationId": "32fedbe6fc3066162bfd8dfb0f7177ad",
+                "responses": {
+                    "200": {
+                        "description": "Assigned sites fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Assigned Sites with Company and NFC Tags fetched."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Assigned sites retrieved successfully"
+                                                },
+                                                "sites": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Elite Plaza"
+                                                            },
+                                                            "company": {
+                                                                "type": "object"
+                                                            },
+                                                            "nfc_tags": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/nfc-tags": {
             "get": {
                 "tags": [
@@ -4627,6 +4701,48 @@
                                                     "type": "object"
                                                 }
                                             },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user/profile": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get authenticated user profile details including relation to employee and current week shift/site counts",
+                "operationId": "a466d3be60c621ea671d7a85771f615a",
+                "responses": {
+                    "200": {
+                        "description": "User profile details fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User profile fetched successfully."
+                                        },
+                                        "data": {
                                             "type": "object"
                                         }
                                     },

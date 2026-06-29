@@ -53,6 +53,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/sites'], function () {
         Route::get('/', [SiteApiController::class, 'index']);
+        Route::get('/user', [SiteApiController::class, 'userSites']);
     });
 
     Route::group(['prefix' => '/run-sheets'], function () {
