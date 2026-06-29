@@ -398,10 +398,23 @@
                         </div>
                     </div>
 
-                    <div class="mt-5 text-center">
-                        <button type="submit" class="btn-submit">
-                            <i data-feather="check-circle" class="me-2"></i> Register Personnel
-                        </button>
+                    <div class="mt-5">
+                        <!-- Email Notification Toggle -->
+                        <div class="p-4 rounded-4 mb-4" style="background-color: #f5f3ff; border: 1px dashed #7c3aed;">
+                            <div class="form-check form-switch d-flex align-items-center gap-3">
+                                <input class="form-check-input" type="checkbox" name="send_email" id="create_send_email" value="1" style="width: 45px; height: 22px; cursor: pointer;">
+                                <label class="form-check-label fw-bold text-primary mb-0" for="create_send_email" style="cursor: pointer; font-size: 1rem;">
+                                    <i data-feather="send" class="me-1" style="width: 16px; height: 16px;"></i> Send Login Credentials to Employee via Email
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-2 ms-5">If enabled, the employee will receive a welcome email with their login email &amp; password.</small>
+                        </div>
+
+                        <div class="text-left">
+                            <button type="submit" class="btn-submit">
+                                <i data-feather="check-circle" class="me-2"></i> Register Personnel
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

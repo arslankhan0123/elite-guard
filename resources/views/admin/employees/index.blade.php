@@ -35,6 +35,7 @@
                                     <!-- <th>Assigned Sites</th> -->
                                     <!-- <th>Joining Date</th> -->
                                     <th>Status</th>
+                                    <th class="text-center">Email Sent</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -99,6 +100,17 @@
                                             @else
                                                 <span
                                                     class="badge bg-soft-secondary text-secondary fw-bold px-3 rounded-pill">Inactive</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            @if($employee->is_email_sent)
+                                                <span class="badge bg-soft-success text-success fw-bold px-3 rounded-pill">
+                                                    <i data-feather="mail" style="width: 11px; height: 11px;"></i> Sent
+                                                </span>
+                                            @else
+                                                <span class="badge bg-soft-secondary text-secondary fw-bold px-3 rounded-pill">
+                                                    <i data-feather="mail" style="width: 11px; height: 11px;"></i> Not Sent
+                                                </span>
                                             @endif
                                         </td>
                                         <td>

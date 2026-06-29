@@ -158,12 +158,18 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Change Password (Optional)</label>
-                                    <input type="password" name="password" class="form-control">
+                                    <input type="text" value="{{ $employee->user->real_password ?? '' }}" name="password" class="form-control">
                                     <small class="text-muted">Leave blank to keep current password.</small>
+                                    @error('password')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Confirm Password</label>
-                                    <input type="password" name="password_confirmation" class="form-control">
+                                    <input type="text" value="{{ $employee->user->real_password ?? '' }}" name="password_confirmation" class="form-control">
+                                    @error('password_confirmation')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <hr class="my-4">
                                 <div class="col-md-6">
@@ -524,10 +530,30 @@
                         </div>
                     </div>
 
-                    <div class="mt-5 text-center">
-                        <button type="submit" class="btn-submit">
-                            <i data-feather="save" class="me-2"></i> Update Profile
-                        </button>
+                    <div class="mt-5">
+                        <!-- Email Notification Toggle -->
+                        <div class="p-4 rounded-4 mb-4" style="background-color: #f5f3ff; border: 1px dashed #7c3aed;">
+                            <div class="form-check form-switch d-flex align-items-center gap-3">
+                                <input class="form-check-input" type="checkbox" name="send_email" id="edit_send_email" value="1" style="width: 45px; height: 22px; cursor: pointer;" {{ $employee->is_email_sent ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold text-primary mb-0" for="edit_send_email" style="cursor: pointer; font-size: 1rem;">
+                                    <i data-feather="send" class="me-1" style="width: 16px; height: 16px;"></i> Re-send Login Credentials to Employee via Email
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-2 ms-5">
+                                If enabled, the employee will receive an email with their current login email &amp; password.
+                                @if($employee->is_email_sent)
+                                    <span class="badge bg-soft-success text-success ms-2 rounded-pill px-2">✓ Previously sent</span>
+                                @else
+                                    <span class="badge bg-soft-secondary text-secondary ms-2 rounded-pill px-2">Not sent yet</span>
+                                @endif
+                            </small>
+                        </div>
+
+                        <div class="text-left">
+                            <button type="submit" class="btn-submit">
+                                <i data-feather="save" class="me-2"></i> Update Profile
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

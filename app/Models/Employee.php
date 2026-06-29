@@ -17,6 +17,7 @@ class Employee extends Model
         'gender',
         'joining_date',
         'status',
+        'is_email_sent',
     ];
 
     public function user()

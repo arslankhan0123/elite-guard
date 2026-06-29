@@ -131,6 +131,20 @@ class AuthController extends Controller
             $user->update(['fcm_token' => $request->fcm_token]);
         }
 
+        if (!$user->employee) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User is not an employee. Please contact the administrator.'
+            ], 401);
+        }
+
+        if ($user->employee->status == 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Your account is not active. Please contact the administrator.'
+            ], 401);
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Login successful',

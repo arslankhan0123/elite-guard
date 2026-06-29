@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use App\Traits\CommonTrait;
 use App\Mail\OfferLetterMail;
+use App\Mail\EmployeeWelcomeMail;
 use Illuminate\Support\Facades\DB;
 
 class EmployeeController extends Controller
@@ -62,7 +63,10 @@ class EmployeeController extends Controller
             'other_documents_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $plainPassword = $request->password;
+        $isEmailSent = false;
+
+        DB::transaction(function () use ($request, $plainPassword, &$isEmailSent) {
             $user = User::create([
                 'name' => $request->first_name . ' ' . $request->last_name,
                 'email' => $request->email,
@@ -156,17 +160,24 @@ class EmployeeController extends Controller
                 'hiring_manager_signature' => $request->hiring_manager_signature,
             ]);
 
-            // Keep the legacy Employee record for compatibility if needed, but the user said "leave it as it is"
-            // meaning we don't use it for the new form, but maybe we should create a basic link.
+            // Send welcome email with credentials if toggle is on
+            if ($request->has('send_email') && $request->send_email == '1') {
+                Mail::to($user->email)->send(new EmployeeWelcomeMail($user, $plainPassword));
+                $isEmailSent = true;
+            }
+
+            // Keep the legacy Employee record for compatibility
             Employee::create([
                 'user_id' => $user->id,
                 'phone' => $request->phone,
                 'address' => $request->address,
                 'status' => true,
+                'is_email_sent' => $isEmailSent,
             ]);
         });
 
-        return redirect()->route('employees.index')->with('success', 'Employee created successfully!');
+        $message = 'Employee created successfully!' . ($isEmailSent ? ' Login credentials sent via email.' : '');
+        return redirect()->route('employees.index')->with('success', $message);
     }
 
     public function edit($id)
@@ -185,20 +196,30 @@ class EmployeeController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role' => 'required|string',
+
+            'password' => 'nullable|string|min:8|confirmed',
+            'password_confirmation' => 'required_with:password',
         ]);
 
-        DB::transaction(function () use ($request, $user) {
+        $isEmailSent = false;
+
+        DB::transaction(function () use ($request, $user, $employee, &$isEmailSent) {
             $user->update([
                 'name' => $request->first_name . ' ' . $request->last_name,
                 'email' => $request->email,
                 'role' => $request->role,
             ]);
 
+            $plainPassword = null;
             if ($request->filled('password')) {
+                $plainPassword = $request->password;
                 $user->update([
                     'password' => Hash::make($request->password),
                     'real_password' => $request->password,
                 ]);
+            } else {
+                // Use stored real_password for the email if password wasn't changed
+                $plainPassword = $user->real_password;
             }
 
             // Update Sections
@@ -288,9 +309,19 @@ class EmployeeController extends Controller
                 'hiring_manager_name' => $request->hiring_manager_name,
                 'hiring_manager_signature' => $request->hiring_manager_signature,
             ]);
+
+            // Send welcome email with credentials if toggle is on
+            if ($request->has('send_email') && $request->send_email == '1') {
+                Mail::to($user->email)->send(new EmployeeWelcomeMail($user, $plainPassword));
+                $isEmailSent = true;
+            }
+
+            // Update is_email_sent on the employee record
+            $employee->update(['is_email_sent' => $isEmailSent ? true : $employee->is_email_sent]);
         });
 
-        return redirect()->route('employees.index')->with('success', 'Employee updated successfully!');
+        $message = 'Employee updated successfully!' . ($isEmailSent ? ' Login credentials sent via email.' : '');
+        return redirect()->route('employees.index')->with('success', $message);
     }
 
     public function delete($id)
