@@ -32,8 +32,8 @@
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Phone</th>
-                                    <th>Assigned Sites</th>
-                                    <th>Joining Date</th>
+                                    <!-- <th>Assigned Sites</th> -->
+                                    <!-- <th>Joining Date</th> -->
                                     <th>Status</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
@@ -64,7 +64,7 @@
                                             </span>
                                         </td>
                                         <td>{{ $employee->phone ?? 'N/A' }}</td>
-                                        <td>
+                                        <!-- <td>
                                             @php
                                                 $currentSchedule = $employee->user->schedules->where('week_start_date', $currentMonday)->first();
                                                 $assignedSites = $currentSchedule ? $currentSchedule->shifts->pluck('site.name')->unique() : collect();
@@ -89,8 +89,8 @@
                                             @else
                                                 <span class="text-muted small">No sites assigned this week</span>
                                             @endif
-                                        </td>
-                                        <td>{{ $employee->user->offerLetter ? \Carbon\Carbon::parse($employee->user->offerLetter->joining_date)->format('d M, Y') : 'N/A' }}
+                                        </td> -->
+                                        <!-- <td>{{ $employee->user->offerLetter ? \Carbon\Carbon::parse($employee->user->offerLetter->joining_date)->format('d M, Y') : 'N/A' }} -->
                                         </td>
                                         <td>
                                             @if($employee->status)
@@ -468,7 +468,7 @@
                                             <input class="form-check-input ms-0 me-3 site-checkbox" type="checkbox" name="site_ids[]" value="{{ $site->id }}" id="site_{{ $site->id }}" style="width: 20px; height: 20px;">
                                             <label class="form-check-label flex-grow-1 mb-0" for="site_{{ $site->id }}" style="cursor: pointer;">
                                                 <span class="fw-bold d-block">{{ $site->name }}</span>
-                                                <!-- <small class="text-muted">{{ $site->address }}</small> -->
+                                                <small class="text-muted">{{ $site->address }}</small>
                                             </label>
                                         </div>
                                     @endforeach
