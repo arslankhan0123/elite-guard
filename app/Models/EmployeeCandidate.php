@@ -13,6 +13,7 @@ class EmployeeCandidate extends Model
         'user_id',
         'first_name',
         'last_name',
+        'designation',
         'dob',
         'sin',
         'phone',

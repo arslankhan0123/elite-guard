@@ -19,6 +19,9 @@ class UserRepository
     {
         $user = User::with(['candidate', 'bankDetail', 'licenseDetail', 'availability', 'officeDetail', 'sites'])->find(Auth::id());
         $user->systemId = 'EG-'.$user->id;
+        if ($user->role == 'Employee') {
+            $user->role = 'Guard';
+        }
         $userShifts = $this->getUserShifts();
         $userSites = $this->getUserSites();
 

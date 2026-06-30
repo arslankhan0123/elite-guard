@@ -125,14 +125,23 @@
                                 <div class="col-md-6">
                                     <label class="form-label">First Name</label>
                                     <input type="text" name="first_name" class="form-control" value="{{ old('first_name') }}" required>
+                                    @error('first_name')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Last Name</label>
                                     <input type="text" name="last_name" class="form-control" value="{{ old('last_name') }}" required>
+                                    @error('last_name')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Email (System Login)</label>
                                     <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                                    @error('email')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Assigned Role</label>
@@ -141,55 +150,101 @@
                                         <option value="Admin">Admin</option>
                                         <option value="SuperAdmin">SuperAdmin</option>
                                     </select>
+                                    @error('role')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Designation</label>
+                                    <input type="text" name="designation" class="form-control" value="{{ old('designation') }}">
+                                    @error('designation')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Password</label>
                                     <input type="password" name="password" class="form-control" required>
+                                    @error('password')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Confirm Password</label>
                                     <input type="password" name="password_confirmation" class="form-control" required>
+                                    @error('password_confirmation')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <hr class="my-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Date of Birth</label>
                                     <input type="date" name="dob" class="form-control" value="{{ old('dob') }}">
+                                    @error('dob')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Social Insurance Number (SIN)</label>
                                     <input type="text" name="sin" class="form-control" value="{{ old('sin') }}">
+                                    @error('sin')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Phone Number</label>
                                     <input type="text" name="phone" class="form-control" value="{{ old('phone') }}">
+                                    @error('phone')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Personal Email Address</label>
                                     <input type="email" name="email_personal" class="form-control" value="{{ old('email_personal') }}">
+                                    @error('email_personal')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Home Address</label>
                                     <input type="text" name="address" class="form-control" value="{{ old('address') }}">
+                                    @error('address')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">City</label>
                                     <input type="text" name="city" class="form-control" value="{{ old('city') }}">
+                                    @error('city')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Province</label>
                                     <input type="text" name="province" class="form-control" value="{{ old('province') }}">
+                                    @error('province')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Postal Code</label>
                                     <input type="text" name="postal_code" class="form-control" value="{{ old('postal_code') }}">
+                                    @error('postal_code')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Emergency Contact Person Name</label>
                                     <input type="text" name="emergency_contact_name" class="form-control" value="{{ old('emergency_contact_name') }}">
+                                    @error('emergency_contact_name')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Emergency Contact Phone Number</label>
                                     <input type="text" name="emergency_contact_phone" class="form-control" value="{{ old('emergency_contact_phone') }}">
+                                    @error('emergency_contact_phone')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -201,26 +256,44 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Bank Name</label>
                                     <input type="text" name="bank_name" class="form-control" value="{{ old('bank_name') }}">
+                                    @error('bank_name')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Institution Number</label>
                                     <input type="text" name="institution_number" class="form-control" value="{{ old('institution_number') }}">
+                                    @error('institution_number')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Transit Number</label>
                                     <input type="text" name="transit_number" class="form-control" value="{{ old('transit_number') }}">
+                                    @error('transit_number')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Account Number</label>
                                     <input type="text" name="account_number" class="form-control" value="{{ old('account_number') }}">
+                                    @error('account_number')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Bank Address</label>
                                     <input type="text" name="bank_address" class="form-control" value="{{ old('bank_address') }}">
+                                    @error('bank_address')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Interac e-Transfer Email</label>
                                     <input type="email" name="interac_email" class="form-control" value="{{ old('interac_email') }}">
+                                    @error('interac_email')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Attach Void Cheque</label>
@@ -229,6 +302,9 @@
                                         <i data-feather="upload-cloud" class="mb-2"></i>
                                         <p class="mb-0 small text-muted">Click to upload Void Cheque (PDF/Image)</p>
                                     </label>
+                                    @error('void_cheque_file')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -243,16 +319,25 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">License Number</label>
-                                        <input type="text" name="security_license_number" class="form-control">
+                                        <input type="text" name="security_license_number" class="form-control" value="{{ old('security_license_number') }}">
+                                        @error('security_license_number')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Expiry Date</label>
-                                        <input type="date" name="security_license_expiry" class="form-control">
+                                        <input type="date" name="security_license_expiry" class="form-control" value="{{ old('security_license_expiry') }}">
+                                        @error('security_license_expiry')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Attach Security License</label>
                                         <input type="file" name="security_license_file" id="security_file" class="d-none">
                                         <label for="security_file" class="attach-label">Click to upload doc</label>
+                                        @error('security_license_file')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -263,16 +348,25 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">License Number</label>
-                                        <input type="text" name="drivers_license_number" class="form-control">
+                                        <input type="text" name="drivers_license_number" class="form-control" value="{{ old('drivers_license_number') }}">
+                                        @error('drivers_license_number')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Expiry Date</label>
-                                        <input type="date" name="drivers_license_expiry" class="form-control">
+                                        <input type="date" name="drivers_license_expiry" class="form-control" value="{{ old('drivers_license_expiry') }}">
+                                        @error('drivers_license_expiry')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Attach Driver's License</label>
                                         <input type="file" name="drivers_license_file" id="drivers_file" class="d-none">
                                         <label for="drivers_file" class="attach-label">Click to upload doc</label>
+                                        @error('drivers_license_file')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -283,16 +377,25 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Document Type and Number</label>
-                                        <input type="text" name="work_eligibility_type_number" class="form-control" placeholder="e.g. PR Card #123">
+                                        <input type="text" name="work_eligibility_type_number" class="form-control" placeholder="e.g. PR Card #123" value="{{ old('work_eligibility_type_number') }}">
+                                        @error('work_eligibility_type_number')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Expiry Date</label>
-                                        <input type="date" name="work_eligibility_expiry" class="form-control">
+                                        <input type="date" name="work_eligibility_expiry" class="form-control" value="{{ old('work_eligibility_expiry') }}">
+                                        @error('work_eligibility_expiry')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Attach Work Permit / PR Card</label>
                                         <input type="file" name="work_eligibility_file" id="work_file" class="d-none">
                                         <label for="work_file" class="attach-label">Click to upload doc</label>
+                                        @error('work_eligibility_file')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -304,23 +407,35 @@
                                     <div class="col-md-6">
                                         <label class="form-label">Validate Criminal Record Check</label>
                                         <select name="criminal_record_check" class="form-select">
-                                            <option value="Valid">Valid</option>
-                                            <option value="In Progress">In Progress</option>
-                                            <option value="Not Started">Not Started</option>
+                                            <option value="Valid" {{ old('criminal_record_check') == 'Valid' ? 'selected' : '' }}>Valid</option>
+                                            <option value="In Progress" {{ old('criminal_record_check') == 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                                            <option value="Not Started" {{ old('criminal_record_check') == 'Not Started' ? 'selected' : '' }}>Not Started</option>
                                         </select>
+                                        @error('criminal_record_check')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">First Aid Training Course</label>
-                                        <input type="text" name="first_aid_training" class="form-control">
+                                        <input type="text" name="first_aid_training" class="form-control" value="{{ old('first_aid_training') }}">
+                                        @error('first_aid_training')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Other Certificates if Any</label>
-                                        <textarea name="other_certificates" class="form-control" rows="2"></textarea>
+                                        <textarea name="other_certificates" class="form-control" rows="2">{{ old('other_certificates') }}</textarea>
+                                        @error('other_certificates')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Attach Documents</label>
                                         <input type="file" name="other_documents_file" id="other_docs_file" class="d-none">
                                         <label for="other_docs_file" class="attach-label">Click to upload docs</label>
+                                        @error('other_documents_file')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -332,19 +447,31 @@
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Availability Date</label>
-                                    <input type="date" name="availability_date" class="form-control">
+                                    <input type="date" name="availability_date" class="form-control" value="{{ old('availability_date') }}">
+                                    @error('availability_date')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Hours employee willing to work</label>
-                                    <input type="text" name="willing_hours" class="form-control" placeholder="e.g. 40 hrs/week">
+                                    <input type="text" name="willing_hours" class="form-control" placeholder="e.g. 40 hrs/week" value="{{ old('willing_hours') }}">
+                                    @error('willing_hours')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Specific Hours employee unable to work</label>
-                                    <textarea name="unable_hours" class="form-control" rows="2"></textarea>
+                                    <textarea name="unable_hours" class="form-control" rows="2">{{ old('unable_hours') }}</textarea>
+                                    @error('unable_hours')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Days of week employee unable to work</label>
-                                    <textarea name="unable_days" class="form-control" rows="2"></textarea>
+                                    <textarea name="unable_days" class="form-control" rows="2">{{ old('unable_days') }}</textarea>
+                                    @error('unable_days')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -357,42 +484,63 @@
                                     <label class="form-label d-block">Employment Type</label>
                                     <div class="d-flex gap-4 mt-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="employment_type" id="fullTime" value="Full Time">
+                                            <input class="form-check-input" type="radio" name="employment_type" id="fullTime" value="Full Time" {{ old('employment_type') == 'Full Time' ? 'checked' : '' }}>
                                             <label class="form-check-label" for="fullTime">Full Time</label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="employment_type" id="partTime" value="Part Time">
+                                            <input class="form-check-input" type="radio" name="employment_type" id="partTime" value="Part Time" {{ old('employment_type') == 'Part Time' ? 'checked' : '' }}>
                                             <label class="form-check-label" for="partTime">Part Time</label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="employment_type" id="casual" value="Casual">
+                                            <input class="form-check-input" type="radio" name="employment_type" id="casual" value="Casual" {{ old('employment_type') == 'Casual' ? 'checked' : '' }}>
                                             <label class="form-check-label" for="casual">Casual</label>
                                         </div>
                                     </div>
+                                    @error('employment_type')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Start Date</label>
-                                    <input type="date" name="start_date" class="form-control">
+                                    <input type="date" name="start_date" class="form-control" value="{{ old('start_date') }}">
+                                    @error('start_date')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Job Position</label>
-                                    <input type="text" name="job_position" class="form-control">
+                                    <input type="text" name="job_position" class="form-control" value="{{ old('job_position') }}">
+                                    @error('job_position')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Wage</label>
-                                    <input type="text" name="wage" class="form-control">
+                                    <input type="text" name="wage" class="form-control" value="{{ old('wage') }}">
+                                    @error('wage')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Other Notes</label>
-                                    <textarea name="other_notes" class="form-control" rows="3"></textarea>
+                                    <textarea name="other_notes" class="form-control" rows="3">{{ old('other_notes') }}</textarea>
+                                    @error('other_notes')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Hiring Manager Name</label>
-                                    <input type="text" name="hiring_manager_name" class="form-control">
+                                    <input type="text" name="hiring_manager_name" class="form-control" value="{{ old('hiring_manager_name') }}">
+                                    @error('hiring_manager_name')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Hiring Manager Signature (Initials)</label>
-                                    <input type="text" name="hiring_manager_signature" class="form-control">
+                                    <input type="text" name="hiring_manager_signature" class="form-control" value="{{ old('hiring_manager_signature') }}">
+                                    @error('hiring_manager_signature')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                         </div>

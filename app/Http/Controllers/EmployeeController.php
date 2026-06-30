@@ -80,6 +80,7 @@ class EmployeeController extends Controller
                 'user_id' => $user->id,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
+                'designation' => $request->designation,
                 'dob' => $request->dob,
                 'sin' => $request->sin,
                 'phone' => $request->phone,
@@ -226,6 +227,7 @@ class EmployeeController extends Controller
             $user->candidate()->updateOrCreate(['user_id' => $user->id], [
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
+                'designation' => $request->designation,
                 'dob' => $request->dob,
                 'sin' => $request->sin,
                 'phone' => $request->phone,
