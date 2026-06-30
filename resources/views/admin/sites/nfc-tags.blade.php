@@ -128,7 +128,7 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>UID <span class="text-muted fw-normal ms-1" style="text-transform:none;letter-spacing:0;">(click to copy)</span></th>
+                                <th>UID <span class="fw-normal ms-1" style="text-transform:none;letter-spacing:0; color:white">(click to copy)</span></th>
                                 <th>Tag Name</th>
                                 <th>Site</th>
                                 <th>Company</th>
@@ -368,9 +368,9 @@
     /* ── Copy UID to clipboard ── */
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-            showAlert('success', '✓ UID copied: ' + text);
+            toastr.success('UID copied: ' + text, 'Success');
         }).catch(() => {
-            showAlert('danger', 'Failed to copy UID.');
+            toastr.error('Failed to copy UID.', 'Error');
         });
     }
 
@@ -434,9 +434,11 @@
                             }, 400);
                         }
                         showAlert('success', '✓ NFC Tag <strong>' + name + '</strong> deleted successfully!');
+                        toastr.success('NFC Tag "' + name + '" has been deleted.', 'Deleted');
                     })
                     .catch(err => {
                         showAlert('danger', err.message || 'An error occurred while deleting the NFC Tag.');
+                        toastr.error('An error occurred while deleting the NFC Tag.', 'Error');
                     });
             }
         }
@@ -491,6 +493,7 @@
                 feather.replace();
 
                 showAlert('success', '✓ NFC Tag <strong>' + data.tag.name + '</strong> updated successfully!');
+                toastr.success('NFC Tag "' + data.tag.name + '" has been updated.', 'Updated');
             })
             .catch(err => {
                 const errDiv = document.getElementById('edit-modal-errors');
@@ -499,12 +502,15 @@
                     Object.values(err.errors).forEach(e => {
                         e.forEach(m => {
                             msgs += `<div>• ${m}</div>`;
+                            toastr.error(m, 'Validation Error');
                         });
                     });
                 } else if (err.message) {
                     msgs = err.message;
+                    toastr.error(err.message, 'Error');
                 } else {
                     msgs = 'An error occurred. Please try again.';
+                    toastr.error('An error occurred. Please try again.', 'Error');
                 }
                 errDiv.innerHTML = msgs;
                 errDiv.classList.remove('d-none');
@@ -616,6 +622,7 @@
                 feather.replace();
 
                 showAlert('success', '✓ NFC Tag <strong>' + data.tag.name + '</strong> created successfully!');
+                toastr.success('NFC Tag "' + data.tag.name + '" has been created.', 'Created');
             })
             .catch(err => {
                 /* Show validation errors */
@@ -625,12 +632,15 @@
                     Object.values(err.errors).forEach(e => {
                         e.forEach(m => {
                             msgs += `<div>• ${m}</div>`;
+                            toastr.error(m, 'Validation Error')
                         });
                     });
                 } else if (err.message) {
                     msgs = err.message;
+                    toastr.error(err.message, 'Error');
                 } else {
                     msgs = 'An error occurred. Please try again.';
+                    toastr.error('An error occurred. Please try again.', 'Error');
                 }
                 errDiv.innerHTML = msgs;
                 errDiv.classList.remove('d-none');
