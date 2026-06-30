@@ -84,4 +84,11 @@ class SiteController extends Controller
 
         return redirect()->route('sites.index')->with('success', 'Site deleted successfully.');
     }
+
+    public function nfcTags($site_id)
+    {
+        $site = $this->siteRepo->findSiteById($site_id);
+
+        return view('admin.sites.nfc-tags', compact('site'));
+    }
 }

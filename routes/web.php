@@ -65,13 +65,14 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/delete/{company_id}', [CompanyController::class, 'delete'])->name('companies.delete');
     });
 
-    Route::group(['prefix' => '/site'], function () {
+    Route::group(['prefix' => '/sites'], function () {
         Route::get('/', [SiteController::class, 'index'])->name('sites.index');
         Route::get('/create', [SiteController::class, 'create'])->name('sites.create');
         Route::post('/store', [SiteController::class, 'store'])->name('sites.store');
         Route::get('/edit/{site_id}', [SiteController::class, 'edit'])->name('sites.edit');
         Route::post('/update/{site_id}', [SiteController::class, 'update'])->name('sites.update');
         Route::get('/delete/{site_id}', [SiteController::class, 'delete'])->name('sites.delete');
+        Route::get('/{site_id}/nfc-tags', [SiteController::class, 'nfcTags'])->name('sites.nfcTags');
     });
 
     Route::group(['prefix' => '/nfc'], function () {
