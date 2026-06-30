@@ -87,7 +87,9 @@ class SiteController extends Controller
 
     public function nfcTags($site_id)
     {
-        $site = $this->siteRepo->findSiteById($site_id);
+        $site = Site::with(['nfcTags' => function($q) {
+            $q->orderBy('id', 'desc');
+        }])->findOrFail($site_id);
 
         return view('admin.sites.nfc-tags', compact('site'));
     }

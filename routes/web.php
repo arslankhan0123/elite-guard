@@ -79,6 +79,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/', [NfcTagController::class, 'index'])->name('nfc.index');
         Route::get('/create', [NfcTagController::class, 'create'])->name('nfc.create');
         Route::post('/store', [NfcTagController::class, 'store'])->name('nfc.store');
+        Route::post('/store-ajax', [NfcTagController::class, 'storeAjax'])->name('nfc.storeAjax');
         Route::get('/edit/{nfc_id}', [NfcTagController::class, 'edit'])->name('nfc.edit');
         Route::post('/update/{nfc_id}', [NfcTagController::class, 'update'])->name('nfc.update');
         Route::get('/delete/{nfc_id}', [NfcTagController::class, 'delete'])->name('nfc.delete');

@@ -47,6 +47,25 @@ class NfcTagController extends Controller
         return redirect()->route('nfc.index')->with('success', 'NFC Tag created successfully.');
     }
 
+    public function storeAjax(Request $request)
+    {
+        $request->validate([
+            'site_id' => 'required|exists:sites,id',
+            'uid'     => 'required|string|max:255|unique:nfc_tags,uid',
+            'name'    => 'required|string|max:255',
+            'status'  => 'required|boolean',
+        ]);
+
+        $tag = $this->nfcTagsRepo->createNfcTag($request);
+        $tag->load('site.company');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'NFC Tag created successfully.',
+            'tag'     => $tag,
+        ]);
+    }
+
     public function edit($nfc_id)
     {
         $nfcTag = $this->nfcTagsRepo->findNfcTagById($nfc_id);
