@@ -82,7 +82,9 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/store-ajax', [NfcTagController::class, 'storeAjax'])->name('nfc.storeAjax');
         Route::get('/edit/{nfc_id}', [NfcTagController::class, 'edit'])->name('nfc.edit');
         Route::post('/update/{nfc_id}', [NfcTagController::class, 'update'])->name('nfc.update');
+        Route::post('/update-ajax/{nfc_id}', [NfcTagController::class, 'updateAjax'])->name('nfc.updateAjax');
         Route::get('/delete/{nfc_id}', [NfcTagController::class, 'delete'])->name('nfc.delete');
+        Route::delete('/delete-ajax/{nfc_id}', [NfcTagController::class, 'deleteAjax'])->name('nfc.deleteAjax');
     });
 
     Route::group(['prefix' => '/schedules'], function () {

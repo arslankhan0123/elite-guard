@@ -89,10 +89,41 @@ class NfcTagController extends Controller
         return redirect()->route('nfc.index')->with('success', 'NFC Tag updated successfully.');
     }
 
+    public function updateAjax(Request $request, $nfc_id)
+    {
+        $nfcTag = $this->nfcTagsRepo->findNfcTagById($nfc_id);
+
+        $request->validate([
+            'site_id' => 'required|exists:sites,id',
+            'uid'     => 'required|string|max:255|unique:nfc_tags,uid,' . $nfcTag->id,
+            'name'    => 'required|string|max:255',
+            'status'  => 'required|boolean',
+        ]);
+
+        $this->nfcTagsRepo->updateNfcTag($request, $nfc_id);
+        $nfcTag->refresh()->load('site.company');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'NFC Tag updated successfully.',
+            'tag'     => $nfcTag,
+        ]);
+    }
+
     public function delete($nfc_id)
     {
         $this->nfcTagsRepo->deleteNfcTag($nfc_id);
 
         return redirect()->route('nfc.index')->with('success', 'NFC Tag deleted successfully.');
+    }
+
+    public function deleteAjax($nfc_id)
+    {
+        $this->nfcTagsRepo->deleteNfcTag($nfc_id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'NFC Tag deleted successfully.'
+        ]);
     }
 }
