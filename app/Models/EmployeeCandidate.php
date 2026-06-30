@@ -23,6 +23,7 @@ class EmployeeCandidate extends Model
         'postal_code',
         'emergency_contact_name',
         'emergency_contact_phone',
+        'profile_picture',
     ];
 
     public function user()

@@ -184,4 +184,63 @@ class UserApiController extends Controller
         $user = $this->userRepo->userUpdate($request);
         return $this->successResponse($user, 'User updated successfully.');
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/user/profile-picture",
+     *     summary="Upload/Update user profile picture",
+     *     tags={"User"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="profile_picture", type="string", format="binary", description="Profile picture image file")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profile picture uploaded successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Success"),
+     *             @OA\Property(property="message", type="string", example="Profile picture updated successfully."),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="The profile picture field is required.")
+     *         )
+     *     )
+     * )
+     */
+    public function uploadProfilePicture(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first()
+            ], 400);
+        }
+
+        $result = $this->userRepo->updateProfilePicture($request);
+
+        if ($result['status']) {
+            return $this->successResponse($result['user'], $result['message']);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => $result['message']
+        ], 400);
+    }
 }

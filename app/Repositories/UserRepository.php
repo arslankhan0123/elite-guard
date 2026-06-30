@@ -9,17 +9,25 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Traits\CommonTrait;
 
 class UserRepository
 {
+    use CommonTrait;
     // Get all sites
     public function getUser()
     {
         $user = User::with(['candidate', 'bankDetail', 'licenseDetail', 'availability', 'officeDetail', 'sites'])->find(Auth::id());
+        $user->systemId = 'EG-'.$user->id;
+        $userShifts = $this->getUserShifts();
+        $userSites = $this->getUserSites();
+
         $data = [
             'status' => true,
             'message' => 'User retrieved successfully',
-            'user' => $user
+            'user' => $user,
+            'userShifts' => $userShifts,
+            'userSites' => $userSites
         ];
         return $data;
     }
@@ -178,5 +186,54 @@ class UserRepository
             'user' => $user
         ];
         return $data;
+    }
+
+    public function updateProfilePicture($request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($request->hasFile('profile_picture')) {
+            $file = $request->file('profile_picture');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            $destinationPath = public_path('images/profileImages');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $file->move($destinationPath, $filename);
+
+            // Delete old profile picture if exists
+            $candidate = $user->candidate;
+            if ($candidate && $candidate->profile_picture) {
+                $parsedPath = parse_url($candidate->profile_picture, PHP_URL_PATH);
+                // In case the path includes the base url's subfolders or starts with a slash
+                $relativePath = ltrim($parsedPath, '/');
+                // If public folder is in path but public_path() already points to it, adjust accordingly
+                $oldFile = public_path($relativePath);
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+
+            $dbPath = url('images/profileImages/' . $filename);
+            $user->candidate()->updateOrCreate(
+                ['user_id' => $user->id],
+                ['profile_picture' => $dbPath]
+            );
+
+            $user = User::with(['candidate', 'bankDetail', 'licenseDetail', 'availability', 'officeDetail', 'sites'])->find($user->id);
+            return [
+                'status' => true,
+                'message' => 'Profile picture updated successfully',
+                'user' => $user
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => 'No file uploaded'
+        ];
     }
 }

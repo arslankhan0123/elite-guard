@@ -3,6 +3,10 @@
 namespace App\Traits;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Site;
+use App\Models\User;
+use Carbon\Carbon;
 
 trait CommonTrait
 {
@@ -82,5 +86,34 @@ trait CommonTrait
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c;
+    }
+
+    public function getUserShifts()
+    {
+        $userId = Auth::id();
+        $user = User::find($userId);
+        $user->systemId = 'EG-'.$user->id;
+
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
+        $endOfWeek = Carbon::now()->endOfWeek(Carbon::SUNDAY)->toDateString();
+
+        $shiftsCount = \App\Models\Shift::whereHas('schedule', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->whereBetween('date', [$startOfWeek, $endOfWeek])
+            ->count();
+        
+        return $shiftsCount;
+    }
+
+    public function getUserSites()
+    {
+        $userId = Auth::id();
+        $user = User::find($userId);
+        $user->systemId = 'EG-'.$user->id;
+
+        $sitesCount = $user->sites()->count();
+        
+        return $sitesCount;
     }
 }
