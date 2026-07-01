@@ -25,12 +25,38 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Policy Type <span class="text-danger">*</span></label>
                             <select name="type" class="form-select" required>
-                                <option value="Employment Policies" {{ old('type', $policy->type) == 'Employment Policies' ? 'selected' : '' }}>Employment Policies</option>
-                                <option value="Violence and Harassment Prevention Plan" {{ old('type', $policy->type) == 'Violence and Harassment Prevention Plan' ? 'selected' : '' }}>Violence and Harassment Prevention Plan</option>
-                                <option value="Public Complaints Policy" {{ old('type', $policy->type) == 'Public Complaints Policy' ? 'selected' : '' }}>Public Complaints Policy</option>
-                                <option value="Code of Conduct" {{ old('type', $policy->type) == 'Code of Conduct' ? 'selected' : '' }}>Code of Conduct</option>
+                                <option value="Employment Policies" {{ old('type', $policy->type) == 'Employment Policies' ? 'selected' : '' }}>
+                                    Employment Policies
+                                </option>
+
+                                <option value="Vehicle Policy Acknowledgment" {{ old('type', $policy->type) == 'Vehicle Policy Acknowledgment' ? 'selected' : '' }}>
+                                    Vehicle Policy Acknowledgment
+                                </option>
+
+                                <option value="Confidentiality Agreement" {{ old('type', $policy->type) == 'Confidentiality Agreement' ? 'selected' : '' }}>
+                                    Confidentiality Agreement
+                                </option>
+
+                                <option value="Averaging Arrangement Policy" {{ old('type', $policy->type) == 'Averaging Arrangement Policy' ? 'selected' : '' }}>
+                                    Averaging Arrangement Policy
+                                </option>
+
+                                <option value="Violence And Harassment Prevention Policy" {{ old('type', $policy->type) == 'Violence And Harassment Prevention Policy' ? 'selected' : '' }}>
+                                    Violence And Harassment Prevention Policy
+                                </option>
+
+                                <option value="Code Of Conduct" {{ old('type', $policy->type) == 'Code Of Conduct' ? 'selected' : '' }}>
+                                    Code Of Conduct
+                                </option>
+
+                                <option value="Public Complaints Policy" {{ old('type', $policy->type) == 'Public Complaints Policy' ? 'selected' : '' }}>
+                                    Public Complaints Policy
+                                </option>
                             </select>
-                            @error('type') <span class="text-danger">{{ $message }}</span> @enderror
+
+                            @error('type')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -57,11 +83,11 @@
                         </div>
                     </div> -->
 
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">Policy Details / Description</label>
-                            <textarea name="description" rows="8" class="form-control">{{ old('description', $policy->description) }}</textarea>
-                            @error('description') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Policy Details / Description</label>
+                        <textarea name="description" rows="8" class="form-control">{{ old('description', $policy->description) }}</textarea>
+                        @error('description') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
 
                     <div class="row mt-4">
                         <div class="col-12">
@@ -76,5 +102,3 @@
     </div>
 </div>
 @endsection
-
-
