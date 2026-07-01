@@ -159,4 +159,150 @@ class FormsApiController extends Controller
 
         return $this->successResponse($data, 'Daily Vehicle Checklist stored successfully.');
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/forms/shift-adjustment/store",
+     *     summary="Store Shift Adjustment Form",
+     *     description="Submit a Shift Adjustment Form with employee info, current shift, requested adjustments, and approval section.",
+     *     tags={"Forms"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"employee_name","current_date"},
+     *
+     *             @OA\Property(property="employee_name",        type="string",  example="John Doe"),
+     *             @OA\Property(property="employee_id",          type="string",  example="EMP-1024"),
+     *             @OA\Property(property="position_site",        type="string",  example="Security Guard / Downtown Mall"),
+     *             @OA\Property(property="department",           type="string",  example="Security Operations"),
+     *
+     *             @OA\Property(property="current_date",         type="string",  format="date",    example="2026-07-01"),
+     *             @OA\Property(property="current_start_time",   type="string",  example="08:00"),
+     *             @OA\Property(property="current_end_time",     type="string",  example="16:00"),
+     *             @OA\Property(property="current_supervisor",   type="string",  example="Jane Smith"),
+     *             @OA\Property(property="current_shift_type",   type="string",  example="Day", enum={"Day","Night","On-call"}),
+     *
+     *             @OA\Property(property="shift_swap",           type="boolean", example=false),
+     *             @OA\Property(property="late_start",           type="boolean", example=false),
+     *             @OA\Property(property="coverage_request",     type="boolean", example=true),
+     *             @OA\Property(property="early_release",        type="boolean", example=false),
+     *             @OA\Property(property="time_off_request",     type="boolean", example=false),
+     *             @OA\Property(property="overtime_approval",    type="boolean", example=false),
+     *
+     *             @OA\Property(property="requested_date",       type="string",  format="date",    example="2026-07-05"),
+     *             @OA\Property(property="requested_start_time", type="string",  example="10:00"),
+     *             @OA\Property(property="requested_end_time",   type="string",  example="18:00"),
+     *             @OA\Property(property="replacement_employee", type="string",  example="Mark Johnson"),
+     *             @OA\Property(property="adjustment_reason",    type="string",  example="Doctor appointment in the morning"),
+     *             @OA\Property(property="additional_details",   type="string",  example="Need coverage from 10:00 AM. Mark Johnson has agreed to swap."),
+     *
+     *             @OA\Property(property="supervisor_name",      type="string",  example="Jane Smith"),
+     *             @OA\Property(property="approval_date",        type="string",  format="date",    example="2026-07-02"),
+     *             @OA\Property(property="decision",             type="string",  example="Approved", enum={"Approved","Denied","Pending"}),
+     *             @OA\Property(property="approved_hours",       type="string",  example="8"),
+     *             @OA\Property(property="supervisor_notes",     type="string",  example="Approved. Ensure replacement is briefed before shift start."),
+     *
+     *             @OA\Property(property="employee_signature",   type="string",  example="John Doe"),
+     *             @OA\Property(property="supervisor_signature", type="string",  example="Jane Smith"),
+     *
+     *             example={
+     *                 "employee_name":        "John Doe",
+     *                 "employee_id":          "EMP-1024",
+     *                 "position_site":        "Security Guard / Downtown Mall",
+     *                 "department":           "Security Operations",
+     *                 "current_date":         "2026-07-01",
+     *                 "current_start_time":   "08:00",
+     *                 "current_end_time":     "16:00",
+     *                 "current_supervisor":   "Jane Smith",
+     *                 "current_shift_type":   "Day",
+     *                 "shift_swap":           false,
+     *                 "late_start":           false,
+     *                 "coverage_request":     true,
+     *                 "early_release":        false,
+     *                 "time_off_request":     false,
+     *                 "overtime_approval":    false,
+     *                 "requested_date":       "2026-07-05",
+     *                 "requested_start_time": "10:00",
+     *                 "requested_end_time":   "18:00",
+     *                 "replacement_employee": "Mark Johnson",
+     *                 "adjustment_reason":    "Doctor appointment in the morning",
+     *                 "additional_details":   "Need coverage from 10:00 AM. Mark Johnson has agreed to swap.",
+     *                 "supervisor_name":      "Jane Smith",
+     *                 "approval_date":        "2026-07-02",
+     *                 "decision":             "Approved",
+     *                 "approved_hours":       "8",
+     *                 "supervisor_notes":     "Approved. Ensure replacement is briefed before shift start.",
+     *                 "employee_signature":   "John Doe",
+     *                 "supervisor_signature": "Jane Smith"
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Shift Adjustment Form stored successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status",  type="boolean", example=true),
+     *             @OA\Property(property="message", type="string",  example="Shift Adjustment Form stored successfully."),
+     *             @OA\Property(property="data",    type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status",  type="boolean", example=false),
+     *             @OA\Property(property="message", type="string",  example="The employee name field is required.")
+     *         )
+     *     )
+     * )
+     */
+    public function storeShiftAdjustmentForm(Request $request)
+    {
+        $request->validate([
+            // Employee Information
+            'employee_name'        => 'required|string|max:255',
+            'employee_id'          => 'nullable|string|max:100',
+            'position_site'        => 'nullable|string|max:255',
+            'department'           => 'nullable|string|max:255',
+
+            // Current Shift
+            'current_date'         => 'required|date',
+            'current_start_time'   => 'nullable|string|max:20',
+            'current_end_time'     => 'nullable|string|max:20',
+            'current_supervisor'   => 'nullable|string|max:255',
+            'current_shift_type'   => 'nullable|string|in:Day,Night,On-call',
+
+            // Requested Adjustment - Checkboxes
+            'shift_swap'           => 'nullable|boolean',
+            'late_start'           => 'nullable|boolean',
+            'coverage_request'     => 'nullable|boolean',
+            'early_release'        => 'nullable|boolean',
+            'time_off_request'     => 'nullable|boolean',
+            'overtime_approval'    => 'nullable|boolean',
+
+            // Requested Adjustment - Details
+            'requested_date'       => 'nullable|date',
+            'requested_start_time' => 'nullable|string|max:20',
+            'requested_end_time'   => 'nullable|string|max:20',
+            'replacement_employee' => 'nullable|string|max:255',
+            'adjustment_reason'    => 'nullable|string|max:500',
+            'additional_details'   => 'nullable|string',
+
+            // Approval Section
+            'supervisor_name'      => 'nullable|string|max:255',
+            'approval_date'        => 'nullable|date',
+            'decision'             => 'nullable|string|in:Approved,Denied,Pending',
+            'approved_hours'       => 'nullable|string|max:50',
+            'supervisor_notes'     => 'nullable|string',
+
+            // Signatures
+            'employee_signature'   => 'nullable|string',
+            'supervisor_signature' => 'nullable|string',
+        ]);
+
+        $data = $this->formsRepo->storeShiftAdjustmentForm($request);
+
+        return $this->successResponse($data, 'Shift Adjustment Form stored successfully.');
+    }
 }

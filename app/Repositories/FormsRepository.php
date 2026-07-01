@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Assessment;
 use App\Models\DailyVehicleChecklist;
+use App\Models\ShiftAdjustmentForm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -86,6 +87,61 @@ class FormsRepository
             'status' => true,
             'message' => 'Daily Vehicle Checklist stored successfully.',
             'checklist' => $checklist,
+        ];
+    }
+
+    public function storeShiftAdjustmentForm(Request $request)
+    {
+        $user = Auth::user();
+
+        $form = ShiftAdjustmentForm::create([
+            'user_id'              => $user->id,
+
+            // Employee Information
+            'employee_name'        => $request->employee_name,
+            'employee_id'          => $request->employee_id,
+            'position_site'        => $request->position_site,
+            'department'           => $request->department,
+
+            // Current Shift
+            'current_date'         => $request->current_date,
+            'current_start_time'   => $request->current_start_time,
+            'current_end_time'     => $request->current_end_time,
+            'current_supervisor'   => $request->current_supervisor,
+            'current_shift_type'   => $request->current_shift_type,
+
+            // Requested Adjustment - Checkboxes
+            'shift_swap'           => $request->shift_swap ?? false,
+            'late_start'           => $request->late_start ?? false,
+            'coverage_request'     => $request->coverage_request ?? false,
+            'early_release'        => $request->early_release ?? false,
+            'time_off_request'     => $request->time_off_request ?? false,
+            'overtime_approval'    => $request->overtime_approval ?? false,
+
+            // Requested Adjustment - Details
+            'requested_date'       => $request->requested_date,
+            'requested_start_time' => $request->requested_start_time,
+            'requested_end_time'   => $request->requested_end_time,
+            'replacement_employee' => $request->replacement_employee,
+            'adjustment_reason'    => $request->adjustment_reason,
+            'additional_details'   => $request->additional_details,
+
+            // Approval Section
+            'supervisor_name'      => $request->supervisor_name,
+            'approval_date'        => $request->approval_date,
+            'decision'             => $request->decision,
+            'approved_hours'       => $request->approved_hours,
+            'supervisor_notes'     => $request->supervisor_notes,
+
+            // Signatures
+            'employee_signature'   => $request->employee_signature,
+            'supervisor_signature' => $request->supervisor_signature,
+        ]);
+
+        return [
+            'status'  => true,
+            'message' => 'Shift Adjustment Form stored successfully.',
+            'form'    => $form,
         ];
     }
 }
