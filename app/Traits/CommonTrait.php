@@ -97,13 +97,12 @@ trait CommonTrait
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
         $endOfWeek = Carbon::now()->endOfWeek(Carbon::SUNDAY)->toDateString();
 
-        $shiftsCount = \App\Models\Shift::whereHas('schedule', function ($query) use ($userId) {
+        $shifts = \App\Models\Shift::whereHas('schedule', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
-            ->whereBetween('date', [$startOfWeek, $endOfWeek])
-            ->count();
+            ->whereBetween('date', [$startOfWeek, $endOfWeek])->get();
         
-        return $shiftsCount;
+        return $shifts;
     }
 
     public function getUserSites()
@@ -112,8 +111,8 @@ trait CommonTrait
         $user = User::find($userId);
         $user->systemId = 'EG-'.$user->id;
 
-        $sitesCount = $user->sites()->count();
+        $sites = $user->sites()->get();
         
-        return $sitesCount;
+        return $sites;
     }
 }

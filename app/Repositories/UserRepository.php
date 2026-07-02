@@ -24,13 +24,17 @@ class UserRepository
         }
         $userShifts = $this->getUserShifts();
         $userSites = $this->getUserSites();
+        $shiftsCount = $userShifts->count();
+        $sitesCount = $userSites->count();
 
         $data = [
             'status' => true,
             'message' => 'User retrieved successfully',
             'user' => $user,
-            'userShifts' => $userShifts,
-            'userSites' => $userSites
+            'current_week_shifts' => $userShifts,
+            'current_week_shifts_count' => $shiftsCount,
+            'assigned_sites' => $userSites,
+            'assigned_sites_count' => $sitesCount,
         ];
         return $data;
     }
@@ -41,22 +45,18 @@ class UserRepository
         $user = User::find($userId);
         $user->systemId = 'EG-'.$user->id;
 
-        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
-        $endOfWeek = Carbon::now()->endOfWeek(Carbon::SUNDAY)->toDateString();
-
-        $shiftsCount = \App\Models\Shift::whereHas('schedule', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->whereBetween('date', [$startOfWeek, $endOfWeek])
-            ->count();
-
-        $sitesCount = $user->sites()->count();
+        $userShifts = $this->getUserShifts();
+        $userSites = $this->getUserSites();
+        $shiftsCount = $userShifts->count();
+        $sitesCount = $userSites->count();
 
         return [
             'status' => true,
             'message' => 'User profile details retrieved successfully',
             'user' => $user,
+            'current_week_shifts' => $userShifts,
             'current_week_shifts_count' => $shiftsCount,
+            'assigned_sites' => $userSites,
             'assigned_sites_count' => $sitesCount,
         ];
     }

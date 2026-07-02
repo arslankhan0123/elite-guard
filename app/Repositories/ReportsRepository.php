@@ -105,7 +105,7 @@ class ReportsRepository
             'report_time' => $request->report_time,
             'property_location' => $request->property_location,
             'property_name' => $request->property_name,
-            'reported_by' => $request->reported_by,
+            'reported_by' => $request->reported_by ?? $user->name ?? 'No Username',
             'report_type' => $request->report_type,
             'time_engaged' => $request->time_engaged,
             'time_area_cleared' => $request->time_area_cleared,

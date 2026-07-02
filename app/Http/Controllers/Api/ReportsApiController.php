@@ -210,7 +210,7 @@ class ReportsApiController extends Controller
             'report_time' => 'required',
             'property_location' => 'required',
             'property_name' => 'required',
-            'reported_by' => 'required',
+            'reported_by' => 'nullable',
         ]);
 
         if ($validator->fails()) {
