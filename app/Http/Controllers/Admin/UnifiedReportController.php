@@ -65,6 +65,11 @@ class UnifiedReportController extends Controller
                 $this->applyFilters($query, $request);
                 $data['reports'] = $query->latest()->paginate(10);
                 break;
+            case 'shift-adjustment':
+                $query = \App\Models\ShiftAdjustmentForm::with('user');
+                $this->applyFilters($query, $request);
+                $data['adjustments'] = $query->latest()->paginate(10);
+                break;
         }
 
         return view('admin.unified-reports.index', compact('users', 'type', 'data'));

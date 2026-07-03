@@ -36,10 +36,10 @@
                             <select class="form-select select2"
                                 onchange="window.location.href='{{ route('reports.all') }}?type=' + this.value">
                                 <option value="">Choose a Form...</option>
-                                <option value="assessments" {{ $type == 'assessments' ? 'selected' : '' }}>Assessment</option>
-                                <option value="vehicle-checklist" {{ $type == 'vehicle-checklist' ? 'selected' : '' }}>Daily
-                                    Vehicle Checklist</option>
-                                <option value="fire-watch" {{ $type == 'fire-watch' ? 'selected' : '' }}>Fire Watch Report</option>
+                                <option value="assessments" {{ $type == 'assessments' ? 'selected' : '' }}>Assessment Form</option>
+                                <option value="vehicle-checklist" {{ $type == 'vehicle-checklist' ? 'selected' : '' }}>Daily Vehicle Checklist Form</option>
+                                <option value="shift-adjustment" {{ $type == 'shift-adjustment' ? 'selected' : '' }}>Shift Adjustment Form</option>
+                                <option value="fire-watch" {{ $type == 'fire-watch' ? 'selected' : '' }}>Fire Watch Report Form</option>
                             </select>
                         </div>
                     </div>
@@ -118,6 +118,8 @@
                                 @include('admin.unified-reports.tables.vehicle-checklist')
                             @elseif($type == 'fire-watch')
                                 @include('admin.unified-reports.tables.fire-watch')
+                            @elseif($type == 'shift-adjustment')
+                                @include('admin.unified-reports.tables.shift-adjustment')
                             @endif
                         </div>
                     </div>
