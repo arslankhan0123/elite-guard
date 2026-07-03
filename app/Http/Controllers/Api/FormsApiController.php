@@ -305,4 +305,116 @@ class FormsApiController extends Controller
 
         return $this->successResponse($data, 'Shift Adjustment Form stored successfully.');
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/forms/fire-watch/store",
+     *     summary="Store Fire Watch Report",
+     *     description="Submit a Fire Watch Report Form with site details, reason, patrol areas, commencement/termination details, interval, and check logs.",
+     *     tags={"Forms"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"client_site_name","address_location","commenced_date","commenced_time","terminated_date","terminated_time"},
+     *             @OA\Property(property="client_site_name", type="string", example="Elite Plaza"),
+     *             @OA\Property(property="address_location", type="string", example="123 Main St, New York, NY"),
+     *             @OA\Property(property="reason_for_fire_watch", type="string", example="Broken sprinkler system on 3rd floor"),
+     *             @OA\Property(property="fire_watch_areas", type="string", example="3rd and 4th Floor hallways"),
+     *             @OA\Property(property="commenced_date", type="string", example="2026-07-03"),
+     *             @OA\Property(property="commenced_time", type="string", example="15:30"),
+     *             @OA\Property(property="terminated_date", type="string", example="2026-07-03"),
+     *             @OA\Property(property="terminated_time", type="string", example="16:00"),
+     *             @OA\Property(property="guards", type="string", example="John Doe, Jane Smith"),
+     *             @OA\Property(property="supervisor", type="string", example="Supervisor Mark"),
+     *             @OA\Property(property="patrol_interval", type="string", example="30 Minutes", enum={"30 Minutes","60 Minutes","Continuous"}),
+     *             @OA\Property(
+     *                 property="patrol_logs",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="round", type="string", example="Round 1"),
+     *                     @OA\Property(property="date", type="string", example="08/16"),
+     *                     @OA\Property(property="start_time", type="string", example="15:30"),
+     *                     @OA\Property(property="end_time", type="string", example="16:00"),
+     *                     @OA\Property(property="area_patrolled_findings", type="string", example="All Clear"),
+     *                     @OA\Property(property="initials", type="string", example="JD")
+     *                 ),
+     *                 example={
+     *                     {
+     *                         "round": "Round 1",
+     *                         "date": "08/16",
+     *                         "start_time": "15:30",
+     *                         "end_time": "16:00",
+     *                         "area_patrolled_findings": "All Clear",
+     *                         "initials": "JD"
+     *                     }
+     *                 }
+     *             ),
+     *             example={
+     *                 "client_site_name": "Elite Plaza",
+     *                 "address_location": "123 Main St, New York, NY",
+     *                 "reason_for_fire_watch": "Broken sprinkler system on 3rd floor",
+     *                 "fire_watch_areas": "3rd and 4th Floor hallways",
+     *                 "commenced_date": "2026-07-03",
+     *                 "commenced_time": "15:30",
+     *                 "terminated_date": "2026-07-03",
+     *                 "terminated_time": "16:00",
+     *                 "guards": "John Doe, Jane Smith",
+     *                 "supervisor": "Supervisor Mark",
+     *                 "patrol_interval": "30 Minutes",
+     *                 "patrol_logs": {
+     *                     {
+     *                         "round": "Round 1",
+     *                         "date": "08/16",
+     *                         "start_time": "15:30",
+     *                         "end_time": "16:00",
+     *                         "area_patrolled_findings": "All Clear",
+     *                         "initials": "JD"
+     *                     }
+     *                 }
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Fire Watch Report stored successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Fire Watch Report stored successfully."),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function storeFireWatchReport(Request $request)
+    {
+        $request->validate([
+            'client_site_name'      => 'required|string|max:255',
+            'address_location'      => 'required|string|max:255',
+            'reason_for_fire_watch' => 'nullable|string',
+            'fire_watch_areas'      => 'nullable|string',
+            'commenced_date'        => 'required|string',
+            'commenced_time'        => 'required|string',
+            'terminated_date'       => 'required|string',
+            'terminated_time'       => 'required|string',
+            'guards'                => 'nullable|string',
+            'supervisor'            => 'nullable|string|max:255',
+            'patrol_interval'       => 'nullable|string|max:100',
+            'patrol_logs'           => 'nullable|array',
+            'patrol_logs.*.round'                   => 'nullable|string',
+            'patrol_logs.*.date'                    => 'nullable|string',
+            'patrol_logs.*.start_time'              => 'nullable|string',
+            'patrol_logs.*.end_time'                => 'nullable|string',
+            'patrol_logs.*.area_patrolled_findings' => 'nullable|string',
+            'patrol_logs.*.initials'                => 'nullable|string',
+        ]);
+
+        $data = $this->formsRepo->storeFireWatchReport($request);
+
+        return $this->successResponse($data, 'Fire Watch Report stored successfully.');
+    }
 }

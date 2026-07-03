@@ -1399,6 +1399,414 @@
                 ]
             }
         },
+        "/api/forms/shift-adjustment/store": {
+            "post": {
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Store Shift Adjustment Form",
+                "description": "Submit a Shift Adjustment Form with employee info, current shift, requested adjustments, and approval section.",
+                "operationId": "bd9d5cc32e6b005679e08dcd89039437",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "employee_name",
+                                    "current_date"
+                                ],
+                                "properties": {
+                                    "employee_name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "employee_id": {
+                                        "type": "string",
+                                        "example": "EMP-1024"
+                                    },
+                                    "position_site": {
+                                        "type": "string",
+                                        "example": "Security Guard / Downtown Mall"
+                                    },
+                                    "department": {
+                                        "type": "string",
+                                        "example": "Security Operations"
+                                    },
+                                    "current_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-07-01"
+                                    },
+                                    "current_start_time": {
+                                        "type": "string",
+                                        "example": "08:00"
+                                    },
+                                    "current_end_time": {
+                                        "type": "string",
+                                        "example": "16:00"
+                                    },
+                                    "current_supervisor": {
+                                        "type": "string",
+                                        "example": "Jane Smith"
+                                    },
+                                    "current_shift_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Day",
+                                            "Night",
+                                            "On-call"
+                                        ],
+                                        "example": "Day"
+                                    },
+                                    "shift_swap": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "late_start": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "coverage_request": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "early_release": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "time_off_request": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "overtime_approval": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "requested_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-07-05"
+                                    },
+                                    "requested_start_time": {
+                                        "type": "string",
+                                        "example": "10:00"
+                                    },
+                                    "requested_end_time": {
+                                        "type": "string",
+                                        "example": "18:00"
+                                    },
+                                    "replacement_employee": {
+                                        "type": "string",
+                                        "example": "Mark Johnson"
+                                    },
+                                    "adjustment_reason": {
+                                        "type": "string",
+                                        "example": "Doctor appointment in the morning"
+                                    },
+                                    "additional_details": {
+                                        "type": "string",
+                                        "example": "Need coverage from 10:00 AM. Mark Johnson has agreed to swap."
+                                    },
+                                    "supervisor_name": {
+                                        "type": "string",
+                                        "example": "Jane Smith"
+                                    },
+                                    "approval_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-07-02"
+                                    },
+                                    "decision": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Approved",
+                                            "Denied",
+                                            "Pending"
+                                        ],
+                                        "example": "Approved"
+                                    },
+                                    "approved_hours": {
+                                        "type": "string",
+                                        "example": "8"
+                                    },
+                                    "supervisor_notes": {
+                                        "type": "string",
+                                        "example": "Approved. Ensure replacement is briefed before shift start."
+                                    },
+                                    "employee_signature": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "supervisor_signature": {
+                                        "type": "string",
+                                        "example": "Jane Smith"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "example": {
+                                "employee_name": "John Doe",
+                                "employee_id": "EMP-1024",
+                                "position_site": "Security Guard / Downtown Mall",
+                                "department": "Security Operations",
+                                "current_date": "2026-07-01",
+                                "current_start_time": "08:00",
+                                "current_end_time": "16:00",
+                                "current_supervisor": "Jane Smith",
+                                "current_shift_type": "Day",
+                                "shift_swap": false,
+                                "late_start": false,
+                                "coverage_request": true,
+                                "early_release": false,
+                                "time_off_request": false,
+                                "overtime_approval": false,
+                                "requested_date": "2026-07-05",
+                                "requested_start_time": "10:00",
+                                "requested_end_time": "18:00",
+                                "replacement_employee": "Mark Johnson",
+                                "adjustment_reason": "Doctor appointment in the morning",
+                                "additional_details": "Need coverage from 10:00 AM. Mark Johnson has agreed to swap.",
+                                "supervisor_name": "Jane Smith",
+                                "approval_date": "2026-07-02",
+                                "decision": "Approved",
+                                "approved_hours": "8",
+                                "supervisor_notes": "Approved. Ensure replacement is briefed before shift start.",
+                                "employee_signature": "John Doe",
+                                "supervisor_signature": "Jane Smith"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Shift Adjustment Form stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Shift Adjustment Form stored successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The employee name field is required."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/forms/fire-watch/store": {
+            "post": {
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Store Fire Watch Report",
+                "description": "Submit a Fire Watch Report Form with site details, reason, patrol areas, commencement/termination details, interval, and check logs.",
+                "operationId": "d64984d153a9c7e031cc125643c9e590",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "client_site_name",
+                                    "address_location",
+                                    "commenced_date",
+                                    "commenced_time",
+                                    "terminated_date",
+                                    "terminated_time"
+                                ],
+                                "properties": {
+                                    "client_site_name": {
+                                        "type": "string",
+                                        "example": "Elite Plaza"
+                                    },
+                                    "address_location": {
+                                        "type": "string",
+                                        "example": "123 Main St, New York, NY"
+                                    },
+                                    "reason_for_fire_watch": {
+                                        "type": "string",
+                                        "example": "Broken sprinkler system on 3rd floor"
+                                    },
+                                    "fire_watch_areas": {
+                                        "type": "string",
+                                        "example": "3rd and 4th Floor hallways"
+                                    },
+                                    "commenced_date": {
+                                        "type": "string",
+                                        "example": "2026-07-03"
+                                    },
+                                    "commenced_time": {
+                                        "type": "string",
+                                        "example": "15:30"
+                                    },
+                                    "terminated_date": {
+                                        "type": "string",
+                                        "example": "2026-07-03"
+                                    },
+                                    "terminated_time": {
+                                        "type": "string",
+                                        "example": "16:00"
+                                    },
+                                    "guards": {
+                                        "type": "string",
+                                        "example": "John Doe, Jane Smith"
+                                    },
+                                    "supervisor": {
+                                        "type": "string",
+                                        "example": "Supervisor Mark"
+                                    },
+                                    "patrol_interval": {
+                                        "type": "string",
+                                        "enum": [
+                                            "30 Minutes",
+                                            "60 Minutes",
+                                            "Continuous"
+                                        ],
+                                        "example": "30 Minutes"
+                                    },
+                                    "patrol_logs": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "round": {
+                                                    "type": "string",
+                                                    "example": "Round 1"
+                                                },
+                                                "date": {
+                                                    "type": "string",
+                                                    "example": "08/16"
+                                                },
+                                                "start_time": {
+                                                    "type": "string",
+                                                    "example": "15:30"
+                                                },
+                                                "end_time": {
+                                                    "type": "string",
+                                                    "example": "16:00"
+                                                },
+                                                "area_patrolled_findings": {
+                                                    "type": "string",
+                                                    "example": "All Clear"
+                                                },
+                                                "initials": {
+                                                    "type": "string",
+                                                    "example": "JD"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "example": [
+                                            {
+                                                "round": "Round 1",
+                                                "date": "08/16",
+                                                "start_time": "15:30",
+                                                "end_time": "16:00",
+                                                "area_patrolled_findings": "All Clear",
+                                                "initials": "JD"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "example": {
+                                "client_site_name": "Elite Plaza",
+                                "address_location": "123 Main St, New York, NY",
+                                "reason_for_fire_watch": "Broken sprinkler system on 3rd floor",
+                                "fire_watch_areas": "3rd and 4th Floor hallways",
+                                "commenced_date": "2026-07-03",
+                                "commenced_time": "15:30",
+                                "terminated_date": "2026-07-03",
+                                "terminated_time": "16:00",
+                                "guards": "John Doe, Jane Smith",
+                                "supervisor": "Supervisor Mark",
+                                "patrol_interval": "30 Minutes",
+                                "patrol_logs": [
+                                    {
+                                        "round": "Round 1",
+                                        "date": "08/16",
+                                        "start_time": "15:30",
+                                        "end_time": "16:00",
+                                        "area_patrolled_findings": "All Clear",
+                                        "initials": "JD"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Fire Watch Report stored successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Fire Watch Report stored successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/notice-board": {
             "get": {
                 "tags": [

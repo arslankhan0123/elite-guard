@@ -99,6 +99,9 @@ Route::middleware('auth:api')->group(function () {
         Route::group(['prefix' => '/shift-adjustment'], function () {
             Route::post('/store', [FormsApiController::class, 'storeShiftAdjustmentForm']);
         });
+        Route::group(['prefix' => '/fire-watch'], function () {
+            Route::post('/store', [FormsApiController::class, 'storeFireWatchReport']);
+        });
     });
 
     Route::group(['prefix' => '/reports'], function () {
