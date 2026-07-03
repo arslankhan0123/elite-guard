@@ -60,6 +60,11 @@ class UnifiedReportController extends Controller
                 }
                 $data['checklists'] = $query->latest()->paginate(10);
                 break;
+            case 'fire-watch':
+                $query = \App\Models\FireWatchReport::with(['user', 'patrolLogs']);
+                $this->applyFilters($query, $request);
+                $data['reports'] = $query->latest()->paginate(10);
+                break;
         }
 
         return view('admin.unified-reports.index', compact('users', 'type', 'data'));

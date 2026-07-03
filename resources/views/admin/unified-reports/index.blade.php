@@ -39,6 +39,7 @@
                                 <option value="assessments" {{ $type == 'assessments' ? 'selected' : '' }}>Assessment</option>
                                 <option value="vehicle-checklist" {{ $type == 'vehicle-checklist' ? 'selected' : '' }}>Daily
                                     Vehicle Checklist</option>
+                                <option value="fire-watch" {{ $type == 'fire-watch' ? 'selected' : '' }}>Fire Watch Report</option>
                             </select>
                         </div>
                     </div>
@@ -115,6 +116,8 @@
                                 @include('admin.unified-reports.tables.assessments')
                             @elseif($type == 'vehicle-checklist')
                                 @include('admin.unified-reports.tables.vehicle-checklist')
+                            @elseif($type == 'fire-watch')
+                                @include('admin.unified-reports.tables.fire-watch')
                             @endif
                         </div>
                     </div>
