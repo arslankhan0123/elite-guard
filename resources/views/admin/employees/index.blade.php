@@ -214,10 +214,16 @@
                         <div class="px-4 pt-3 pb-2 bg-light border-bottom">
                             <p class="text-muted mb-2">Manage shifts for <strong id="modalEmployeeName" class="text-dark"></strong></p>
                             <div class="d-flex align-items-center gap-2 mb-2">
-                                <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill">
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="changeWeek(-1)" style="padding: 0.2rem 0.5rem;" title="Previous Week">
+                                    <i data-feather="chevron-left" style="width: 16px; height: 16px;"></i>
+                                </button>
+                                <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill" id="week-date-range">
                                     <i data-feather="calendar" class="me-1" style="width: 14px;"></i>
                                     {{ \Carbon\Carbon::parse($currentMonday)->format('d M') }} - {{ \Carbon\Carbon::parse($currentMonday)->addDays(6)->format('d M, Y') }}
                                 </span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="changeWeek(1)" style="padding: 0.2rem 0.5rem;" title="Next Week">
+                                    <i data-feather="chevron-right" style="width: 16px; height: 16px;"></i>
+                                </button>
                             </div>
                         </div>
                         
@@ -689,16 +695,70 @@
     <script>
         let shiftIndex = 0;
         const currentMonday = "{{ $currentMonday }}";
+        let activeWeekMonday = currentMonday;
         const sites = @json($sites);
+
+        function updateModalDateUI() {
+            const start = moment(activeWeekMonday);
+            const end = moment(activeWeekMonday).add(6, 'days');
+            document.getElementById('week-date-range').innerHTML = `
+                <i data-feather="calendar" class="me-1" style="width: 14px;"></i>
+                ${start.format('DD MMM')} - ${end.format('DD MMM, YYYY')}
+            `;
+            const form = document.getElementById('assignSitesForm');
+            const weekInput = form.querySelector('input[name="week_start_date"]');
+            if(weekInput) weekInput.value = start.format('YYYY-MM-DD');
+
+            const isPastWeek = moment(activeWeekMonday).isBefore(moment(currentMonday), 'day');
+            document.getElementById('modal_notes_employee').disabled = isPastWeek;
+            document.getElementById('modal_send_email').disabled = isPastWeek;
+            document.getElementById('modal_send_notification').disabled = isPastWeek;
+            
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if(submitBtn) {
+                submitBtn.style.display = isPastWeek ? 'none' : 'block';
+            }
+
+            feather.replace();
+        }
+
+        async function changeWeek(offset) {
+            activeWeekMonday = moment(activeWeekMonday).add(offset, 'weeks').format('YYYY-MM-DD');
+            updateModalDateUI();
+            
+            shiftIndex = 0;
+            generateDaySections();
+            
+            const userId = document.getElementById('modal_user_id').value;
+            try {
+                const response = await fetch(`/schedules/ajax/${userId}?date=${activeWeekMonday}`);
+                const data = await response.json();
+                
+                const scheduleData = data.schedule || {};
+                
+                document.getElementById('modal_notes_employee').value = scheduleData.notes || '';
+                document.getElementById('modal_send_email').checked = scheduleData.is_email_sent == 1;
+                document.getElementById('modal_send_notification').checked = scheduleData.is_notification_sent == 1;
+
+                if (scheduleData && scheduleData.shifts && scheduleData.shifts.length > 0) {
+                    scheduleData.shifts.forEach(s => {
+                        addShiftToDay(s.date, s);
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching schedule:", error);
+            }
+        }
 
         function generateDaySections() {
             const container = document.getElementById('days-container');
             container.innerHTML = '';
             
+            const isPastWeek = moment(activeWeekMonday).isBefore(moment(currentMonday), 'day');
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
             
             days.forEach((day, i) => {
-                const date = moment(currentMonday).add(i, 'days').format('YYYY-MM-DD');
+                const date = moment(activeWeekMonday).add(i, 'days').format('YYYY-MM-DD');
                 const isToday = moment().format('YYYY-MM-DD') === date;
                 
                 const section = document.createElement('div');
@@ -717,7 +777,7 @@
                         <div class="empty-day-placeholder">No shifts assigned for this day</div>
                     </div>
                     <div class="px-3 pb-3">
-                        <button type="button" class="btn add-shift-btn" onclick="addShiftToDay('${date}')">
+                        <button type="button" class="btn add-shift-btn" onclick="addShiftToDay('${date}')" ${isPastWeek ? 'style="display:none;"' : ''}>
                             <i data-feather="plus" style="width: 14px; height: 14px;" class="me-1"></i> Add Shift
                         </button>
                     </div>
@@ -732,6 +792,8 @@
             const placeholder = container.querySelector('.empty-day-placeholder');
             if (placeholder) placeholder.remove();
             
+            const isPastWeek = moment(activeWeekMonday).isBefore(moment(currentMonday), 'day');
+            
             const index = shiftIndex++;
             const shiftItem = document.createElement('div');
             shiftItem.className = 'shift-item';
@@ -742,7 +804,7 @@
             });
 
             shiftItem.innerHTML = `
-                <button type="button" class="btn-remove-shift" onclick="removeShift(this, '${date}')">
+                <button type="button" class="btn-remove-shift" onclick="removeShift(this, '${date}')" ${isPastWeek ? 'style="display:none;"' : ''}>
                     <i data-feather="x" style="width: 12px; height: 12px;"></i>
                 </button>
                 <input type="hidden" name="shifts[${index}][id]" value="${data ? data.id : ''}">
@@ -750,26 +812,26 @@
                 <div class="row g-2 mb-2">
                     <div class="col-md-7">
                         <label class="small fw-bold text-muted mb-1">Assigned Site</label>
-                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light" required>
+                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light" required ${isPastWeek ? 'disabled' : ''}>
                             ${sitesHtml}
                         </select>
                     </div>
                     <div class="col-md-5">
                         <label class="small fw-bold text-muted mb-1">Shift Name</label>
                         <input type="text" name="shifts[${index}][shift_name]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
-                               value="${data ? data.shift_name : 'Regular Shift'}" placeholder="e.g. Day Shift">
+                               value="${data ? data.shift_name : 'Regular Shift'}" placeholder="e.g. Day Shift" ${isPastWeek ? 'disabled' : ''}>
                     </div>
                 </div>
                 <div class="row g-2">
                     <div class="col-6">
                         <label class="small fw-bold text-muted mb-1">Start Time</label>
                         <input type="time" name="shifts[${index}][start_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
-                               value="${data ? (data.start_time ? data.start_time.substring(0,5) : '08:00') : '08:00'}" required>
+                               value="${data ? (data.start_time ? data.start_time.substring(0,5) : '08:00') : '08:00'}" required ${isPastWeek ? 'disabled' : ''}>
                     </div>
                     <div class="col-6">
                         <label class="small fw-bold text-muted mb-1">End Time</label>
                         <input type="time" name="shifts[${index}][end_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
-                               value="${data ? (data.end_time ? data.end_time.substring(0,5) : '16:00') : '16:00'}" required>
+                               value="${data ? (data.end_time ? data.end_time.substring(0,5) : '16:00') : '16:00'}" required ${isPastWeek ? 'disabled' : ''}>
                     </div>
                 </div>
             `;
@@ -917,6 +979,9 @@
                 document.getElementById('modalEmployeeName').textContent = employeeName;
                 document.getElementById('modal_user_id').value = employeeId;
                 document.getElementById('modal_notes_employee').value = notes;
+
+                activeWeekMonday = currentMonday;
+                updateModalDateUI();
 
                 // Reset and generate day sections
                 shiftIndex = 0;

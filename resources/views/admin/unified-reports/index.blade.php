@@ -25,10 +25,9 @@
                                 <option value="">Choose a Security Report...</option>
                                 <option value="general" {{ $type == 'general' ? 'selected' : '' }}>General Report</option>
                                 <option value="incident" {{ $type == 'incident' ? 'selected' : '' }}>Incident Report</option>
-                                <option value="disciplinary" {{ $type == 'disciplinary' ? 'selected' : '' }}>Disciplinary Form
-                                </option>
-                                <option value="daily-shift" {{ $type == 'daily-shift' ? 'selected' : '' }}>Daily Shift Report
-                                </option>
+                                <option value="disciplinary" {{ $type == 'disciplinary' ? 'selected' : '' }}>Disciplinary Form</option>
+                                <option value="daily-shift" {{ $type == 'daily-shift' ? 'selected' : '' }}>Daily Shift Report</option>
+                                <option value="fire-watch" {{ $type == 'fire-watch' ? 'selected' : '' }}>Fire Watch Report Form</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -39,7 +38,6 @@
                                 <option value="assessments" {{ $type == 'assessments' ? 'selected' : '' }}>Assessment Form</option>
                                 <option value="vehicle-checklist" {{ $type == 'vehicle-checklist' ? 'selected' : '' }}>Daily Vehicle Checklist Form</option>
                                 <option value="shift-adjustment" {{ $type == 'shift-adjustment' ? 'selected' : '' }}>Shift Adjustment Form</option>
-                                <option value="fire-watch" {{ $type == 'fire-watch' ? 'selected' : '' }}>Fire Watch Report Form</option>
                             </select>
                         </div>
                     </div>

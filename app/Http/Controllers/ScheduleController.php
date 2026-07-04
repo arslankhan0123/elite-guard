@@ -223,4 +223,21 @@ class ScheduleController extends Controller
 
         return back()->with('success', 'All assignments for the employee this week have been removed.');
     }
+
+    /**
+     * Get assignments for a specific user and week via AJAX.
+     */
+    public function getAjaxSchedule(Request $request, $user_id)
+    {
+        $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::now();
+        $weekStart = $date->copy()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
+
+        $schedule = Schedule::with('shifts')->where('user_id', $user_id)
+            ->where('week_start_date', $weekStart)
+            ->first();
+
+        return response()->json([
+            'schedule' => $schedule
+        ]);
+    }
 }

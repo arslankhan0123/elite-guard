@@ -11,7 +11,10 @@ use App\Models\ReportIncidentFormImage;
 use App\Models\ReportSecurityGuardDisciplinaryForm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Models\FireWatchReport;
+use App\Models\FireWatchPatrolLog;
 
 class ReportsRepository
 {
@@ -195,5 +198,47 @@ class ReportsRepository
             'message' => 'Daily Shift Report Form stored successfully.',
             'form' => $form->load('patrolEntries'),
         ];
+    }
+
+        public function storeFireWatchReport(Request $request)
+    {
+        $user = Auth::user();
+
+        return DB::transaction(function () use ($request, $user) {
+            $report = FireWatchReport::create([
+                'user_id'               => $user->id,
+                'client_site_name'      => $request->client_site_name,
+                'address_location'      => $request->address_location,
+                'reason_for_fire_watch' => $request->reason_for_fire_watch,
+                'fire_watch_areas'      => $request->fire_watch_areas,
+                'commenced_date'        => $request->commenced_date,
+                'commenced_time'        => $request->commenced_time,
+                'terminated_date'       => $request->terminated_date,
+                'terminated_time'       => $request->terminated_time,
+                'guards'                => $request->guards,
+                'supervisor'            => $request->supervisor,
+                'patrol_interval'       => $request->patrol_interval,
+            ]);
+
+            if ($request->has('patrol_logs') && is_array($request->patrol_logs)) {
+                foreach ($request->patrol_logs as $log) {
+                    FireWatchPatrolLog::create([
+                        'fire_watch_report_id'    => $report->id,
+                        'round'                   => $log['round'] ?? null,
+                        'date'                    => $log['date'] ?? null,
+                        'start_time'              => $log['start_time'] ?? null,
+                        'end_time'                => $log['end_time'] ?? null,
+                        'area_patrolled_findings' => $log['area_patrolled_findings'] ?? null,
+                        'initials'                => $log['initials'] ?? null,
+                    ]);
+                }
+            }
+
+            return [
+                'status'  => true,
+                'message' => 'Fire Watch Report stored successfully.',
+                'report'  => $report->load('patrolLogs'),
+            ];
+        });
     }
 }

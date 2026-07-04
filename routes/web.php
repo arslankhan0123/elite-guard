@@ -92,6 +92,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/store', [ScheduleController::class, 'store'])->name('schedules.store');
         Route::post('/update', [ScheduleController::class, 'update'])->name('schedules.update');
         Route::get('/delete/{id}', [ScheduleController::class, 'destroy'])->name('schedules.delete');
+        Route::get('/ajax/{user_id}', [ScheduleController::class, 'getAjaxSchedule'])->name('schedules.ajax');
     });
 
     Route::post('/run-sheets/update', [\App\Http\Controllers\RunSheetController::class, 'update'])->name('run-sheets.update');
