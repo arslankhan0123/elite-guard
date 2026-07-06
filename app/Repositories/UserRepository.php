@@ -50,6 +50,9 @@ class UserRepository
         $shiftsCount = $userShifts->count();
         $sitesCount = $userSites->count();
 
+        // Get all users except the logged-in user
+        $otherUsers = User::where('id', '!=', $userId)->select('id', 'name')->get();
+
         return [
             'status' => true,
             'message' => 'User profile details retrieved successfully',
@@ -58,6 +61,7 @@ class UserRepository
             'current_week_shifts_count' => $shiftsCount,
             'assigned_sites' => $userSites,
             'assigned_sites_count' => $sitesCount,
+            'other_users' => $otherUsers,
         ];
     }
 
