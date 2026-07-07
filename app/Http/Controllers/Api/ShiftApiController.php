@@ -69,9 +69,23 @@ class ShiftApiController extends Controller
      * @OA\Get(
      *     path="/api/shifts",
      *     summary="Get all shifts for the logged-in user",
-     *     description="Returns a list of shifts for the current week (starting Monday) assigned to the authenticated user.",
+     *     description="Returns a list of shifts for the given date range assigned to the authenticated user. If no dates are provided, it returns shifts for the current week (starting Monday).",
      *     tags={"Shift"},
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="start_date",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the shifts filter (Y-m-d)",
+     *         @OA\Schema(type="string", example="2024-04-22")
+     *     ),
+     *     @OA\Parameter(
+     *         name="end_date",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the shifts filter (Y-m-d)",
+     *         @OA\Schema(type="string", example="2024-04-28")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
@@ -96,9 +110,12 @@ class ShiftApiController extends Controller
      *     )
      * )
      */
-    public function userShifts()
+    public function userShifts(Request $request)
     {
-        $shifts = $this->shiftRepo->getUserShiftData();
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+        
+        $shifts = $this->shiftRepo->getUserShiftData($startDate, $endDate);
 
         return $this->successResponse($shifts, 'Shift data fetched successfully.');
     }

@@ -11,11 +11,17 @@ use Illuminate\Support\Facades\DB;
 
 class ShiftRepository
 {
-    public function getUserShiftData()
+    public function getUserShiftData($startDate = null, $endDate = null)
     {
         $userId = Auth::id();
-        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
-        $endOfWeek = Carbon::now()->endOfWeek(Carbon::SUNDAY)->toDateString();
+        
+        if ($startDate && $endDate) {
+            $startOfWeek = Carbon::parse($startDate)->toDateString();
+            $endOfWeek = Carbon::parse($endDate)->toDateString();
+        } else {
+            $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
+            $endOfWeek = Carbon::now()->endOfWeek(Carbon::SUNDAY)->toDateString();
+        }
 
         $shifts = Shift::with([
             'schedule.user',

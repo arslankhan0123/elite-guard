@@ -4185,8 +4185,30 @@
                     "Shift"
                 ],
                 "summary": "Get all shifts for the logged-in user",
-                "description": "Returns a list of shifts for the current week (starting Monday) assigned to the authenticated user.",
+                "description": "Returns a list of shifts for the given date range assigned to the authenticated user. If no dates are provided, it returns shifts for the current week (starting Monday).",
                 "operationId": "0844414ff969ed4d711562466ad89036",
+                "parameters": [
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Start date for the shifts filter (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2024-04-22"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "End date for the shifts filter (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2024-04-28"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
