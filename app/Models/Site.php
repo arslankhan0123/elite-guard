@@ -47,4 +47,9 @@ class Site extends Model
     {
         return $this->hasMany(RunSheet::class);
     }
+
+    public function siteTours()
+    {
+        return $this->hasMany(SiteTour::class);
+    }
 }

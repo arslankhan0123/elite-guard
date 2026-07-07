@@ -93,4 +93,84 @@ class SiteController extends Controller
 
         return view('admin.sites.nfc-tags', compact('site'));
     }
+
+    public function tours($site_id)
+    {
+        $site = Site::with(['siteTours' => function($q) {
+            $q->orderBy('id', 'desc');
+        }])->findOrFail($site_id);
+
+        // Fetch users for the dropdown (user requested to show all users)
+        $guards = \App\Models\User::all();
+
+        $nfcTags = \App\Models\NfcTag::where('site_id', $site_id)->get();
+
+        return view('admin.sites.tours', compact('site', 'guards', 'nfcTags'));
+    }
+
+    public function storeTour(Request $request)
+    {
+        $request->validate([
+            'site_id' => 'required|exists:sites,id',
+            'name' => 'required|string|max:255',
+            'scheduled_days' => 'required|array',
+            'tag_type' => 'required|string',
+            'tags' => 'required|array',
+            'assigned_guards' => 'required|array',
+            'max_duration' => 'nullable|array',
+        ]);
+
+        $tour = \App\Models\SiteTour::create([
+            'site_id' => $request->site_id,
+            'name' => $request->name,
+            'description' => $request->description,
+            'scheduled_days' => $request->scheduled_days,
+            'is_continuous' => $request->has('is_continuous'),
+            'schedule_type' => $request->schedule_type,
+            'specific_times' => $request->specific_times ?? [],
+            'max_duration' => $request->max_duration ?? [],
+            'tag_type' => $request->tag_type,
+            'tags' => $request->tags,
+            'assigned_guards' => $request->assigned_guards,
+        ]);
+
+        return response()->json(['tour' => $tour]);
+    }
+
+    public function updateTour(Request $request, $id)
+    {
+        $tour = \App\Models\SiteTour::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'scheduled_days' => 'required|array',
+            'tag_type' => 'required|string',
+            'tags' => 'required|array',
+            'assigned_guards' => 'required|array',
+            'max_duration' => 'nullable|array',
+        ]);
+
+        $tour->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'scheduled_days' => $request->scheduled_days,
+            'is_continuous' => $request->has('is_continuous'),
+            'schedule_type' => $request->schedule_type,
+            'specific_times' => $request->specific_times ?? [],
+            'max_duration' => $request->max_duration ?? [],
+            'tag_type' => $request->tag_type,
+            'tags' => $request->tags,
+            'assigned_guards' => $request->assigned_guards,
+        ]);
+
+        return response()->json(['tour' => $tour]);
+    }
+
+    public function deleteTour($id)
+    {
+        $tour = \App\Models\SiteTour::findOrFail($id);
+        $tour->delete();
+
+        return redirect()->back()->with('success', 'Tour deleted successfully.');
+    }
 }
