@@ -21,6 +21,9 @@ class SiteTour extends Model
         'tag_type',
         'tags',
         'assigned_guards',
+        'interval',
+        'open_time',
+        'grace_time',
     ];
 
     protected $casts = [

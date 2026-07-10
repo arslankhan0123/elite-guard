@@ -119,9 +119,12 @@ class SiteController extends Controller
             'name' => 'required|string|max:255',
             'scheduled_days' => 'required|array',
             'tag_type' => 'required|string',
-            'tags' => 'required|array',
-            'assigned_guards' => 'required|array',
+            'tags' => 'nullable|array',
+            'assigned_guards' => 'nullable|array',
             'max_duration' => 'nullable|array',
+            'interval' => 'nullable|string|max:255',
+            'open_time' => 'nullable|string|max:255',
+            'grace_time' => 'nullable|string|max:255',
         ]);
 
         $tour = \App\Models\SiteTour::create([
@@ -136,6 +139,9 @@ class SiteController extends Controller
             'tag_type' => $request->tag_type,
             'tags' => $request->tags,
             'assigned_guards' => $request->assigned_guards,
+            'interval' => $request->interval,
+            'open_time' => $request->open_time,
+            'grace_time' => $request->grace_time,
         ]);
 
         return response()->json(['tour' => $tour]);
@@ -149,9 +155,12 @@ class SiteController extends Controller
             'name' => 'required|string|max:255',
             'scheduled_days' => 'required|array',
             'tag_type' => 'required|string',
-            'tags' => 'required|array',
-            'assigned_guards' => 'required|array',
+            'tags' => 'nullable|array',
+            'assigned_guards' => 'nullable|array',
             'max_duration' => 'nullable|array',
+            'interval' => 'nullable|string|max:255',
+            'open_time' => 'nullable|string|max:255',
+            'grace_time' => 'nullable|string|max:255',
         ]);
 
         $tour->update([
@@ -165,6 +174,9 @@ class SiteController extends Controller
             'tag_type' => $request->tag_type,
             'tags' => $request->tags,
             'assigned_guards' => $request->assigned_guards,
+            'interval' => $request->interval,
+            'open_time' => $request->open_time,
+            'grace_time' => $request->grace_time,
         ]);
 
         return response()->json(['tour' => $tour]);

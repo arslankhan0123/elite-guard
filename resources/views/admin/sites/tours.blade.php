@@ -171,10 +171,8 @@
                         <thead>
                             <tr>
                                 <th>Tour Name</th>
-                                <th>Assigned Guard</th>
                                 <th>Tag Type</th>
                                 <th>Days</th>
-                                <th>Max Duration</th>
                                 <th class="text-center">Actions</th>
                             </tr>
                         </thead>
@@ -182,36 +180,11 @@
                             @foreach($site->siteTours as $tour)
                             <tr id="tour-row-{{ $tour->id }}">
                                 <td class="fw-bold">{{ $tour->name }}</td>
-                                <td>
-                                    @php
-                                        $assigned = $tour->assigned_guards ?? [];
-                                        if (empty($assigned)) {
-                                            echo 'N/A';
-                                        } else {
-                                            $names = $guards->whereIn('id', $assigned)->pluck('name')->toArray();
-                                            if (count($names) > 1) {
-                                                echo $names[0] . ' (+'.(count($names)-1).' others)';
-                                            } else {
-                                                echo implode(', ', $names);
-                                            }
-                                        }
-                                    @endphp
-                                </td>
-                                <td>{{ $tour->tag_type }}</td>
+                                <td class="text-uppercase">{{ $tour->tag_type }}</td>
                                 <td>
                                     @php
                                         $days = $tour->scheduled_days ?? [];
                                         echo implode(', ', array_map(function($day) { return substr($day, 0, 3); }, $days));
-                                    @endphp
-                                </td>
-                                <td>
-                                    @php
-                                        $durations = $tour->max_duration ?? [];
-                                        if (is_array($durations)) {
-                                            echo count($durations) > 1 ? $durations[0] . ' (+' . (count($durations)-1) . ' others)' : implode(', ', $durations);
-                                        } else {
-                                            echo $durations; // fallback for old string data
-                                        }
                                     @endphp
                                 </td>
                                 <td class="text-center">
@@ -270,12 +243,6 @@
                             <input type="text" class="form-control" id="name" name="name" placeholder="Enter Tour Name" required>
                             <div class="text-danger-custom d-none" id="error-name">Tour Name is required</div>
                         </div>
-
-                        <!-- Tour Description -->
-                        <div class="form-group" id="group-description">
-                            <label for="description" class="form-label">Tour Description</label>
-                            <textarea class="form-control" id="description" name="description" placeholder="Enter Description..." rows="3"></textarea>
-                        </div>
                     </div>
 
                     <div class="field-card shadow-sm">
@@ -294,85 +261,34 @@
                             <div class="text-danger-custom d-none" id="error-scheduled_days">Scheduled Days are required</div>
                         </div>
 
-                        <div class="row mb-4 align-items-end">
-                            <div class="col-md-6 mb-3 mb-md-0 d-flex align-items-center gap-3">
-                                <label class="form-label mb-0">Continuous Tour</label>
-                                <div class="form-check form-switch m-0" style="font-size: 1.4rem;">
-                                    <input class="form-check-input" type="checkbox" id="is_continuous" name="is_continuous" value="1" style="cursor: pointer;">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Schedule Type</label>
-                                <select class="form-select" id="schedule_type" name="schedule_type">
-                                    <option value="Specific Time">Specific Time</option>
-                                    <option value="Repeat">Repeat</option>
-                                </select>
-                            </div>
-                        </div>
 
-                        <!-- Specific Times -->
-                        <div class="form-group mb-4" id="specific_times_container">
-                            <label class="form-label">Select Time</label>
-                            <select class="form-select select2-tags" id="specific_times" name="specific_times[]" multiple="multiple" data-placeholder="Add Time e.g. 01:30">
-                                @for($h=0; $h<24; $h++)
-                                    @foreach(['00', '30'] as $m)
-                                        <option value="{{ sprintf('%02d', $h) }}:{{ $m }}">{{ sprintf('%02d', $h) }}:{{ $m }}</option>
-                                    @endforeach
-                                @endfor
-                            </select>
-                        </div>
-
-                        <!-- Max Duration -->
-                        <div class="form-group">
-                            <label class="form-label">Max Duration</label>
-                            <select class="form-select select2-multiple" id="max_duration" name="max_duration[]" multiple="multiple" data-placeholder="Select Max Duration">
-                                <option value="None">None</option>
-                                <option value="0:05">0:05 (5 mins)</option>
-                                <option value="0:10">0:10 (10 mins)</option>
-                                <option value="0:15">0:15 (15 mins)</option>
-                                <option value="0:20">0:20 (20 mins)</option>
-                                <option value="0:25">0:25 (25 mins)</option>
-                                <option value="0:30">0:30 (30 mins)</option>
-                                <option value="1:00">1:00 (1 hour)</option>
-                                <option value="1:30">1:30 (1.5 hours)</option>
-                                <option value="2:00">2:00 (2 hours)</option>
-                            </select>
+                        <div class="row mt-3">
+                            <div class="col-md-4 form-group" id="group-interval">
+                                <label for="interval" class="form-label">Interval</label>
+                                <input type="time" class="form-control" id="interval" name="interval">
+                            </div>
+                            <div class="col-md-4 form-group" id="group-open_time">
+                                <label for="open_time" class="form-label">Open Time</label>
+                                <input type="time" class="form-control" id="open_time" name="open_time">
+                            </div>
+                            <div class="col-md-4 form-group" id="group-grace_time">
+                                <label for="grace_time" class="form-label">Grace Time</label>
+                                <input type="text" class="form-control" id="grace_time" name="grace_time" placeholder="e.g. 15 mins">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="field-card shadow-sm mb-0">
+                    <div class="field-card shadow-sm mb-0 mt-3">
                         <!-- Tag Type -->
-                        <div class="form-group mb-3" id="group-tag_type">
+                        <div class="form-group mb-0" id="group-tag_type">
                             <label class="form-label">Select Tag Type*</label>
                             <select class="form-select" id="tag_type" name="tag_type" required>
                                 <option value="" disabled selected>Select...</option>
-                                <option value="NFC">NFC</option>
-                                <option value="QR">QR Code</option>
-                                <option value="Barcode">Barcode</option>
+                                <option value="nfc">NFC</option>
+                                <option value="image">Image</option>
+                                <option value="both">NFC + Image</option>
                             </select>
                             <div class="text-danger-custom d-none" id="error-tag_type">Tag Type is required</div>
-                        </div>
-
-                        <!-- Select Tags -->
-                        <div class="form-group mb-3" id="group-tags">
-                            <label class="form-label">Select Tags*</label>
-                            <select class="form-select select2-multiple" id="tags" name="tags[]" multiple="multiple" data-placeholder="Select Checkpoints" required>
-                                @foreach($nfcTags as $tag)
-                                    <option value="{{ $tag->id }}">{{ $tag->name }} ({{ $tag->uid }})</option>
-                                @endforeach
-                            </select>
-                            <div class="text-danger-custom d-none" id="error-tags">Tags are required</div>
-                        </div>
-
-                        <!-- Assign Guard -->
-                        <div class="form-group" id="group-assigned_guards">
-                            <label class="form-label">Assign Guard*</label>
-                            <select class="form-select select2-guards" id="assigned_guards" name="assigned_guards[]" multiple="multiple" data-placeholder="Select Guard" required>
-                                @foreach($guards as $guard)
-                                    <option value="{{ $guard->id }}">{{ $guard->name }}</option>
-                                @endforeach
-                            </select>
-                            <div class="text-danger-custom d-none" id="error-assigned_guards">Guard is required</div>
                         </div>
                     </div>
 
@@ -505,15 +421,6 @@
         // Fix for Select2 search input focus inside Bootstrap modal
         $.fn.modal.Constructor.prototype.enforceFocus = function() {};
 
-        // Toggle specific times based on schedule type
-        $('#schedule_type').on('change', function() {
-            if($(this).val() === 'Specific Time') {
-                $('#specific_times_container').slideDown();
-            } else {
-                $('#specific_times_container').slideUp();
-            }
-        });
-
         function clearErrors() {
             $('.text-danger-custom').addClass('d-none');
             $('.has-error').removeClass('has-error');
@@ -529,10 +436,11 @@
             
             // Reset Select2 fields
             $('#scheduled_days').val(null).trigger('change');
-            $('#specific_times').val(null).trigger('change');
-            $('#tags').val(null).trigger('change');
-            $('#assigned_guards').val(null).trigger('change');
-            $('#schedule_type').trigger('change');
+            $('#tag_type').val('').trigger('change');
+            
+            $('#interval').val('');
+            $('#open_time').val('');
+            $('#grace_time').val('');
             
             clearErrors();
         });
@@ -546,34 +454,17 @@
             
             $('#tour_id').val(tour.id);
             $('#name').val(tour.name);
-            $('#description').val(tour.description);
-            $('#is_continuous').prop('checked', tour.is_continuous);
-            $('#schedule_type').val(tour.schedule_type).trigger('change');
             $('#tag_type').val(tour.tag_type).trigger('change');
             
-            $('#scheduled_days').val(tour.scheduled_days).trigger('change');
-            $('#max_duration').val(tour.max_duration).trigger('change');
+            $('#interval').val(tour.interval);
+            $('#open_time').val(tour.open_time);
+            $('#grace_time').val(tour.grace_time);
             
-            if(tour.specific_times && tour.specific_times.length > 0) {
-                var timeSelect = $('#specific_times');
-                timeSelect.empty();
-                tour.specific_times.forEach(function(time) {
-                    var newOption = new Option(time, time, true, true);
-                    timeSelect.append(newOption);
-                });
-                timeSelect.trigger('change');
-            } else {
-                $('#specific_times').val(null).trigger('change');
-            }
-
-            $('#tags').val(tour.tags).trigger('change');
-            $('#assigned_guards').val(tour.assigned_guards).trigger('change');
+            $('#scheduled_days').val(tour.scheduled_days).trigger('change');
 
             // Force update placeholder for all multi-selects
             setTimeout(function() {
-               $('#assigned_guards').trigger({type: 'select2:select'});
                $('#scheduled_days').trigger({type: 'select2:select'});
-               $('#max_duration').trigger({type: 'select2:select'});
             }, 100);
 
             var modal = new bootstrap.Modal(document.getElementById('tourModal'));
@@ -603,8 +494,6 @@
             checkField('name');
             checkField('tag_type');
             checkField('scheduled_days');
-            checkField('tags');
-            checkField('assigned_guards');
 
             if(!isValid) {
                 toastr.error('Please fill all required fields');
