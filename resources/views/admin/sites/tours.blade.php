@@ -180,12 +180,24 @@
                             @foreach($site->siteTours as $tour)
                             <tr id="tour-row-{{ $tour->id }}">
                                 <td class="fw-bold">{{ $tour->name }}</td>
-                                <td class="text-uppercase">{{ $tour->tag_type }}</td>
+                                <td>
+                                    @php
+                                        $tagType = strtolower($tour->tag_type);
+                                        $badgeClass = 'bg-primary';
+                                        if ($tagType === 'image') $badgeClass = 'bg-info text-dark';
+                                        elseif ($tagType === 'both' || str_contains($tagType, '+')) $badgeClass = 'bg-warning text-dark';
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }} text-uppercase px-2 py-1">{{ $tour->tag_type }}</span>
+                                </td>
                                 <td>
                                     @php
                                         $days = $tour->scheduled_days ?? [];
-                                        echo implode(', ', array_map(function($day) { return substr($day, 0, 3); }, $days));
                                     @endphp
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach($days as $day)
+                                            <span class="badge bg-secondary px-2 py-1">{{ substr($day, 0, 3) }}</span>
+                                        @endforeach
+                                    </div>
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group" aria-label="Site Actions">
