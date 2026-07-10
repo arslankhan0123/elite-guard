@@ -285,7 +285,7 @@
                             </div>
                             <div class="col-md-4 form-group" id="group-grace_time">
                                 <label for="grace_time" class="form-label">Grace Time</label>
-                                <input type="text" class="form-control" id="grace_time" name="grace_time" placeholder="e.g. 15 mins">
+                                <input type="time" class="form-control" id="grace_time" name="grace_time">
                             </div>
                         </div>
                     </div>
