@@ -339,10 +339,13 @@
     /* CSS Checkboxes for Select2 Options */
     .select2-container--bootstrap-5 .select2-results__option {
         position: relative;
-        padding-left: 2.5rem !important; /* Space for checkbox */
+        padding: 0.4rem 1rem 0.4rem 2.5rem !important; /* Tighter vertical padding */
+        margin: 0 !important;
+        min-height: auto !important;
         color: #475569 !important;
         background-color: transparent !important;
         transition: background-color 0.2s;
+        line-height: 1.5;
     }
     .select2-container--bootstrap-5 .select2-results__option:hover,
     .select2-container--bootstrap-5 .select2-results__option--highlighted {
