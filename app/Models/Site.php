@@ -19,6 +19,8 @@ class Site extends Model
         'address',
         'latitude',
         'longitude',
+        'start_time',
+        'end_time',
         'status',
     ];
 

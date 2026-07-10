@@ -66,6 +66,20 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Time</label>
+                            <input type="time" name="start_time" class="form-control" value="{{ old('start_time', $site->start_time ? \Carbon\Carbon::parse($site->start_time)->format('H:i') : '') }}">
+                            @error('start_time') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Time</label>
+                            <input type="time" name="end_time" class="form-control" value="{{ old('end_time', $site->end_time ? \Carbon\Carbon::parse($site->end_time)->format('H:i') : '') }}">
+                            @error('end_time') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
                     <!-- ================= LOCATION ================= -->
                     <h5 class="text-primary mt-4">📍 Location</h5>
 

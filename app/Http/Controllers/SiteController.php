@@ -43,6 +43,8 @@ class SiteController extends Controller
             'address'    => 'nullable|string',
             'latitude'   => 'nullable|numeric|between:-90,90',
             'longitude'  => 'nullable|numeric|between:-180,180',
+            'start_time' => 'nullable',
+            'end_time'   => 'nullable',
             'status'     => 'required|boolean',
         ]);
 
@@ -70,6 +72,8 @@ class SiteController extends Controller
             'address'    => 'nullable|string',
             'latitude'   => 'nullable|numeric|between:-90,90',
             'longitude'  => 'nullable|numeric|between:-180,180',
+            'start_time' => 'nullable',
+            'end_time'   => 'nullable',
             'status'     => 'required|boolean',
         ]);
 

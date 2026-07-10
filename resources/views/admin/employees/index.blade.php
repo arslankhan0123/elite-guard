@@ -812,7 +812,7 @@
                 <div class="row g-2 mb-2">
                     <div class="col-md-7">
                         <label class="small fw-bold text-muted mb-1">Assigned Site</label>
-                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light" required ${isPastWeek ? 'disabled' : ''}>
+                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light" required ${isPastWeek ? 'disabled' : ''} onchange="onSiteSelectChange(this)">
                             ${sitesHtml}
                         </select>
                     </div>
@@ -847,6 +847,31 @@
             
             if (container.children.length === 0) {
                 container.innerHTML = `<div class="empty-day-placeholder">No shifts assigned for this day</div>`;
+            }
+        }
+
+        function onSiteSelectChange(selectElement) {
+            const siteId = selectElement.value;
+            if (!siteId) return;
+
+            const site = sites.find(s => s.id == siteId);
+            if (site) {
+                const parentItem = selectElement.closest('.shift-item') || selectElement.closest('.run-sheet-item');
+                if (parentItem) {
+                    const isShift = parentItem.classList.contains('shift-item');
+                    const defaultStartTime = isShift ? '08:00' : '10:00';
+                    const defaultEndTime = isShift ? '16:00' : '15:00';
+
+                    const startTimeInput = parentItem.querySelector('input[type="time"][name*="[start_time]"]');
+                    const endTimeInput = parentItem.querySelector('input[type="time"][name*="[end_time]"]');
+                    
+                    if (startTimeInput) {
+                        startTimeInput.value = site.start_time ? site.start_time.substring(0, 5) : defaultStartTime;
+                    }
+                    if (endTimeInput) {
+                        endTimeInput.value = site.end_time ? site.end_time.substring(0, 5) : defaultEndTime;
+                    }
+                }
             }
         }
 
@@ -912,7 +937,7 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <label class="form-label">Site</label>
-                        <select name="run_sheets[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light" required>
+                        <select name="run_sheets[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light" required onchange="onSiteSelectChange(this)">
                             ${sitesHtml}
                         </select>
                     </div>
