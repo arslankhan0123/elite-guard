@@ -277,15 +277,15 @@
                         <div class="row mt-3">
                             <div class="col-md-4 form-group" id="group-interval">
                                 <label for="interval" class="form-label">Interval</label>
-                                <input type="time" class="form-control" id="interval" name="interval">
+                                <input type="number" class="form-control" id="interval" name="interval">
                             </div>
                             <div class="col-md-4 form-group" id="group-open_time">
                                 <label for="open_time" class="form-label">Open Time</label>
-                                <input type="time" class="form-control" id="open_time" name="open_time">
+                                <input type="number" class="form-control" id="open_time" name="open_time">
                             </div>
                             <div class="col-md-4 form-group" id="group-grace_time">
                                 <label for="grace_time" class="form-label">Grace Time</label>
-                                <input type="time" class="form-control" id="grace_time" name="grace_time">
+                                <input type="number" class="form-control" id="grace_time" name="grace_time">
                             </div>
                         </div>
                     </div>
