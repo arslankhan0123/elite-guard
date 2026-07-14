@@ -30,4 +30,25 @@ class SiteTourItemRepository
             'site_tour_items' => $items
         ];
     }
+    
+    public function storeScan($request, $user)
+    {
+        $data = $request->only([
+            'site_tour_item_id',
+            'nfc_tag_id',
+            'site_id',
+            'date',
+            'time',
+        ]);
+        
+        $data['user_id'] = $user->id;
+
+        $scan = \App\Models\SiteTourItemScan::create($data);
+
+        return [
+            'status' => true,
+            'message' => 'NFC tag scanned and saved successfully',
+            'data' => $scan
+        ];
+    }
 }

@@ -60,6 +60,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/site-tour-items'], function () {
         Route::get('/user', [SiteTourItemApiController::class, 'userSiteTourItems']);
+        Route::post('/scan', [SiteTourItemApiController::class, 'storeScan']);
     });
 
     Route::group(['prefix' => '/run-sheets'], function () {

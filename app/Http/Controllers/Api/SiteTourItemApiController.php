@@ -78,4 +78,48 @@ class SiteTourItemApiController extends Controller
 
         return $this->successResponse($data, 'Assigned site tour items fetched.');
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/site-tour-items/scan",
+     *     summary="Scan an NFC tag for a site tour item",
+     *     tags={"Site Tour Items"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"site_tour_item_id","nfc_tag_id","site_id","date","time"},
+     *             @OA\Property(property="site_tour_item_id", type="integer", example=1),
+     *             @OA\Property(property="nfc_tag_id", type="integer", example=2),
+     *             @OA\Property(property="site_id", type="integer", example=3),
+     *             @OA\Property(property="date", type="string", format="date", example="2026-07-14"),
+     *             @OA\Property(property="time", type="string", example="14:30:00")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="NFC tag scanned successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Success"),
+     *             @OA\Property(property="message", type="string", example="NFC tag scanned and saved successfully."),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function storeScan(Request $request)
+    {
+        $request->validate([
+            'site_tour_item_id' => 'required|integer',
+            'nfc_tag_id' => 'required|integer',
+            'site_id' => 'required|integer',
+            'date' => 'required|date',
+            'time' => 'required'
+        ]);
+
+        $user = Auth::user();
+        $response = $this->siteTourItemRepo->storeScan($request, $user);
+
+        return $this->successResponse($response, $response['message']);
+    }
 }
