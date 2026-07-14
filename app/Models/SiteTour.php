@@ -24,6 +24,7 @@ class SiteTour extends Model
         'interval',
         'open_time',
         'grace_time',
+        'user_id',
     ];
 
     protected $casts = [
@@ -38,5 +39,10 @@ class SiteTour extends Model
     public function site()
     {
         return $this->belongsTo(Site::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

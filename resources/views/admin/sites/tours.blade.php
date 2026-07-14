@@ -171,6 +171,7 @@
                         <thead>
                             <tr>
                                 <th>Tour Name</th>
+                                <th>User Name</th>
                                 <th>Tag Type</th>
                                 <th>Days</th>
                                 <th class="text-center">Actions</th>
@@ -179,7 +180,21 @@
                         <tbody id="tours-tbody">
                             @foreach($site->siteTours as $tour)
                             <tr id="tour-row-{{ $tour->id }}">
-                                <td class="fw-bold">{{ $tour->name }}</td>
+                                <td class="fw-bold">
+                                    {{ $tour->name }}
+                                    @if($tour->user)
+                                        <div class="small text-muted mt-1" style="font-weight: normal; font-size: 0.8rem;">
+                                            <i data-feather="user" style="width:12px;height:12px;"></i> {{ $tour->user->name }}
+                                        </div>
+                                    @endif
+                                </td>
+                                <td class="fw-bold">
+                                    @if($tour->user)
+                                        <i data-feather="user" style="width:12px;height:12px;"></i> {{ ucfirst($tour->user->name) }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
                                 <td>
                                     @php
                                         $tagType = strtolower($tour->tag_type);

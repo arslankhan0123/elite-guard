@@ -127,7 +127,10 @@ class SiteController extends Controller
             'grace_time' => 'nullable|string|max:255',
         ]);
 
-        $tour = \App\Models\SiteTour::create([
+        $site = \App\Models\Site::with('users')->findOrFail($request->site_id);
+        $users = $site->users;
+        
+        $tourData = [
             'site_id' => $request->site_id,
             'name' => $request->name,
             'description' => $request->description,
@@ -142,7 +145,18 @@ class SiteController extends Controller
             'interval' => $request->interval,
             'open_time' => $request->open_time,
             'grace_time' => $request->grace_time,
-        ]);
+        ];
+
+        $tour = null;
+        if ($users->count() > 0) {
+            foreach ($users as $user) {
+                $data = $tourData;
+                $data['user_id'] = $user->id;
+                $tour = \App\Models\SiteTour::create($data);
+            }
+        } else {
+            $tour = \App\Models\SiteTour::create($tourData);
+        }
 
         return response()->json(['tour' => $tour]);
     }
