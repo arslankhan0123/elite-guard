@@ -601,8 +601,19 @@
                 
                 uniqueDates.forEach(function(d) {
                     // Format date for display
-                    var dateObj = new Date(d);
-                    var displayDate = d ? dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'Unknown Date';
+                    var displayDate = 'Unknown Date';
+                    if (d) {
+                        var parts = d.split('-');
+                        if (parts.length === 3) {
+                            var year = parts[0];
+                            var monthIndex = parseInt(parts[1], 10) - 1;
+                            var day = parseInt(parts[2], 10);
+                            var dateObj = new Date(year, monthIndex, day);
+                            displayDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                        } else {
+                            displayDate = d;
+                        }
+                    }
                     dateFilter.append(new Option(displayDate, d));
                 });
                 
