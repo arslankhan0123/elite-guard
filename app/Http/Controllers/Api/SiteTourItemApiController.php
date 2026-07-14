@@ -66,6 +66,13 @@ class SiteTourItemApiController extends Controller
             $start_date = $date;
             $end_date = $date;
         }
+        
+        // Default to today's date if absolutely no date is provided
+        if (!$start_date && !$end_date && !$date) {
+            $today = \Carbon\Carbon::now()->format('Y-m-d');
+            $start_date = $today;
+            $end_date = $today;
+        }
 
         $data = $this->siteTourItemRepo->getUserSiteTourItems($user, $start_date, $end_date);
 
