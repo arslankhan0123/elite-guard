@@ -21,7 +21,7 @@ class SiteTourItemApiController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/site-tour-items",
+     *     path="/api/site-tour-items/user",
      *     summary="Get site tour items assigned to the authenticated user",
      *     tags={"Site Tour Items"},
      *     security={{"bearerAuth":{}}},

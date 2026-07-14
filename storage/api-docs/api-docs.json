@@ -4549,6 +4549,160 @@
                 ]
             }
         },
+        "/api/site-tour-items/user": {
+            "get": {
+                "tags": [
+                    "Site Tour Items"
+                ],
+                "summary": "Get site tour items assigned to the authenticated user",
+                "operationId": "ae7f8fe4187a825000dad82f40b189da",
+                "parameters": [
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Optional start date to filter items (YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Optional end date to filter items (YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Assigned site tour items fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Assigned site tour items fetched."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Assigned site tour items retrieved successfully"
+                                                },
+                                                "site_tour_items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/site-tour-items/scan": {
+            "post": {
+                "tags": [
+                    "Site Tour Items"
+                ],
+                "summary": "Scan an NFC tag for a site tour item",
+                "operationId": "19668063ea45d2a4e173c605bb5b8849",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "site_tour_item_id",
+                                    "nfc_tag_id",
+                                    "site_id",
+                                    "date",
+                                    "time"
+                                ],
+                                "properties": {
+                                    "site_tour_item_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "nfc_tag_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "site_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-07-14"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "example": "14:30:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "NFC tag scanned successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "NFC tag scanned and saved successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/nfc-tags": {
             "get": {
                 "tags": [
@@ -5625,6 +5779,10 @@
         {
             "name": "Sites",
             "description": "Sites"
+        },
+        {
+            "name": "Site Tour Items",
+            "description": "Site Tour Items"
         },
         {
             "name": "NFC Tags",
