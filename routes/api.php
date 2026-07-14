@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\ScheduleApiController;
 use App\Http\Controllers\Api\SettingsApiController;
 use App\Http\Controllers\Api\ShiftApiController;
 use App\Http\Controllers\Api\SiteApiController;
+use App\Http\Controllers\Api\SiteTourItemApiController;
 use App\Http\Controllers\Api\TagsApiController;
 use App\Http\Controllers\Api\TaxDocsApiController;
 use App\Http\Controllers\Api\TimeClockApiController;
@@ -55,6 +56,10 @@ Route::middleware('auth:api')->group(function () {
     Route::group(['prefix' => '/sites'], function () {
         Route::get('/', [SiteApiController::class, 'index']);
         Route::get('/user', [SiteApiController::class, 'userSites']);
+    });
+
+    Route::group(['prefix' => '/site-tour-items'], function () {
+        Route::get('/user', [SiteTourItemApiController::class, 'userSiteTourItems']);
     });
 
     Route::group(['prefix' => '/run-sheets'], function () {
