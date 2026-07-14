@@ -23,6 +23,29 @@ class SiteTourItemRepository
         $items = $query->orderBy('date', 'desc')
             ->orderBy('start_time', 'asc')
             ->get();
+            
+        $itemIds = $items->pluck('id')->toArray();
+        $scans = \App\Models\SiteTourItemScan::whereIn('site_tour_item_id', $itemIds)
+            ->where('user_id', $user->id)
+            ->get()
+            ->groupBy('site_tour_item_id');
+
+        foreach ($items as $item) {
+            if ($item->site && $item->site->relationLoaded('nfcTags')) {
+                $itemScans = isset($scans[$item->id]) ? $scans[$item->id]->keyBy('nfc_tag_id') : collect();
+                
+                // Clone the site and tags so they don't overwrite each other across different tour items
+                $siteClone = clone $item->site;
+                $nfcTagsClone = $siteClone->nfcTags->map(function ($tag) use ($itemScans) {
+                    $clonedTag = clone $tag;
+                    $clonedTag->setAttribute('is_scanned', $itemScans->has($clonedTag->id));
+                    return $clonedTag;
+                });
+                
+                $siteClone->setRelation('nfcTags', $nfcTagsClone);
+                $item->setRelation('site', $siteClone);
+            }
+        }
         
         return [
             'status' => true,
