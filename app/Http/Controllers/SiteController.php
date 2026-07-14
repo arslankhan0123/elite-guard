@@ -101,7 +101,7 @@ class SiteController extends Controller
     public function tours($site_id)
     {
         $site = Site::with(['siteTours' => function($q) {
-            $q->orderBy('id', 'desc');
+            $q->with('items')->orderBy('id', 'desc');
         }])->findOrFail($site_id);
 
         // Fetch users for the dropdown (user requested to show all users)
@@ -148,14 +148,73 @@ class SiteController extends Controller
         ];
 
         $tour = null;
+        $toursCreated = [];
         if ($users->count() > 0) {
             foreach ($users as $user) {
                 $data = $tourData;
                 $data['user_id'] = $user->id;
                 $tour = \App\Models\SiteTour::create($data);
+                $toursCreated[] = $tour;
             }
         } else {
             $tour = \App\Models\SiteTour::create($tourData);
+            $toursCreated[] = $tour;
+        }
+
+        // Generate SiteTourItems
+        if ($site->start_time && $site->end_time && $request->interval) {
+            $intervalMinutes = (int) $request->interval;
+            if ($intervalMinutes > 0) {
+                $startTime = \Carbon\Carbon::parse($site->start_time);
+                $endTime = \Carbon\Carbon::parse($site->end_time);
+
+                if ($endTime->lt($startTime)) {
+                    $endTime->addDay();
+                }
+
+                $itemsData = [];
+                $baseTime = $startTime->copy();
+                $n = 1;
+
+                while ($baseTime->copy()->addMinutes(($n - 1) * $intervalMinutes)->lt($endTime)) {
+                    $itemStart = $baseTime->copy()->addMinutes(($n - 1) * $intervalMinutes);
+                    if ($n > 1) {
+                        $itemStart->addMinute();
+                    }
+                    
+                    $itemEnd = $baseTime->copy()->addMinutes($n * $intervalMinutes);
+                    
+                    if ($itemEnd->gt($endTime)) {
+                        $itemEnd = $endTime->copy();
+                    }
+
+                    if ($itemStart->lt($itemEnd)) {
+                        $itemsData[] = [
+                            'start_time' => $itemStart->format('H:i:s'),
+                            'end_time' => $itemEnd->format('H:i:s'),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                    
+                    $n++;
+                }
+
+                if (!empty($itemsData)) {
+                    foreach ($toursCreated as $createdTour) {
+                        $tourItems = array_map(function($item) use ($createdTour) {
+                            $item['site_tour_id'] = $createdTour->id;
+                            $item['user_id'] = $createdTour->user_id;
+                            $item['site_id'] = $createdTour->site_id;
+                            $item['type'] = null;
+                            $item['status'] = false;
+                            return $item;
+                        }, $itemsData);
+                        
+                        \App\Models\SiteTourItem::insert($tourItems);
+                    }
+                }
+            }
         }
 
         return response()->json(['tour' => $tour]);

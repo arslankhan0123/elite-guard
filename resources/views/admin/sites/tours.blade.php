@@ -190,7 +190,7 @@
                                 </td>
                                 <td class="fw-bold">
                                     @if($tour->user)
-                                        <i data-feather="user" style="width:12px;height:12px;"></i> {{ ucfirst($tour->user->name) }}
+                                        <i data-feather="user" style="width:12px;height:12px;"></i> {{ $tour->user->name }}
                                     @else
                                         N/A
                                     @endif
@@ -216,6 +216,10 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group" aria-label="Site Actions">
+                                        <a class="text-decoration-none text-dark view-tour-btn" href="javascript:void(0)" data-tour="{{ json_encode($tour) }}" data-bs-toggle="tooltip" title="View Site Tour Items">
+                                            <button class="view_btn me-2">
+                                            </button>
+                                        </a>
                                         <a class="text-decoration-none me-2 text-dark ml-1 edit-tour-btn" href="javascript:void(0)" data-tour="{{ json_encode($tour) }}" data-bs-toggle="tooltip" title="Edit Tour">
                                             <button class="editBtn" style="pointer-events: none;">
                                                 <svg height="1em" viewBox="0 0 512 512">
@@ -324,6 +328,37 @@
             <div class="modal-footer bg-light pb-4 pt-3 px-4 border-top">
                 <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary px-5 fw-bold" id="btnSaveTour" style="border-radius: 8px;">Save Tour</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ITEMS MODAL --}}
+<div class="modal fade" id="itemsModal" tabindex="-1" aria-labelledby="itemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow" style="border-radius:0.75rem;">
+            <div class="nfc-modal-header d-flex align-items-center justify-content-between">
+                <h5 class="modal-title text-dark fw-bold" id="itemsModalLabel">Site Tour Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="table-responsive">
+                    <table class="table nfc-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light pb-4 pt-3 px-4 border-top">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -498,6 +533,36 @@
             }, 100);
 
             var modal = new bootstrap.Modal(document.getElementById('tourModal'));
+            modal.show();
+        });
+
+        // View Tour Items Modal
+        $(document).on('click', '.view-tour-btn', function() {
+            var tour = JSON.parse($(this).attr('data-tour'));
+            $('#itemsModalLabel').text(tour.name + ' — Items');
+            
+            var tbody = $('#items-tbody');
+            tbody.empty();
+            
+            if (tour.items && tour.items.length > 0) {
+                tour.items.forEach(function(item) {
+                    var statusHtml = item.status 
+                        ? '<span class="badge bg-success">Completed</span>' 
+                        : '<span class="badge bg-warning text-dark">Pending</span>';
+                    
+                    var tr = `<tr>
+                        <td class="fw-bold text-primary">${item.start_time}</td>
+                        <td class="fw-bold text-primary">${item.end_time}</td>
+                        <td>${item.type || 'N/A'}</td>
+                        <td>${statusHtml}</td>
+                    </tr>`;
+                    tbody.append(tr);
+                });
+            } else {
+                tbody.append('<tr><td colspan="4" class="text-center text-muted py-4">No items generated for this tour yet.</td></tr>');
+            }
+            
+            var modal = new bootstrap.Modal(document.getElementById('itemsModal'));
             modal.show();
         });
 
