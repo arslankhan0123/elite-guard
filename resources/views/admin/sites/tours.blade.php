@@ -165,11 +165,32 @@
                         <span class="fw-bold px-2 text-primary" style="font-size: 0.85rem;"><i data-feather="calendar" class="me-1" style="width:13px;"></i> {{ $weekStartFormatted }} - {{ $weekEndFormatted }}</span>
                         <a href="?week={{ $nextWeek }}" class="text-decoration-none text-muted px-2"><i data-feather="chevron-right" style="width:16px;"></i></a>
                     </div>
-                    <button type="button" class="btn btn-light fw-semibold px-4"
-                        style="border-radius:8px; font-size:0.85rem;"
-                        data-bs-toggle="modal" data-bs-target="#tourModal" id="btnCreateTour">
-                        <i data-feather="plus-circle" style="width:15px;height:15px;" class="me-1"></i> New Tour
-                    </button>
+                    @if($site->siteTours->count() > 0)
+                        @php
+                            $masterTour = $site->siteTours->first();
+                            $masterUsers = $site->siteTours->pluck('user_id')->filter()->toArray();
+                            $masterDays = is_string($masterTour->scheduled_days) ? json_decode($masterTour->scheduled_days, true) : ($masterTour->scheduled_days ?? []);
+                            $masterTourData = [
+                                'name' => $masterTour->name,
+                                'interval' => $masterTour->interval,
+                                'tag_type' => $masterTour->tag_type,
+                                'scheduled_days' => $masterDays,
+                                'users' => array_values(array_unique($masterUsers))
+                            ];
+                        @endphp
+                        <button type="button" class="btn btn-warning fw-semibold px-4 text-dark"
+                            style="border-radius:8px; font-size:0.85rem;"
+                            data-tour-config="{{ json_encode($masterTourData) }}"
+                            id="btnUpdateWeekTour">
+                            <i data-feather="edit" style="width:15px;height:15px;" class="me-1"></i> Update Tour
+                        </button>
+                    @else
+                        <button type="button" class="btn btn-light fw-semibold px-4"
+                            style="border-radius:8px; font-size:0.85rem;"
+                            data-bs-toggle="modal" data-bs-target="#tourModal" id="btnCreateTour">
+                            <i data-feather="plus-circle" style="width:15px;height:15px;" class="me-1"></i> New Tour
+                        </button>
+                    @endif
                 </div>
             </div>
             <div class="card-body p-4">
@@ -508,19 +529,30 @@
 
         // Open Modal for Create
         $('#btnCreateTour').on('click', function() {
+            $('#tourModalLabel').text('New Tour');
             $('#tourForm')[0].reset();
             $('#tour_id').val('');
-            $('#tourModalLabel').text('New Tour');
-            
-            // Reset Select2 fields
             $('#scheduled_days').val(null).trigger('change');
-            $('#tag_type').val('').trigger('change');
-            
-            $('#interval').val('');
-            $('#open_time').val('');
-            $('#grace_time').val('');
-            
+            $('#users').val(null).trigger('change');
+            $('#tag_type').val(null).trigger('change');
             clearErrors();
+        });
+
+        $('#btnUpdateWeekTour').on('click', function() {
+            var config = JSON.parse($(this).attr('data-tour-config'));
+            $('#tourModalLabel').text('Update Tour for Week');
+            $('#tourForm')[0].reset();
+            $('#tour_id').val('week_update');
+            clearErrors();
+            
+            $('#name').val(config.name);
+            $('#interval').val(config.interval);
+            $('#tag_type').val(config.tag_type).trigger('change');
+            $('#scheduled_days').val(config.scheduled_days).trigger('change');
+            $('#users').val(config.users).trigger('change');
+            
+            var modal = new bootstrap.Modal(document.getElementById('tourModal'));
+            modal.show();
         });
 
         // Open Modal for Edit
@@ -651,7 +683,7 @@
         // Save Tour (Create / Update)
         $('#btnSaveTour').on('click', function() {
             var id = $('#tour_id').val();
-            var isEdit = id !== '';
+            var isEdit = id !== '' && id !== 'week_update';
             var url = isEdit ? '{{ url("sites/tours/update") }}/' + id : '{{ route("sites.tours.store", $site->id) }}';
             var formData = new FormData($('#tourForm')[0]);
             

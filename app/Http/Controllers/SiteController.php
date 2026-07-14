@@ -170,15 +170,50 @@ class SiteController extends Controller
 
         $tour = null;
         $toursCreated = [];
+        $isWeekUpdate = $request->tour_id === 'week_update';
+        
+        $baseWeekStart = $request->input('week_start_date') ? \Carbon\Carbon::parse($request->input('week_start_date'))->startOfWeek(\Carbon\Carbon::MONDAY) : \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY);
+        $weekEndDate = $baseWeekStart->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
+
         if ($users->count() > 0) {
             foreach ($users as $user) {
                 $data = $tourData;
                 $data['user_id'] = $user->id;
-                $tour = \App\Models\SiteTour::create($data);
+                
+                if ($isWeekUpdate) {
+                    $tour = \App\Models\SiteTour::where('site_id', $request->site_id)
+                        ->where('user_id', $user->id)
+                        ->whereHas('items', function($q) use ($baseWeekStart, $weekEndDate) {
+                            $q->whereBetween('date', [$baseWeekStart->format('Y-m-d'), $weekEndDate->format('Y-m-d')]);
+                        })->first();
+                        
+                    if ($tour) {
+                        $tour->update($data);
+                        $tour->items()->delete(); // Delete old items so we can recreate them with new settings
+                    } else {
+                        $tour = \App\Models\SiteTour::create($data);
+                    }
+                } else {
+                    $tour = \App\Models\SiteTour::create($data);
+                }
                 $toursCreated[] = $tour;
             }
         } else {
-            $tour = \App\Models\SiteTour::create($tourData);
+            if ($isWeekUpdate) {
+                $tour = \App\Models\SiteTour::where('site_id', $request->site_id)
+                    ->whereHas('items', function($q) use ($baseWeekStart, $weekEndDate) {
+                        $q->whereBetween('date', [$baseWeekStart->format('Y-m-d'), $weekEndDate->format('Y-m-d')]);
+                    })->first();
+                    
+                if ($tour) {
+                    $tour->update($tourData);
+                    $tour->items()->delete();
+                } else {
+                    $tour = \App\Models\SiteTour::create($tourData);
+                }
+            } else {
+                $tour = \App\Models\SiteTour::create($tourData);
+            }
             $toursCreated[] = $tour;
         }
 
