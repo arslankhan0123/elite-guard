@@ -379,7 +379,7 @@
 
 {{-- ITEMS MODAL --}}
 <div class="modal fade" id="itemsModal" tabindex="-1" aria-labelledby="itemsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content border-0 shadow" style="border-radius:0.75rem;">
             <div class="nfc-modal-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-3">
@@ -397,7 +397,6 @@
                                 <th>Date</th>
                                 <th>Start Time</th>
                                 <th>End Time</th>
-                                <th>Type</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -622,11 +621,11 @@
                     
                     var statusHtml = '';
                     if (item.status) {
-                        statusHtml = '<span class="badge bg-success">' + scansCount + '/' + totalTags + ' Scanned</span>';
+                        statusHtml = '<span class="badge bg-success" style="font-size: 0.85rem; padding: 0.45em 0.8em;">' + scansCount + '/' + totalTags + ' Scanned</span>';
                     } else if (scansCount > 0) {
-                        statusHtml = '<span class="badge bg-info">' + scansCount + '/' + totalTags + ' Scanned</span>';
+                        statusHtml = '<span class="badge" style="background-color: #00008B; color: #ffffff; font-size: 0.85rem; padding: 0.45em 0.8em;">' + scansCount + '/' + totalTags + ' Scanned</span>';
                     } else {
-                        statusHtml = '<span class="badge bg-warning text-dark">0/' + totalTags + ' Scanned</span>';
+                        statusHtml = '<span class="badge bg-danger" style="font-size: 0.85rem; padding: 0.45em 0.8em;">0/' + totalTags + ' Scanned</span>';
                     }
                     
                     var formattedDate = 'N/A';
@@ -647,7 +646,6 @@
                         <td class="fw-bold">${formattedDate}</td>
                         <td class="fw-bold text-primary">${item.start_time}</td>
                         <td class="fw-bold text-primary">${item.end_time}</td>
-                        <td>${item.type || 'N/A'}</td>
                         <td>${statusHtml}</td>
                     </tr>`;
                     tbody.append(tr);
