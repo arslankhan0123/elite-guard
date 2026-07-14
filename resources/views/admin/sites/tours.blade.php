@@ -173,6 +173,8 @@
                             $masterTourData = [
                                 'name' => $masterTour->name,
                                 'interval' => $masterTour->interval,
+                                'open_time' => $masterTour->open_time,
+                                'grace_time' => $masterTour->grace_time,
                                 'tag_type' => $masterTour->tag_type,
                                 'scheduled_days' => $masterDays,
                                 'users' => array_values(array_unique($masterUsers))
@@ -562,6 +564,8 @@
             
             $('#name').val(config.name);
             $('#interval').val(config.interval);
+            $('#open_time').val(config.open_time);
+            $('#grace_time').val(config.grace_time);
             $('#tag_type').val(config.tag_type).trigger('change');
             $('#scheduled_days').val(config.scheduled_days).trigger('change');
             $('#users').val(config.users).trigger('change');
