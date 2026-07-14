@@ -165,6 +165,9 @@
                         <span class="fw-bold px-2 text-primary" style="font-size: 0.85rem;"><i data-feather="calendar" class="me-1" style="width:13px;"></i> {{ $weekStartFormatted }} - {{ $weekEndFormatted }}</span>
                         <a href="?week={{ $nextWeek }}" class="text-decoration-none text-muted px-2"><i data-feather="chevron-right" style="width:16px;"></i></a>
                     </div>
+                    @php
+                        $isPastWeek = $weekStart->lt(\Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY));
+                    @endphp
                     @if($site->siteTours->count() > 0)
                         @php
                             $masterTour = $site->siteTours->first();
@@ -183,21 +186,23 @@
                         <button type="button" class="btn btn-warning fw-semibold px-4 text-dark"
                             style="border-radius:8px; font-size:0.85rem;"
                             data-tour-config="{{ json_encode($masterTourData) }}"
-                            id="btnUpdateWeekTour">
+                            id="btnUpdateWeekTour"
+                            {{ $isPastWeek ? 'disabled' : '' }}>
                             <i data-feather="edit" style="width:15px;height:15px;" class="me-1"></i> Update Tour
                         </button>
                         <form action="{{ route('sites.tours.deleteWeek', ['site_id' => $site->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to completely delete all tours assigned in this week? This action cannot be undone.');">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="week_start_date" value="{{ $weekStart->format('Y-m-d') }}">
-                            <button type="submit" class="btn btn-danger fw-semibold px-3" style="border-radius:8px; font-size:0.85rem;" title="Delete All Tours for Week">
+                            <button type="submit" class="btn btn-danger fw-semibold px-3" style="border-radius:8px; font-size:0.85rem;" title="Delete All Tours for Week" {{ $isPastWeek ? 'disabled' : '' }}>
                                 <i data-feather="trash-2" style="width:15px;height:15px;" class="me-0"></i>
                             </button>
                         </form>
                     @else
                         <button type="button" class="btn btn-light fw-semibold px-4"
                             style="border-radius:8px; font-size:0.85rem;"
-                            data-bs-toggle="modal" data-bs-target="#tourModal" id="btnCreateTour">
+                            data-bs-toggle="modal" data-bs-target="#tourModal" id="btnCreateTour"
+                            {{ $isPastWeek ? 'disabled' : '' }}>
                             <i data-feather="plus-circle" style="width:15px;height:15px;" class="me-1"></i> New Tour
                         </button>
                     @endif
@@ -258,14 +263,14 @@
                                             <button class="view_btn me-2">
                                             </button>
                                         </a>
-                                        <a class="text-decoration-none me-2 text-dark ml-1 edit-tour-btn" href="javascript:void(0)" data-tour="{{ json_encode($tour) }}" data-bs-toggle="tooltip" title="Edit Tour">
+                                        <a class="text-decoration-none me-2 text-dark ml-1 edit-tour-btn" href="javascript:void(0)" data-tour="{{ json_encode($tour) }}" data-bs-toggle="tooltip" title="Edit Tour" @if($isPastWeek) style="pointer-events: none; opacity: 0.5;" @endif>
                                             <button class="editBtn" style="pointer-events: none;">
                                                 <svg height="1em" viewBox="0 0 512 512">
                                                     <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
                                                 </svg>
                                             </button>
                                         </a>
-                                        <a href="{{ route('sites.tours.delete', $tour->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Tour" onclick="return confirm('Are you sure you want to delete this tour?')">
+                                        <a href="{{ route('sites.tours.delete', $tour->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Tour" onclick="return confirm('Are you sure you want to delete this tour?')" @if($isPastWeek) style="pointer-events: none; opacity: 0.5;" @endif>
                                             <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
                                                 <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
