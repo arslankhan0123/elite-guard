@@ -162,7 +162,7 @@ class SiteController extends Controller
             'max_duration' => $request->max_duration ?? [],
             'tag_type' => $request->tag_type,
             'tags' => $request->tags,
-            'assigned_guards' => $request->assigned_guards,
+            'assigned_guards' => $request->assigned_guards ?? [],
             'interval' => $request->interval,
             'open_time' => $request->open_time,
             'grace_time' => $request->grace_time,
@@ -189,7 +189,6 @@ class SiteController extends Controller
                         
                     if ($tour) {
                         $tour->update($data);
-                        $tour->items()->delete(); // Delete old items so we can recreate them with new settings
                     } else {
                         $tour = \App\Models\SiteTour::create($data);
                     }
@@ -199,15 +198,16 @@ class SiteController extends Controller
                 $toursCreated[] = $tour;
             }
         } else {
+            // Create a tour with no specific user
             if ($isWeekUpdate) {
                 $tour = \App\Models\SiteTour::where('site_id', $request->site_id)
+                    ->whereNull('user_id')
                     ->whereHas('items', function($q) use ($baseWeekStart, $weekEndDate) {
                         $q->whereBetween('date', [$baseWeekStart->format('Y-m-d'), $weekEndDate->format('Y-m-d')]);
                     })->first();
                     
                 if ($tour) {
                     $tour->update($tourData);
-                    $tour->items()->delete();
                 } else {
                     $tour = \App\Models\SiteTour::create($tourData);
                 }
@@ -264,16 +264,14 @@ class SiteController extends Controller
                             $scheduledDays = [ \Carbon\Carbon::now()->format('l') ];
                         }
 
-                        $tourItems = [];
+                        $intendedKeys = [];
                         
-                        $baseWeekStart = $request->input('week_start_date') ? \Carbon\Carbon::parse($request->input('week_start_date'))->startOfWeek(\Carbon\Carbon::MONDAY) : \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY);
-
                         foreach ($scheduledDays as $dayName) {
-                            // Find the date for this day in the selected week (starting Monday)
                             $date = $baseWeekStart->copy()->modify($dayName)->format('Y-m-d');
                             
                             foreach ($itemsData as $item) {
-                                $tourItems[] = [
+                                $key = $date . '|' . $item['start_time'] . '|' . $item['end_time'];
+                                $intendedKeys[$key] = [
                                     'site_tour_id' => $createdTour->id,
                                     'user_id' => $createdTour->user_id,
                                     'site_id' => $createdTour->site_id,
@@ -282,14 +280,28 @@ class SiteController extends Controller
                                     'date' => $date,
                                     'start_time' => $item['start_time'],
                                     'end_time' => $item['end_time'],
-                                    'created_at' => now(),
-                                    'updated_at' => now(),
+                                    'created_at' => now()->toDateTimeString(),
+                                    'updated_at' => now()->toDateTimeString(),
                                 ];
                             }
                         }
                         
-                        if (!empty($tourItems)) {
-                            \App\Models\SiteTourItem::insert($tourItems);
+                        $existingItems = \App\Models\SiteTourItem::where('site_tour_id', $createdTour->id)->get();
+                        
+                        foreach ($existingItems as $existing) {
+                            $sTime = \Carbon\Carbon::parse($existing->start_time)->format('H:i:s');
+                            $eTime = \Carbon\Carbon::parse($existing->end_time)->format('H:i:s');
+                            $key = $existing->date . '|' . $sTime . '|' . $eTime;
+                            
+                            if (isset($intendedKeys[$key])) {
+                                unset($intendedKeys[$key]);
+                            } else {
+                                $existing->delete();
+                            }
+                        }
+                        
+                        if (!empty($intendedKeys)) {
+                            \App\Models\SiteTourItem::insert(array_values($intendedKeys));
                         }
                     }
                 }
@@ -340,5 +352,23 @@ class SiteController extends Controller
         $tour->delete();
 
         return redirect()->back()->with('success', 'Tour deleted successfully.');
+    }
+
+    public function deleteWeekTours($site_id, Request $request)
+    {
+        $weekStartDate = $request->input('week_start_date');
+        $baseWeekStart = $weekStartDate ? \Carbon\Carbon::parse($weekStartDate)->startOfWeek(\Carbon\Carbon::MONDAY) : \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY);
+        $weekEndDate = $baseWeekStart->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
+
+        $toursToDelete = \App\Models\SiteTour::where('site_id', $site_id)
+            ->whereHas('items', function($q) use ($baseWeekStart, $weekEndDate) {
+                $q->whereBetween('date', [$baseWeekStart->format('Y-m-d'), $weekEndDate->format('Y-m-d')]);
+            })->get();
+            
+        foreach ($toursToDelete as $t) {
+            $t->delete();
+        }
+
+        return redirect()->back()->with('success', 'All tours for the selected week have been deleted successfully.');
     }
 }

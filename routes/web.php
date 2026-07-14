@@ -77,6 +77,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/tours/store', [SiteController::class, 'storeTour'])->name('sites.tours.store');
         Route::post('/tours/update/{id}', [SiteController::class, 'updateTour'])->name('sites.tours.update');
         Route::get('/tours/delete/{id}', [SiteController::class, 'deleteTour'])->name('sites.tours.delete');
+        Route::delete('/tours/delete-week/{site_id}', [SiteController::class, 'deleteWeekTours'])->name('sites.tours.deleteWeek');
     });
 
     Route::group(['prefix' => '/nfc'], function () {

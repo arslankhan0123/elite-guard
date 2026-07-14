@@ -184,6 +184,14 @@
                             id="btnUpdateWeekTour">
                             <i data-feather="edit" style="width:15px;height:15px;" class="me-1"></i> Update Tour
                         </button>
+                        <form action="{{ route('sites.tours.deleteWeek', ['site_id' => $site->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to completely delete all tours assigned in this week? This action cannot be undone.');">
+                            @csrf
+                            @method('DELETE')
+                            <input type="hidden" name="week_start_date" value="{{ $weekStart->format('Y-m-d') }}">
+                            <button type="submit" class="btn btn-danger fw-semibold px-3" style="border-radius:8px; font-size:0.85rem;" title="Delete All Tours for Week">
+                                <i data-feather="trash-2" style="width:15px;height:15px;" class="me-0"></i>
+                            </button>
+                        </form>
                     @else
                         <button type="button" class="btn btn-light fw-semibold px-4"
                             style="border-radius:8px; font-size:0.85rem;"
@@ -529,12 +537,19 @@
 
         // Open Modal for Create
         $('#btnCreateTour').on('click', function() {
-            $('#tourModalLabel').text('New Tour');
             $('#tourForm')[0].reset();
             $('#tour_id').val('');
+            $('#tourModalLabel').text('New Tour');
+            
+            // Reset Select2 fields
             $('#scheduled_days').val(null).trigger('change');
             $('#users').val(null).trigger('change');
-            $('#tag_type').val(null).trigger('change');
+            $('#tag_type').val('').trigger('change');
+            
+            $('#interval').val('');
+            $('#open_time').val('');
+            $('#grace_time').val('');
+            
             clearErrors();
         });
 
