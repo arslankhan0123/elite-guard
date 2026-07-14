@@ -202,16 +202,36 @@ class SiteController extends Controller
 
                 if (!empty($itemsData)) {
                     foreach ($toursCreated as $createdTour) {
-                        $tourItems = array_map(function($item) use ($createdTour) {
-                            $item['site_tour_id'] = $createdTour->id;
-                            $item['user_id'] = $createdTour->user_id;
-                            $item['site_id'] = $createdTour->site_id;
-                            $item['type'] = null;
-                            $item['status'] = false;
-                            return $item;
-                        }, $itemsData);
+                        $scheduledDays = $createdTour->scheduled_days ?? [];
                         
-                        \App\Models\SiteTourItem::insert($tourItems);
+                        if (empty($scheduledDays)) {
+                            $scheduledDays = [ \Carbon\Carbon::now()->format('l') ];
+                        }
+
+                        $tourItems = [];
+                        foreach ($scheduledDays as $dayName) {
+                            // Find the date for this day in the current week (starting Monday)
+                            $date = \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY)->modify($dayName)->format('Y-m-d');
+                            
+                            foreach ($itemsData as $item) {
+                                $tourItems[] = [
+                                    'site_tour_id' => $createdTour->id,
+                                    'user_id' => $createdTour->user_id,
+                                    'site_id' => $createdTour->site_id,
+                                    'type' => null,
+                                    'status' => false,
+                                    'date' => $date,
+                                    'start_time' => $item['start_time'],
+                                    'end_time' => $item['end_time'],
+                                    'created_at' => now(),
+                                    'updated_at' => now(),
+                                ];
+                            }
+                        }
+                        
+                        if (!empty($tourItems)) {
+                            \App\Models\SiteTourItem::insert($tourItems);
+                        }
                     }
                 }
             }

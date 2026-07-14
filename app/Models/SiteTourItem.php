@@ -8,6 +8,7 @@ class SiteTourItem extends Model
 {
     protected $fillable = [
         'site_tour_id',
+        'date',
         'start_time',
         'end_time',
         'type',

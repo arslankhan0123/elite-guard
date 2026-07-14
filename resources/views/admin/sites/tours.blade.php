@@ -338,7 +338,11 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow" style="border-radius:0.75rem;">
             <div class="nfc-modal-header d-flex align-items-center justify-content-between">
-                <h5 class="modal-title text-dark fw-bold" id="itemsModalLabel">Site Tour Items</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <h5 class="modal-title text-dark fw-bold mb-0" id="itemsModalLabel">Site Tour Items</h5>
+                    <select id="items-date-filter" class="form-select form-select-sm" style="width: auto;">
+                    </select>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
@@ -346,6 +350,7 @@
                     <table class="table nfc-table mb-0">
                         <thead>
                             <tr>
+                                <th>Date</th>
                                 <th>Start Time</th>
                                 <th>End Time</th>
                                 <th>Type</th>
@@ -536,21 +541,38 @@
             modal.show();
         });
 
-        // View Tour Items Modal
-        $(document).on('click', '.view-tour-btn', function() {
-            var tour = JSON.parse($(this).attr('data-tour'));
-            $('#itemsModalLabel').text(tour.name + ' — Items');
-            
+        var currentTourItems = [];
+
+        function renderTourItems(date) {
             var tbody = $('#items-tbody');
             tbody.empty();
             
-            if (tour.items && tour.items.length > 0) {
-                tour.items.forEach(function(item) {
+            var filteredItems = currentTourItems.filter(function(item) {
+                return item.date === date;
+            });
+
+            if (filteredItems.length > 0) {
+                filteredItems.forEach(function(item) {
                     var statusHtml = item.status 
                         ? '<span class="badge bg-success">Completed</span>' 
                         : '<span class="badge bg-warning text-dark">Pending</span>';
                     
+                    var formattedDate = 'N/A';
+                    if (item.date) {
+                        var parts = item.date.split('-');
+                        if (parts.length === 3) {
+                            var year = parts[0];
+                            var monthIndex = parseInt(parts[1], 10) - 1;
+                            var day = parseInt(parts[2], 10);
+                            var dateObj = new Date(year, monthIndex, day);
+                            formattedDate = day + ' ' + dateObj.toLocaleString('en-US', { month: 'long' }) + ' ' + year;
+                        } else {
+                            formattedDate = item.date;
+                        }
+                    }
+
                     var tr = `<tr>
+                        <td class="fw-bold">${formattedDate}</td>
                         <td class="fw-bold text-primary">${item.start_time}</td>
                         <td class="fw-bold text-primary">${item.end_time}</td>
                         <td>${item.type || 'N/A'}</td>
@@ -559,11 +581,52 @@
                     tbody.append(tr);
                 });
             } else {
-                tbody.append('<tr><td colspan="4" class="text-center text-muted py-4">No items generated for this tour yet.</td></tr>');
+                tbody.append('<tr><td colspan="5" class="text-center text-muted py-4">No items found for the selected date.</td></tr>');
+            }
+        }
+
+        // View Tour Items Modal
+        $(document).on('click', '.view-tour-btn', function() {
+            var tour = JSON.parse($(this).attr('data-tour'));
+            $('#itemsModalLabel').text(tour.name + ' — Items');
+            
+            currentTourItems = tour.items || [];
+            
+            var dateFilter = $('#items-date-filter');
+            dateFilter.empty();
+            
+            if (currentTourItems.length > 0) {
+                // Get unique dates
+                var uniqueDates = [...new Set(currentTourItems.map(item => item.date))].sort();
+                
+                uniqueDates.forEach(function(d) {
+                    // Format date for display
+                    var dateObj = new Date(d);
+                    var displayDate = d ? dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'Unknown Date';
+                    dateFilter.append(new Option(displayDate, d));
+                });
+                
+                // Get local today string in YYYY-MM-DD
+                var now = new Date();
+                var today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                
+                var defaultDate = uniqueDates.includes(today) ? today : uniqueDates[0];
+                
+                dateFilter.val(defaultDate);
+                dateFilter.show();
+                
+                renderTourItems(defaultDate);
+            } else {
+                dateFilter.hide();
+                $('#items-tbody').html('<tr><td colspan="5" class="text-center text-muted py-4">No items generated for this tour yet.</td></tr>');
             }
             
             var modal = new bootstrap.Modal(document.getElementById('itemsModal'));
             modal.show();
+        });
+
+        $('#items-date-filter').on('change', function() {
+            renderTourItems($(this).val());
         });
 
         // Save Tour (Create / Update)
