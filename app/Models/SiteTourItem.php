@@ -31,4 +31,9 @@ class SiteTourItem extends Model
     {
         return $this->belongsTo(Site::class);
     }
+
+    public function scans()
+    {
+        return $this->hasMany(SiteTourItemScan::class, 'site_tour_item_id');
+    }
 }

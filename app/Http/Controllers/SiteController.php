@@ -114,7 +114,8 @@ class SiteController extends Controller
                 $q2->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
             })
             ->with(['items' => function($q3) use ($weekStart, $weekEnd) {
-                $q3->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+                $q3->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
+                   ->withCount('scans');
             }])
             ->orderBy('id', 'desc');
         }])->findOrFail($site_id);

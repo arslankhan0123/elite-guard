@@ -617,9 +617,17 @@
 
             if (filteredItems.length > 0) {
                 filteredItems.forEach(function(item) {
-                    var statusHtml = item.status 
-                        ? '<span class="badge bg-success">Completed</span>' 
-                        : '<span class="badge bg-warning text-dark">Pending</span>';
+                    var scansCount = item.scans_count || 0;
+                    var totalTags = {{ $nfcTags->count() }};
+                    
+                    var statusHtml = '';
+                    if (item.status) {
+                        statusHtml = '<span class="badge bg-success">' + scansCount + '/' + totalTags + ' Scanned</span>';
+                    } else if (scansCount > 0) {
+                        statusHtml = '<span class="badge bg-info">' + scansCount + '/' + totalTags + ' Scanned</span>';
+                    } else {
+                        statusHtml = '<span class="badge bg-warning text-dark">0/' + totalTags + ' Scanned</span>';
+                    }
                     
                     var formattedDate = 'N/A';
                     if (item.date) {
