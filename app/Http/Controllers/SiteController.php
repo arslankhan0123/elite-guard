@@ -98,10 +98,25 @@ class SiteController extends Controller
         return view('admin.sites.nfc-tags', compact('site'));
     }
 
-    public function tours($site_id)
+    public function tours($site_id, Request $request)
     {
-        $site = Site::with(['siteTours' => function($q) {
-            $q->with('items')->orderBy('id', 'desc');
+        $week = $request->input('week');
+        if ($week) {
+            $weekStart = \Carbon\Carbon::parse($week)->startOfWeek(\Carbon\Carbon::MONDAY);
+        } else {
+            $weekStart = \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY);
+        }
+        
+        $weekEnd = $weekStart->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
+
+        $site = Site::with(['siteTours' => function($q) use ($weekStart, $weekEnd) {
+            $q->whereHas('items', function($q2) use ($weekStart, $weekEnd) {
+                $q2->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+            })
+            ->with(['items' => function($q3) use ($weekStart, $weekEnd) {
+                $q3->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+            }])
+            ->orderBy('id', 'desc');
         }])->findOrFail($site_id);
 
         // Fetch users for the dropdown (user requested to show all users)
@@ -109,7 +124,13 @@ class SiteController extends Controller
 
         $nfcTags = \App\Models\NfcTag::where('site_id', $site_id)->get();
 
-        return view('admin.sites.tours', compact('site', 'guards', 'nfcTags'));
+        $prevWeek = $weekStart->copy()->subWeek()->format('Y-m-d');
+        $nextWeek = $weekStart->copy()->addWeek()->format('Y-m-d');
+        
+        $weekStartFormatted = $weekStart->format('d M');
+        $weekEndFormatted = $weekEnd->format('d M, Y');
+
+        return view('admin.sites.tours', compact('site', 'guards', 'nfcTags', 'prevWeek', 'nextWeek', 'weekStartFormatted', 'weekEndFormatted', 'weekStart'));
     }
 
     public function storeTour(Request $request)
@@ -209,9 +230,12 @@ class SiteController extends Controller
                         }
 
                         $tourItems = [];
+                        
+                        $baseWeekStart = $request->input('week_start_date') ? \Carbon\Carbon::parse($request->input('week_start_date'))->startOfWeek(\Carbon\Carbon::MONDAY) : \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY);
+
                         foreach ($scheduledDays as $dayName) {
-                            // Find the date for this day in the current week (starting Monday)
-                            $date = \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY)->modify($dayName)->format('Y-m-d');
+                            // Find the date for this day in the selected week (starting Monday)
+                            $date = $baseWeekStart->copy()->modify($dayName)->format('Y-m-d');
                             
                             foreach ($itemsData as $item) {
                                 $tourItems[] = [

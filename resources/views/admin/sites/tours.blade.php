@@ -159,11 +159,18 @@
                         <span class="text-white d-block" style="opacity:0.75;font-size:0.8rem;">Manage site tour configurations</span>
                     </div>
                 </div>
-                <button type="button" class="btn btn-light fw-semibold px-4"
-                    style="border-radius:8px; font-size:0.85rem;"
-                    data-bs-toggle="modal" data-bs-target="#tourModal" id="btnCreateTour">
-                    <i data-feather="plus-circle" style="width:15px;height:15px;" class="me-1"></i> New Tour
-                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center me-3 bg-white rounded-pill px-2 py-1 shadow-sm" style="border: 1px solid #dee2e6;">
+                        <a href="?week={{ $prevWeek }}" class="text-decoration-none text-muted px-2"><i data-feather="chevron-left" style="width:16px;"></i></a>
+                        <span class="fw-bold px-2 text-primary" style="font-size: 0.85rem;"><i data-feather="calendar" class="me-1" style="width:13px;"></i> {{ $weekStartFormatted }} - {{ $weekEndFormatted }}</span>
+                        <a href="?week={{ $nextWeek }}" class="text-decoration-none text-muted px-2"><i data-feather="chevron-right" style="width:16px;"></i></a>
+                    </div>
+                    <button type="button" class="btn btn-light fw-semibold px-4"
+                        style="border-radius:8px; font-size:0.85rem;"
+                        data-bs-toggle="modal" data-bs-target="#tourModal" id="btnCreateTour">
+                        <i data-feather="plus-circle" style="width:15px;height:15px;" class="me-1"></i> New Tour
+                    </button>
+                </div>
             </div>
             <div class="card-body p-4">
                 <div class="table-responsive">
@@ -266,6 +273,7 @@
                     @csrf
                     <input type="hidden" name="site_id" value="{{ $site->id }}">
                     <input type="hidden" name="tour_id" id="tour_id" value="">
+                    <input type="hidden" name="week_start_date" id="week_start_date" value="{{ $weekStart->format('Y-m-d') }}">
 
                     <div class="field-card shadow-sm">
                         <!-- Tour Name -->
