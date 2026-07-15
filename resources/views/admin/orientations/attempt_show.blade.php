@@ -77,14 +77,14 @@
                         }
                     }
 
-                    $cardBg = '#fef2f2'; // light red
-                    $cardBorder = '#fecaca'; // red border
+                    $cardBg = '#fee2e2'; // darker light red
+                    $cardBorder = '#fca5a5'; // red border
                     if ($isQuestionCorrect) {
-                        $cardBg = '#f0fdf4'; // light green
-                        $cardBorder = '#bbf7d0'; // green border
+                        $cardBg = '#dcfce7'; // darker light green
+                        $cardBorder = '#86efac'; // green border
                     } elseif (!$userSelectedOptionId) {
-                        $cardBg = '#fffbeb'; // light yellow
-                        $cardBorder = '#fde68a'; // yellow border
+                        $cardBg = '#fef3c7'; // darker light yellow
+                        $cardBorder = '#fcd34d'; // yellow border
                     }
                 @endphp
                 
