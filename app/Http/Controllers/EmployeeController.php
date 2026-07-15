@@ -181,6 +181,12 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')->with('success', $message);
     }
 
+    public function show($id)
+    {
+        $employee = Employee::with(['user', 'user.candidate', 'user.bankDetail', 'user.licenseDetail', 'user.availability', 'user.officeDetail', 'user.offerLetter'])->findOrFail($id);
+        return view('admin.employees.show', compact('employee'));
+    }
+
     public function edit($id)
     {
         $employee = Employee::with(['user', 'user.candidate', 'user.bankDetail', 'user.licenseDetail', 'user.availability', 'user.officeDetail'])->findOrFail($id);

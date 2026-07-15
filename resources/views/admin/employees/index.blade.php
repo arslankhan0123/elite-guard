@@ -162,6 +162,9 @@
                                                     data-run-sheets="{{ $employee->user->runSheets->toJson() }}">
                                                     <i data-feather="clipboard" style="width: 14px; height: 14px;"></i>
                                                 </button>
+                                                <a class="text-decoration-none text-dark me-2" href="{{ route('employees.show', $employee->id) }}" data-bs-toggle="tooltip" title="View Details">
+                                                    <button class="view_btn"></button>
+                                                </a>
                                                 <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('employees.edit', $employee->id) }}" data-bs-toggle="tooltip" title="Edit Employee">
                                                     <button class="editBtn">
                                                         <svg height="1em" viewBox="0 0 512 512">
