@@ -98,4 +98,30 @@ class OrientationController extends Controller
         $this->orientationRepo->deleteOrientation($id);
         return redirect()->route('orientations.index')->with('success', 'Orientation deleted successfully.');
     }
+
+    /**
+     * Show users who attempted the orientation.
+     */
+    public function attempts($id)
+    {
+        $orientation = $this->orientationRepo->findOrientationById($id);
+        $attempts = \App\Models\OrientationAttempt::where('orientation_id', $id)
+            ->with('user')
+            ->orderBy('id', 'desc')
+            ->get();
+        return view('admin.orientations.attempts', compact('orientation', 'attempts'));
+    }
+
+    /**
+     * Show a specific attempt result.
+     */
+    public function showAttempt($id, $attempt_id)
+    {
+        $orientation = $this->orientationRepo->findOrientationById($id);
+        $attempt = \App\Models\OrientationAttempt::with('user')->findOrFail($attempt_id);
+        
+        $validationResult = $this->orientationRepo->validateQuizAnswers($orientation, is_array($attempt->answers) ? $attempt->answers : json_decode($attempt->answers, true));
+        
+        return view('admin.orientations.attempt_show', compact('orientation', 'attempt', 'validationResult'));
+    }
 }

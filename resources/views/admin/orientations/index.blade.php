@@ -55,6 +55,9 @@
                                         <td>{{ $orientation->created_at->format('Y-m-d') }}</td>
                                         <td>
                                             <div class="btn-group" role="group" aria-label="Orientation Actions">
+                                                <a href="{{ route('orientations.attempts', $orientation->id) }}" class="btn btn-sm btn-outline-info me-2 rounded-circle" data-bs-toggle="tooltip" title="View Attempts" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: none; background: #e0f2fe;">
+                                                    <i class="mdi mdi-eye" style="font-size: 16px; color: #0284c7;"></i>
+                                                </a>
                                                 <a class="text-decoration-none me-2 text-dark ml-1"
                                                     href="{{ route('orientations.edit', $orientation->id) }}" data-bs-toggle="tooltip"
                                                     title="Edit Orientation">

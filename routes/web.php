@@ -149,6 +149,8 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
             Route::get('/edit/{id}', [OrientationController::class, 'edit'])->name('orientations.edit');
             Route::post('/update/{id}', [OrientationController::class, 'update'])->name('orientations.update');
             Route::get('/delete/{id}', [OrientationController::class, 'delete'])->name('orientations.delete');
+            Route::get('/{id}/attempts', [OrientationController::class, 'attempts'])->name('orientations.attempts');
+            Route::get('/{id}/attempts/{attempt_id}', [OrientationController::class, 'showAttempt'])->name('orientations.showAttempt');
         });
 
         Route::group(['prefix' => '/employee'], function () {
