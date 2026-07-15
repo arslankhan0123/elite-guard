@@ -57,90 +57,86 @@
         </div>
 
         <div class="col-md-8">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header bg-light border-bottom-0 rounded-top-4">
-                    <h5 class="card-title mb-0 text-dark fw-bold"><i class="mdi mdi-help-circle-outline text-info"></i> Questions & Answers</h5>
-                </div>
-                <div class="card-body p-0">
-                    @php
-                        $userAnswers = is_array($attempt->answers) ? $attempt->answers : json_decode($attempt->answers, true);
-                        if(!$userAnswers) $userAnswers = [];
-                    @endphp
+            <h5 class="mb-4 text-dark fw-bold"><i class="mdi mdi-help-circle-outline text-info"></i> Questions & Answers</h5>
+            
+            @php
+                $userAnswers = is_array($attempt->answers) ? $attempt->answers : json_decode($attempt->answers, true);
+                if(!$userAnswers) $userAnswers = [];
+            @endphp
 
-                    <ul class="list-group list-group-flush rounded-bottom-4">
-                        @foreach($orientation->questions as $index => $question)
-                            @php
-                                $userAnswerData = collect($userAnswers)->firstWhere('question_id', $question->id);
-                                $userSelectedOptionId = $userAnswerData['option_id'] ?? null;
-                                
-                                $isQuestionCorrect = false;
-                                if ($userSelectedOptionId) {
-                                    $selectedOption = $question->options->find($userSelectedOptionId);
-                                    if ($selectedOption && $selectedOption->is_correct) {
-                                        $isQuestionCorrect = true;
+            @foreach($orientation->questions as $index => $question)
+                @php
+                    $userAnswerData = collect($userAnswers)->firstWhere('question_id', $question->id);
+                    $userSelectedOptionId = $userAnswerData['option_id'] ?? null;
+                    
+                    $isQuestionCorrect = false;
+                    if ($userSelectedOptionId) {
+                        $selectedOption = $question->options->find($userSelectedOptionId);
+                        if ($selectedOption && $selectedOption->is_correct) {
+                            $isQuestionCorrect = true;
+                        }
+                    }
+                @endphp
+                
+                <div class="card shadow-sm border-0 rounded-4 mb-4" style="background-color: #f8f9fc;">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white border border-secondary border-opacity-25 rounded-3 shadow-sm">
+                            <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;">Q{{ $index + 1 }}. {{ $question->question_text }}</h5>
+                            @if($isQuestionCorrect)
+                                <span class="badge bg-success rounded-pill fs-6 px-3 py-2 shadow-sm"><i class="mdi mdi-check"></i> Correct</span>
+                            @else
+                                <span class="badge bg-danger rounded-pill fs-6 px-3 py-2 shadow-sm"><i class="mdi mdi-close"></i> Incorrect</span>
+                            @endif
+                        </div>
+
+                        <div class="row g-3">
+                            @foreach($question->options as $option)
+                                @php
+                                    $isUserSelected = ($option->id == $userSelectedOptionId);
+                                    $isCorrectOption = $option->is_correct;
+                                    
+                                    $borderClass = 'border-light';
+                                    $bgClass = 'bg-white text-dark';
+                                    $icon = 'mdi-circle-outline text-muted';
+                                    
+                                    if ($isCorrectOption) {
+                                        $borderClass = 'border-success';
+                                        $bgClass = 'bg-success text-white';
+                                        $icon = 'mdi-check-circle text-white';
+                                    } elseif ($isUserSelected && !$isCorrectOption) {
+                                        $borderClass = 'border-danger';
+                                        $bgClass = 'bg-danger text-white';
+                                        $icon = 'mdi-close-circle text-white';
+                                    } elseif ($isUserSelected && $isCorrectOption) {
+                                        // Handled above, but just to be explicit
+                                        $borderClass = 'border-success';
+                                        $bgClass = 'bg-success text-white';
+                                        $icon = 'mdi-check-circle text-white';
                                     }
-                                }
-                            @endphp
-                            <li class="list-group-item p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3">
-                                    <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;">Q{{ $index + 1 }}. {{ $question->question_text }}</h5>
-                                    @if($isQuestionCorrect)
-                                        <span class="badge bg-success rounded-pill fs-6 px-3 py-2 shadow-sm"><i class="mdi mdi-check"></i> Correct</span>
-                                    @else
-                                        <span class="badge bg-danger rounded-pill fs-6 px-3 py-2 shadow-sm"><i class="mdi mdi-close"></i> Incorrect</span>
-                                    @endif
-                                </div>
-
-                                <div class="row g-2">
-                                    @foreach($question->options as $option)
-                                        @php
-                                            $isUserSelected = ($option->id == $userSelectedOptionId);
-                                            $isCorrectOption = $option->is_correct;
-                                            
-                                            $borderClass = 'border-light';
-                                            $bgClass = 'bg-light text-dark';
-                                            $icon = 'mdi-circle-outline text-muted';
-                                            
-                                            if ($isCorrectOption) {
-                                                $borderClass = 'border-success';
-                                                $bgClass = 'bg-success text-white';
-                                                $icon = 'mdi-check-circle text-white';
-                                            } elseif ($isUserSelected && !$isCorrectOption) {
-                                                $borderClass = 'border-danger';
-                                                $bgClass = 'bg-danger text-white';
-                                                $icon = 'mdi-close-circle text-white';
-                                            } elseif ($isUserSelected && $isCorrectOption) {
-                                                // Handled above, but just to be explicit
-                                                $borderClass = 'border-success';
-                                                $bgClass = 'bg-success text-white';
-                                                $icon = 'mdi-check-circle text-white';
-                                            }
-                                        @endphp
-                                        <div class="col-md-6">
-                                            <div class="p-2 border rounded {{ $borderClass }} {{ $bgClass }} d-flex align-items-center">
-                                                <i class="mdi {{ $icon }} me-2 fs-5"></i>
-                                                <span style="flex: 1;">{{ $option->option_text }}</span>
-                                                @if($isUserSelected)
-                                                    @php
-                                                        $userName = explode(' ', trim($attempt->user->name ?? 'User'))[0];
-                                                    @endphp
-                                                    <span class="badge bg-dark ms-2" style="font-size: 0.7rem;">{{ $userName }}'s Answer</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                
-                                @if(!$userSelectedOptionId)
-                                    <div class="mt-3 text-warning small fw-bold">
-                                        <i class="mdi mdi-alert-circle-outline"></i> The user skipped or did not answer this question.
+                                @endphp
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded-3 {{ $borderClass }} {{ $bgClass }} d-flex align-items-center shadow-sm">
+                                        <i class="mdi {{ $icon }} me-2 fs-5"></i>
+                                        <span style="flex: 1; font-weight: 500;">{{ $option->option_text }}</span>
+                                        @if($isUserSelected)
+                                            @php
+                                                $userName = explode(' ', trim($attempt->user->name ?? 'User'))[0];
+                                            @endphp
+                                            <span class="badge bg-dark ms-2 shadow-sm" style="font-size: 0.75rem;">{{ $userName }}'s Answer</span>
+                                        @endif
                                     </div>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
+                                </div>
+                            @endforeach
+                        </div>
+                        
+                        @if(!$userSelectedOptionId)
+                            <div class="mt-4 p-3 bg-white border border-warning rounded-3 text-warning small fw-bold shadow-sm">
+                                <i class="mdi mdi-alert-circle-outline"></i> The user skipped or did not answer this question.
+                            </div>
+                        @endif
+                    </div>
                 </div>
-            </div>
+            @endforeach
         </div>
     </div>
 @endsection
