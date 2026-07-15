@@ -76,9 +76,19 @@
                             $isQuestionCorrect = true;
                         }
                     }
+
+                    $cardBg = '#fef2f2'; // light red
+                    $cardBorder = '#fecaca'; // red border
+                    if ($isQuestionCorrect) {
+                        $cardBg = '#f0fdf4'; // light green
+                        $cardBorder = '#bbf7d0'; // green border
+                    } elseif (!$userSelectedOptionId) {
+                        $cardBg = '#fffbeb'; // light yellow
+                        $cardBorder = '#fde68a'; // yellow border
+                    }
                 @endphp
                 
-                <div class="card shadow-sm border-0 rounded-4 mb-4" style="background-color: #f8f9fc;">
+                <div class="card shadow-sm mb-4" style="background-color: {{ $cardBg }}; border: 1px solid {{ $cardBorder }}; border-radius: 1rem;">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white border border-secondary border-opacity-25 rounded-3 shadow-sm">
                             <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;">Q{{ $index + 1 }}. {{ $question->question_text }}</h5>
