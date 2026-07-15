@@ -162,6 +162,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
             Route::post('/assign-sites/{user_id}', [EmployeeController::class, 'assignSites'])->name('employees.assignSites');
             Route::post('/update-offer-letter', [EmployeeController::class, 'updateOfferLetter'])->name('employees.updateOfferLetter');
             Route::post('/update-pay-slip', [EmployeeController::class, 'updatePaySlip'])->name('employees.updatePaySlip');
+            Route::get('/check-pay-slip', [EmployeeController::class, 'checkPaySlip'])->name('employees.checkPaySlip');
             Route::group(['prefix' => '/pay-slips'], function () {
                 Route::get('/', [PaySlipController::class, 'index'])->name('pay-slips.index');
             });

@@ -407,6 +407,11 @@
                                     If a pay slip already exists for the selected month/year, it will be updated.
                                 </small>
                             </div>
+                            <div class="col-12 mt-3" id="existingPayslipContainer" style="display: none;">
+                                <a href="#" id="existingPayslipLink" target="_blank" class="btn btn-outline-primary w-100 fw-bold">
+                                    <i data-feather="external-link" style="width: 16px; height: 16px;" class="me-1"></i> View Uploaded Payslip
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-0">
@@ -1064,6 +1069,36 @@
             });
 
             const payslipModal = document.getElementById('paySlipModal');
+
+            async function checkExistingPayslip() {
+                const userId = document.getElementById('payslip_user_id').value;
+                const month = document.getElementById('payslip_month').value;
+                const year = document.getElementById('payslip_year').value;
+                
+                if(!userId) return;
+
+                try {
+                    const response = await fetch(`{{ route('employees.checkPaySlip') }}?user_id=${userId}&month=${month}&year=${year}`);
+                    const data = await response.json();
+                    
+                    const container = document.getElementById('existingPayslipContainer');
+                    const link = document.getElementById('existingPayslipLink');
+                    
+                    if (data.exists && data.url) {
+                        link.href = data.url;
+                        container.style.display = 'block';
+                    } else {
+                        container.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error checking payslip:', error);
+                    document.getElementById('existingPayslipContainer').style.display = 'none';
+                }
+            }
+
+            document.getElementById('payslip_month').addEventListener('change', checkExistingPayslip);
+            document.getElementById('payslip_year').addEventListener('change', checkExistingPayslip);
+
             payslipModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 const userId = button.getAttribute('data-user-id');
@@ -1072,6 +1107,9 @@
                 document.getElementById('payslip_user_id').value = userId;
                 document.getElementById('userIdText').textContent = userId;
                 document.getElementById('payslipEmployeeName').textContent = employeeName;
+                document.getElementById('existingPayslipContainer').style.display = 'none';
+
+                checkExistingPayslip();
 
                 feather.replace();
             });

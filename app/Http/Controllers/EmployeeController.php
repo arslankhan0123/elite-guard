@@ -485,4 +485,29 @@ class EmployeeController extends Controller
 
         return redirect()->back()->with('success', $message);
     }
+
+    public function checkPaySlip(Request $request)
+    {
+        $userId = $request->query('user_id');
+        $month = $request->query('month');
+        $year = $request->query('year');
+
+        if (!$userId || !$month || !$year) {
+            return response()->json(['exists' => false]);
+        }
+
+        $paySlip = \App\Models\PaySlip::where('user_id', $userId)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->first();
+
+        if ($paySlip) {
+            return response()->json([
+                'exists' => true,
+                'url' => $paySlip->file_path
+            ]);
+        }
+
+        return response()->json(['exists' => false]);
+    }
 }
