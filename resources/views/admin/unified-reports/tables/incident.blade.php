@@ -9,6 +9,7 @@
             <th>Reported By</th>
             <th>Images</th>
             <th>Created</th>
+        <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -36,10 +37,11 @@
                 @endif
             </td>
             <td>{{ $report->created_at->format('j M Y H:i') }}</td>
-        </tr>
+        <td><a class="text-decoration-none text-dark" href="{{ route('reports.show', ['type' => $type, 'id' => $report->id]) }}" data-bs-toggle="tooltip" title="View Details"><button class="view_btn me-2"></button></a></td>
+            </tr>
         @empty
         <tr>
-            <td colspan="8" class="text-center">No reports found.</td>
+            <td colspan="9" class="text-center">No reports found.</td>
         </tr>
         @endforelse
     </tbody>

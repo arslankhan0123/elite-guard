@@ -113,4 +113,41 @@ class UnifiedReportController extends Controller
             }
         }
     }
+
+    public function show($type, $id)
+    {
+        $report = null;
+        $title = ucwords(str_replace('-', ' ', $type)) . ' Details';
+
+        switch ($type) {
+            case 'disciplinary':
+                $report = ReportSecurityGuardDisciplinaryForm::with('user')->findOrFail($id);
+                break;
+            case 'incident':
+                $report = ReportIncidentForm::with(['user', 'images'])->findOrFail($id);
+                break;
+            case 'general':
+                $report = ReportGeneralForm::with(['user', 'images'])->findOrFail($id);
+                break;
+            case 'daily-shift':
+                $report = ReportDailyShiftForm::with(['user', 'patrolEntries'])->findOrFail($id);
+                break;
+            case 'assessments':
+                $report = Assessment::with('user')->findOrFail($id);
+                break;
+            case 'vehicle-checklist':
+                $report = DailyVehicleChecklist::with('user')->findOrFail($id);
+                break;
+            case 'fire-watch':
+                $report = \App\Models\FireWatchReport::with(['user', 'patrolLogs'])->findOrFail($id);
+                break;
+            case 'shift-adjustment':
+                $report = \App\Models\ShiftAdjustmentForm::with('user')->findOrFail($id);
+                break;
+            default:
+                abort(404);
+        }
+
+        return view('admin.unified-reports.show', compact('report', 'type', 'title'));
+    }
 }

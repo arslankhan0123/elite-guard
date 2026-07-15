@@ -9,6 +9,7 @@
             <th>Replacement & Reason</th>
             <th>Approval</th>
             <th>Created At</th>
+        <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -78,10 +79,11 @@
                     @endif
                 </td>
                 <td>{{ $adjustment->created_at->format('j M Y H:i') }}</td>
+            <td><a class="text-decoration-none text-dark" href="{{ route('reports.show', ['type' => $type, 'id' => $adjustment->id]) }}" data-bs-toggle="tooltip" title="View Details"><button class="view_btn me-2"></button></a></td>
             </tr>
         @empty
             <tr>
-                <td colspan="8" class="text-center">No shift adjustment requests found.</td>
+                <td colspan="9" class="text-center">No shift adjustment requests found.</td>
             </tr>
         @endforelse
     </tbody>

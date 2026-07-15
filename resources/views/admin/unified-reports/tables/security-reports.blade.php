@@ -19,6 +19,7 @@
             <th>Reported By</th>
             <th>Date/Time</th>
             <th>Created At</th>
+        <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -42,10 +43,11 @@
                 <td>{{ $report->user->name ?? 'N/A' }}</td>
                 <td>{{ \Carbon\Carbon::parse($report->report_date ?? $report->created_at)->format('j M Y') }}</td>
                 <td>{{ $report->created_at->format('j M Y H:i') }}</td>
+            <td><a class="text-decoration-none text-dark" href="{{ route('reports.show', ['type' => $type, 'id' => $report->id]) }}" data-bs-toggle="tooltip" title="View Details"><button class="view_btn me-2"></button></a></td>
             </tr>
         @empty
             <tr>
-                <td colspan="10" class="text-center">No records found.</td>
+                <td colspan="11" class="text-center">No records found.</td>
             </tr>
         @endforelse
     </tbody>

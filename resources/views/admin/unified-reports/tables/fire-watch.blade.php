@@ -11,6 +11,7 @@
             <th>Interval</th>
             <th>Patrol Logs</th>
             <th>Created At</th>
+        <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -90,10 +91,11 @@
                     @endif
                 </td>
                 <td>{{ $report->created_at->format('j M Y H:i') }}</td>
+            <td><a class="text-decoration-none text-dark" href="{{ route('reports.show', ['type' => $type, 'id' => $report->id]) }}" data-bs-toggle="tooltip" title="View Details"><button class="view_btn me-2"></button></a></td>
             </tr>
         @empty
             <tr>
-                <td colspan="10" class="text-center">No reports found.</td>
+                <td colspan="11" class="text-center">No reports found.</td>
             </tr>
         @endforelse
     </tbody>

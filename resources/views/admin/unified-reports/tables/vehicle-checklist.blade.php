@@ -12,6 +12,7 @@
             <th>Driver</th>
             <th>Document</th>
             <th>Created</th>
+        <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -37,10 +38,11 @@
                     @endif
                 </td>
                 <td>{{ $checklist->created_at->format('j M Y H:i') }}</td>
+            <td><a class="text-decoration-none text-dark" href="{{ route('reports.show', ['type' => $type, 'id' => $checklist->id]) }}" data-bs-toggle="tooltip" title="View Details"><button class="view_btn me-2"></button></a></td>
             </tr>
         @empty
             <tr>
-                <td colspan="11" class="text-center">No checklists found.</td>
+                <td colspan="12" class="text-center">No checklists found.</td>
             </tr>
         @endforelse
     </tbody>
