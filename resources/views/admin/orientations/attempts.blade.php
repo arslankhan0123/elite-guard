@@ -56,8 +56,9 @@
                                         </td>
                                         <td>{{ $attempt->created_at->format('Y-m-d H:i') }}</td>
                                         <td>
-                                            <a href="{{ route('orientations.showAttempt', ['id' => $orientation->id, 'attempt_id' => $attempt->id]) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Full Result">
-                                                <i class="mdi mdi-eye"></i> View Result
+                                            <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('orientations.showAttempt', ['id' => $orientation->id, 'attempt_id' => $attempt->id]) }}" data-bs-toggle="tooltip" title="View Orientation Attempt Results">
+                                                <button class="view_btn me-2" fdprocessedid="pxicc">
+                                                </button>
                                             </a>
                                         </td>
                                     </tr>

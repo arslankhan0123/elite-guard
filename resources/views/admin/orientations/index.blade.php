@@ -55,10 +55,11 @@
                                         <td>{{ $orientation->created_at->format('Y-m-d') }}</td>
                                         <td>
                                             <div class="btn-group" role="group" aria-label="Orientation Actions">
-                                                <a href="{{ route('orientations.attempts', $orientation->id) }}" class="btn btn-sm btn-outline-info me-2 rounded-circle" data-bs-toggle="tooltip" title="View Attempts" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: none; background: #e0f2fe;">
-                                                    <i class="mdi mdi-eye" style="font-size: 16px; color: #0284c7;"></i>
+                                                <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('orientations.attempts', $orientation->id) }}" data-bs-toggle="tooltip" title="View Orientation Attempts">
+                                                    <button class="view_btn me-2" fdprocessedid="pxicc">
+                                                    </button>
                                                 </a>
-                                                <a class="text-decoration-none me-2 text-dark ml-1"
+                                                <!-- <a class="text-decoration-none me-2 text-dark ml-1"
                                                     href="{{ route('orientations.edit', $orientation->id) }}" data-bs-toggle="tooltip"
                                                     title="Edit Orientation">
                                                     <button class="editBtn">
@@ -68,7 +69,7 @@
                                                             </path>
                                                         </svg>
                                                     </button>
-                                                </a>
+                                                </a> -->
                                                 <a href="{{ route('orientations.delete', $orientation->id) }}" class="bin-button ml-1"
                                                     data-bs-toggle="tooltip" title="Delete Orientation"
                                                     onclick="return confirm('Are you sure you want to delete this orientation?')">
