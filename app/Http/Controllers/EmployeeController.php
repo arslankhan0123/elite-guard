@@ -183,7 +183,7 @@ class EmployeeController extends Controller
 
     public function show($id)
     {
-        $employee = Employee::with(['user', 'user.candidate', 'user.bankDetail', 'user.licenseDetail', 'user.availability', 'user.officeDetail', 'user.offerLetter'])->findOrFail($id);
+        $employee = Employee::with(['user', 'user.candidate', 'user.bankDetail', 'user.licenseDetail', 'user.availability', 'user.officeDetail', 'user.offerLetter', 'user.paySlips'])->findOrFail($id);
         return view('admin.employees.show', compact('employee'));
     }
 

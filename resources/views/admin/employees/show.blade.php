@@ -80,6 +80,9 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link rounded-pill fw-bold" id="office-tab" data-bs-toggle="pill" data-bs-target="#office" type="button" role="tab"><i class="mdi mdi-office-building-outline"></i> Office Use & Offer</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill fw-bold" id="payslips-tab" data-bs-toggle="pill" data-bs-target="#payslips" type="button" role="tab"><i class="mdi mdi-cash-multiple"></i> Pay Slips</button>
+                </li>
             </ul>
 
             <div class="tab-content" id="employee-tabContent">
@@ -255,6 +258,43 @@
                                 </div>
                             @else
                                 <p class="text-muted">No offer letter created.</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payslips Tab -->
+                <div class="tab-pane fade" id="payslips" role="tabpanel">
+                    <div class="card shadow-sm border-0 rounded-4">
+                        <div class="card-body">
+                            <h5 class="border-bottom pb-2 text-primary mb-3">Employee Pay Slips</h5>
+                            @if($employee->user->paySlips && $employee->user->paySlips->count() > 0)
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-bordered table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Month</th>
+                                                <th>Year</th>
+                                                <th>Uploaded On</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($employee->user->paySlips->sortByDesc('year')->sortByDesc('month') as $slip)
+                                                <tr>
+                                                    <td>{{ date('F', mktime(0, 0, 0, $slip->month, 1)) }}</td>
+                                                    <td>{{ $slip->year }}</td>
+                                                    <td>{{ $slip->created_at->format('j M Y') }}</td>
+                                                    <td>
+                                                        <a href="{{ $slip->file_path }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="mdi mdi-download"></i> View Pay Slip</a>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-muted">No pay slips have been uploaded for this employee yet.</p>
                             @endif
                         </div>
                     </div>
