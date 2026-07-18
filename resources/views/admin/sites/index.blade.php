@@ -57,11 +57,11 @@
                                             <button class="view_btn me-2" fdprocessedid="pxicc">
                                             </button>
                                         </a>
-                                        <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('sites.tours', $site->id) }}" data-bs-toggle="tooltip" title="View Site Tours">
+                                        <!-- <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('sites.tours', $site->id) }}" data-bs-toggle="tooltip" title="View Site Tours">
                                             <button class="btn btn-sm btn-outline-primary me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; border-radius: 6px;" fdprocessedid="pxicc">
                                                 <i data-feather="map" style="width: 16px; height: 16px;"></i>
                                             </button>
-                                        </a>
+                                        </a> -->
                                         <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('sites.edit', $site->id) }}" data-bs-toggle="tooltip" title="Edit Site">
                                             <button class="editBtn">
                                                 <svg height="1em" viewBox="0 0 512 512">
