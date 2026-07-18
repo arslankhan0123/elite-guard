@@ -272,7 +272,7 @@
                         </thead>
                         <tbody id="tours-tbody">
                             @php
-                                $loopTours = isset($site) && $site ? $site->siteTours : ($siteTours ?? []);
+                                $loopTours = $siteTours ?? [];
                             @endphp
                             @foreach($loopTours as $tour)
                             <tr id="tour-row-{{ $tour->id }}">
@@ -285,8 +285,8 @@
                                     @endif
                                 </td>
                                 @if(!isset($site) || !$site)
-                                    <td class="fw-bold">
-                                        {{ $tour->site->name ?? 'N/A' }}
+                                    <td class="fw-bold text-wrap" style="max-width: 250px;">
+                                        {{ $tour->items->pluck('site.name')->filter()->unique()->implode(', ') ?: 'N/A' }}
                                     </td>
                                 @endif
                                 <td class="fw-bold">
@@ -470,6 +470,7 @@
                     <table class="table nfc-table mb-0">
                         <thead>
                             <tr>
+                                <th>Site Name</th>
                                 <th>Date</th>
                                 <th>Start Time</th>
                                 <th>End Time</th>
@@ -725,7 +726,9 @@
                         }
                     }
 
+                    var siteName = item.site ? item.site.name : 'N/A';
                     var tr = `<tr>
+                        <td class="fw-bold text-muted">${siteName}</td>
                         <td class="fw-bold">${formattedDate}</td>
                         <td class="fw-bold text-primary">${item.start_time}</td>
                         <td class="fw-bold text-primary">${item.end_time}</td>

@@ -110,16 +110,20 @@ class SiteController extends Controller
         
         $weekEnd = $weekStart->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
 
-        $site = Site::with(['siteTours' => function($q) use ($weekStart, $weekEnd) {
-            $q->whereHas('items', function($q2) use ($weekStart, $weekEnd) {
-                $q2->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
-            })
-            ->with(['items' => function($q3) use ($weekStart, $weekEnd) {
-                $q3->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
-                   ->withCount('scans');
-            }])
-            ->orderBy('id', 'desc');
-        }])->findOrFail($site_id);
+        $site = Site::findOrFail($site_id);
+
+        $siteTours = \App\Models\SiteTour::whereHas('items', function($q) use ($weekStart, $weekEnd, $site_id) {
+            $q->where('site_id', $site_id)
+              ->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+        })
+        ->with(['user', 'items' => function($q) use ($weekStart, $weekEnd, $site_id) {
+            $q->where('site_id', $site_id)
+              ->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
+              ->with('site')
+              ->withCount('scans');
+        }])
+        ->orderBy('id', 'desc')
+        ->get();
 
         // Fetch users for the dropdown (user requested to show all users)
         $guards = \App\Models\User::all();
@@ -132,7 +136,7 @@ class SiteController extends Controller
         $weekStartFormatted = $weekStart->format('d M');
         $weekEndFormatted = $weekEnd->format('d M, Y');
 
-        return view('admin.sites.tours', compact('site', 'guards', 'nfcTags', 'prevWeek', 'nextWeek', 'weekStartFormatted', 'weekEndFormatted', 'weekStart'));
+        return view('admin.sites.tours', compact('siteTours', 'site', 'guards', 'nfcTags', 'prevWeek', 'nextWeek', 'weekStartFormatted', 'weekEndFormatted', 'weekStart'));
     }
 
     public function allTours(Request $request)
@@ -149,6 +153,7 @@ class SiteController extends Controller
         // Fetch all site tours that have items in this week
         $siteTours = \App\Models\SiteTour::with(['site.company', 'user', 'items' => function($q) use ($weekStart, $weekEnd) {
             $q->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
+               ->with('site')
                ->withCount('scans');
         }])
         ->whereHas('items', function($q) use ($weekStart, $weekEnd) {
@@ -205,119 +210,113 @@ class SiteController extends Controller
                   ->where('week_start_date', $baseWeekStart->format('Y-m-d'));
             })->get();
 
-            // Group shifts by site_id so we create a site_tour for each site the user is scheduled on
-            $shiftsBySite = $userShifts->groupBy('site_id');
+            $days = $userShifts->map(function($shift) {
+                return \Carbon\Carbon::parse($shift->date)->format('l');
+            })->unique()->values()->all();
 
-            foreach ($shiftsBySite as $siteId => $shifts) {
-                $days = $shifts->map(function($shift) {
-                    return \Carbon\Carbon::parse($shift->date)->format('l');
-                })->unique()->values()->all();
+            $tourData = [
+                'site_id' => $request->site_id,
+                'user_id' => $userId,
+                'name' => $request->name,
+                'description' => $request->description,
+                'scheduled_days' => $days,
+                'is_continuous' => $request->has('is_continuous'),
+                'schedule_type' => $request->schedule_type,
+                'specific_times' => $request->specific_times ?? [],
+                'max_duration' => $request->max_duration ?? [],
+                'tag_type' => $request->tag_type ?? 'nfc',
+                'tags' => $request->tags,
+                'assigned_guards' => $request->assigned_guards ?? [],
+                'interval' => $request->interval,
+                'open_time' => $request->open_time,
+                'grace_time' => $request->grace_time,
+            ];
 
-                $tourData = [
-                    'site_id' => $siteId,
-                    'user_id' => $userId,
-                    'name' => $request->name,
-                    'description' => $request->description,
-                    'scheduled_days' => $days,
-                    'is_continuous' => $request->has('is_continuous'),
-                    'schedule_type' => $request->schedule_type,
-                    'specific_times' => $request->specific_times ?? [],
-                    'max_duration' => $request->max_duration ?? [],
-                    'tag_type' => $request->tag_type ?? 'nfc',
-                    'tags' => $request->tags,
-                    'assigned_guards' => $request->assigned_guards ?? [],
-                    'interval' => $request->interval,
-                    'open_time' => $request->open_time,
-                    'grace_time' => $request->grace_time,
-                ];
-
-                if ($isWeekUpdate) {
-                    $tour = \App\Models\SiteTour::where('site_id', $siteId)
-                        ->where('user_id', $userId)
-                        ->first();
-                        
-                    if ($tour) {
-                        $tour->update($tourData);
-                    } else {
-                        $tour = \App\Models\SiteTour::create($tourData);
-                    }
+            if ($isWeekUpdate) {
+                $tour = \App\Models\SiteTour::where('user_id', $userId)
+                    ->whereHas('items', function($q) use ($baseWeekStart, $weekEndDate) {
+                        $q->whereBetween('date', [$baseWeekStart->format('Y-m-d'), $weekEndDate->format('Y-m-d')]);
+                    })->first();
+                    
+                if ($tour) {
+                    $tour->update($tourData);
                 } else {
                     $tour = \App\Models\SiteTour::create($tourData);
                 }
-                
-                if ($siteId == $request->site_id) {
-                    $lastTour = $tour;
-                }
+            } else {
+                $tour = \App\Models\SiteTour::create($tourData);
+            }
+            
+            $lastTour = $tour;
 
-                $intendedKeys = [];
+            $intendedKeys = [];
 
-                foreach ($shifts as $shift) {
-                    // Generate SiteTourItems for this specific shift
-                    if ($shift->start_time && $shift->end_time && $request->interval) {
-                        $intervalMinutes = (int) $request->interval;
-                        if ($intervalMinutes > 0) {
-                            $startTime = \Carbon\Carbon::parse($shift->start_time);
-                            $endTime = \Carbon\Carbon::parse($shift->end_time);
+            foreach ($userShifts as $shift) {
+                // Generate SiteTourItems for this specific shift
+                if ($shift->start_time && $shift->end_time && $request->interval) {
+                    $intervalMinutes = (int) $request->interval;
+                    if ($intervalMinutes > 0) {
+                        $startTime = \Carbon\Carbon::parse($shift->start_time);
+                        $endTime = \Carbon\Carbon::parse($shift->end_time);
 
-                            if ($endTime->lt($startTime)) {
-                                $endTime->addDay();
+                        if ($endTime->lt($startTime)) {
+                            $endTime->addDay();
+                        }
+
+                        $baseTime = $startTime->copy();
+                        $n = 1;
+
+                        while ($baseTime->copy()->addMinutes(($n - 1) * $intervalMinutes)->lt($endTime)) {
+                            $itemStart = $baseTime->copy()->addMinutes(($n - 1) * $intervalMinutes);
+                            if ($n > 1) {
+                                $itemStart->addMinute();
+                            }
+                            
+                            $itemEnd = $baseTime->copy()->addMinutes($n * $intervalMinutes);
+                            
+                            if ($itemEnd->gt($endTime)) {
+                                $itemEnd = $endTime->copy();
                             }
 
-                            $baseTime = $startTime->copy();
-                            $n = 1;
-
-                            while ($baseTime->copy()->addMinutes(($n - 1) * $intervalMinutes)->lt($endTime)) {
-                                $itemStart = $baseTime->copy()->addMinutes(($n - 1) * $intervalMinutes);
-                                if ($n > 1) {
-                                    $itemStart->addMinute();
-                                }
-                                
-                                $itemEnd = $baseTime->copy()->addMinutes($n * $intervalMinutes);
-                                
-                                if ($itemEnd->gt($endTime)) {
-                                    $itemEnd = $endTime->copy();
-                                }
-
-                                if ($itemStart->lt($itemEnd)) {
-                                    $date = $shift->date;
-                                    $key = $date . '|' . $itemStart->format('H:i:s') . '|' . $itemEnd->format('H:i:s');
-                                    $intendedKeys[$key] = [
-                                        'site_tour_id' => $tour->id,
-                                        'user_id' => $tour->user_id,
-                                        'site_id' => $tour->site_id,
-                                        'type' => null,
-                                        'status' => false,
-                                        'date' => $date,
-                                        'start_time' => $itemStart->format('H:i:s'),
-                                        'end_time' => $itemEnd->format('H:i:s'),
-                                        'created_at' => now()->toDateTimeString(),
-                                        'updated_at' => now()->toDateTimeString(),
-                                    ];
-                                }
-                                
-                                $n++;
+                            if ($itemStart->lt($itemEnd)) {
+                                $date = $shift->date;
+                                $key = $date . '|' . $shift->site_id . '|' . $itemStart->format('H:i:s') . '|' . $itemEnd->format('H:i:s');
+                                $intendedKeys[$key] = [
+                                    'site_tour_id' => $tour->id,
+                                    'user_id' => $tour->user_id,
+                                    'site_id' => $shift->site_id,
+                                    'type' => null,
+                                    'status' => false,
+                                    'date' => $date,
+                                    'start_time' => $itemStart->format('H:i:s'),
+                                    'end_time' => $itemEnd->format('H:i:s'),
+                                    'created_at' => now()->toDateTimeString(),
+                                    'updated_at' => now()->toDateTimeString(),
+                                ];
                             }
+                            
+                            $n++;
                         }
                     }
                 }
+            }
 
-                $existingItems = \App\Models\SiteTourItem::where('site_tour_id', $tour->id)->get();
+            $existingItems = \App\Models\SiteTourItem::where('site_tour_id', $tour->id)->get();
+            
+            foreach ($existingItems as $existing) {
+                $sTime = \Carbon\Carbon::parse($existing->start_time)->format('H:i:s');
+                $eTime = \Carbon\Carbon::parse($existing->end_time)->format('H:i:s');
+                $key = $existing->date . '|' . $existing->site_id . '|' . $sTime . '|' . $eTime;
                 
-                foreach ($existingItems as $existing) {
-                    $sTime = \Carbon\Carbon::parse($existing->start_time)->format('H:i:s');
-                    $eTime = \Carbon\Carbon::parse($existing->end_time)->format('H:i:s');
-                    $key = $existing->date . '|' . $sTime . '|' . $eTime;
-                    
-                    if (isset($intendedKeys[$key])) {
-                        unset($intendedKeys[$key]);
-                    } else {
-                        $existing->delete();
-                    }
+                if (isset($intendedKeys[$key])) {
+                    unset($intendedKeys[$key]);
+                } else {
+                    $existing->delete();
                 }
-                
-                if (!empty($intendedKeys)) {
-                    \App\Models\SiteTourItem::insert(array_values($intendedKeys));
-                }
+            }
+            
+            if (!empty($intendedKeys)) {
+                \App\Models\SiteTourItem::insert(array_values($intendedKeys));
             }
         }
 
