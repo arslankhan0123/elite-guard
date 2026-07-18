@@ -320,11 +320,11 @@
                         </div>
                     </div>
 
+                    <!-- Commented out Scheduled Days field
                     <div class="field-card shadow-sm">
-                        <!-- Scheduled Days -->
                         <div class="form-group mb-4" id="group-scheduled_days">
                             <label for="scheduled_days" class="form-label">Scheduled Days*</label>
-                            <select class="form-select select2-multiple" id="scheduled_days" name="scheduled_days[]" multiple="multiple" data-placeholder="Select Days" required>
+                            <select class="form-select select2-multiple" id="scheduled_days" name="scheduled_days[]" multiple="multiple" data-placeholder="Select Days">
                                 <option value="Monday">Monday</option>
                                 <option value="Tuesday">Tuesday</option>
                                 <option value="Wednesday">Wednesday</option>
@@ -335,8 +335,9 @@
                             </select>
                             <div class="text-danger-custom d-none" id="error-scheduled_days">Scheduled Days are required</div>
                         </div>
+                    -->
 
-
+                    <div class="field-card shadow-sm">
                         <div class="row mt-3">
                             <div class="col-md-4 form-group" id="group-interval">
                                 <label for="interval" class="form-label">Interval</label>
@@ -353,11 +354,11 @@
                         </div>
                     </div>
 
+                    <!-- Commented out Tag Type card
                     <div class="field-card shadow-sm mb-0 mt-3">
-                        <!-- Tag Type -->
                         <div class="form-group mb-0" id="group-tag_type">
                             <label class="form-label">Select Tag Type*</label>
-                            <select class="form-select" id="tag_type" name="tag_type" required>
+                            <select class="form-select" id="tag_type" name="tag_type">
                                 <option value="" disabled selected>Select...</option>
                                 <option value="nfc">NFC</option>
                                 <option value="image">Image</option>
@@ -366,6 +367,7 @@
                             <div class="text-danger-custom d-none" id="error-tag_type">Tag Type is required</div>
                         </div>
                     </div>
+                    -->
 
                 </form>
             </div>
@@ -731,8 +733,8 @@
             }
 
             checkField('name');
-            checkField('tag_type');
-            checkField('scheduled_days');
+            // checkField('tag_type');
+            // checkField('scheduled_days');
 
             if(!isValid) {
                 toastr.error('Please fill all required fields');
