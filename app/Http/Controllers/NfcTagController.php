@@ -37,7 +37,8 @@ class NfcTagController extends Controller
     {
         $request->validate([
             'site_id' => 'required|exists:sites,id',
-            'uid'     => 'required|string|max:255|unique:nfc_tags,uid',
+            'type'    => 'required|string|in:nfc,image,both',
+            'uid'     => 'required_if:type,nfc,both|nullable|string|max:255|unique:nfc_tags,uid',
             'name'    => 'required|string|max:255',
             'status'  => 'required|boolean',
         ]);
@@ -51,7 +52,8 @@ class NfcTagController extends Controller
     {
         $request->validate([
             'site_id' => 'required|exists:sites,id',
-            'uid'     => 'required|string|max:255|unique:nfc_tags,uid',
+            'type'    => 'required|string|in:nfc,image,both',
+            'uid'     => 'required_if:type,nfc,both|nullable|string|max:255|unique:nfc_tags,uid',
             'name'    => 'required|string|max:255',
             'status'  => 'required|boolean',
         ]);
@@ -79,7 +81,8 @@ class NfcTagController extends Controller
 
         $request->validate([
             'site_id' => 'required|exists:sites,id',
-            'uid'     => 'required|string|max:255|unique:nfc_tags,uid,' . $nfcTag->id,
+            'type'    => 'required|string|in:nfc,image,both',
+            'uid'     => 'required_if:type,nfc,both|nullable|string|max:255|unique:nfc_tags,uid,' . $nfcTag->id,
             'name'    => 'required|string|max:255',
             'status'  => 'required|boolean',
         ]);
@@ -95,7 +98,8 @@ class NfcTagController extends Controller
 
         $request->validate([
             'site_id' => 'required|exists:sites,id',
-            'uid'     => 'required|string|max:255|unique:nfc_tags,uid,' . $nfcTag->id,
+            'type'    => 'required|string|in:nfc,image,both',
+            'uid'     => 'required_if:type,nfc,both|nullable|string|max:255|unique:nfc_tags,uid,' . $nfcTag->id,
             'name'    => 'required|string|max:255',
             'status'  => 'required|boolean',
         ]);

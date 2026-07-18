@@ -13,6 +13,7 @@ class NfcTag extends Model
         'site_id',
         'uid',
         'name',
+        'type',
         'status',
     ];
 

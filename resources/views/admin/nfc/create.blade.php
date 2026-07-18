@@ -25,7 +25,7 @@
                     <h5 class="text-primary">🏷️ NFC Tag Information</h5>
 
                     <div class="row mt-3">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Select Site <span class="text-danger">*</span></label>
                             <select name="site_id" class="form-select" required>
                                 <option value="">-- Select Site --</option>
@@ -38,15 +38,26 @@
                             @error('site_id') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Tag Name <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control" value="{{ old('name') }}" required placeholder="e.g. Entrance Gate A, Patrol Point 5">
                             @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Tag Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="tag_type" name="type" required>
+                                <option value="" disabled {{ old('type') == '' ? 'selected' : '' }}>Select...</option>
+                                <option value="nfc" {{ old('type', 'nfc') == 'nfc' ? 'selected' : '' }}>NFC</option>
+                                <option value="image" {{ old('type') == 'image' ? 'selected' : '' }}>Image</option>
+                                <option value="both" {{ old('type') == 'both' ? 'selected' : '' }}>NFC + Image</option>
+                            </select>
+                            @error('type') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-8 mb-3">
+                        <div class="col-md-8 mb-3" id="uid_container">
                             <label class="form-label">NFC UID <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="text" name="uid" id="nfc_uid" class="form-control" value="{{ old('uid', $suggestedUid) }}" required placeholder="e.g. NFC-8273645">
@@ -56,7 +67,7 @@
                             @error('uid') <br><span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-4 mb-3" id="status_container">
                             <label class="form-label">Status <span class="text-danger">*</span></label>
                             <select name="status" class="form-select" required>
                                 <option value="1" {{ old('status') == '1' ? 'selected' : '' }}>Active</option>
@@ -90,5 +101,28 @@
         }
         document.getElementById('nfc_uid').value = result;
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const tagTypeSelect = document.getElementById('tag_type');
+        const uidContainer = document.getElementById('uid_container');
+        const nfcUidInput = document.getElementById('nfc_uid');
+        const statusContainer = document.getElementById('status_container');
+
+        function toggleUidField() {
+            if (tagTypeSelect.value === 'image') {
+                uidContainer.style.display = 'none';
+                nfcUidInput.removeAttribute('required');
+                nfcUidInput.value = '';
+                statusContainer.className = 'col-md-12 mb-3';
+            } else {
+                uidContainer.style.display = 'block';
+                nfcUidInput.setAttribute('required', 'required');
+                statusContainer.className = 'col-md-4 mb-3';
+            }
+        }
+
+        tagTypeSelect.addEventListener('change', toggleUidField);
+        toggleUidField();
+    });
 </script>
 @endsection

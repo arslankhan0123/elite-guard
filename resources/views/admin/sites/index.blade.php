@@ -53,7 +53,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group" aria-label="Site Actions">
-                                        <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('sites.nfcTags', $site->id) }}" data-bs-toggle="tooltip" title="View Site Nfc Tags">
+                                        <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('sites.nfcTags', $site->id) }}" data-bs-toggle="tooltip" title="View Check Points">
                                             <button class="view_btn me-2" fdprocessedid="pxicc">
                                             </button>
                                         </a>
