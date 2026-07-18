@@ -31,6 +31,26 @@ class SiteTourItemRepository
             ->groupBy('site_tour_item_id');
 
         foreach ($items as $item) {
+            // Calculate new start and end times based on siteTour's open_time and grace_time
+            $openTime = 0;
+            $graceTime = 0;
+            if ($item->siteTour) {
+                $openTime = (int) ($item->siteTour->open_time ?? 0);
+                $graceTime = (int) ($item->siteTour->grace_time ?? 0);
+            }
+
+            if ($item->start_time) {
+                $startTimeObj = \Carbon\Carbon::parse($item->start_time);
+                $newStart = $startTimeObj->copy()->subMinutes($openTime)->format('H:i:s');
+                $newEnd = $startTimeObj->copy()->addMinutes($graceTime)->format('H:i:s');
+
+                $item->setAttribute('new_start_time', $newStart);
+                $item->setAttribute('new_end_time', $newEnd);
+            } else {
+                $item->setAttribute('new_start_time', null);
+                $item->setAttribute('new_end_time', null);
+            }
+
             if ($item->site && $item->site->relationLoaded('nfcTags')) {
                 $itemScans = isset($scans[$item->id]) ? $scans[$item->id]->keyBy('nfc_tag_id') : collect();
                 
