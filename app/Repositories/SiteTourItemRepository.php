@@ -51,9 +51,15 @@ class SiteTourItemRepository
                 $item->setAttribute('new_end_time', null);
             }
 
+            $totalTags = 0;
+            $scannedTagsCount = 0;
+
             if ($item->site && $item->site->relationLoaded('nfcTags')) {
                 $itemScans = isset($scans[$item->id]) ? $scans[$item->id]->keyBy('nfc_tag_id') : collect();
                 
+                $totalTags = $item->site->nfcTags->count();
+                $scannedTagsCount = $itemScans->count();
+
                 // Clone the site and tags so they don't overwrite each other across different tour items
                 $siteClone = clone $item->site;
                 $nfcTagsClone = $siteClone->nfcTags->map(function ($tag) use ($itemScans) {
@@ -65,6 +71,9 @@ class SiteTourItemRepository
                 $siteClone->setRelation('nfcTags', $nfcTagsClone);
                 $item->setRelation('site', $siteClone);
             }
+
+            $item->setAttribute('total_tags', $totalTags);
+            $item->setAttribute('scanned_tags_count', $scannedTagsCount);
         }
         
         return [
