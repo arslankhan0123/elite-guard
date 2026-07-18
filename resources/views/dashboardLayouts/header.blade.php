@@ -144,6 +144,14 @@
                                 <span data-key="t-sites">Sites</span>
                             </a>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('sites.tours.all')}}"
+                                id="topnav-tours" role="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="map"></i>
+                                <span data-key="t-tours">Site Tours</span>
+                            </a>
+                        </li>
                         <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('nfc.index')}}" id="topnav-nfc"
                                 role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

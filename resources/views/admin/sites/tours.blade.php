@@ -155,7 +155,13 @@
                         <i data-feather="map" style="width:20px;height:20px;color:#fff;"></i>
                     </div>
                     <div>
-                        <h5 class="mb-0 fw-bold text-white" style="font-size:1.05rem;">{{ $site->name }} &mdash; Tours</h5>
+                        <h5 class="mb-0 fw-bold text-white" style="font-size:1.05rem;">
+                            @if(isset($site) && $site)
+                                {{ $site->name }} &mdash; Tours
+                            @else
+                                All Site Tours
+                            @endif
+                        </h5>
                         <span class="text-white d-block" style="opacity:0.75;font-size:0.8rem;">Manage site tour configurations</span>
                     </div>
                 </div>
@@ -168,43 +174,84 @@
                     @php
                         $isPastWeek = $weekStart->lt(\Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY));
                     @endphp
-                    @if($site->siteTours->count() > 0)
-                        @php
-                            $masterTour = $site->siteTours->first();
-                            $masterUsers = $site->siteTours->pluck('user_id')->filter()->toArray();
-                            $masterDays = is_string($masterTour->scheduled_days) ? json_decode($masterTour->scheduled_days, true) : ($masterTour->scheduled_days ?? []);
-                            $masterTourData = [
-                                'name' => $masterTour->name,
-                                'interval' => $masterTour->interval,
-                                'open_time' => $masterTour->open_time,
-                                'grace_time' => $masterTour->grace_time,
-                                'tag_type' => $masterTour->tag_type,
-                                'scheduled_days' => $masterDays,
-                                'users' => array_values(array_unique($masterUsers))
-                            ];
-                        @endphp
-                        <button type="button" class="btn btn-warning fw-semibold px-4 text-dark"
-                            style="border-radius:8px; font-size:0.85rem;"
-                            data-tour-config="{{ json_encode($masterTourData) }}"
-                            id="btnUpdateWeekTour"
-                            {{ $isPastWeek ? 'disabled' : '' }}>
-                            <i data-feather="edit" style="width:15px;height:15px;" class="me-1"></i> Update Tour
-                        </button>
-                        <form action="{{ route('sites.tours.deleteWeek', ['site_id' => $site->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to completely delete all tours assigned in this week? This action cannot be undone.');">
-                            @csrf
-                            @method('DELETE')
-                            <input type="hidden" name="week_start_date" value="{{ $weekStart->format('Y-m-d') }}">
-                            <button type="submit" class="btn btn-danger fw-semibold px-3" style="border-radius:8px; font-size:0.85rem;" title="Delete All Tours for Week" {{ $isPastWeek ? 'disabled' : '' }}>
-                                <i data-feather="trash-2" style="width:15px;height:15px;" class="me-0"></i>
+                    @if(isset($site) && $site)
+                        @if($site->siteTours->count() > 0)
+                            @php
+                                $masterTour = $site->siteTours->first();
+                                $masterUsers = $site->siteTours->pluck('user_id')->filter()->toArray();
+                                $masterDays = is_string($masterTour->scheduled_days) ? json_decode($masterTour->scheduled_days, true) : ($masterTour->scheduled_days ?? []);
+                                $masterTourData = [
+                                    'name' => $masterTour->name,
+                                    'interval' => $masterTour->interval,
+                                    'open_time' => $masterTour->open_time,
+                                    'grace_time' => $masterTour->grace_time,
+                                    'tag_type' => $masterTour->tag_type,
+                                    'scheduled_days' => $masterDays,
+                                    'users' => array_values(array_unique($masterUsers))
+                                ];
+                            @endphp
+                            <button type="button" class="btn btn-warning fw-semibold px-4 text-dark"
+                                style="border-radius:8px; font-size:0.85rem;"
+                                data-tour-config="{{ json_encode($masterTourData) }}"
+                                id="btnUpdateWeekTour"
+                                {{ $isPastWeek ? 'disabled' : '' }}>
+                                <i data-feather="edit" style="width:15px;height:15px;" class="me-1"></i> Update Tour
                             </button>
-                        </form>
+                            <form action="{{ route('sites.tours.deleteWeek', ['site_id' => $site->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to completely delete all tours assigned in this week? This action cannot be undone.');">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="week_start_date" value="{{ $weekStart->format('Y-m-d') }}">
+                                <button type="submit" class="btn btn-danger fw-semibold px-3" style="border-radius:8px; font-size:0.85rem;" title="Delete All Tours for Week" {{ $isPastWeek ? 'disabled' : '' }}>
+                                    <i data-feather="trash-2" style="width:15px;height:15px;" class="me-0"></i>
+                                </button>
+                            </form>
+                        @else
+                            <button type="button" class="btn btn-light fw-semibold px-4"
+                                style="border-radius:8px; font-size:0.85rem;"
+                                data-bs-toggle="modal" data-bs-target="#tourModal" id="btnCreateTour"
+                                {{ $isPastWeek ? 'disabled' : '' }}>
+                                <i data-feather="plus-circle" style="width:15px;height:15px;" class="me-1"></i> New Tour
+                            </button>
+                        @endif
                     @else
-                        <button type="button" class="btn btn-light fw-semibold px-4"
-                            style="border-radius:8px; font-size:0.85rem;"
-                            data-bs-toggle="modal" data-bs-target="#tourModal" id="btnCreateTour"
-                            {{ $isPastWeek ? 'disabled' : '' }}>
-                            <i data-feather="plus-circle" style="width:15px;height:15px;" class="me-1"></i> New Tour
-                        </button>
+                        @if(isset($siteTours) && $siteTours->count() > 0)
+                            @php
+                                $masterTour = $siteTours->first();
+                                $masterUsers = $siteTours->pluck('user_id')->filter()->toArray();
+                                $masterDays = is_string($masterTour->scheduled_days) ? json_decode($masterTour->scheduled_days, true) : ($masterTour->scheduled_days ?? []);
+                                $masterTourData = [
+                                    'name' => $masterTour->name,
+                                    'interval' => $masterTour->interval,
+                                    'open_time' => $masterTour->open_time,
+                                    'grace_time' => $masterTour->grace_time,
+                                    'tag_type' => $masterTour->tag_type,
+                                    'scheduled_days' => $masterDays,
+                                    'users' => array_values(array_unique($masterUsers))
+                                ];
+                            @endphp
+                            <button type="button" class="btn btn-warning fw-semibold px-4 text-dark"
+                                style="border-radius:8px; font-size:0.85rem;"
+                                data-tour-config="{{ json_encode($masterTourData) }}"
+                                id="btnUpdateWeekTour"
+                                {{ $isPastWeek ? 'disabled' : '' }}>
+                                <i data-feather="edit" style="width:15px;height:15px;" class="me-1"></i> Update Tour
+                            </button>
+                            <form action="{{ route('sites.tours.deleteWeek', ['site_id' => 'all']) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to completely delete all tours assigned in this week across all sites? This action cannot be undone.');">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="week_start_date" value="{{ $weekStart->format('Y-m-d') }}">
+                                <button type="submit" class="btn btn-danger fw-semibold px-3" style="border-radius:8px; font-size:0.85rem;" title="Delete All Tours for Week" {{ $isPastWeek ? 'disabled' : '' }}>
+                                    <i data-feather="trash-2" style="width:15px;height:15px;" class="me-0"></i>
+                                </button>
+                            </form>
+                        @else
+                            <button type="button" class="btn btn-light fw-semibold px-4"
+                                style="border-radius:8px; font-size:0.85rem;"
+                                data-bs-toggle="modal" data-bs-target="#tourModal" id="btnCreateTour"
+                                {{ $isPastWeek ? 'disabled' : '' }}>
+                                <i data-feather="plus-circle" style="width:15px;height:15px;" class="me-1"></i> New Tour
+                            </button>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -214,6 +261,9 @@
                         <thead>
                             <tr>
                                 <th>Tour Name</th>
+                                @if(!isset($site) || !$site)
+                                    <th>Site Name</th>
+                                @endif
                                 <th>User Name</th>
                                 <th>Tag Type</th>
                                 <th>Days</th>
@@ -221,7 +271,10 @@
                             </tr>
                         </thead>
                         <tbody id="tours-tbody">
-                            @foreach($site->siteTours as $tour)
+                            @php
+                                $loopTours = isset($site) && $site ? $site->siteTours : ($siteTours ?? []);
+                            @endphp
+                            @foreach($loopTours as $tour)
                             <tr id="tour-row-{{ $tour->id }}">
                                 <td class="fw-bold">
                                     {{ $tour->name }}
@@ -231,6 +284,11 @@
                                         </div>
                                     @endif
                                 </td>
+                                @if(!isset($site) || !$site)
+                                    <td class="fw-bold">
+                                        {{ $tour->site->name ?? 'N/A' }}
+                                    </td>
+                                @endif
                                 <td class="fw-bold">
                                     @if($tour->user)
                                         <i data-feather="user" style="width:12px;height:12px;"></i> {{ $tour->user->name }}
@@ -307,7 +365,7 @@
             <div class="modal-body p-4">
                 <form id="tourForm">
                     @csrf
-                    <input type="hidden" name="site_id" value="{{ $site->id }}">
+                    <input type="hidden" name="site_id" value="{{ isset($site) && $site ? $site->id : '' }}">
                     <input type="hidden" name="tour_id" id="tour_id" value="">
                     <input type="hidden" name="week_start_date" id="week_start_date" value="{{ $weekStart->format('Y-m-d') }}">
 
@@ -319,6 +377,22 @@
                             <div class="text-danger-custom d-none" id="error-name">Tour Name is required</div>
                         </div>
                     </div>
+
+                    @if(!isset($site) || !$site)
+                    <div class="field-card shadow-sm">
+                        <!-- Site Selection -->
+                        <div class="form-group mb-3" id="group-modal_site_id">
+                            <label for="modal_site_id" class="form-label">Select Site*</label>
+                            <select class="form-select" id="modal_site_id" name="site_id" required>
+                                <option value="" disabled selected>Select Site...</option>
+                                @foreach($sites as $s)
+                                    <option value="{{ $s->id }}">{{ $s->name }}</option>
+                                @endforeach
+                            </select>
+                            <div class="text-danger-custom d-none" id="error-modal_site_id">Site is required</div>
+                        </div>
+                    </div>
+                    @endif
 
                     <!-- Commented out Scheduled Days field
                     <div class="field-card shadow-sm">
@@ -544,7 +618,7 @@
         }
 
         // Open Modal for Create
-        $('#btnCreateTour').on('click', function() {
+        $(document).on('click', '#btnCreateTour', function() {
             $('#tourForm')[0].reset();
             $('#tour_id').val('');
             $('#tourModalLabel').text('New Tour');
@@ -557,6 +631,10 @@
             $('#interval').val('');
             $('#open_time').val('');
             $('#grace_time').val('');
+
+            if ($('#modal_site_id').length > 0) {
+                $('#modal_site_id').val('');
+            }
             
             clearErrors();
         });
@@ -594,6 +672,9 @@
             $('#interval').val(tour.interval);
             $('#open_time').val(tour.open_time);
             $('#grace_time').val(tour.grace_time);
+            if ($('#modal_site_id').length > 0) {
+                $('#modal_site_id').val(tour.site_id);
+            }
             
             $('#scheduled_days').val(tour.scheduled_days).trigger('change');
 
@@ -716,7 +797,7 @@
         $('#btnSaveTour').on('click', function() {
             var id = $('#tour_id').val();
             var isEdit = id !== '' && id !== 'week_update';
-            var url = isEdit ? '{{ url("sites/tours/update") }}/' + id : '{{ route("sites.tours.store", $site->id) }}';
+            var url = isEdit ? '{{ url("sites/tours/update") }}/' + id : '{{ route("sites.tours.store") }}';
             var formData = new FormData($('#tourForm')[0]);
             
             clearErrors();
@@ -733,6 +814,9 @@
             }
 
             checkField('name');
+            if ($('#modal_site_id').length > 0) {
+                checkField('modal_site_id');
+            }
             // checkField('tag_type');
             // checkField('scheduled_days');
 

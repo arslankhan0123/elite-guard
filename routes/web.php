@@ -73,6 +73,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/update/{site_id}', [SiteController::class, 'update'])->name('sites.update');
         Route::get('/delete/{site_id}', [SiteController::class, 'delete'])->name('sites.delete');
         Route::get('/{site_id}/nfc-tags', [SiteController::class, 'nfcTags'])->name('sites.nfcTags');
+        Route::get('/tours', [SiteController::class, 'allTours'])->name('sites.tours.all');
         Route::get('/{site_id}/tours', [SiteController::class, 'tours'])->name('sites.tours');
         Route::post('/tours/store', [SiteController::class, 'storeTour'])->name('sites.tours.store');
         Route::post('/tours/update/{id}', [SiteController::class, 'updateTour'])->name('sites.tours.update');

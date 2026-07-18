@@ -11,6 +11,7 @@ class SiteTour extends Model
 
     protected $fillable = [
         'site_id',
+        'shift_id',
         'name',
         'description',
         'scheduled_days',
