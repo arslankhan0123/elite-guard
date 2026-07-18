@@ -172,7 +172,7 @@
                         <a href="?week={{ $nextWeek }}" class="text-decoration-none text-muted px-2"><i data-feather="chevron-right" style="width:16px;"></i></a>
                     </div>
                     @php
-                        $isPastWeek = $weekStart->lt(\Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY));
+                        $isPastWeek = $weekStart->lte(\Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY));
                     @endphp
                     @if(isset($site) && $site)
                         @if($site->siteTours->count() > 0)
@@ -190,13 +190,13 @@
                                     'users' => array_values(array_unique($masterUsers))
                                 ];
                             @endphp
-                            <button type="button" class="btn btn-warning fw-semibold px-4 text-dark"
+                            <!-- <button type="button" class="btn btn-warning fw-semibold px-4 text-dark"
                                 style="border-radius:8px; font-size:0.85rem;"
                                 data-tour-config="{{ json_encode($masterTourData) }}"
                                 id="btnUpdateWeekTour"
                                 {{ $isPastWeek ? 'disabled' : '' }}>
                                 <i data-feather="edit" style="width:15px;height:15px;" class="me-1"></i> Update Tour
-                            </button>
+                            </button> -->
                             <form action="{{ route('sites.tours.deleteWeek', ['site_id' => $site->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to completely delete all tours assigned in this week? This action cannot be undone.');">
                                 @csrf
                                 @method('DELETE')
@@ -229,13 +229,13 @@
                                     'users' => array_values(array_unique($masterUsers))
                                 ];
                             @endphp
-                            <button type="button" class="btn btn-warning fw-semibold px-4 text-dark"
+                            <!-- <button type="button" class="btn btn-warning fw-semibold px-4 text-dark"
                                 style="border-radius:8px; font-size:0.85rem;"
                                 data-tour-config="{{ json_encode($masterTourData) }}"
                                 id="btnUpdateWeekTour"
                                 {{ $isPastWeek ? 'disabled' : '' }}>
                                 <i data-feather="edit" style="width:15px;height:15px;" class="me-1"></i> Update Tour
-                            </button>
+                            </button> -->
                             <form action="{{ route('sites.tours.deleteWeek', ['site_id' => 'all']) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to completely delete all tours assigned in this week across all sites? This action cannot be undone.');">
                                 @csrf
                                 @method('DELETE')
@@ -377,22 +377,7 @@
                             <div class="text-danger-custom d-none" id="error-name">Tour Name is required</div>
                         </div>
                     </div>
-
-                    @if(!isset($site) || !$site)
-                    <div class="field-card shadow-sm">
-                        <!-- Site Selection -->
-                        <div class="form-group mb-3" id="group-modal_site_id">
-                            <label for="modal_site_id" class="form-label">Select Site*</label>
-                            <select class="form-select" id="modal_site_id" name="site_id" required>
-                                <option value="" disabled selected>Select Site...</option>
-                                @foreach($sites as $s)
-                                    <option value="{{ $s->id }}">{{ $s->name }}</option>
-                                @endforeach
-                            </select>
-                            <div class="text-danger-custom d-none" id="error-modal_site_id">Site is required</div>
-                        </div>
-                    </div>
-                    @endif
+                    
 
                     <!-- Commented out Scheduled Days field
                     <div class="field-card shadow-sm">
@@ -817,9 +802,7 @@
             }
 
             checkField('name');
-            if ($('#modal_site_id').length > 0) {
-                checkField('modal_site_id');
-            }
+            
             // checkField('tag_type');
             // checkField('scheduled_days');
 

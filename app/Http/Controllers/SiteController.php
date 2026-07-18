@@ -186,7 +186,7 @@ class SiteController extends Controller
         $schedules = Schedule::where('week_start_date', $baseWeekStart->format('Y-m-d'))->get();
         $scheduledUserIds = $schedules->pluck('user_id')->unique();
         $request->validate([
-            'site_id' => 'required|exists:sites,id',
+            'site_id' => 'nullable|exists:sites,id',
             'name' => 'required|string|max:255',
             'scheduled_days' => 'nullable|array',
             'tag_type' => 'nullable|string',
@@ -198,7 +198,7 @@ class SiteController extends Controller
             'grace_time' => 'nullable|string|max:255',
         ]);
 
-        $site = \App\Models\Site::findOrFail($request->site_id);
+        $site = $request->site_id ? \App\Models\Site::find($request->site_id) : null;
 
         $lastTour = null;
         $isWeekUpdate = $request->tour_id === 'week_update';
@@ -214,8 +214,11 @@ class SiteController extends Controller
                 return \Carbon\Carbon::parse($shift->date)->format('l');
             })->unique()->values()->all();
 
+            $firstShift = $userShifts->first();
+            $tourSiteId = $firstShift ? $firstShift->site_id : ($request->site_id ?? null);
+
             $tourData = [
-                'site_id' => $request->site_id,
+                'site_id' => $tourSiteId,
                 'user_id' => $userId,
                 'name' => $request->name,
                 'description' => $request->description,
