@@ -58,7 +58,7 @@
                 </a>
                 <a class="text-decoration-none text-dark" href="{{ route('reports.download', ['type' => $type, 'id' => $report->id]) }}" data-bs-toggle="tooltip" title="Download PDF">
                     <button class="btn btn-sm btn-danger px-2 d-flex align-items-center justify-content-center" style="height: 1.875rem; width: 1.875rem; border-radius: 6px;">
-                        <i class="fa-solid fa-file-pdf" style="font-size: 18px; color: white;"></i>
+                        <i class="fa-solid fa-file-arrow-down" style="font-size: 18px; color: white;"></i>
                     </button>
                 </a>
             </div>
