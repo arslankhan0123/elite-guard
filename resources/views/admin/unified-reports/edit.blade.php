@@ -61,8 +61,14 @@
 
                                     @if($isLongText)
                                         <textarea name="{{ $key }}" id="{{ $key }}" class="form-control rounded-3" rows="4">{{ old($key, $value) }}</textarea>
+                                    @elseif(trim(strtolower($key)) == 'decision')
+                                        <select name="{{ $key }}" id="{{ $key }}" class="form-select rounded-3">
+                                            <option value="Pending" {{ old($key, $value) == 'Pending' || old($key, $value) == '' || is_null($value) ? 'selected' : '' }}>Pending</option>
+                                            <option value="Approved" {{ old($key, $value) == 'Approved' ? 'selected' : '' }}>Approved</option>
+                                            <option value="Denied" {{ old($key, $value) == 'Denied' ? 'selected' : '' }}>Denied</option>
+                                        </select>
                                     @elseif($isDate)
-                                        <input type="date" name="{{ $key }}" id="{{ $key }}" class="form-control rounded-3" value="{{ old($key, $value) }}">
+                                        <input type="date" name="{{ $key }}" id="{{ $key }}" class="form-control rounded-3" value="{{ old($key, ($value instanceof \Carbon\Carbon || $value instanceof \Illuminate\Support\Carbon) ? $value->format('Y-m-d') : (!empty($value) ? date('Y-m-d', strtotime($value)) : '')) }}">
                                     @elseif($isTime)
                                         <input type="time" name="{{ $key }}" id="{{ $key }}" class="form-control rounded-3" value="{{ old($key, $value) }}">
                                     @elseif(is_bool($value) || in_array(strtolower((string)$value), ['true', 'false', '1', '0']) && !is_numeric($value))
