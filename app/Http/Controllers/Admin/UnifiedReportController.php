@@ -150,4 +150,94 @@ class UnifiedReportController extends Controller
 
         return view('admin.unified-reports.show', compact('report', 'type', 'title'));
     }
+
+    public function edit($type, $id)
+    {
+        $report = $this->getReportInstance($type, $id);
+        $title = 'Edit ' . ucwords(str_replace('-', ' ', $type)) . ' #' . $id;
+
+        $hiddenFields = ['id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'documents', 'signature'];
+        $attributes = collect($report->getAttributes())->except($hiddenFields);
+
+        return view('admin.unified-reports.edit', compact('report', 'type', 'title', 'attributes'));
+    }
+
+    public function update(Request $request, $type, $id)
+    {
+        $report = $this->getReportInstance($type, $id);
+        $hiddenFields = ['id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'documents', 'signature'];
+        $attributes = collect($report->getAttributes())->except($hiddenFields);
+
+        $rules = [];
+        foreach ($attributes as $key => $val) {
+            $rules[$key] = 'nullable';
+        }
+        $validated = $request->validate($rules);
+
+        $report->update($validated);
+
+        return redirect()->route('reports.all', ['type' => $type])->with('success', ucwords(str_replace('-', ' ', $type)) . ' updated successfully!');
+    }
+
+    public function downloadPdf($type, $id)
+    {
+        $report = null;
+        $title = ucwords(str_replace('-', ' ', $type)) . ' Report';
+
+        switch ($type) {
+            case 'disciplinary':
+                $report = ReportSecurityGuardDisciplinaryForm::with('user')->findOrFail($id);
+                break;
+            case 'incident':
+                $report = ReportIncidentForm::with(['user', 'images'])->findOrFail($id);
+                break;
+            case 'general':
+                $report = ReportGeneralForm::with(['user', 'images'])->findOrFail($id);
+                break;
+            case 'daily-shift':
+                $report = ReportDailyShiftForm::with(['user', 'patrolEntries'])->findOrFail($id);
+                break;
+            case 'assessments':
+                $report = Assessment::with('user')->findOrFail($id);
+                break;
+            case 'vehicle-checklist':
+                $report = DailyVehicleChecklist::with('user')->findOrFail($id);
+                break;
+            case 'fire-watch':
+                $report = \App\Models\FireWatchReport::with(['user', 'patrolLogs'])->findOrFail($id);
+                break;
+            case 'shift-adjustment':
+                $report = \App\Models\ShiftAdjustmentForm::with('user')->findOrFail($id);
+                break;
+            default:
+                abort(404);
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.unified-reports.pdf', compact('report', 'type', 'title'));
+        return $pdf->download(str_replace(' ', '_', strtolower($title)) . '_' . $id . '.pdf');
+    }
+
+    private function getReportInstance($type, $id)
+    {
+        switch ($type) {
+            case 'disciplinary':
+                return ReportSecurityGuardDisciplinaryForm::findOrFail($id);
+            case 'incident':
+                return ReportIncidentForm::findOrFail($id);
+            case 'general':
+                return ReportGeneralForm::findOrFail($id);
+            case 'daily-shift':
+                return ReportDailyShiftForm::findOrFail($id);
+            case 'assessments':
+                return Assessment::findOrFail($id);
+            case 'vehicle-checklist':
+                return DailyVehicleChecklist::findOrFail($id);
+            case 'fire-watch':
+                return \App\Models\FireWatchReport::findOrFail($id);
+            case 'shift-adjustment':
+                return \App\Models\ShiftAdjustmentForm::findOrFail($id);
+            default:
+                abort(404);
+        }
+    }
 }

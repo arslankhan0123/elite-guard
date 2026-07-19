@@ -210,6 +210,9 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
     Route::group(['prefix' => '/security-reports'], function () {
         Route::get('/all', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'index'])->name('reports.all');
         Route::get('/show/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'show'])->name('reports.show');
+        Route::get('/edit/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'edit'])->name('reports.edit');
+        Route::put('/update/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'update'])->name('reports.update');
+        Route::get('/download/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'downloadPdf'])->name('reports.download');
     });
 
     Route::group(['prefix' => '/notice-board'], function () {
