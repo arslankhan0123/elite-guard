@@ -172,7 +172,7 @@
                         <a href="?week={{ $nextWeek }}" class="text-decoration-none text-muted px-2"><i data-feather="chevron-right" style="width:16px;"></i></a>
                     </div>
                     @php
-                        $isPastWeek = $weekStart->lte(\Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY));
+                        $isPastWeek = $weekStart->lt(\Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY));
                     @endphp
                     @if(isset($site) && $site)
                         @if($site->siteTours->count() > 0)
