@@ -13,5 +13,6 @@ class SiteTourItemScan extends Model
         'user_id',
         'date',
         'time',
+        'image',
     ];
 }

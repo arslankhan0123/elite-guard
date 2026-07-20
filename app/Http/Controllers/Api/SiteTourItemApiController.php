@@ -114,7 +114,8 @@ class SiteTourItemApiController extends Controller
             'nfc_tag_id' => 'required|integer',
             'site_id' => 'required|integer',
             'date' => 'required|date',
-            'time' => 'required'
+            'time' => 'required',
+            'image' => 'nullable|image'
         ]);
 
         $user = Auth::user();

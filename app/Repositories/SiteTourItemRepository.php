@@ -95,6 +95,11 @@ class SiteTourItemRepository
         
         $data['user_id'] = $user->id;
 
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('documents/SiteTourScans', 'public');
+            $data['image'] = \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+        }
+
         $scan = \App\Models\SiteTourItemScan::create($data);
 
         return [
