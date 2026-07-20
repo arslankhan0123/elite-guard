@@ -87,13 +87,17 @@ class SiteTourItemApiController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"site_tour_item_id","nfc_tag_id","site_id","date","time"},
-     *             @OA\Property(property="site_tour_item_id", type="integer", example=1),
-     *             @OA\Property(property="nfc_tag_id", type="integer", example=2),
-     *             @OA\Property(property="site_id", type="integer", example=3),
-     *             @OA\Property(property="date", type="string", format="date", example="2026-07-14"),
-     *             @OA\Property(property="time", type="string", example="14:30:00")
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"site_tour_item_id","nfc_tag_id","site_id","date","time"},
+     *                 @OA\Property(property="site_tour_item_id", type="integer", example=1),
+     *                 @OA\Property(property="nfc_tag_id", type="integer", example=2),
+     *                 @OA\Property(property="site_id", type="integer", example=3),
+     *                 @OA\Property(property="date", type="string", format="date", example="2026-07-14"),
+     *                 @OA\Property(property="time", type="string", example="14:30:00"),
+     *                 @OA\Property(property="image", type="string", format="binary", description="Optional image/photo taken during scanning")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
