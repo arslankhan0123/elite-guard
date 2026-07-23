@@ -7,6 +7,7 @@ use App\Repositories\SiteTourItemRepository;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponser;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class SiteTourItemApiController extends Controller
 {
@@ -56,6 +57,8 @@ class SiteTourItemApiController extends Controller
      */
     public function userSiteTourItems(Request $request)
     {
+        Log::info('userSiteTourItems Request:', $request->all());
+
         $user = Auth::user();
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
@@ -66,7 +69,7 @@ class SiteTourItemApiController extends Controller
             $start_date = $date;
             $end_date = $date;
         }
-        
+
         // Default to today's date if absolutely no date is provided
         if (!$start_date && !$end_date && !$date) {
             $today = \Carbon\Carbon::now()->format('Y-m-d');
