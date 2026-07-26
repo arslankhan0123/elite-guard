@@ -4,41 +4,54 @@
     <meta charset="UTF-8">
     <title>Site Tour Performance Report</title>
     <style>
-        @page { margin: 25px 30px 38px; }
+        @page { size: A4 landscape; margin: 12px 16px 24px; }
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: DejaVu Sans, sans-serif; color: #182236; font-size: 9px; }
-        .header { background: #201b59; color: #fff; padding: 18px 22px; border-radius: 8px; }
+        body { margin: 0; font-family: DejaVu Sans, sans-serif; color: #182236; font-size: 7.5px; }
+        .header { background: #201b59; color: #fff; padding: 9px 14px; border-radius: 5px; }
         .header-table, .summary-table, .info-table { width: 100%; border-collapse: collapse; }
-        .brand { font-size: 20px; font-weight: bold; letter-spacing: .5px; }
-        .report-title { font-size: 19px; font-weight: bold; text-align: right; }
-        .report-subtitle { color: #c9c5ff; text-align: right; margin-top: 4px; }
-        .accent { height: 4px; width: 90px; background: #7c3aed; margin-top: 8px; }
-        .summary { margin: 14px 0; }
-        .summary td { width: 16.66%; padding: 10px 8px; text-align: center; background: #f5f3ff; border-right: 3px solid #fff; }
-        .metric { display: block; font-size: 18px; font-weight: bold; color: #312e81; }
-        .metric-label { display: block; margin-top: 3px; color: #697386; font-size: 7px; text-transform: uppercase; }
-        .section-title { margin: 15px 0 7px; padding: 7px 10px; color: #fff; background: #312e81; font-size: 11px; font-weight: bold; border-radius: 4px; }
-        .info-table td { width: 25%; padding: 7px 9px; border: 1px solid #e5e7eb; vertical-align: top; }
-        .label { display: block; color: #7b8494; font-size: 7px; text-transform: uppercase; margin-bottom: 3px; }
+        .brand { font-size: 14px; font-weight: bold; letter-spacing: .5px; }
+        .report-title { font-size: 14px; font-weight: bold; text-align: right; }
+        .report-subtitle { color: #c9c5ff; text-align: right; margin-top: 2px; font-size: 6.5px; }
+        .accent { height: 2px; width: 65px; background: #7c3aed; margin-top: 4px; }
+        .summary { margin: 6px 0; }
+        .summary td { width: 16.66%; padding: 5px 5px; text-align: center; background: #f5f3ff; border-right: 2px solid #fff; }
+        .metric { display: block; font-size: 12px; font-weight: bold; color: #312e81; }
+        .metric-label { display: block; margin-top: 1px; color: #697386; font-size: 5.8px; text-transform: uppercase; }
+        .section-title { margin: 7px 0 4px; padding: 4px 7px; color: #fff; background: #312e81; font-size: 8px; font-weight: bold; border-radius: 3px; }
+        .info-table td { width: 25%; padding: 4px 6px; border: 1px solid #e5e7eb; vertical-align: top; }
+        .label { display: block; color: #7b8494; font-size: 5.5px; text-transform: uppercase; margin-bottom: 1px; }
         .value { font-weight: bold; color: #172033; }
         .items { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .items th { background: #ede9fe; color: #312e81; padding: 7px 5px; font-size: 7px; text-transform: uppercase; border: 1px solid #ddd6fe; }
-        .items td { padding: 7px 5px; border: 1px solid #e5e7eb; vertical-align: middle; }
+        .items th { background: #ede9fe; color: #312e81; padding: 4px 3px; font-size: 5.8px; text-transform: uppercase; border: 1px solid #ddd6fe; }
+        .items td { padding: 4px 3px; border: 1px solid #e5e7eb; vertical-align: middle; }
         .items tr:nth-child(even) td { background: #fafafa; }
+        .items .evidence-row td { background: #fafaff; padding: 2px 5px 3px; border-top: 0; }
+        .evidence-box { border-left: 2px solid #7c3aed; padding: 2px 5px; line-height: 1.25; }
+        .evidence-label { color: #312e81; font-weight: bold; font-size: 5.8px; text-transform: uppercase; margin-right: 5px; }
+        .evidence-line { color: #4b5563; font-size: 6px; }
+        .scan-chip { color: #312e81; margin-right: 6px; }
+        .missing-line { color: #b91c1c; margin-left: 7px; }
         .center { text-align: center; }
-        .status { color: #fff; font-weight: bold; padding: 3px 6px; border-radius: 9px; font-size: 7px; }
-        .completed { background: #059669; }
-        .partial { background: #d97706; }
-        .missed { background: #dc2626; }
-        .progress-wrap { width: 58px; height: 7px; background: #e5e7eb; border-radius: 4px; overflow: hidden; display: inline-block; }
-        .progress { height: 7px; background: #7c3aed; }
-        .small { font-size: 7px; color: #6b7280; }
+        .status { color: #fff; font-weight: bold; padding: 2px 5px; border-radius: 7px; font-size: 5.8px; }
+        .status.completed { background: #059669; }
+        .status.partial { background: #312e81; }
+        .status.missed { background: #dc2626; }
+        .progress-wrap { width: 48px; height: 5px; background: #e5e7eb; border-radius: 3px; overflow: hidden; display: inline-block; }
+        .progress { display: block; height: 5px; }
+        .progress.completed { background: #059669; }
+        .progress.partial { background: #312e81; }
+        .progress.missed { background: #dc2626; }
+        .completion-value { font-weight: bold; margin-left: 3px; }
+        .completion-value.completed { color: #059669; }
+        .completion-value.partial { color: #312e81; }
+        .completion-value.missed { color: #dc2626; }
+        .small { font-size: 5.8px; color: #6b7280; }
         .scan-card { margin-bottom: 7px; padding: 7px 9px; border: 1px solid #e5e7eb; border-left: 4px solid #7c3aed; page-break-inside: avoid; }
         .scan-title { font-weight: bold; color: #312e81; margin-bottom: 4px; }
         .scan-list { width: 100%; border-collapse: collapse; }
         .scan-list td { padding: 3px 5px; border-top: 1px solid #f0f1f3; }
         .empty { color: #9ca3af; font-style: italic; }
-        .footer { position: fixed; bottom: -25px; left: 0; right: 0; color: #7b8494; font-size: 7px; border-top: 1px solid #e5e7eb; padding-top: 7px; }
+        .footer { position: fixed; bottom: -17px; left: 0; right: 0; color: #7b8494; font-size: 5.8px; border-top: 1px solid #e5e7eb; padding-top: 4px; }
         .footer-right { float: right; }
         .page-break { page-break-before: always; }
     </style>
@@ -118,51 +131,49 @@
                     <td class="center">{{ $row['scanned_count'] }}</td>
                     <td class="center">{{ $row['missing_count'] }}</td>
                     <td class="center">
-                        <span class="progress-wrap"><span class="progress" style="width:{{ $row['completion'] }}%;"></span></span>
-                        <span class="small">{{ $row['completion'] }}%</span>
+                        @php
+                            $progressColor = match ($row['status']) {
+                                'Completed' => '#059669',
+                                'Partial' => '#312e81',
+                                default => '#dc2626',
+                            };
+                        @endphp
+                        <span class="progress-wrap"><span class="progress" style="width:{{ max(3, $row['completion']) }}%; background-color:{{ $progressColor }};"></span></span>
+                        <span class="completion-value {{ strtolower($row['status']) }}">{{ $row['completion'] }}%</span>
                     </td>
                     <td class="center"><span class="status {{ strtolower($row['status']) }}">{{ $row['status'] }}</span></td>
+                </tr>
+                <tr class="evidence-row">
+                    <td colspan="9">
+                        <div class="evidence-box">
+                            <span class="evidence-label">Evidence:</span>
+                            @if($row['scans']->isNotEmpty())
+                                <span class="evidence-line">
+                                    @foreach($row['scans'] as $scan)
+                                        <span class="scan-chip">
+                                            <strong>{{ $scan->nfcTag?->name ?? 'Unknown Tag' }}</strong>
+                                            | UID: {{ $scan->nfcTag?->uid ?? 'N/A' }}
+                                            | Scanned: {{ $scan->time ? \Carbon\Carbon::parse($scan->time)->format('h:i:s A') : 'N/A' }}
+                                            | By: {{ $scan->user?->name ?? $tour->user?->name ?? 'N/A' }}
+                                        </span>
+                                    @endforeach
+                                </span>
+                            @else
+                                <span class="evidence-line empty">No NFC tags scanned.</span>
+                            @endif
+
+                            <span class="missing-line">
+                                <strong>Missing:</strong>
+                                {{ $row['missing_tags']->isNotEmpty() ? $row['missing_tags']->pluck('name')->implode(', ') : 'None' }}
+                            </span>
+                        </div>
+                    </td>
                 </tr>
             @empty
                 <tr><td colspan="9" class="center empty">No interval items were generated for this tour.</td></tr>
             @endforelse
         </tbody>
     </table>
-
-    <div class="page-break"></div>
-    <div class="section-title">Tag Scan Evidence by Patrol Item</div>
-    @forelse($reportItems as $index => $row)
-        <div class="scan-card">
-            <div class="scan-title">
-                Item {{ $index + 1 }}:
-                {{ $row['item']->date?->format('d M Y') ?? 'N/A' }},
-                {{ \Carbon\Carbon::parse($row['item']->start_time)->format('h:i A') }} -
-                {{ \Carbon\Carbon::parse($row['item']->end_time)->format('h:i A') }}
-                | {{ $row['scanned_count'] }}/{{ $row['required_count'] }} scanned
-            </div>
-            @if($row['scans']->isNotEmpty())
-                <table class="scan-list">
-                    @foreach($row['scans'] as $scan)
-                        <tr>
-                            <td style="width:30%;"><strong>{{ $scan->nfcTag?->name ?? 'Unknown Tag' }}</strong></td>
-                            <td style="width:25%;">UID: {{ $scan->nfcTag?->uid ?? 'N/A' }}</td>
-                            <td style="width:25%;">Scanned: {{ $scan->time ? \Carbon\Carbon::parse($scan->time)->format('h:i:s A') : 'N/A' }}</td>
-                            <td style="width:20%;">By: {{ $scan->user?->name ?? $tour->user?->name ?? 'N/A' }}</td>
-                        </tr>
-                    @endforeach
-                </table>
-            @else
-                <span class="empty">No NFC tags were scanned during this patrol item.</span>
-            @endif
-            @if($row['missing_tags']->isNotEmpty())
-                <div class="small" style="margin-top:5px;">
-                    Missing: {{ $row['missing_tags']->pluck('name')->implode(', ') }}
-                </div>
-            @endif
-        </div>
-    @empty
-        <div class="empty">No scan evidence is available.</div>
-    @endforelse
 
     <div class="footer">
         Confidential operational report - Elite Security
