@@ -15,4 +15,19 @@ class SiteTourItemScan extends Model
         'time',
         'image',
     ];
+
+    public function nfcTag()
+    {
+        return $this->belongsTo(NfcTag::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function siteTourItem()
+    {
+        return $this->belongsTo(SiteTourItem::class);
+    }
 }

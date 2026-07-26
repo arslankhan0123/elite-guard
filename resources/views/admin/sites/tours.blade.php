@@ -144,6 +144,27 @@
     .has-error label {
         color: #ef4444 !important;
     }
+
+    .pdf-report-btn {
+        width: 30px;
+        height: 30px;
+        border: 0;
+        border-radius: 7px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background: linear-gradient(145deg, #ff6b6b, #dc2626);
+        box-shadow: 0 4px 0 #991b1b, 0 6px 10px rgba(220, 38, 38, 0.28);
+        transform: translateY(-2px);
+        transition: all 0.15s ease;
+    }
+
+    .pdf-report-btn:hover {
+        color: #fff;
+        transform: translateY(0);
+        box-shadow: 0 2px 0 #991b1b, 0 3px 6px rgba(220, 38, 38, 0.25);
+    }
 </style>
 
 <div class="row">
@@ -376,6 +397,13 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group" aria-label="Site Actions">
+                                        <a href="{{ route('sites.tours.report.pdf', $tour->id) }}"
+                                           target="_blank"
+                                           class="pdf-report-btn me-2"
+                                           data-bs-toggle="tooltip"
+                                           title="Download Professional PDF Report">
+                                            <i data-feather="file-text" style="width:15px;height:15px;"></i>
+                                        </a>
                                         <a class="text-decoration-none text-dark view-tour-btn" href="javascript:void(0)" data-tour="{{ json_encode($tour) }}" data-bs-toggle="tooltip" title="View Site Tour Items">
                                             <button class="view_btn me-2">
                                             </button>
@@ -745,7 +773,9 @@
             if (filteredItems.length > 0) {
                 filteredItems.forEach(function(item) {
                     var scansCount = item.scans_count || 0;
-                    var totalTags = {{ $nfcTags->count() }};
+                    var totalTags = item.site && Array.isArray(item.site.nfc_tags)
+                        ? item.site.nfc_tags.length
+                        : 0;
                     
                     var statusHtml = '';
                     if (item.status) {

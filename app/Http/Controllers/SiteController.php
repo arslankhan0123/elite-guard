@@ -154,7 +154,7 @@ class SiteController extends Controller
         ->with(['user', 'items' => function($q) use ($weekStart, $weekEnd, $site_id) {
             $q->where('site_id', $site_id)
               ->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
-              ->with('site')
+              ->with('site.nfcTags')
               ->withCount('scans');
         }])
         ->orderBy('id', 'desc')
@@ -204,7 +204,7 @@ class SiteController extends Controller
         // Fetch all site tours that have items in this week
         $siteTours = \App\Models\SiteTour::with(['site.company', 'user', 'items' => function($q) use ($weekStart, $weekEnd) {
             $q->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')])
-               ->with('site')
+               ->with('site.nfcTags')
                ->withCount('scans');
         }])
         ->where(function ($query) use ($weekStart, $weekEnd) {
@@ -244,6 +244,78 @@ class SiteController extends Controller
         $site = null; // Set $site as null to indicate global view
 
         return view('admin.sites.tours', compact('siteTours', 'site', 'guards', 'filterSites', 'shiftNames', 'nfcTags', 'sites', 'prevWeek', 'nextWeek', 'weekStartFormatted', 'weekEndFormatted', 'weekStart', 'startDate', 'endDate'));
+    }
+
+    public function tourReportPdf($id)
+    {
+        $tour = \App\Models\SiteTour::with([
+            'site.company',
+            'site.nfcTags',
+            'user',
+            'shift.schedule.user',
+            'items' => function ($query) {
+                $query->orderBy('date')->orderBy('start_time');
+            },
+            'items.scans.nfcTag',
+            'items.scans.user',
+        ])->findOrFail($id);
+
+        $requiredTags = $tour->site?->nfcTags ?? collect();
+        $requiredTagIds = $requiredTags->pluck('id');
+
+        $reportItems = $tour->items->map(function ($item) use ($requiredTags, $requiredTagIds) {
+            $validScans = $item->scans
+                ->whereIn('nfc_tag_id', $requiredTagIds)
+                ->unique('nfc_tag_id')
+                ->values();
+            $scannedTagIds = $validScans->pluck('nfc_tag_id');
+            $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds)->values();
+            $requiredCount = $requiredTags->count();
+            $scannedCount = $validScans->count();
+            $completion = $requiredCount > 0
+                ? min(100, round(($scannedCount / $requiredCount) * 100))
+                : 0;
+
+            return [
+                'item' => $item,
+                'required_count' => $requiredCount,
+                'scanned_count' => $scannedCount,
+                'missing_count' => $missingTags->count(),
+                'completion' => $completion,
+                'status' => $requiredCount > 0 && $scannedCount >= $requiredCount
+                    ? 'Completed'
+                    : ($scannedCount > 0 ? 'Partial' : 'Missed'),
+                'scans' => $validScans,
+                'missing_tags' => $missingTags,
+            ];
+        });
+
+        $totalExpectedScans = $reportItems->sum('required_count');
+        $totalCompletedScans = $reportItems->sum('scanned_count');
+        $overallCompletion = $totalExpectedScans > 0
+            ? min(100, round(($totalCompletedScans / $totalExpectedScans) * 100))
+            : 0;
+
+        $summary = [
+            'total_items' => $reportItems->count(),
+            'completed_items' => $reportItems->where('status', 'Completed')->count(),
+            'partial_items' => $reportItems->where('status', 'Partial')->count(),
+            'missed_items' => $reportItems->where('status', 'Missed')->count(),
+            'required_tags' => $requiredTags->count(),
+            'expected_scans' => $totalExpectedScans,
+            'completed_scans' => $totalCompletedScans,
+            'overall_completion' => $overallCompletion,
+        ];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+            'admin.sites.tour-report-pdf',
+            compact('tour', 'requiredTags', 'reportItems', 'summary')
+        )->setPaper('a4', 'landscape');
+
+        $filename = 'site-tour-report-' . $tour->id . '-'
+            . \Illuminate\Support\Str::slug($tour->name) . '.pdf';
+
+        return $pdf->stream($filename);
     }
 
     public function storeTour(Request $request)
