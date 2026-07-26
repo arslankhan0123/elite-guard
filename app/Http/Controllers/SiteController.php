@@ -46,6 +46,9 @@ class SiteController extends Controller
             'longitude'  => 'nullable|numeric|between:-180,180',
             'start_time' => 'nullable',
             'end_time'   => 'nullable',
+            'interval'   => 'required|integer|min:0',
+            'open_time'  => 'required|integer|min:0',
+            'grace_time' => 'required|integer|min:0',
             'status'     => 'required|boolean',
         ]);
 
@@ -75,6 +78,9 @@ class SiteController extends Controller
             'longitude'  => 'nullable|numeric|between:-180,180',
             'start_time' => 'nullable',
             'end_time'   => 'nullable',
+            'interval'   => 'required|integer|min:0',
+            'open_time'  => 'required|integer|min:0',
+            'grace_time' => 'required|integer|min:0',
             'status'     => 'required|boolean',
         ]);
 

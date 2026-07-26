@@ -21,6 +21,9 @@ class Site extends Model
         'longitude',
         'start_time',
         'end_time',
+        'interval',
+        'open_time',
+        'grace_time',
         'status',
     ];
 
@@ -28,6 +31,9 @@ class Site extends Model
         'status'    => 'boolean',
         'latitude'  => 'float',
         'longitude' => 'float',
+        'interval'   => 'integer',
+        'open_time'  => 'integer',
+        'grace_time' => 'integer',
     ];
 
     public function company()
