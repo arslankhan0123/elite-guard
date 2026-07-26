@@ -166,8 +166,19 @@ class ScheduleController extends Controller
             }
 
             $schedule->load('shifts.site.nfcTags');
+            $scheduleUser = User::findOrFail($request->user_id);
+            $assignedSiteIds = $scheduleUser->sites()
+                ->pluck('sites.id')
+                ->mapWithKeys(fn ($siteId) => [(int) $siteId => true]);
 
             foreach ($schedule->shifts as $shift) {
+                if (!$assignedSiteIds->has((int) $shift->site_id)) {
+                    $scheduleUser->sites()->attach($shift->site_id, [
+                        'assigned_at' => now(),
+                    ]);
+                    $assignedSiteIds->put((int) $shift->site_id, true);
+                }
+
                 $this->syncSiteTourForShift($shift, (int) $request->user_id);
             }
 
