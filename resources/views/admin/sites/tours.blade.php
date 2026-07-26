@@ -297,7 +297,7 @@
                     </div>
                     <div class="col-md-6 col-lg-2">
                         <label for="tour_user_id" class="form-label fw-semibold">User</label>
-                        <select id="tour_user_id" name="user_id" class="form-select">
+                        <select id="tour_user_id" name="user_id" class="form-select select2-single" data-placeholder="Search users">
                             <option value="">All Users</option>
                             @foreach($guards as $guard)
                                 <option value="{{ $guard->id }}" @selected((string) request('user_id') === (string) $guard->id)>
@@ -308,7 +308,7 @@
                     </div>
                     <div class="col-md-6 col-lg-2">
                         <label for="tour_site_id" class="form-label fw-semibold">Site</label>
-                        <select id="tour_site_id" name="filter_site_id" class="form-select">
+                        <select id="tour_site_id" name="filter_site_id" class="form-select select2-single" data-placeholder="Search sites">
                             <option value="">All Sites</option>
                             @foreach($filterSites as $filterSite)
                                 <option value="{{ $filterSite->id }}" @selected((string) request('filter_site_id') === (string) $filterSite->id)>
@@ -319,7 +319,7 @@
                     </div>
                     <div class="col-md-6 col-lg-2">
                         <label for="tour_shift_name" class="form-label fw-semibold">Shift</label>
-                        <select id="tour_shift_name" name="shift_name" class="form-select">
+                        <select id="tour_shift_name" name="shift_name" class="form-select select2-single" data-placeholder="Search shifts">
                             <option value="">All Shifts</option>
                             @foreach($shiftNames as $shiftName)
                                 <option value="{{ $shiftName }}" @selected(request('shift_name') === $shiftName)>
