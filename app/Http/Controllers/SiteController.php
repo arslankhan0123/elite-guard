@@ -46,7 +46,7 @@ class SiteController extends Controller
             'longitude'  => 'nullable|numeric|between:-180,180',
             'start_time' => 'nullable',
             'end_time'   => 'nullable',
-            'interval'   => 'required|integer|min:0',
+            'interval'   => 'required|integer|min:1',
             'open_time'  => 'required|integer|min:0',
             'grace_time' => 'required|integer|min:0',
             'status'     => 'required|boolean',
@@ -78,7 +78,7 @@ class SiteController extends Controller
             'longitude'  => 'nullable|numeric|between:-180,180',
             'start_time' => 'nullable',
             'end_time'   => 'nullable',
-            'interval'   => 'required|integer|min:0',
+            'interval'   => 'required|integer|min:1',
             'open_time'  => 'required|integer|min:0',
             'grace_time' => 'required|integer|min:0',
             'status'     => 'required|boolean',
@@ -107,20 +107,49 @@ class SiteController extends Controller
 
     public function tours($site_id, Request $request)
     {
-        $week = $request->input('week');
-        if ($week) {
-            $weekStart = \Carbon\Carbon::parse($week)->startOfWeek(\Carbon\Carbon::MONDAY);
-        } else {
-            $weekStart = \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY);
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'user_id' => 'nullable|exists:users,id',
+            'filter_site_id' => 'nullable|exists:sites,id',
+            'shift_name' => 'nullable|string|max:255',
+        ]);
+
+        $startDate = \Carbon\Carbon::parse(
+            $request->input('start_date') ?: $request->input('end_date') ?: now()->toDateString()
+        )->startOfDay();
+        $endDate = \Carbon\Carbon::parse(
+            $request->input('end_date') ?: $request->input('start_date') ?: now()->toDateString()
+        )->endOfDay();
+
+        if ($endDate->lt($startDate)) {
+            return back()->withErrors(['end_date' => 'End date must be on or after the start date.'])->withInput();
         }
-        
-        $weekEnd = $weekStart->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
+
+        $weekStart = $startDate->copy();
+        $weekEnd = $endDate->copy();
 
         $site = Site::findOrFail($site_id);
 
-        $siteTours = \App\Models\SiteTour::whereHas('items', function($q) use ($weekStart, $weekEnd, $site_id) {
-            $q->where('site_id', $site_id)
-              ->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+        $siteTours = \App\Models\SiteTour::where('site_id', $site_id)
+        ->where(function ($query) use ($weekStart, $weekEnd, $site_id) {
+            $query->whereHas('items', function($q) use ($weekStart, $weekEnd, $site_id) {
+                $q->where('site_id', $site_id)
+                  ->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+            })->orWhereHas('shift', function ($q) use ($weekStart, $weekEnd) {
+                $q->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+            });
+        })
+        ->when($request->filled('user_id'), function ($query) use ($request) {
+            $query->where('user_id', $request->integer('user_id'));
+        })
+        ->when($request->filled('filter_site_id'), function ($query) use ($request) {
+            $query->where('site_id', $request->integer('filter_site_id'));
+        })
+        ->when($request->filled('shift_name'), function ($query) use ($request) {
+            $query->whereHas('shift', function ($shiftQuery) use ($request) {
+                $shiftQuery->where('shift_name', $request->input('shift_name'));
+            });
         })
         ->with(['user', 'items' => function($q) use ($weekStart, $weekEnd, $site_id) {
             $q->where('site_id', $site_id)
@@ -133,6 +162,9 @@ class SiteController extends Controller
 
         // Fetch users for the dropdown (user requested to show all users)
         $guards = \App\Models\User::all();
+        $filterSites = Site::orderBy('name')->get();
+        $shiftNames = \App\Models\Shift::whereNotNull('shift_name')->where('shift_name', '!=', '')
+            ->distinct()->orderBy('shift_name')->pluck('shift_name');
 
         $nfcTags = \App\Models\NfcTag::where('site_id', $site_id)->get();
 
@@ -142,19 +174,32 @@ class SiteController extends Controller
         $weekStartFormatted = $weekStart->format('d M');
         $weekEndFormatted = $weekEnd->format('d M, Y');
 
-        return view('admin.sites.tours', compact('siteTours', 'site', 'guards', 'nfcTags', 'prevWeek', 'nextWeek', 'weekStartFormatted', 'weekEndFormatted', 'weekStart'));
+        return view('admin.sites.tours', compact('siteTours', 'site', 'guards', 'filterSites', 'shiftNames', 'nfcTags', 'prevWeek', 'nextWeek', 'weekStartFormatted', 'weekEndFormatted', 'weekStart', 'startDate', 'endDate'));
     }
 
     public function allTours(Request $request)
     {
-        $week = $request->input('week');
-        if ($week) {
-            $weekStart = \Carbon\Carbon::parse($week)->startOfWeek(\Carbon\Carbon::MONDAY);
-        } else {
-            $weekStart = \Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY);
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'user_id' => 'nullable|exists:users,id',
+            'filter_site_id' => 'nullable|exists:sites,id',
+            'shift_name' => 'nullable|string|max:255',
+        ]);
+
+        $startDate = \Carbon\Carbon::parse(
+            $request->input('start_date') ?: $request->input('end_date') ?: now()->toDateString()
+        )->startOfDay();
+        $endDate = \Carbon\Carbon::parse(
+            $request->input('end_date') ?: $request->input('start_date') ?: now()->toDateString()
+        )->endOfDay();
+
+        if ($endDate->lt($startDate)) {
+            return back()->withErrors(['end_date' => 'End date must be on or after the start date.'])->withInput();
         }
-        
-        $weekEnd = $weekStart->copy()->endOfWeek(\Carbon\Carbon::SUNDAY);
+
+        $weekStart = $startDate->copy();
+        $weekEnd = $endDate->copy();
 
         // Fetch all site tours that have items in this week
         $siteTours = \App\Models\SiteTour::with(['site.company', 'user', 'items' => function($q) use ($weekStart, $weekEnd) {
@@ -162,8 +207,23 @@ class SiteController extends Controller
                ->with('site')
                ->withCount('scans');
         }])
-        ->whereHas('items', function($q) use ($weekStart, $weekEnd) {
-            $q->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+        ->where(function ($query) use ($weekStart, $weekEnd) {
+            $query->whereHas('items', function($q) use ($weekStart, $weekEnd) {
+                $q->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+            })->orWhereHas('shift', function ($q) use ($weekStart, $weekEnd) {
+                $q->whereBetween('date', [$weekStart->format('Y-m-d'), $weekEnd->format('Y-m-d')]);
+            });
+        })
+        ->when($request->filled('user_id'), function ($query) use ($request) {
+            $query->where('user_id', $request->integer('user_id'));
+        })
+        ->when($request->filled('filter_site_id'), function ($query) use ($request) {
+            $query->where('site_id', $request->integer('filter_site_id'));
+        })
+        ->when($request->filled('shift_name'), function ($query) use ($request) {
+            $query->whereHas('shift', function ($shiftQuery) use ($request) {
+                $shiftQuery->where('shift_name', $request->input('shift_name'));
+            });
         })
         ->orderBy('id', 'desc')
         ->get();
@@ -171,6 +231,9 @@ class SiteController extends Controller
         $guards = \App\Models\User::all();
         $nfcTags = \App\Models\NfcTag::all();
         $sites = \App\Models\Site::with('company')->where('status', true)->get();
+        $filterSites = Site::orderBy('name')->get();
+        $shiftNames = \App\Models\Shift::whereNotNull('shift_name')->where('shift_name', '!=', '')
+            ->distinct()->orderBy('shift_name')->pluck('shift_name');
 
         $prevWeek = $weekStart->copy()->subWeek()->format('Y-m-d');
         $nextWeek = $weekStart->copy()->addWeek()->format('Y-m-d');
@@ -180,7 +243,7 @@ class SiteController extends Controller
 
         $site = null; // Set $site as null to indicate global view
 
-        return view('admin.sites.tours', compact('siteTours', 'site', 'guards', 'nfcTags', 'sites', 'prevWeek', 'nextWeek', 'weekStartFormatted', 'weekEndFormatted', 'weekStart'));
+        return view('admin.sites.tours', compact('siteTours', 'site', 'guards', 'filterSites', 'shiftNames', 'nfcTags', 'sites', 'prevWeek', 'nextWeek', 'weekStartFormatted', 'weekEndFormatted', 'weekStart', 'startDate', 'endDate'));
     }
 
     public function storeTour(Request $request)

@@ -51,4 +51,9 @@ class SiteTour extends Model
     {
         return $this->hasMany(SiteTourItem::class);
     }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
+    }
 }

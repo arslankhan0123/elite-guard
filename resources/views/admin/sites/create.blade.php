@@ -85,7 +85,7 @@
                     <div class="row mt-3">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Interval <span class="text-danger">*</span></label>
-                            <input type="number" step="1" min="0" name="interval" class="form-control"
+                            <input type="number" step="1" min="1" name="interval" class="form-control"
                                    value="{{ old('interval') }}" placeholder="e.g. 45" required>
                             @error('interval') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>

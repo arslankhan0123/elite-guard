@@ -165,15 +165,18 @@
                         <span class="text-white d-block" style="opacity:0.75;font-size:0.8rem;">Manage site tour configurations</span>
                     </div>
                 </div>
+                @php
+                    $isPastWeek = $weekStart->lt(\Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY));
+                @endphp
+                {{--
+                    Header controls intentionally hidden:
+                    week/date filter, Delete Week, New Tour, and Update Tour.
                 <div class="d-flex align-items-center gap-2">
                     <div class="d-flex align-items-center me-3 bg-white rounded-pill px-2 py-1 shadow-sm" style="border: 1px solid #dee2e6;">
                         <a href="?week={{ $prevWeek }}" class="text-decoration-none text-muted px-2"><i data-feather="chevron-left" style="width:16px;"></i></a>
                         <span class="fw-bold px-2 text-primary" style="font-size: 0.85rem;"><i data-feather="calendar" class="me-1" style="width:13px;"></i> {{ $weekStartFormatted }} - {{ $weekEndFormatted }}</span>
                         <a href="?week={{ $nextWeek }}" class="text-decoration-none text-muted px-2"><i data-feather="chevron-right" style="width:16px;"></i></a>
                     </div>
-                    @php
-                        $isPastWeek = $weekStart->lt(\Carbon\Carbon::now()->startOfWeek(\Carbon\Carbon::MONDAY));
-                    @endphp
                     @if(isset($site) && $site)
                         @if($site->siteTours->count() > 0)
                             @php
@@ -254,8 +257,64 @@
                         @endif
                     @endif
                 </div>
+                --}}
             </div>
             <div class="card-body p-4">
+                <form method="GET" action="{{ url()->current() }}" class="row g-3 align-items-end mb-4">
+                    <div class="col-md-6 col-lg-3">
+                        <label for="tour_start_date" class="form-label fw-semibold">Start Date</label>
+                        <input type="date" id="tour_start_date" name="start_date" class="form-control"
+                               value="{{ old('start_date', $startDate->format('Y-m-d')) }}" required>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <label for="tour_end_date" class="form-label fw-semibold">End Date</label>
+                        <input type="date" id="tour_end_date" name="end_date" class="form-control"
+                               value="{{ old('end_date', $endDate->format('Y-m-d')) }}" required>
+                        @error('end_date')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-6 col-lg-2">
+                        <label for="tour_user_id" class="form-label fw-semibold">User</label>
+                        <select id="tour_user_id" name="user_id" class="form-select">
+                            <option value="">All Users</option>
+                            @foreach($guards as $guard)
+                                <option value="{{ $guard->id }}" @selected((string) request('user_id') === (string) $guard->id)>
+                                    {{ $guard->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6 col-lg-2">
+                        <label for="tour_site_id" class="form-label fw-semibold">Site</label>
+                        <select id="tour_site_id" name="filter_site_id" class="form-select">
+                            <option value="">All Sites</option>
+                            @foreach($filterSites as $filterSite)
+                                <option value="{{ $filterSite->id }}" @selected((string) request('filter_site_id') === (string) $filterSite->id)>
+                                    {{ $filterSite->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6 col-lg-2">
+                        <label for="tour_shift_name" class="form-label fw-semibold">Shift</label>
+                        <select id="tour_shift_name" name="shift_name" class="form-select">
+                            <option value="">All Shifts</option>
+                            @foreach($shiftNames as $shiftName)
+                                <option value="{{ $shiftName }}" @selected(request('shift_name') === $shiftName)>
+                                    {{ $shiftName }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i data-feather="filter" style="width:15px;height:15px;" class="me-1"></i> Filter
+                        </button>
+                        <a href="{{ url()->current() }}" class="btn btn-light px-4">Today</a>
+                    </div>
+                </form>
+
                 <div class="table-responsive">
                     <table id="custom-table" class="table nfc-table mb-0">
                         <thead>
@@ -286,7 +345,7 @@
                                 </td>
                                 @if(!isset($site) || !$site)
                                     <td class="fw-bold text-wrap" style="max-width: 250px;">
-                                        {{ $tour->items->pluck('site.name')->filter()->unique()->implode(', ') ?: 'N/A' }}
+                                        {{ $tour->items->pluck('site.name')->filter()->unique()->implode(', ') ?: ($tour->site->name ?? 'N/A') }}
                                     </td>
                                 @endif
                                 <td class="fw-bold">
