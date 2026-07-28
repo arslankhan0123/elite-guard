@@ -11,6 +11,7 @@ class SiteTour extends Model
 
     protected $fillable = [
         'site_id',
+        'shift_id',
         'name',
         'description',
         'scheduled_days',
@@ -49,5 +50,10 @@ class SiteTour extends Model
     public function items()
     {
         return $this->hasMany(SiteTourItem::class);
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
     }
 }

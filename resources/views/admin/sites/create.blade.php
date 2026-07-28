@@ -80,6 +80,31 @@
                         </div>
                     </div>
 
+                    <h5 class="text-primary mt-4">Site Tour Details</h5>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Interval <span class="text-danger">*</span></label>
+                            <input type="number" step="1" min="1" name="interval" class="form-control"
+                                   value="{{ old('interval') }}" placeholder="e.g. 45" required>
+                            @error('interval') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Open Time <span class="text-danger">*</span></label>
+                            <input type="number" step="1" min="0" name="open_time" class="form-control"
+                                   value="{{ old('open_time') }}" placeholder="e.g. 45" required>
+                            @error('open_time') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Grace Time <span class="text-danger">*</span></label>
+                            <input type="number" step="1" min="0" name="grace_time" class="form-control"
+                                   value="{{ old('grace_time') }}" placeholder="e.g. 45" required>
+                            @error('grace_time') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
                     <!-- ================= LOCATION ================= -->
                     <h5 class="text-primary mt-4">📍 Location</h5>
 

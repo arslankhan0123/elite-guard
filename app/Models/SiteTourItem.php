@@ -17,6 +17,11 @@ class SiteTourItem extends Model
         'site_id',
     ];
 
+    protected $casts = [
+        'date' => 'date',
+        'status' => 'boolean',
+    ];
+
     public function siteTour()
     {
         return $this->belongsTo(SiteTour::class);

@@ -73,6 +73,8 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/update/{site_id}', [SiteController::class, 'update'])->name('sites.update');
         Route::get('/delete/{site_id}', [SiteController::class, 'delete'])->name('sites.delete');
         Route::get('/{site_id}/nfc-tags', [SiteController::class, 'nfcTags'])->name('sites.nfcTags');
+        Route::get('/tours', [SiteController::class, 'allTours'])->name('sites.tours.all');
+        Route::get('/tours/{id}/report/pdf', [SiteController::class, 'tourReportPdf'])->name('sites.tours.report.pdf');
         Route::get('/{site_id}/tours', [SiteController::class, 'tours'])->name('sites.tours');
         Route::post('/tours/store', [SiteController::class, 'storeTour'])->name('sites.tours.store');
         Route::post('/tours/update/{id}', [SiteController::class, 'updateTour'])->name('sites.tours.update');
@@ -209,6 +211,9 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
     Route::group(['prefix' => '/security-reports'], function () {
         Route::get('/all', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'index'])->name('reports.all');
         Route::get('/show/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'show'])->name('reports.show');
+        Route::get('/edit/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'edit'])->name('reports.edit');
+        Route::put('/update/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'update'])->name('reports.update');
+        Route::get('/download/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'downloadPdf'])->name('reports.download');
     });
 
     Route::group(['prefix' => '/notice-board'], function () {
