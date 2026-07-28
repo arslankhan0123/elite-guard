@@ -18,7 +18,10 @@ class SiteTourItem extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        // Tour items represent a calendar day, not a moment in time. Keeping the
+        // serialized value date-only prevents midnight in the app timezone from
+        // being converted to the previous UTC date in JSON responses.
+        'date' => 'date:Y-m-d',
         'status' => 'boolean',
     ];
 
