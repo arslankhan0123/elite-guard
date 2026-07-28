@@ -227,6 +227,9 @@
                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="changeWeek(1)" style="padding: 0.2rem 0.5rem;" title="Next Week">
                                     <i data-feather="chevron-right" style="width: 16px; height: 16px;"></i>
                                 </button>
+                                <span id="weekly-total-time" class="ms-auto badge bg-primary px-3 py-2 rounded-pill">
+                                    Total Weekly Time: 0h
+                                </span>
                             </div>
                         </div>
                         
@@ -792,6 +795,7 @@
                 `;
                 container.appendChild(section);
             });
+            updateWeeklyTotalTime();
             feather.replace();
         }
 
@@ -834,18 +838,72 @@
                     <div class="col-6">
                         <label class="small fw-bold text-muted mb-1">Start Time</label>
                         <input type="time" name="shifts[${index}][start_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
-                               value="${data ? (data.start_time ? data.start_time.substring(0,5) : '08:00') : '08:00'}" required ${isPastWeek ? 'disabled' : ''}>
+                               value="${data ? (data.start_time ? data.start_time.substring(0,5) : '08:00') : '08:00'}" required ${isPastWeek ? 'disabled' : ''}
+                               oninput="updateShiftTotalTime(this)" onchange="updateShiftTotalTime(this)">
                     </div>
                     <div class="col-6">
-                        <label class="small fw-bold text-muted mb-1">End Time</label>
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <label class="small fw-bold text-muted mb-0">End Time</label>
+                            <span class="shift-total-time small fw-bold text-primary"></span>
+                        </div>
                         <input type="time" name="shifts[${index}][end_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
-                               value="${data ? (data.end_time ? data.end_time.substring(0,5) : '16:00') : '16:00'}" required ${isPastWeek ? 'disabled' : ''}>
+                               value="${data ? (data.end_time ? data.end_time.substring(0,5) : '16:00') : '16:00'}" required ${isPastWeek ? 'disabled' : ''}
+                               oninput="updateShiftTotalTime(this)" onchange="updateShiftTotalTime(this)">
                     </div>
                 </div>
             `;
             
             container.appendChild(shiftItem);
+            updateShiftTotalTime(shiftItem);
             feather.replace();
+        }
+
+        function updateShiftTotalTime(element) {
+            const shiftItem = element.closest ? element.closest('.shift-item') : element;
+            if (!shiftItem) return;
+
+            const startInput = shiftItem.querySelector('input[type="time"][name*="[start_time]"]');
+            const endInput = shiftItem.querySelector('input[type="time"][name*="[end_time]"]');
+            const totalTime = shiftItem.querySelector('.shift-total-time');
+
+            if (!startInput || !endInput || !totalTime || !startInput.value || !endInput.value) {
+                if (totalTime) {
+                    totalTime.textContent = '';
+                    delete shiftItem.dataset.durationMinutes;
+                    updateWeeklyTotalTime();
+                }
+                return;
+            }
+
+            const [startHour, startMinute] = startInput.value.split(':').map(Number);
+            const [endHour, endMinute] = endInput.value.split(':').map(Number);
+            const startMinutes = (startHour * 60) + startMinute;
+            let durationMinutes = ((endHour * 60) + endMinute) - startMinutes;
+
+            // An end time before the start time means the shift ends the next day.
+            if (durationMinutes < 0) durationMinutes += 24 * 60;
+
+            const hours = Math.floor(durationMinutes / 60);
+            const minutes = durationMinutes % 60;
+            const formattedDuration = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+            shiftItem.dataset.durationMinutes = durationMinutes;
+            totalTime.textContent = `Total Time: ${formattedDuration}`;
+            updateWeeklyTotalTime();
+        }
+
+        function updateWeeklyTotalTime() {
+            const weeklyTotal = document.getElementById('weekly-total-time');
+            if (!weeklyTotal) return;
+
+            const totalMinutes = Array.from(document.querySelectorAll('#days-container .shift-item'))
+                .reduce((total, shiftItem) => {
+                    return total + Number(shiftItem.dataset.durationMinutes || 0);
+                }, 0);
+
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            const formattedDuration = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+            weeklyTotal.textContent = `Total Weekly Time: ${formattedDuration}`;
         }
 
         function removeShift(btn, date) {
@@ -856,6 +914,8 @@
             if (container.children.length === 0) {
                 container.innerHTML = `<div class="empty-day-placeholder">No shifts assigned for this day</div>`;
             }
+
+            updateWeeklyTotalTime();
         }
 
         function onSiteSelectChange(selectElement) {
@@ -878,6 +938,10 @@
                     }
                     if (endTimeInput) {
                         endTimeInput.value = site.end_time ? site.end_time.substring(0, 5) : defaultEndTime;
+                    }
+
+                    if (isShift) {
+                        updateShiftTotalTime(parentItem);
                     }
                 }
             }
