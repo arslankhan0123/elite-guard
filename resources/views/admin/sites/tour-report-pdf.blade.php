@@ -30,6 +30,20 @@
         .evidence-label { color: #312e81; font-weight: bold; font-size: 5.8px; text-transform: uppercase; margin-right: 5px; }
         .evidence-line { color: #4b5563; font-size: 6px; }
         .scan-chip { color: #312e81; margin-right: 6px; }
+        .image-link {
+            display: inline-block;
+            margin: 0 0 0 3px;
+            padding: 1px 5px;
+            color: #fff;
+            background: #7c3aed;
+            border-radius: 5px;
+            font-size: 5.5px;
+            font-weight: bold;
+            line-height: 1.25;
+            text-decoration: none;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
         .missing-line { color: #b91c1c; margin-left: 7px; }
         .center { text-align: center; }
         .status { color: #fff; font-weight: bold; padding: 2px 5px; border-radius: 7px; font-size: 5.8px; }
@@ -155,6 +169,14 @@
                                             | UID: {{ $scan->nfcTag?->uid ?? 'N/A' }}
                                             | Scanned: {{ $scan->time ? \Carbon\Carbon::parse($scan->time)->format('h:i:s A') : 'N/A' }}
                                             | By: {{ $scan->user?->name ?? $tour->user?->name ?? 'N/A' }}
+                                            @if($scan->image)
+                                                @php
+                                                    $imageUrl = \Illuminate\Support\Str::startsWith($scan->image, ['http://', 'https://'])
+                                                        ? $scan->image
+                                                        : url($scan->image);
+                                                @endphp
+                                                <a class="image-link" href="{{ $imageUrl }}" target="_blank" rel="noopener noreferrer">View Image</a>
+                                            @endif
                                         </span>
                                     @endforeach
                                 </span>
