@@ -32,6 +32,7 @@
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Phone</th>
+                                    <th>Profile Complete</th>
                                     <!-- <th>Assigned Sites</th> -->
                                     <!-- <th>Joining Date</th> -->
                                     <th>Status</th>
@@ -65,6 +66,14 @@
                                             </span>
                                         </td>
                                         <td>{{ $employee->phone ?? 'N/A' }}</td>
+                                        <td style="min-width: 130px;">
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>{{ $employee->user->profile_completion['percentage'] }}%</span>
+                                            </div>
+                                            <div class="progress" style="height: 6px;">
+                                                <div class="progress-bar bg-success" style="width: {{ $employee->user->profile_completion['percentage'] }}%" role="progressbar" aria-valuenow="{{ $employee->user->profile_completion['percentage'] }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </td>
                                         <!-- <td>
                                             @php
                                                 $currentSchedule = $employee->user->schedules->where('week_start_date', $currentMonday)->first();

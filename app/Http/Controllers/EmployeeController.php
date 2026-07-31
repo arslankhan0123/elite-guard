@@ -22,21 +22,27 @@ use App\Traits\CommonTrait;
 use App\Mail\OfferLetterMail;
 use App\Mail\EmployeeWelcomeMail;
 use Illuminate\Support\Facades\DB;
+use App\Services\ProfileCompletionService;
 
 class EmployeeController extends Controller
 {
     use CommonTrait;
-    public function index()
+    public function index(ProfileCompletionService $profileCompletion)
     {
         $currentMonday = Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
         
-        $employees = Employee::with(['user', 'user.sites', 'user.offerLetter', 'user.runSheets' => function($query) use ($currentMonday) {
+        $employees = Employee::with(['user', 'user.candidate', 'user.bankDetail', 'user.licenseDetail',
+            'user.orientationAttempts', 'user.signedPolicies', 'user.taxDocumentSubmissions',
+            'user.sites', 'user.offerLetter', 'user.runSheets' => function($query) use ($currentMonday) {
             $weekEnd = Carbon::parse($currentMonday)->endOfWeek(Carbon::SUNDAY)->format('Y-m-d');
             $query->whereBetween('date', [$currentMonday, $weekEnd]);
         }, 'user.schedules' => function($query) use ($currentMonday) {
             $query->where('week_start_date', $currentMonday);
         }, 'user.schedules.shifts.site'])->get();
         
+        $employees->each(function ($employee) use ($profileCompletion) {
+            $employee->user->profile_completion = $profileCompletion->calculate($employee->user);
+        });
         $sites = Site::orderBy('name')->get();
         return view('admin.employees.index', compact('employees', 'sites', 'currentMonday'));
     }
@@ -181,10 +187,11 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')->with('success', $message);
     }
 
-    public function show($id)
+    public function show($id, ProfileCompletionService $profileCompletion)
     {
         $employee = Employee::with(['user', 'user.candidate', 'user.bankDetail', 'user.licenseDetail', 'user.availability', 'user.officeDetail', 'user.offerLetter', 'user.paySlips'])->findOrFail($id);
-        return view('admin.employees.show', compact('employee'));
+        $profileCompletion = $profileCompletion->calculate($employee->user);
+        return view('admin.employees.show', compact('employee', 'profileCompletion'));
     }
 
     public function edit($id)
