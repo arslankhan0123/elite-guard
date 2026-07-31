@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Traits\CommonTrait;
+use App\Services\ProfileCompletionService;
 
 class UserRepository
 {
@@ -35,6 +36,7 @@ class UserRepository
             'current_week_shifts_count' => $shiftsCount,
             'assigned_sites' => $userSites,
             'assigned_sites_count' => $sitesCount,
+            'profile_completion' => app(ProfileCompletionService::class)->calculate($user),
         ];
         return $data;
     }
@@ -62,6 +64,7 @@ class UserRepository
             'assigned_sites' => $userSites,
             'assigned_sites_count' => $sitesCount,
             'other_users' => $otherUsers,
+            'profile_completion' => app(ProfileCompletionService::class)->calculate($user),
         ];
     }
 

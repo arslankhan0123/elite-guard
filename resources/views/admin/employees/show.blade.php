@@ -27,6 +27,15 @@
                     <h5 class="card-title text-white mb-0"><i class="mdi mdi-account-circle-outline"></i> Basic Info</h5>
                 </div>
                 <div class="card-body">
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <strong class="text-muted">Profile complete</strong>
+                            <strong>{{ $profileCompletion['percentage'] }}%</strong>
+                        </div>
+                        <div class="progress" style="height: 9px;">
+                            <div class="progress-bar bg-success" style="width: {{ $profileCompletion['percentage'] }}%" role="progressbar" aria-valuenow="{{ $profileCompletion['percentage'] }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <strong class="text-muted d-block">Name</strong>
                         <span>{{ $employee->user->name }}</span>

@@ -110,6 +110,21 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Assessment::class);
     }
 
+    public function orientationAttempts()
+    {
+        return $this->hasMany(OrientationAttempt::class);
+    }
+
+    public function signedPolicies()
+    {
+        return $this->hasMany(SignedPolicy::class);
+    }
+
+    public function taxDocumentSubmissions()
+    {
+        return $this->hasMany(TaxDocumentSubmission::class);
+    }
+
     public function dailyVehicleChecklists()
     {
         return $this->hasMany(DailyVehicleChecklist::class);

@@ -79,8 +79,37 @@
             <div class="flex-grow-1 ms-4">
                 <h2 class="fw-bold mb-1">{{ Auth::user()->name }}</h2>
                 <p class="mb-0 text-white-50 fs-5">Manage your account profile and security settings.</p>
+                <div class="mt-3" style="max-width: 520px;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-semibold">Profile complete</span>
+                        <span class="fw-bold">{{ $profileCompletion['percentage'] }}%</span>
+                    </div>
+                    <div class="progress bg-white bg-opacity-25" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ $profileCompletion['percentage'] }}%" aria-valuenow="{{ $profileCompletion['percentage'] }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        @foreach([
+            'personal_info' => 'Personal info',
+            'orientation_exams' => 'Orientation exams passed',
+            'documents' => 'Documents uploaded',
+            'policies' => 'Policies signed',
+            'tax_documents' => 'Tax documents filled',
+        ] as $key => $label)
+            @php($section = $profileCompletion['sections'][$key])
+            <div class="col-md-6 col-xl">
+                <div class="card profile-card h-100">
+                    <div class="card-body p-3">
+                        <div class="small text-muted mb-1">{{ $label }}</div>
+                        <div class="fw-bold fs-5">{{ $section['completed'] }} / {{ $section['total'] }}</div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
     </div>
 
     <div class="row">
