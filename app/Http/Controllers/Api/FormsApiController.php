@@ -51,7 +51,7 @@ class FormsApiController extends Controller
      *             @OA\Property(property="hazards_identified", type="boolean", example=false),
      *             @OA\Property(property="right_to_refuse", type="string", example="I understand..."),
      *             @OA\Property(property="right_to_participate", type="string", example="I understand..."),
-     *             @OA\Property(property="signature", type="string", example="Signature Text")
+     *             @OA\Property(property="signature", type="string", description="Base64 data URI of the signature image", example="data:image/png;base64,iVBORw0KGgo...")
      *         )
      *     ),
      *     @OA\Response(
