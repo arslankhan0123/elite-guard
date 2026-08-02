@@ -9,6 +9,7 @@ use App\Repositories\ReportsRepository;
 use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class ReportsApiController extends Controller
 {
@@ -67,6 +68,7 @@ class ReportsApiController extends Controller
      */
     public function storeSecurityGuardDisciplinaryForm(Request $request)
     {
+        Log::info('storeSecurityGuardDisciplinaryForm called with data: ' . json_encode($request->all()));
         $validator = Validator::make($request->all(), [
             'employee_name' => 'required',
             'employee_id_license' => 'required',
@@ -132,6 +134,7 @@ class ReportsApiController extends Controller
      */
     public function storeIncidentReportForm(Request $request)
     {
+        Log::info('storeIncidentReportForm called with data: ' . json_encode($request->all()));
         // Validation rules for the incident report form
         $validator = Validator::make($request->all(), [
             'date_of_report' => 'required',
@@ -204,6 +207,7 @@ class ReportsApiController extends Controller
      */
     public function storeGeneralReportForm(Request $request)
     {
+        Log::info('storeGeneralReportForm called with data: ' . json_encode($request->all()));
         // Validation rules for the general report form
         $validator = Validator::make($request->all(), [
             'report_date' => 'required',
@@ -265,6 +269,7 @@ class ReportsApiController extends Controller
      */
     public function storeDailyShiftReportForm(Request $request)
     {
+        Log::info('storeDailyShiftReportForm called with data: ' . json_encode($request->all()));
         $validator = Validator::make($request->all(), [
             'shift_id' => 'required|exists:shifts,id',
             'security_company' => 'required',
@@ -375,6 +380,7 @@ class ReportsApiController extends Controller
      */
     public function storeFireWatchReport(Request $request)
     {
+        Log::info('storeFireWatchReport called with data: ' . json_encode($request->all()));
         $request->validate([
             'client_site_name'      => 'required|string|max:255',
             'address_location'      => 'required|string|max:255',
