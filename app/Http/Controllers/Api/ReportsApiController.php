@@ -29,7 +29,9 @@ class ReportsApiController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
      *             required={"employee_name","employee_id_license","site_property","warning_date"},
      *             @OA\Property(property="employee_name", type="string", example="John Doe"),
      *             @OA\Property(property="employee_id_license", type="string", example="LIC123456"),
@@ -52,8 +54,9 @@ class ReportsApiController extends Controller
      *             @OA\Property(property="action_taken", type="string", example="Logged"),
      *             @OA\Property(property="issued_by", type="string", example="Captain B"),
      *             @OA\Property(property="issued_by_title", type="string", example="Site Supervisor"),
-     *             @OA\Property(property="employee_signature", type="string", description="Base64 data URI of the employee signature image", example="data:image/png;base64,iVBORw0KGgo..."),
+     *             @OA\Property(property="employee_signature", type="string", format="binary", nullable=true, description="Employee signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)"),
      *             @OA\Property(property="signature_date", type="string", format="date", example="2026-05-03")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -76,7 +79,7 @@ class ReportsApiController extends Controller
             'site_property' => 'required',
             'warning_date' => 'required',
             'reported_by_id' => 'nullable|integer',
-            'employee_signature' => 'nullable|string',
+            'employee_signature' => 'nullable|file|image|mimes:png,jpg,jpeg,webp|mimetypes:image/png,image/jpeg,image/webp|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -203,7 +206,7 @@ class ReportsApiController extends Controller
      *                 @OA\Property(property="location_of_report", type="string", nullable=true, example="123 Main Street"),
      *                 @OA\Property(property="observation_situation", type="string", example="Broken lock observed."),
      *                 @OA\Property(property="action_taken", type="string", example="Secured with temporary chain."),
-     *                 @OA\Property(property="signature", type="string", description="Base64 data URI of the signature image", example="data:image/png;base64,iVBORw0KGgo..."),
+     *                 @OA\Property(property="signature", type="string", format="binary", nullable=true, description="Signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)"),
      *                 @OA\Property(
      *                     property="observation_image_path[]",
      *                     type="array",
@@ -243,7 +246,7 @@ class ReportsApiController extends Controller
             'location_of_report' => 'nullable|string',
             'property' => 'nullable|string',
             'property_address' => 'nullable|string',
-            'signature' => 'nullable|string',
+            'signature' => 'nullable|file|image|mimes:png,jpg,jpeg,webp|mimetypes:image/png,image/jpeg,image/webp|max:5120',
         ]);
 
         if ($validator->fails()) {

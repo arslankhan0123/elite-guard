@@ -22,8 +22,8 @@ class ReportsRepository
     public function storeSecurityGuardDisciplinaryForm($request)
     {
         $user = Auth::user();
-        $employeeSignature = $this->storeBase64Image(
-            $request->employee_signature,
+        $employeeSignature = $this->storeUploadedImage(
+            $request->file('employee_signature'),
             'documents/DisciplinaryReport/signatures',
             $user->id ?? 'guest',
             'employee_signature'
@@ -126,8 +126,8 @@ class ReportsRepository
     {
         // dd($request->all());
         $user = Auth::user();
-        $signature = $this->storeBase64Image(
-            $request->signature,
+        $signature = $this->storeUploadedImage(
+            $request->file('signature'),
             'documents/GeneralReport/signatures',
             $user->id ?? 'guest',
             'signature'
@@ -204,29 +204,24 @@ class ReportsRepository
         ];
     }
 
-    private function storeBase64Image(
-        ?string $imageData,
+    private function storeUploadedImage(
+        $image,
         string $relativeDirectory,
         int|string $userId,
         string $name
     ): ?string
     {
-        if (!$imageData || !preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/s', $imageData, $matches)) {
-            return $imageData;
+        if (!$image) {
+            return null;
         }
 
-        $image = base64_decode(preg_replace('/\s+/', '', $matches[2]), true);
-
-        if ($image === false) {
-            return $imageData;
-        }
-
-        $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
+        $extension = $image->extension();
+        $extension = $extension === 'jpeg' ? 'jpg' : $extension;
         $directory = public_path($relativeDirectory);
         File::ensureDirectoryExists($directory);
 
         $fileName = $userId . '_' . $name . '_' . time() . '_' . Str::random(10) . '.' . $extension;
-        File::put($directory . DIRECTORY_SEPARATOR . $fileName, $image);
+        $image->move($directory, $fileName);
 
         return url(trim($relativeDirectory, '/') . '/' . $fileName);
     }
