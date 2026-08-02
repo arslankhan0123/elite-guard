@@ -46,12 +46,13 @@ class ReportsApiController extends Controller
      *             @OA\Property(property="incident_time", type="string", example="08:30"),
      *             @OA\Property(property="location", type="string", example="Gate 1"),
      *             @OA\Property(property="reported_by", type="string", example="Guard A"),
+     *             @OA\Property(property="reported_by_id", type="integer", nullable=true, example=7),
      *             @OA\Property(property="incident_summary", type="string", example="Arrived late..."),
      *             @OA\Property(property="corrective_action", type="string", example="Verbal warning"),
      *             @OA\Property(property="action_taken", type="string", example="Logged"),
      *             @OA\Property(property="issued_by", type="string", example="Captain B"),
      *             @OA\Property(property="issued_by_title", type="string", example="Site Supervisor"),
-     *             @OA\Property(property="employee_signature", type="string", example="Digital Signature"),
+     *             @OA\Property(property="employee_signature", type="string", description="Base64 data URI of the employee signature image", example="data:image/png;base64,iVBORw0KGgo..."),
      *             @OA\Property(property="signature_date", type="string", format="date", example="2026-05-03")
      *         )
      *     ),
@@ -74,6 +75,8 @@ class ReportsApiController extends Controller
             'employee_id_license' => 'required',
             'site_property' => 'required',
             'warning_date' => 'required',
+            'reported_by_id' => 'nullable|integer',
+            'employee_signature' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

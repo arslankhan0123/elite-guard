@@ -22,6 +22,12 @@ class ReportsRepository
     public function storeSecurityGuardDisciplinaryForm($request)
     {
         $user = Auth::user();
+        $employeeSignature = $this->storeBase64Image(
+            $request->employee_signature,
+            'documents/DisciplinaryReport/signatures',
+            $user->id ?? 'guest',
+            'employee_signature'
+        );
 
         $form = ReportSecurityGuardDisciplinaryForm::create([
             'user_id' => $user->id ?? null,
@@ -40,12 +46,13 @@ class ReportsRepository
             'incident_time' => $request->incident_time,
             'location' => $request->location,
             'reported_by' => $request->reported_by,
+            'reported_by_id' => $request->reported_by_id,
             'incident_summary' => $request->incident_summary,
             'corrective_action' => $request->corrective_action,
             'action_taken' => $request->action_taken,
             'issued_by' => $request->issued_by,
             'issued_by_title' => $request->issued_by_title,
-            'employee_signature' => $request->employee_signature,
+            'employee_signature' => $employeeSignature,
             'signature_date' => $request->signature_date,
         ]);
 
@@ -119,9 +126,11 @@ class ReportsRepository
     {
         // dd($request->all());
         $user = Auth::user();
-        $signature = $this->storeGeneralReportSignature(
+        $signature = $this->storeBase64Image(
             $request->signature,
-            $user->id ?? 'guest'
+            'documents/GeneralReport/signatures',
+            $user->id ?? 'guest',
+            'signature'
         );
 
         $form = ReportGeneralForm::create([
@@ -195,26 +204,31 @@ class ReportsRepository
         ];
     }
 
-    private function storeGeneralReportSignature(?string $signature, int|string $userId): ?string
+    private function storeBase64Image(
+        ?string $imageData,
+        string $relativeDirectory,
+        int|string $userId,
+        string $name
+    ): ?string
     {
-        if (!$signature || !preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/s', $signature, $matches)) {
-            return $signature;
+        if (!$imageData || !preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/s', $imageData, $matches)) {
+            return $imageData;
         }
 
         $image = base64_decode(preg_replace('/\s+/', '', $matches[2]), true);
 
         if ($image === false) {
-            return $signature;
+            return $imageData;
         }
 
         $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
-        $directory = public_path('documents/GeneralReport/signatures');
+        $directory = public_path($relativeDirectory);
         File::ensureDirectoryExists($directory);
 
-        $fileName = $userId . '_signature_' . time() . '_' . Str::random(10) . '.' . $extension;
+        $fileName = $userId . '_' . $name . '_' . time() . '_' . Str::random(10) . '.' . $extension;
         File::put($directory . DIRECTORY_SEPARATOR . $fileName, $image);
 
-        return url('documents/GeneralReport/signatures/' . $fileName);
+        return url(trim($relativeDirectory, '/') . '/' . $fileName);
     }
 
     public function storeDailyShiftReportForm($request)
