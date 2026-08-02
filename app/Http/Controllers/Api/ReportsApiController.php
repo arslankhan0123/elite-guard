@@ -173,14 +173,19 @@ class ReportsApiController extends Controller
      *                 @OA\Property(property="report_time", type="string", example="09:00"),
      *                 @OA\Property(property="property_location", type="string", example="Sector 7"),
      *                 @OA\Property(property="property_name", type="string", example="Industrial Complex"),
+     *                 @OA\Property(property="property", type="string", nullable=true, example="Industrial Complex"),
+     *                 @OA\Property(property="property_address", type="string", nullable=true, example="123 Main Street"),
      *                 @OA\Property(property="reported_by", type="string", example="John Doe"),
+     *                 @OA\Property(property="reported_by_id", type="integer", nullable=true, example=2),
      *                 @OA\Property(property="report_type", type="string", example="Maintenance"),
      *                 @OA\Property(property="time_engaged", type="string", example="08:45"),
      *                 @OA\Property(property="time_area_cleared", type="string", example="09:15"),
      *                 @OA\Property(property="location_of_incident", type="string", example="Warehouse B"),
+     *                 @OA\Property(property="location", type="string", nullable=true, example="123 Main Street"),
+     *                 @OA\Property(property="location_of_report", type="string", nullable=true, example="123 Main Street"),
      *                 @OA\Property(property="observation_situation", type="string", example="Broken lock observed."),
      *                 @OA\Property(property="action_taken", type="string", example="Secured with temporary chain."),
-     *                 @OA\Property(property="signature", type="string", example="John's Signature"),
+     *                 @OA\Property(property="signature", type="string", description="Base64 data URI of the signature image", example="data:image/png;base64,iVBORw0KGgo..."),
      *                 @OA\Property(
      *                     property="observation_image_path[]",
      *                     type="array",
@@ -215,6 +220,12 @@ class ReportsApiController extends Controller
             'property_location' => 'required',
             'property_name' => 'required',
             'reported_by' => 'nullable',
+            'reported_by_id' => 'nullable|integer',
+            'location' => 'nullable|string',
+            'location_of_report' => 'nullable|string',
+            'property' => 'nullable|string',
+            'property_address' => 'nullable|string',
+            'signature' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

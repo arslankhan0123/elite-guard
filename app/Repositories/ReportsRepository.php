@@ -12,6 +12,7 @@ use App\Models\ReportSecurityGuardDisciplinaryForm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use App\Models\FireWatchReport;
 use App\Models\FireWatchPatrolLog;
@@ -101,6 +102,10 @@ class ReportsRepository
     {
         // dd($request->all());
         $user = Auth::user();
+        $signature = $this->storeGeneralReportSignature(
+            $request->signature,
+            $user->id ?? 'guest'
+        );
 
         $form = ReportGeneralForm::create([
             'user_id' => $user->id ?? null,
@@ -108,14 +113,19 @@ class ReportsRepository
             'report_time' => $request->report_time,
             'property_location' => $request->property_location,
             'property_name' => $request->property_name,
+            'property' => $request->property,
+            'property_address' => $request->property_address,
             'reported_by' => $request->reported_by ?? $user->name ?? 'No Username',
+            'reported_by_id' => $request->reported_by_id,
             'report_type' => $request->report_type,
             'time_engaged' => $request->time_engaged,
             'time_area_cleared' => $request->time_area_cleared,
             'location_of_incident' => $request->location_of_incident,
+            'location' => $request->location,
+            'location_of_report' => $request->location_of_report,
             'observation_situation' => $request->observation_situation,
             'action_taken' => $request->action_taken,
-            'signature' => $request->signature,
+            'signature' => $signature,
         ]);
 
         $observationImages = $request->file('observation_image_path', []);
@@ -166,6 +176,28 @@ class ReportsRepository
             'message' => 'General Report Form stored successfully.',
             'form' => $form->load('images'),
         ];
+    }
+
+    private function storeGeneralReportSignature(?string $signature, int|string $userId): ?string
+    {
+        if (!$signature || !preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/s', $signature, $matches)) {
+            return $signature;
+        }
+
+        $image = base64_decode(preg_replace('/\s+/', '', $matches[2]), true);
+
+        if ($image === false) {
+            return $signature;
+        }
+
+        $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
+        $directory = public_path('documents/GeneralReport/signatures');
+        File::ensureDirectoryExists($directory);
+
+        $fileName = $userId . '_signature_' . time() . '_' . Str::random(10) . '.' . $extension;
+        File::put($directory . DIRECTORY_SEPARATOR . $fileName, $image);
+
+        return url('documents/GeneralReport/signatures/' . $fileName);
     }
 
     public function storeDailyShiftReportForm($request)
