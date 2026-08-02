@@ -19,12 +19,16 @@ class FormsRepository
     public function storeUserAssessments(Request $request)
     {
         $user = Auth::user();
-        $signature = $this->storeBase64Image(
-            $request->signature,
-            'documents/Assessments/signatures',
-            $user->id ?? 'guest',
-            'signature'
-        );
+        $signatureFile = $request->file('signature');
+        $signatureDirectory = 'documents/Assessments/signatures';
+        $directory = public_path($signatureDirectory);
+        File::ensureDirectoryExists($directory);
+
+        $extension = $signatureFile->extension();
+        $extension = $extension === 'jpeg' ? 'jpg' : $extension;
+        $signatureFileName = ($user->id ?? 'guest') . '_signature_' . time() . '_' . Str::random(10) . '.' . $extension;
+        $signatureFile->move($directory, $signatureFileName);
+        $signature = url($signatureDirectory . '/' . $signatureFileName);
 
         $assessment = Assessment::create([
             'user_id' => $user->id,
@@ -89,12 +93,20 @@ class FormsRepository
     public function storeDailyVehicleChecklist(Request $request)
     {
         $user = Auth::user();
-        $signature = $this->storeBase64Image(
-            $request->signature,
-            'documents/DailyVehicleChecklist/signatures',
-            $user->id ?? 'guest',
-            'signature'
-        );
+        $signature = null;
+
+        if ($request->hasFile('signature')) {
+            $signatureFile = $request->file('signature');
+            $signatureDirectory = 'documents/DailyVehicleChecklist/signatures';
+            $directory = public_path($signatureDirectory);
+            File::ensureDirectoryExists($directory);
+
+            $extension = $signatureFile->extension();
+            $extension = $extension === 'jpeg' ? 'jpg' : $extension;
+            $signatureFileName = ($user->id ?? 'guest') . '_signature_' . time() . '_' . Str::random(10) . '.' . $extension;
+            $signatureFile->move($directory, $signatureFileName);
+            $signature = url($signatureDirectory . '/' . $signatureFileName);
+        }
 
         $documentPath = $request->input('documents');
         if ($request->hasFile('documents')) {
@@ -153,14 +165,14 @@ class FormsRepository
     public function storeShiftAdjustmentForm(Request $request)
     {
         $user = Auth::user();
-        $employeeSignature = $this->storeBase64Image(
-            $request->employee_signature,
+        $employeeSignature = $this->storeUploadedImage(
+            $request->file('employee_signature'),
             'documents/ShiftAdjustment/signatures',
             $user->id ?? 'guest',
             'employee_signature'
         );
-        $supervisorSignature = $this->storeBase64Image(
-            $request->supervisor_signature,
+        $supervisorSignature = $this->storeUploadedImage(
+            $request->file('supervisor_signature'),
             'documents/ShiftAdjustment/signatures',
             $user->id ?? 'guest',
             'supervisor_signature'
@@ -215,5 +227,22 @@ class FormsRepository
             'message' => 'Shift Adjustment Form stored successfully.',
             'form'    => $form,
         ];
+    }
+
+    private function storeUploadedImage($image, string $relativeDirectory, int|string $userId, string $name): ?string
+    {
+        if (!$image) {
+            return null;
+        }
+
+        $directory = public_path($relativeDirectory);
+        File::ensureDirectoryExists($directory);
+
+        $extension = $image->extension();
+        $extension = $extension === 'jpeg' ? 'jpg' : $extension;
+        $fileName = $userId . '_' . $name . '_' . time() . '_' . Str::random(10) . '.' . $extension;
+        $image->move($directory, $fileName);
+
+        return url($relativeDirectory . '/' . $fileName);
     }
 }

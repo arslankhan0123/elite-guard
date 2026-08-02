@@ -1108,7 +1108,7 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "first_name",
@@ -1225,8 +1225,9 @@
                                         "example": "I understand..."
                                     },
                                     "signature": {
+                                        "description": "Signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)",
                                         "type": "string",
-                                        "example": "Signature Text"
+                                        "format": "binary"
                                     }
                                 },
                                 "type": "object"
@@ -1317,8 +1318,10 @@
                                         "example": "John Doe"
                                     },
                                     "signature": {
+                                        "description": "Signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)",
                                         "type": "string",
-                                        "example": "Signature Text"
+                                        "format": "binary",
+                                        "nullable": true
                                     },
                                     "cosmetic_issues": {
                                         "type": "string",
@@ -1341,9 +1344,8 @@
                                         "example": "Normal"
                                     },
                                     "documents": {
-                                        "description": "File upload (pdf, jpg, png, etc.)",
-                                        "type": "string",
-                                        "format": "binary"
+                                        "description": "Document inspection result or an uploaded file",
+                                        "type": "string"
                                     },
                                     "engine": {
                                         "type": "string",
@@ -1360,6 +1362,18 @@
                                     "bwc_used_for_inspection": {
                                         "type": "string",
                                         "example": "Yes"
+                                    },
+                                    "issues_found": {
+                                        "type": "string",
+                                        "example": "Scratch on rear bumper",
+                                        "nullable": true
+                                    },
+                                    "issue_images[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -1410,7 +1424,7 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "employee_name",
@@ -1535,45 +1549,49 @@
                                         "example": "Approved. Ensure replacement is briefed before shift start."
                                     },
                                     "employee_signature": {
+                                        "description": "Employee signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)",
                                         "type": "string",
-                                        "example": "John Doe"
+                                        "format": "binary",
+                                        "nullable": true
                                     },
                                     "supervisor_signature": {
+                                        "description": "Supervisor signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)",
                                         "type": "string",
-                                        "example": "Jane Smith"
+                                        "format": "binary",
+                                        "nullable": true
                                     }
                                 },
-                                "type": "object"
-                            },
-                            "example": {
-                                "employee_name": "John Doe",
-                                "employee_id": "EMP-1024",
-                                "position_site": "Security Guard / Downtown Mall",
-                                "department": "Security Operations",
-                                "current_date": "2026-07-01",
-                                "current_start_time": "08:00",
-                                "current_end_time": "16:00",
-                                "current_supervisor": "Jane Smith",
-                                "current_shift_type": "Day",
-                                "shift_swap": false,
-                                "late_start": false,
-                                "coverage_request": true,
-                                "early_release": false,
-                                "time_off_request": false,
-                                "overtime_approval": false,
-                                "requested_date": "2026-07-05",
-                                "requested_start_time": "10:00",
-                                "requested_end_time": "18:00",
-                                "replacement_employee": "Mark Johnson",
-                                "adjustment_reason": "Doctor appointment in the morning",
-                                "additional_details": "Need coverage from 10:00 AM. Mark Johnson has agreed to swap.",
-                                "supervisor_name": "Jane Smith",
-                                "approval_date": "2026-07-02",
-                                "decision": "Approved",
-                                "approved_hours": "8",
-                                "supervisor_notes": "Approved. Ensure replacement is briefed before shift start.",
-                                "employee_signature": "John Doe",
-                                "supervisor_signature": "Jane Smith"
+                                "type": "object",
+                                "example": {
+                                    "employee_name": "John Doe",
+                                    "employee_id": "EMP-1024",
+                                    "position_site": "Security Guard / Downtown Mall",
+                                    "department": "Security Operations",
+                                    "current_date": "2026-07-01",
+                                    "current_start_time": "08:00",
+                                    "current_end_time": "16:00",
+                                    "current_supervisor": "Jane Smith",
+                                    "current_shift_type": "Day",
+                                    "shift_swap": false,
+                                    "late_start": false,
+                                    "coverage_request": true,
+                                    "early_release": false,
+                                    "time_off_request": false,
+                                    "overtime_approval": false,
+                                    "requested_date": "2026-07-05",
+                                    "requested_start_time": "10:00",
+                                    "requested_end_time": "18:00",
+                                    "replacement_employee": "Mark Johnson",
+                                    "adjustment_reason": "Doctor appointment in the morning",
+                                    "additional_details": "Need coverage from 10:00 AM. Mark Johnson has agreed to swap.",
+                                    "supervisor_name": "Jane Smith",
+                                    "approval_date": "2026-07-02",
+                                    "decision": "Approved",
+                                    "approved_hours": "8",
+                                    "supervisor_notes": "Approved. Ensure replacement is briefed before shift start.",
+                                    "employee_signature": "employee-signature.png",
+                                    "supervisor_signature": "supervisor-signature.jpg"
+                                }
                             }
                         }
                     }
@@ -3030,6 +3048,11 @@
                                         "type": "string",
                                         "example": "Guard A"
                                     },
+                                    "reported_by_id": {
+                                        "type": "integer",
+                                        "example": 7,
+                                        "nullable": true
+                                    },
                                     "incident_summary": {
                                         "type": "string",
                                         "example": "Arrived late..."
@@ -3051,8 +3074,9 @@
                                         "example": "Site Supervisor"
                                     },
                                     "employee_signature": {
+                                        "description": "Base64 data URI of the employee signature image",
                                         "type": "string",
-                                        "example": "Digital Signature"
+                                        "example": "data:image/png;base64,iVBORw0KGgo..."
                                     },
                                     "signature_date": {
                                         "type": "string",
@@ -3261,9 +3285,24 @@
                                         "type": "string",
                                         "example": "Industrial Complex"
                                     },
+                                    "property": {
+                                        "type": "string",
+                                        "example": "Industrial Complex",
+                                        "nullable": true
+                                    },
+                                    "property_address": {
+                                        "type": "string",
+                                        "example": "123 Main Street",
+                                        "nullable": true
+                                    },
                                     "reported_by": {
                                         "type": "string",
                                         "example": "John Doe"
+                                    },
+                                    "reported_by_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
                                     },
                                     "report_type": {
                                         "type": "string",
@@ -3281,6 +3320,16 @@
                                         "type": "string",
                                         "example": "Warehouse B"
                                     },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "123 Main Street",
+                                        "nullable": true
+                                    },
+                                    "location_of_report": {
+                                        "type": "string",
+                                        "example": "123 Main Street",
+                                        "nullable": true
+                                    },
                                     "observation_situation": {
                                         "type": "string",
                                         "example": "Broken lock observed."
@@ -3290,8 +3339,9 @@
                                         "example": "Secured with temporary chain."
                                     },
                                     "signature": {
+                                        "description": "Base64 data URI of the signature image",
                                         "type": "string",
-                                        "example": "John's Signature"
+                                        "example": "data:image/png;base64,iVBORw0KGgo..."
                                     },
                                     "observation_image_path[]": {
                                         "type": "array",
@@ -3395,6 +3445,11 @@
                                     "client": {
                                         "type": "string",
                                         "example": "ABC Corp"
+                                    },
+                                    "weather_conditions": {
+                                        "type": "string",
+                                        "example": "Clear and sunny",
+                                        "nullable": true
                                     },
                                     "patrol_entries": {
                                         "type": "array",
@@ -4634,7 +4689,7 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "site_tour_item_id",
@@ -4664,6 +4719,11 @@
                                     "time": {
                                         "type": "string",
                                         "example": "14:30:00"
+                                    },
+                                    "image": {
+                                        "description": "Optional image/photo taken during scanning",
+                                        "type": "string",
+                                        "format": "binary"
                                     }
                                 },
                                 "type": "object"

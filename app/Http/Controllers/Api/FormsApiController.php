@@ -27,7 +27,9 @@ class FormsApiController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
      *             required={"first_name","last_name","worker_email","shift_date","location","start_time","compliance_fit_for_duty","any_injuries","physically_prepared","any_symptoms","understand_unethical_work_sick","up_to_date_orders","believe_fit_for_duty","client","supervisor_first_name","supervisor_last_name","position_today","safety_concerns","hazards_identified","right_to_refuse","right_to_participate","signature"},
      *             @OA\Property(property="first_name", type="string", example="John"),
      *             @OA\Property(property="last_name", type="string", example="Doe"),
@@ -51,7 +53,8 @@ class FormsApiController extends Controller
      *             @OA\Property(property="hazards_identified", type="boolean", example=false),
      *             @OA\Property(property="right_to_refuse", type="string", example="I understand..."),
      *             @OA\Property(property="right_to_participate", type="string", example="I understand..."),
-     *             @OA\Property(property="signature", type="string", description="Base64 data URI of the signature image", example="data:image/png;base64,iVBORw0KGgo...")
+     *             @OA\Property(property="signature", type="string", format="binary", description="Signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -61,8 +64,8 @@ class FormsApiController extends Controller
      *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Assessment stored successfully."),
      *             @OA\Property(property="data", type="object")
-     *         )
      *     )
+     * )
      * )
      */
     public function storeUserAssessments(Request $request)
@@ -91,7 +94,7 @@ class FormsApiController extends Controller
             'hazards_identified' => 'required|boolean',
             'right_to_refuse' => 'required|string',
             'right_to_participate' => 'required|string',
-            'signature' => 'required|string',
+            'signature' => 'required|file|image|mimes:png,jpg,jpeg,webp|mimetypes:image/png,image/jpeg,image/webp|max:5120',
         ]);
 
         $data = $this->formsRepo->storeUserAssessments($request);
@@ -118,7 +121,7 @@ class FormsApiController extends Controller
      *                 @OA\Property(property="fuel", type="string", example="Full Tank"),
      *                 @OA\Property(property="assigned_site", type="string", example="Downtown Mall"),
      *                 @OA\Property(property="driver", type="string", example="John Doe"),
-     *                 @OA\Property(property="signature", type="string", description="Base64 data URI of the signature image", example="data:image/png;base64,iVBORw0KGgo..."),
+     *                 @OA\Property(property="signature", type="string", format="binary", nullable=true, description="Signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)"),
      *                 @OA\Property(property="cosmetic_issues", type="string", example="No issues"),
      *                 @OA\Property(property="tires", type="string", example="Good"),
      *                 @OA\Property(property="windows", type="string", example="Clear"),
@@ -156,7 +159,7 @@ class FormsApiController extends Controller
             'fuel' => 'required|string',
             'assigned_site' => 'required|string',
             'driver' => 'required|string',
-            'signature' => 'nullable|string',
+            'signature' => 'nullable|file|image|mimes:png,jpg,jpeg,webp|mimetypes:image/png,image/jpeg,image/webp|max:5120',
             'documents' => 'nullable',
             'issues_found' => 'nullable|string',
             'issue_images' => 'nullable|array',
@@ -177,7 +180,9 @@ class FormsApiController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
      *             required={"employee_name","current_date"},
      *
      *             @OA\Property(property="employee_name",        type="string",  example="John Doe"),
@@ -211,8 +216,8 @@ class FormsApiController extends Controller
      *             @OA\Property(property="approved_hours",       type="string",  example="8"),
      *             @OA\Property(property="supervisor_notes",     type="string",  example="Approved. Ensure replacement is briefed before shift start."),
      *
-     *             @OA\Property(property="employee_signature", type="string", description="Base64 data URI of the employee signature image", example="data:image/png;base64,iVBORw0KGgo..."),
-     *             @OA\Property(property="supervisor_signature", type="string", description="Base64 data URI of the supervisor signature image", example="data:image/png;base64,iVBORw0KGgo..."),
+     *             @OA\Property(property="employee_signature", type="string", format="binary", nullable=true, description="Employee signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)"),
+     *             @OA\Property(property="supervisor_signature", type="string", format="binary", nullable=true, description="Supervisor signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)"),
      *
      *             example={
      *                 "employee_name":        "John Doe",
@@ -241,9 +246,10 @@ class FormsApiController extends Controller
      *                 "decision":             "Approved",
      *                 "approved_hours":       "8",
      *                 "supervisor_notes":     "Approved. Ensure replacement is briefed before shift start.",
-     *                 "employee_signature":   "John Doe",
-     *                 "supervisor_signature": "Jane Smith"
+     *                 "employee_signature":   "employee-signature.png",
+     *                 "supervisor_signature": "supervisor-signature.jpg"
      *             }
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -306,8 +312,8 @@ class FormsApiController extends Controller
             'supervisor_notes'     => 'nullable|string',
 
             // Signatures
-            'employee_signature'   => 'nullable|string',
-            'supervisor_signature' => 'nullable|string',
+            'employee_signature'   => 'nullable|file|image|mimes:png,jpg,jpeg,webp|mimetypes:image/png,image/jpeg,image/webp|max:5120',
+            'supervisor_signature' => 'nullable|file|image|mimes:png,jpg,jpeg,webp|mimetypes:image/png,image/jpeg,image/webp|max:5120',
         ]);
 
         $data = $this->formsRepo->storeShiftAdjustmentForm($request);
