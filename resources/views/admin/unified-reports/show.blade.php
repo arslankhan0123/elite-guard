@@ -44,11 +44,7 @@
                         <div class="col-12">
                             <h5 class="border-bottom pb-2 text-primary"><i class="mdi mdi-file-document-outline"></i> Record Information</h5>
                         </div>
-                        @php
-                            $hiddenFields = ['id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'documents'];
-                            $attributes = collect($report->getAttributes())->except($hiddenFields);
-                        @endphp
-                        @foreach($attributes as $key => $value)
+                        @foreach($attributes->except(['signature', 'employee_signature', 'supervisor_signature', 'documents']) as $key => $value)
                             @php
                                 $isJson = is_array($value) || is_object($value);
                                 $isLongText = $isJson || in_array(strtolower($key), ['incident_summary', 'summary', 'observation_situation', 'reason_for_fire_watch', 'action_taken', 'description', 'comments']) || strlen((string)$value) > 80;
@@ -57,7 +53,7 @@
                                 <strong>{{ ucwords(str_replace('_', ' ', $key)) }}:</strong> <br>
                                 @if($isJson)
                                     <pre class="bg-light p-2 rounded">{{ json_encode($value, JSON_PRETTY_PRINT) }}</pre>
-                                @elseif(in_array(strtolower((string)$value), ['1', '0', 'true', 'false']) && !is_numeric($value))
+                                @elseif($report->hasCast($key, 'boolean'))
                                     <span class="badge {{ $value ? 'bg-success' : 'bg-danger' }}">{{ $value ? 'Yes' : 'No' }}</span>
                                 @else
                                     <span class="text-muted">{{ $value ?? 'N/A' }}</span>
@@ -98,6 +94,38 @@
                                 @endforeach
                             </div>
                         </div>
+                    </div>
+                    @endif
+
+                    @if(method_exists($report, 'issueImages') && $report->issueImages->count() > 0)
+                    <div class="row mb-4">
+                        <div class="col-12"><h5 class="border-bottom pb-2 text-primary"><i class="mdi mdi-image-multiple"></i> Issue Images</h5></div>
+                        <div class="col-12 d-flex flex-wrap gap-2">
+                            @foreach($report->issueImages as $image)
+                                <a href="{{ $image->image_path }}" target="_blank" class="border rounded p-1">
+                                    <img src="{{ $image->image_path }}" alt="Issue" class="img-fluid rounded" style="max-height: 150px; max-width: 150px; object-fit: cover;">
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    @php $signatureFields = ['signature' => 'Signature', 'employee_signature' => 'Employee Signature', 'supervisor_signature' => 'Supervisor Signature']; @endphp
+                    @if(collect($signatureFields)->keys()->contains(fn ($field) => filled($report->getAttribute($field))))
+                    <div class="row mb-4">
+                        <div class="col-12"><h5 class="border-bottom pb-2 text-primary"><i class="mdi mdi-draw"></i> Signatures</h5></div>
+                        @foreach($signatureFields as $field => $label)
+                            @if($report->getAttribute($field))
+                                <div class="col-md-4 mb-3">
+                                    <strong>{{ $label }}:</strong><br>
+                                    @if(str_starts_with($report->getAttribute($field), 'data:image') || filter_var($report->getAttribute($field), FILTER_VALIDATE_URL))
+                                        <a href="{{ $report->getAttribute($field) }}" target="_blank"><img src="{{ $report->getAttribute($field) }}" alt="{{ $label }}" class="img-fluid border rounded p-2 mt-1" style="max-height: 120px;"></a>
+                                    @else
+                                        <span class="text-muted">{{ $report->getAttribute($field) }}</span>
+                                    @endif
+                                </div>
+                            @endif
+                        @endforeach
                     </div>
                     @endif
 
@@ -166,9 +194,11 @@
                         <div class="col-12">
                             <h5 class="border-bottom pb-2 text-primary"><i class="mdi mdi-file-document"></i> Attached Document</h5>
                             <div class="mt-2">
-                                <a href="{{ asset($report->documents) }}" target="_blank" class="btn btn-outline-primary">
-                                    <i class="mdi mdi-download me-1"></i> View/Download Document
-                                </a>
+                                @if(filter_var($report->documents, FILTER_VALIDATE_URL) || str_contains($report->documents, '/'))
+                                    <a href="{{ $report->documents }}" target="_blank" class="btn btn-outline-primary"><i class="mdi mdi-download me-1"></i> View/Download Document</a>
+                                @else
+                                    <span class="text-muted">{{ $report->documents }}</span>
+                                @endif
                             </div>
                         </div>
                     </div>

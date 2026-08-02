@@ -12,6 +12,7 @@ use App\Models\DailyVehicleChecklist;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class UnifiedReportController extends Controller
 {
@@ -49,7 +50,7 @@ class UnifiedReportController extends Controller
                 $data['assessments'] = $query->latest()->paginate(10);
                 break;
             case 'vehicle-checklist':
-                $query = DailyVehicleChecklist::with('user');
+                $query = DailyVehicleChecklist::with(['user', 'issueImages']);
                 $this->applyFilters($query, $request);
                 if ($request->document_status) {
                     if ($request->document_status == 'uploaded') {
@@ -116,39 +117,11 @@ class UnifiedReportController extends Controller
 
     public function show($type, $id)
     {
-        $report = null;
+        $report = $this->getReportInstance($type, $id);
         $title = ucwords(str_replace('-', ' ', $type)) . ' Details';
+        $attributes = $this->displayAttributes($report);
 
-        switch ($type) {
-            case 'disciplinary':
-                $report = ReportSecurityGuardDisciplinaryForm::with('user')->findOrFail($id);
-                break;
-            case 'incident':
-                $report = ReportIncidentForm::with(['user', 'images'])->findOrFail($id);
-                break;
-            case 'general':
-                $report = ReportGeneralForm::with(['user', 'images'])->findOrFail($id);
-                break;
-            case 'daily-shift':
-                $report = ReportDailyShiftForm::with(['user', 'patrolEntries'])->findOrFail($id);
-                break;
-            case 'assessments':
-                $report = Assessment::with('user')->findOrFail($id);
-                break;
-            case 'vehicle-checklist':
-                $report = DailyVehicleChecklist::with('user')->findOrFail($id);
-                break;
-            case 'fire-watch':
-                $report = \App\Models\FireWatchReport::with(['user', 'patrolLogs'])->findOrFail($id);
-                break;
-            case 'shift-adjustment':
-                $report = \App\Models\ShiftAdjustmentForm::with('user')->findOrFail($id);
-                break;
-            default:
-                abort(404);
-        }
-
-        return view('admin.unified-reports.show', compact('report', 'type', 'title'));
+        return view('admin.unified-reports.show', compact('report', 'type', 'title', 'attributes'));
     }
 
     public function edit($type, $id)
@@ -156,8 +129,7 @@ class UnifiedReportController extends Controller
         $report = $this->getReportInstance($type, $id);
         $title = 'Edit ' . ucwords(str_replace('-', ' ', $type)) . ' #' . $id;
 
-        $hiddenFields = ['id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'documents', 'signature'];
-        $attributes = collect($report->getAttributes())->except($hiddenFields);
+        $attributes = $this->displayAttributes($report)->except($this->mediaFields());
 
         return view('admin.unified-reports.edit', compact('report', 'type', 'title', 'attributes'));
     }
@@ -165,8 +137,7 @@ class UnifiedReportController extends Controller
     public function update(Request $request, $type, $id)
     {
         $report = $this->getReportInstance($type, $id);
-        $hiddenFields = ['id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'documents', 'signature'];
-        $attributes = collect($report->getAttributes())->except($hiddenFields);
+        $attributes = $this->displayAttributes($report)->except($this->mediaFields());
 
         $rules = [];
         foreach ($attributes as $key => $val) {
@@ -174,70 +145,75 @@ class UnifiedReportController extends Controller
         }
         $validated = $request->validate($rules);
 
-        $report->update($validated);
+        foreach ($validated as $key => $value) {
+            if ($report->hasCast($key, ['array', 'json', 'object', 'collection']) && is_string($value)) {
+                $validated[$key] = json_decode($value, true) ?? $value;
+            }
+        }
+
+        DB::transaction(function () use ($report, $validated, $request) {
+            $report->update($validated);
+
+            foreach ($this->editableRelations($report) as $relationName => $items) {
+                foreach ($request->input("relations.$relationName", []) as $relationId => $values) {
+                    $item = $items->firstWhere('id', (int) $relationId);
+                    if ($item) {
+                        $item->update(collect($values)->only($item->getFillable())->all());
+                    }
+                }
+            }
+        });
 
         return redirect()->route('reports.all', ['type' => $type])->with('success', ucwords(str_replace('-', ' ', $type)) . ' updated successfully!');
     }
 
     public function downloadPdf($type, $id)
     {
-        $report = null;
+        $report = $this->getReportInstance($type, $id);
         $title = ucwords(str_replace('-', ' ', $type)) . ' Report';
+        $attributes = $this->displayAttributes($report);
 
-        switch ($type) {
-            case 'disciplinary':
-                $report = ReportSecurityGuardDisciplinaryForm::with('user')->findOrFail($id);
-                break;
-            case 'incident':
-                $report = ReportIncidentForm::with(['user', 'images'])->findOrFail($id);
-                break;
-            case 'general':
-                $report = ReportGeneralForm::with(['user', 'images'])->findOrFail($id);
-                break;
-            case 'daily-shift':
-                $report = ReportDailyShiftForm::with(['user', 'patrolEntries'])->findOrFail($id);
-                break;
-            case 'assessments':
-                $report = Assessment::with('user')->findOrFail($id);
-                break;
-            case 'vehicle-checklist':
-                $report = DailyVehicleChecklist::with('user')->findOrFail($id);
-                break;
-            case 'fire-watch':
-                $report = \App\Models\FireWatchReport::with(['user', 'patrolLogs'])->findOrFail($id);
-                break;
-            case 'shift-adjustment':
-                $report = \App\Models\ShiftAdjustmentForm::with('user')->findOrFail($id);
-                break;
-            default:
-                abort(404);
-        }
-
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.unified-reports.pdf', compact('report', 'type', 'title'));
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.unified-reports.pdf', compact('report', 'type', 'title', 'attributes'));
         return $pdf->download(str_replace(' ', '_', strtolower($title)) . '_' . $id . '.pdf');
     }
 
     private function getReportInstance($type, $id)
     {
-        switch ($type) {
-            case 'disciplinary':
-                return ReportSecurityGuardDisciplinaryForm::findOrFail($id);
-            case 'incident':
-                return ReportIncidentForm::findOrFail($id);
-            case 'general':
-                return ReportGeneralForm::findOrFail($id);
-            case 'daily-shift':
-                return ReportDailyShiftForm::findOrFail($id);
-            case 'assessments':
-                return Assessment::findOrFail($id);
-            case 'vehicle-checklist':
-                return DailyVehicleChecklist::findOrFail($id);
-            case 'fire-watch':
-                return \App\Models\FireWatchReport::findOrFail($id);
-            case 'shift-adjustment':
-                return \App\Models\ShiftAdjustmentForm::findOrFail($id);
-            default:
-                abort(404);
-        }
+        $config = [
+            'disciplinary' => [ReportSecurityGuardDisciplinaryForm::class, ['user']],
+            'incident' => [ReportIncidentForm::class, ['user', 'images']],
+            'general' => [ReportGeneralForm::class, ['user', 'images']],
+            'daily-shift' => [ReportDailyShiftForm::class, ['user', 'patrolEntries']],
+            'assessments' => [Assessment::class, ['user']],
+            'vehicle-checklist' => [DailyVehicleChecklist::class, ['user', 'issueImages']],
+            'fire-watch' => [\App\Models\FireWatchReport::class, ['user', 'patrolLogs']],
+            'shift-adjustment' => [\App\Models\ShiftAdjustmentForm::class, ['user']],
+        ];
+
+        abort_unless(isset($config[$type]), 404);
+
+        [$model, $relations] = $config[$type];
+
+        return $model::with($relations)->findOrFail($id);
+    }
+
+    private function displayAttributes($report)
+    {
+        return collect(array_keys($report->getAttributes()))
+            ->reject(fn ($key) => in_array($key, ['id', 'user_id', 'created_at', 'updated_at', 'deleted_at']))
+            ->mapWithKeys(fn ($key) => [$key => $report->getAttribute($key)]);
+    }
+
+    private function mediaFields(): array
+    {
+        return ['signature', 'employee_signature', 'supervisor_signature', 'documents'];
+    }
+
+    private function editableRelations($report): array
+    {
+        return collect(['patrolLogs', 'patrolEntries'])
+            ->filter(fn ($relation) => $report->relationLoaded($relation))
+            ->mapWithKeys(fn ($relation) => [$relation => $report->getRelation($relation)])
+            ->all();
     }
 }
