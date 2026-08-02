@@ -7,6 +7,7 @@ use App\Repositories\FormsRepository;
 use App\Repositories\NumberRepository;
 use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class FormsApiController extends Controller
 {
@@ -66,6 +67,7 @@ class FormsApiController extends Controller
      */
     public function storeUserAssessments(Request $request)
     {
+        Log::info('storeUserAssessments called with data: ' . json_encode($request->all()));
         $request->validate([
             'first_name' => 'required|string',
             'last_name' => 'required|string',
@@ -143,6 +145,7 @@ class FormsApiController extends Controller
      */
     public function storeDailyVehicleChecklist(Request $request)
     {
+        Log::info('storeDailyVehicleChecklist called with data: ' . json_encode($request->all()));
         $request->validate([
             'date' => 'required|string',
             'time' => 'required|string',
@@ -259,6 +262,7 @@ class FormsApiController extends Controller
      */
     public function storeShiftAdjustmentForm(Request $request)
     {
+        Log::info('storeShiftAdjustmentForm called with data: ' . json_encode($request->all()));
         $request->validate([
             // Employee Information
             'employee_name'        => 'required|string|max:255',
