@@ -172,6 +172,9 @@
             color: #0284c7;
             font-weight: bold;
         }
+        .media-table { width: 100%; border-collapse: collapse; }
+        .media-table td { width: 25%; padding: 4px; text-align: center; vertical-align: top; }
+        .media-img { max-width: 130px; max-height: 95px; }
         .footer {
             clear: both;
             text-align: center;
@@ -229,8 +232,7 @@
     <div class="card">
         <div class="card-title">Record Details</div>
         @php
-            $hiddenFields = ['id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'documents', 'signature'];
-            $attributes = collect($report->getAttributes())->except($hiddenFields);
+            $attributes = $attributes->except(['documents', 'signature', 'employee_signature', 'supervisor_signature']);
             $halfCount = ceil($attributes->count() / 2);
             $leftSide = $attributes->take($halfCount);
             $rightSide = $attributes->slice($halfCount);
@@ -247,7 +249,7 @@
                                     <td class="field-value">
                                         @if($isJson)
                                             <pre style="margin: 0; font-family: monospace; font-size: 7px;">{{ json_encode($value) }}</pre>
-                                        @elseif(in_array(strtolower((string)$value), ['1', '0', 'true', 'false']) && !is_numeric($value))
+                                        @elseif($report->hasCast($key, 'boolean'))
                                             <span style="font-weight: bold; color: {{ $value ? '#16a34a' : '#dc2626' }}">{{ $value ? 'Yes' : 'No' }}</span>
                                         @else
                                             {{ $value ?? 'N/A' }}
@@ -268,7 +270,7 @@
                                     <td class="field-value">
                                         @if($isJson)
                                             <pre style="margin: 0; font-family: monospace; font-size: 7px;">{{ json_encode($value) }}</pre>
-                                        @elseif(in_array(strtolower((string)$value), ['1', '0', 'true', 'false']) && !is_numeric($value))
+                                        @elseif($report->hasCast($key, 'boolean'))
                                             <span style="font-weight: bold; color: {{ $value ? '#16a34a' : '#dc2626' }}">{{ $value ? 'Yes' : 'No' }}</span>
                                         @else
                                             {{ $value ?? 'N/A' }}
@@ -312,6 +314,37 @@
         </div>
     @endif
 
+    @php
+        $mediaItems = collect();
+        foreach (['images', 'issueImages'] as $relation) {
+            if ($report->relationLoaded($relation)) {
+                foreach ($report->getRelation($relation) as $image) {
+                    foreach (['image_path', 'observation_image_path', 'cleared_area_image_path'] as $field) {
+                        if ($image->getAttribute($field)) $mediaItems->push([$field, $image->getAttribute($field)]);
+                    }
+                }
+            }
+        }
+    @endphp
+    @if($mediaItems->count())
+        <div class="card">
+            <div class="card-title">Attached Images</div>
+            <table class="media-table"><tr>
+                @foreach($mediaItems as [$label, $path])
+                    @php
+                        $imageSource = $path;
+                        if (filter_var($path, FILTER_VALIDATE_URL)) {
+                            $localPath = public_path(ltrim(parse_url($path, PHP_URL_PATH), '/'));
+                            if (file_exists($localPath)) $imageSource = $localPath;
+                        }
+                    @endphp
+                    <td><img src="{{ $imageSource }}" class="media-img" alt="{{ $label }}"><br>{{ ucwords(str_replace('_', ' ', $label)) }}</td>
+                    @if($loop->iteration % 4 === 0 && !$loop->last)</tr><tr>@endif
+                @endforeach
+            </tr></table>
+        </div>
+    @endif
+
     <!-- Patrol Entries Card -->
     @if(method_exists($report, 'patrolEntries') && $report->patrolEntries && $report->patrolEntries->count() > 0)
         <div class="card">
@@ -336,17 +369,32 @@
     @endif
 
     <!-- Signature Card / Section -->
-    @if(isset($report->signature) && $report->signature)
+    @php $signatureFields = ['signature' => 'Authorized Signature', 'employee_signature' => 'Employee Signature', 'supervisor_signature' => 'Supervisor Signature']; @endphp
+    @foreach($signatureFields as $field => $label)
+    @if($report->getAttribute($field))
         <div class="signature-section">
             <div class="signature-box">
-                @if(strpos($report->signature, 'data:image') === 0)
-                    <img src="{{ $report->signature }}" class="signature-img" alt="Digital Signature">
+                @php
+                    $signature = $report->getAttribute($field);
+                    $signatureSource = $signature;
+                    if (filter_var($signature, FILTER_VALIDATE_URL)) {
+                        $localSignature = public_path(ltrim(parse_url($signature, PHP_URL_PATH), '/'));
+                        if (file_exists($localSignature)) $signatureSource = $localSignature;
+                    }
+                @endphp
+                @if(strpos($signature, 'data:image') === 0 || filter_var($signature, FILTER_VALIDATE_URL))
+                    <img src="{{ $signatureSource }}" class="signature-img" alt="{{ $label }}">
                 @else
-                    <div class="signature-name">{{ $report->signature }}</div>
+                    <div class="signature-name">{{ $signature }}</div>
                 @endif
-                <div style="font-size: 7px; color: #64748b; text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em;">Authorized Signature</div>
+                <div style="font-size: 7px; color: #64748b; text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em;">{{ $label }}</div>
             </div>
         </div>
+    @endif
+    @endforeach
+
+    @if($report->getAttribute('documents'))
+        <div class="card"><div class="card-title">Documents / Inspection Result</div>{{ $report->getAttribute('documents') }}</div>
     @endif
 
     <div class="footer">
