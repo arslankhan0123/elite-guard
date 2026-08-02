@@ -9,6 +9,7 @@ use App\Models\FireWatchReport;
 use App\Models\FireWatchPatrolLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +18,10 @@ class FormsRepository
     public function storeUserAssessments(Request $request)
     {
         $user = Auth::user();
+        $signature = $this->storeAssessmentSignature(
+            $request->signature,
+            $user->id ?? 'guest'
+        );
 
         $assessment = Assessment::create([
             'user_id' => $user->id,
@@ -42,7 +47,7 @@ class FormsRepository
             'hazards_identified' => $request->hazards_identified,
             'right_to_refuse' => $request->right_to_refuse,
             'right_to_participate' => $request->right_to_participate,
-            'signature' => $request->signature,
+            'signature' => $signature,
         ]);
 
         return [
@@ -50,6 +55,29 @@ class FormsRepository
             'message' => 'Assessment stored successfully.',
             'assessment' => $assessment,
         ];
+    }
+
+    private function storeAssessmentSignature(?string $signature, int|string $userId): ?string
+    {
+        if (!$signature || !preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/s', $signature, $matches)) {
+            return $signature;
+        }
+
+        $image = base64_decode(preg_replace('/\s+/', '', $matches[2]), true);
+
+        if ($image === false) {
+            return $signature;
+        }
+
+        $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
+        $relativeDirectory = 'documents/Assessments/signatures';
+        $directory = public_path($relativeDirectory);
+        File::ensureDirectoryExists($directory);
+
+        $fileName = $userId . '_signature_' . time() . '_' . Str::random(10) . '.' . $extension;
+        File::put($directory . DIRECTORY_SEPARATOR . $fileName, $image);
+
+        return url($relativeDirectory . '/' . $fileName);
     }
 
     public function storeDailyVehicleChecklist(Request $request)

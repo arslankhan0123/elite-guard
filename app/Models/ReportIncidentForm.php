@@ -13,13 +13,26 @@ class ReportIncidentForm extends Model
         'user_id',
         'date_of_report',
         'time_of_report',
+        'date_of_incident',
+        'time_of_incident',
         'location',
         'property',
+        'property_name',
+        'property_location',
+        'incident_location',
         'incident_type',
         'reported_by',
+        'reported_by_id',
+        'reporting_guard_name',
+        'employee_id',
         'responding_authority',
+        'responding_authority_case_number',
+        'supervisor_notified',
         'cps_case_number',
         'incident_report',
+        'action_taken',
+        'evidence_observed',
+        'subjects',
         'subject_description',
         'outcome',
         'reported_by_name',
@@ -27,6 +40,13 @@ class ReportIncidentForm extends Model
         'reviewed_by_name',
         'reviewed_by_title',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'subjects' => 'array',
+        ];
+    }
 
     public function user()
     {

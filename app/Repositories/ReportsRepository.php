@@ -12,6 +12,7 @@ use App\Models\ReportSecurityGuardDisciplinaryForm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use App\Models\FireWatchReport;
 use App\Models\FireWatchPatrolLog;
@@ -21,6 +22,12 @@ class ReportsRepository
     public function storeSecurityGuardDisciplinaryForm($request)
     {
         $user = Auth::user();
+        $employeeSignature = $this->storeBase64Image(
+            $request->employee_signature,
+            'documents/DisciplinaryReport/signatures',
+            $user->id ?? 'guest',
+            'employee_signature'
+        );
 
         $form = ReportSecurityGuardDisciplinaryForm::create([
             'user_id' => $user->id ?? null,
@@ -39,12 +46,13 @@ class ReportsRepository
             'incident_time' => $request->incident_time,
             'location' => $request->location,
             'reported_by' => $request->reported_by,
+            'reported_by_id' => $request->reported_by_id,
             'incident_summary' => $request->incident_summary,
             'corrective_action' => $request->corrective_action,
             'action_taken' => $request->action_taken,
             'issued_by' => $request->issued_by,
             'issued_by_title' => $request->issued_by_title,
-            'employee_signature' => $request->employee_signature,
+            'employee_signature' => $employeeSignature,
             'signature_date' => $request->signature_date,
         ]);
 
@@ -63,13 +71,28 @@ class ReportsRepository
             'user_id' => $user->id ?? null,
             'date_of_report' => $request->date_of_report,
             'time_of_report' => $request->time_of_report,
+            'date_of_incident' => $request->date_of_incident,
+            'time_of_incident' => $request->time_of_incident,
             'location' => $request->location,
             'property' => $request->property,
+            'property_name' => $request->property_name,
+            'property_location' => $request->property_location,
+            'incident_location' => $request->incident_location,
             'incident_type' => $request->incident_type,
             'reported_by' => $request->reported_by,
+            'reported_by_id' => $request->reported_by_id,
+            'reporting_guard_name' => $request->reporting_guard_name,
+            'employee_id' => $request->employee_id,
             'responding_authority' => $request->responding_authority,
+            'responding_authority_case_number' => $request->responding_authority_case_number,
+            'supervisor_notified' => $request->supervisor_notified,
             'cps_case_number' => $request->cps_case_number,
             'incident_report' => $request->incident_report,
+            'action_taken' => $request->action_taken,
+            'evidence_observed' => $request->evidence_observed,
+            'subjects' => is_string($request->subjects)
+                ? json_decode($request->subjects, true)
+                : $request->subjects,
             'subject_description' => $request->subject_description,
             'outcome' => $request->outcome,
             'reported_by_name' => $request->reported_by_name,
@@ -78,8 +101,10 @@ class ReportsRepository
             'reviewed_by_title' => $request->reviewed_by_title,
         ]);
 
-        if ($request->has('images') && is_array($request->images)) {
-            foreach ($request->file('images') as $image) {
+        $images = $request->file('evidence_images', $request->file('images', []));
+
+        if (is_array($images)) {
+            foreach ($images as $image) {
                 $fileName = ($user->id ?? 'guest') . '_' . time() . '_' . Str::random(20) . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('documents/IncidentReport'), $fileName);
                 $imagePath = url('documents/IncidentReport/' . $fileName);
@@ -101,6 +126,12 @@ class ReportsRepository
     {
         // dd($request->all());
         $user = Auth::user();
+        $signature = $this->storeBase64Image(
+            $request->signature,
+            'documents/GeneralReport/signatures',
+            $user->id ?? 'guest',
+            'signature'
+        );
 
         $form = ReportGeneralForm::create([
             'user_id' => $user->id ?? null,
@@ -108,14 +139,19 @@ class ReportsRepository
             'report_time' => $request->report_time,
             'property_location' => $request->property_location,
             'property_name' => $request->property_name,
+            'property' => $request->property,
+            'property_address' => $request->property_address,
             'reported_by' => $request->reported_by ?? $user->name ?? 'No Username',
+            'reported_by_id' => $request->reported_by_id,
             'report_type' => $request->report_type,
             'time_engaged' => $request->time_engaged,
             'time_area_cleared' => $request->time_area_cleared,
             'location_of_incident' => $request->location_of_incident,
+            'location' => $request->location,
+            'location_of_report' => $request->location_of_report,
             'observation_situation' => $request->observation_situation,
             'action_taken' => $request->action_taken,
-            'signature' => $request->signature,
+            'signature' => $signature,
         ]);
 
         $observationImages = $request->file('observation_image_path', []);
@@ -168,6 +204,33 @@ class ReportsRepository
         ];
     }
 
+    private function storeBase64Image(
+        ?string $imageData,
+        string $relativeDirectory,
+        int|string $userId,
+        string $name
+    ): ?string
+    {
+        if (!$imageData || !preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/s', $imageData, $matches)) {
+            return $imageData;
+        }
+
+        $image = base64_decode(preg_replace('/\s+/', '', $matches[2]), true);
+
+        if ($image === false) {
+            return $imageData;
+        }
+
+        $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
+        $directory = public_path($relativeDirectory);
+        File::ensureDirectoryExists($directory);
+
+        $fileName = $userId . '_' . $name . '_' . time() . '_' . Str::random(10) . '.' . $extension;
+        File::put($directory . DIRECTORY_SEPARATOR . $fileName, $image);
+
+        return url(trim($relativeDirectory, '/') . '/' . $fileName);
+    }
+
     public function storeDailyShiftReportForm($request)
     {
         $user = Auth::user();
@@ -181,6 +244,7 @@ class ReportsRepository
             'shift_time'       => $request->shift_time,
             'location'         => $request->location,
             'client'           => $request->client,
+            'weather_conditions' => $request->weather_conditions,
         ]);
 
         if ($request->has('patrol_entries') && is_array($request->patrol_entries)) {

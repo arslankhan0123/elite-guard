@@ -99,12 +99,6 @@ Route::middleware('auth:api')->group(function () {
         Route::group(['prefix' => '/assessments'], function () {
             Route::post('/store', [FormsApiController::class, 'storeUserAssessments']);
         });
-        Route::group(['prefix' => '/daily-vehicle-checklist'], function () {
-            Route::post('/store', [FormsApiController::class, 'storeDailyVehicleChecklist']);
-        });
-        Route::group(['prefix' => '/shift-adjustment'], function () {
-            Route::post('/store', [FormsApiController::class, 'storeShiftAdjustmentForm']);
-        });
     });
 
     Route::group(['prefix' => '/reports'], function () {
@@ -126,6 +120,13 @@ Route::middleware('auth:api')->group(function () {
 
         Route::group(['prefix' => '/fire-watch'], function () {
             Route::post('/store', [ReportsApiController::class, 'storeFireWatchReport']);
+        });
+
+        Route::group(['prefix' => '/daily-vehicle-checklist'], function () {
+            Route::post('/store', [FormsApiController::class, 'storeDailyVehicleChecklist']);
+        });
+        Route::group(['prefix' => '/shift-adjustment'], function () {
+            Route::post('/store', [FormsApiController::class, 'storeShiftAdjustmentForm']);
         });
     });
 

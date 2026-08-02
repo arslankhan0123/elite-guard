@@ -46,12 +46,13 @@ class ReportsApiController extends Controller
      *             @OA\Property(property="incident_time", type="string", example="08:30"),
      *             @OA\Property(property="location", type="string", example="Gate 1"),
      *             @OA\Property(property="reported_by", type="string", example="Guard A"),
+     *             @OA\Property(property="reported_by_id", type="integer", nullable=true, example=7),
      *             @OA\Property(property="incident_summary", type="string", example="Arrived late..."),
      *             @OA\Property(property="corrective_action", type="string", example="Verbal warning"),
      *             @OA\Property(property="action_taken", type="string", example="Logged"),
      *             @OA\Property(property="issued_by", type="string", example="Captain B"),
      *             @OA\Property(property="issued_by_title", type="string", example="Site Supervisor"),
-     *             @OA\Property(property="employee_signature", type="string", example="Digital Signature"),
+     *             @OA\Property(property="employee_signature", type="string", description="Base64 data URI of the employee signature image", example="data:image/png;base64,iVBORw0KGgo..."),
      *             @OA\Property(property="signature_date", type="string", format="date", example="2026-05-03")
      *         )
      *     ),
@@ -74,6 +75,8 @@ class ReportsApiController extends Controller
             'employee_id_license' => 'required',
             'site_property' => 'required',
             'warning_date' => 'required',
+            'reported_by_id' => 'nullable|integer',
+            'employee_signature' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -143,6 +146,21 @@ class ReportsApiController extends Controller
             'property' => 'required',
             'incident_type' => 'required',
             'reported_by' => 'required',
+            'date_of_incident' => 'nullable|date',
+            'time_of_incident' => 'nullable|string',
+            'property_name' => 'nullable|string',
+            'property_location' => 'nullable|string',
+            'incident_location' => 'nullable|string',
+            'reporting_guard_name' => 'nullable|string',
+            'employee_id' => 'nullable|string',
+            'responding_authority_case_number' => 'nullable|string',
+            'supervisor_notified' => 'nullable|string',
+            'action_taken' => 'nullable|string',
+            'evidence_observed' => 'nullable|string',
+            'subjects' => 'nullable',
+            'reported_by_id' => 'nullable|integer',
+            'evidence_images' => 'nullable|array',
+            'evidence_images.*' => 'file|image',
         ]);
 
         if ($validator->fails()) {
@@ -173,14 +191,19 @@ class ReportsApiController extends Controller
      *                 @OA\Property(property="report_time", type="string", example="09:00"),
      *                 @OA\Property(property="property_location", type="string", example="Sector 7"),
      *                 @OA\Property(property="property_name", type="string", example="Industrial Complex"),
+     *                 @OA\Property(property="property", type="string", nullable=true, example="Industrial Complex"),
+     *                 @OA\Property(property="property_address", type="string", nullable=true, example="123 Main Street"),
      *                 @OA\Property(property="reported_by", type="string", example="John Doe"),
+     *                 @OA\Property(property="reported_by_id", type="integer", nullable=true, example=2),
      *                 @OA\Property(property="report_type", type="string", example="Maintenance"),
      *                 @OA\Property(property="time_engaged", type="string", example="08:45"),
      *                 @OA\Property(property="time_area_cleared", type="string", example="09:15"),
      *                 @OA\Property(property="location_of_incident", type="string", example="Warehouse B"),
+     *                 @OA\Property(property="location", type="string", nullable=true, example="123 Main Street"),
+     *                 @OA\Property(property="location_of_report", type="string", nullable=true, example="123 Main Street"),
      *                 @OA\Property(property="observation_situation", type="string", example="Broken lock observed."),
      *                 @OA\Property(property="action_taken", type="string", example="Secured with temporary chain."),
-     *                 @OA\Property(property="signature", type="string", example="John's Signature"),
+     *                 @OA\Property(property="signature", type="string", description="Base64 data URI of the signature image", example="data:image/png;base64,iVBORw0KGgo..."),
      *                 @OA\Property(
      *                     property="observation_image_path[]",
      *                     type="array",
@@ -215,6 +238,12 @@ class ReportsApiController extends Controller
             'property_location' => 'required',
             'property_name' => 'required',
             'reported_by' => 'nullable',
+            'reported_by_id' => 'nullable|integer',
+            'location' => 'nullable|string',
+            'location_of_report' => 'nullable|string',
+            'property' => 'nullable|string',
+            'property_address' => 'nullable|string',
+            'signature' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -246,6 +275,7 @@ class ReportsApiController extends Controller
      *             @OA\Property(property="shift_time", type="string", example="08:00 - 16:00"),
      *             @OA\Property(property="location", type="string", example="North Gate"),
      *             @OA\Property(property="client", type="string", example="ABC Corp"),
+     *             @OA\Property(property="weather_conditions", type="string", nullable=true, example="Clear and sunny"),
      *             @OA\Property(
      *                 property="patrol_entries",
      *                 type="array",
@@ -278,6 +308,7 @@ class ReportsApiController extends Controller
             'shift_time' => 'required',
             'location' => 'required',
             'client' => 'required',
+            'weather_conditions' => 'nullable|string',
             'patrol_entries' => 'nullable|array',
             'patrol_entries.*.time_range' => 'required|string',
             'patrol_entries.*.summary' => 'required|string',

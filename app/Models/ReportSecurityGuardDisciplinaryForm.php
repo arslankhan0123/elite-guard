@@ -26,6 +26,7 @@ class ReportSecurityGuardDisciplinaryForm extends Model
         'incident_time',
         'location',
         'reported_by',
+        'reported_by_id',
         'incident_summary',
         'corrective_action',
         'action_taken',
