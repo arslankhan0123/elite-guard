@@ -181,6 +181,7 @@ class ReportsRepository
             'shift_time'       => $request->shift_time,
             'location'         => $request->location,
             'client'           => $request->client,
+            'weather_conditions' => $request->weather_conditions,
         ]);
 
         if ($request->has('patrol_entries') && is_array($request->patrol_entries)) {

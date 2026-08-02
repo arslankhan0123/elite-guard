@@ -246,6 +246,7 @@ class ReportsApiController extends Controller
      *             @OA\Property(property="shift_time", type="string", example="08:00 - 16:00"),
      *             @OA\Property(property="location", type="string", example="North Gate"),
      *             @OA\Property(property="client", type="string", example="ABC Corp"),
+     *             @OA\Property(property="weather_conditions", type="string", nullable=true, example="Clear and sunny"),
      *             @OA\Property(
      *                 property="patrol_entries",
      *                 type="array",
@@ -278,6 +279,7 @@ class ReportsApiController extends Controller
             'shift_time' => 'required',
             'location' => 'required',
             'client' => 'required',
+            'weather_conditions' => 'nullable|string',
             'patrol_entries' => 'nullable|array',
             'patrol_entries.*.time_range' => 'required|string',
             'patrol_entries.*.summary' => 'required|string',

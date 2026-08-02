@@ -18,6 +18,7 @@ class ReportDailyShiftForm extends Model
         'shift_time',
         'location',
         'client',
+        'weather_conditions',
     ];
 
     public function user()
