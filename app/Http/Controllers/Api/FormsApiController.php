@@ -71,6 +71,22 @@ class FormsApiController extends Controller
     public function storeUserAssessments(Request $request)
     {
         Log::info('storeUserAssessments called with data: ' . json_encode($request->all()));
+
+        // Multipart form fields are always strings. Swagger UI therefore sends
+        // boolean selections as "true"/"false", which Laravel's boolean rule
+        // does not accept until they are converted to actual booleans.
+        $this->normalizeMultipartBooleans($request, [
+            'compliance_fit_for_duty',
+            'any_injuries',
+            'physically_prepared',
+            'any_symptoms',
+            'understand_unethical_work_sick',
+            'up_to_date_orders',
+            'believe_fit_for_duty',
+            'safety_concerns',
+            'hazards_identified',
+        ]);
+
         $request->validate([
             'first_name' => 'required|string',
             'last_name' => 'required|string',
@@ -274,6 +290,16 @@ class FormsApiController extends Controller
     public function storeShiftAdjustmentForm(Request $request)
     {
         Log::info('storeShiftAdjustmentForm called with data: ' . json_encode($request->all()));
+
+        $this->normalizeMultipartBooleans($request, [
+            'shift_swap',
+            'late_start',
+            'coverage_request',
+            'early_release',
+            'time_off_request',
+            'overtime_approval',
+        ]);
+
         $request->validate([
             // Employee Information
             'employee_name'        => 'required|string|max:255',
@@ -319,5 +345,23 @@ class FormsApiController extends Controller
         $data = $this->formsRepo->storeShiftAdjustmentForm($request);
 
         return $this->successResponse($data, 'Shift Adjustment Form stored successfully.');
+    }
+
+    /**
+     * Convert Swagger/multipart "true" and "false" strings to native booleans.
+     */
+    private function normalizeMultipartBooleans(Request $request, array $fields): void
+    {
+        $normalizedBooleans = [];
+
+        foreach ($fields as $field) {
+            $value = $request->input($field);
+
+            if (is_string($value) && in_array(strtolower($value), ['true', 'false'], true)) {
+                $normalizedBooleans[$field] = strtolower($value) === 'true';
+            }
+        }
+
+        $request->merge($normalizedBooleans);
     }
 }
