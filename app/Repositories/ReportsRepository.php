@@ -64,13 +64,28 @@ class ReportsRepository
             'user_id' => $user->id ?? null,
             'date_of_report' => $request->date_of_report,
             'time_of_report' => $request->time_of_report,
+            'date_of_incident' => $request->date_of_incident,
+            'time_of_incident' => $request->time_of_incident,
             'location' => $request->location,
             'property' => $request->property,
+            'property_name' => $request->property_name,
+            'property_location' => $request->property_location,
+            'incident_location' => $request->incident_location,
             'incident_type' => $request->incident_type,
             'reported_by' => $request->reported_by,
+            'reported_by_id' => $request->reported_by_id,
+            'reporting_guard_name' => $request->reporting_guard_name,
+            'employee_id' => $request->employee_id,
             'responding_authority' => $request->responding_authority,
+            'responding_authority_case_number' => $request->responding_authority_case_number,
+            'supervisor_notified' => $request->supervisor_notified,
             'cps_case_number' => $request->cps_case_number,
             'incident_report' => $request->incident_report,
+            'action_taken' => $request->action_taken,
+            'evidence_observed' => $request->evidence_observed,
+            'subjects' => is_string($request->subjects)
+                ? json_decode($request->subjects, true)
+                : $request->subjects,
             'subject_description' => $request->subject_description,
             'outcome' => $request->outcome,
             'reported_by_name' => $request->reported_by_name,
@@ -79,8 +94,10 @@ class ReportsRepository
             'reviewed_by_title' => $request->reviewed_by_title,
         ]);
 
-        if ($request->has('images') && is_array($request->images)) {
-            foreach ($request->file('images') as $image) {
+        $images = $request->file('evidence_images', $request->file('images', []));
+
+        if (is_array($images)) {
+            foreach ($images as $image) {
                 $fileName = ($user->id ?? 'guest') . '_' . time() . '_' . Str::random(20) . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('documents/IncidentReport'), $fileName);
                 $imagePath = url('documents/IncidentReport/' . $fileName);

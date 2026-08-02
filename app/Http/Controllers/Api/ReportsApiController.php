@@ -143,6 +143,21 @@ class ReportsApiController extends Controller
             'property' => 'required',
             'incident_type' => 'required',
             'reported_by' => 'required',
+            'date_of_incident' => 'nullable|date',
+            'time_of_incident' => 'nullable|string',
+            'property_name' => 'nullable|string',
+            'property_location' => 'nullable|string',
+            'incident_location' => 'nullable|string',
+            'reporting_guard_name' => 'nullable|string',
+            'employee_id' => 'nullable|string',
+            'responding_authority_case_number' => 'nullable|string',
+            'supervisor_notified' => 'nullable|string',
+            'action_taken' => 'nullable|string',
+            'evidence_observed' => 'nullable|string',
+            'subjects' => 'nullable',
+            'reported_by_id' => 'nullable|integer',
+            'evidence_images' => 'nullable|array',
+            'evidence_images.*' => 'file|image',
         ]);
 
         if ($validator->fails()) {
