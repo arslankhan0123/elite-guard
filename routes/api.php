@@ -125,7 +125,7 @@ Route::middleware('auth:api')->group(function () {
         Route::group(['prefix' => '/daily-vehicle-checklist'], function () {
             Route::post('/store', [FormsApiController::class, 'storeDailyVehicleChecklist']);
         });
-        Route::group(['prefix' => '/shift-adjustment'], function () {
+        Route::group(['prefix' => '/security-guard-shift-adjustment-form'], function () {
             Route::post('/store', [FormsApiController::class, 'storeShiftAdjustmentForm']);
         });
     });
