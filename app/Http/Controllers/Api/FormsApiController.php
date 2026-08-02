@@ -118,17 +118,19 @@ class FormsApiController extends Controller
      *                 @OA\Property(property="fuel", type="string", example="Full Tank"),
      *                 @OA\Property(property="assigned_site", type="string", example="Downtown Mall"),
      *                 @OA\Property(property="driver", type="string", example="John Doe"),
-     *                 @OA\Property(property="signature", type="string", example="Signature Text"),
+     *                 @OA\Property(property="signature", type="string", description="Base64 data URI of the signature image", example="data:image/png;base64,iVBORw0KGgo..."),
      *                 @OA\Property(property="cosmetic_issues", type="string", example="No issues"),
      *                 @OA\Property(property="tires", type="string", example="Good"),
      *                 @OA\Property(property="windows", type="string", example="Clear"),
      *                 @OA\Property(property="staff_care", type="string", example="Clean"),
      *                 @OA\Property(property="dash_lights_gauges", type="string", example="Normal"),
-     *                 @OA\Property(property="documents", type="string", format="binary", description="File upload (pdf, jpg, png, etc.)"),
+     *                 @OA\Property(property="documents", type="string", description="Document inspection result or an uploaded file"),
      *                 @OA\Property(property="engine", type="string", example="Smooth"),
      *                 @OA\Property(property="oil_life_percentage", type="string", example="90%"),
      *                 @OA\Property(property="equipment", type="string", example="All present"),
-     *                 @OA\Property(property="bwc_used_for_inspection", type="string", example="Yes")
+     *                 @OA\Property(property="bwc_used_for_inspection", type="string", example="Yes"),
+     *                 @OA\Property(property="issues_found", type="string", nullable=true, example="Scratch on rear bumper"),
+     *                 @OA\Property(property="issue_images[]", type="array", @OA\Items(type="string", format="binary"))
      *             )
      *         )
      *     ),
@@ -155,7 +157,10 @@ class FormsApiController extends Controller
             'assigned_site' => 'required|string',
             'driver' => 'required|string',
             'signature' => 'nullable|string',
-            'documents' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'documents' => 'nullable',
+            'issues_found' => 'nullable|string',
+            'issue_images' => 'nullable|array',
+            'issue_images.*' => 'file|image',
         ]);
 
         $data = $this->formsRepo->storeDailyVehicleChecklist($request);
@@ -206,8 +211,8 @@ class FormsApiController extends Controller
      *             @OA\Property(property="approved_hours",       type="string",  example="8"),
      *             @OA\Property(property="supervisor_notes",     type="string",  example="Approved. Ensure replacement is briefed before shift start."),
      *
-     *             @OA\Property(property="employee_signature",   type="string",  example="John Doe"),
-     *             @OA\Property(property="supervisor_signature", type="string",  example="Jane Smith"),
+     *             @OA\Property(property="employee_signature", type="string", description="Base64 data URI of the employee signature image", example="data:image/png;base64,iVBORw0KGgo..."),
+     *             @OA\Property(property="supervisor_signature", type="string", description="Base64 data URI of the supervisor signature image", example="data:image/png;base64,iVBORw0KGgo..."),
      *
      *             example={
      *                 "employee_name":        "John Doe",

@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Assessment;
 use App\Models\DailyVehicleChecklist;
+use App\Models\DailyVehicleChecklistImage;
 use App\Models\ShiftAdjustmentForm;
 use App\Models\FireWatchReport;
 use App\Models\FireWatchPatrolLog;
@@ -18,9 +19,11 @@ class FormsRepository
     public function storeUserAssessments(Request $request)
     {
         $user = Auth::user();
-        $signature = $this->storeAssessmentSignature(
+        $signature = $this->storeBase64Image(
             $request->signature,
-            $user->id ?? 'guest'
+            'documents/Assessments/signatures',
+            $user->id ?? 'guest',
+            'signature'
         );
 
         $assessment = Assessment::create([
@@ -57,24 +60,27 @@ class FormsRepository
         ];
     }
 
-    private function storeAssessmentSignature(?string $signature, int|string $userId): ?string
-    {
-        if (!$signature || !preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/s', $signature, $matches)) {
-            return $signature;
+    private function storeBase64Image(
+        ?string $imageData,
+        string $relativeDirectory,
+        int|string $userId,
+        string $name
+    ): ?string {
+        if (!$imageData || !preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/s', $imageData, $matches)) {
+            return $imageData;
         }
 
         $image = base64_decode(preg_replace('/\s+/', '', $matches[2]), true);
 
         if ($image === false) {
-            return $signature;
+            return $imageData;
         }
 
         $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
-        $relativeDirectory = 'documents/Assessments/signatures';
         $directory = public_path($relativeDirectory);
         File::ensureDirectoryExists($directory);
 
-        $fileName = $userId . '_signature_' . time() . '_' . Str::random(10) . '.' . $extension;
+        $fileName = $userId . '_' . $name . '_' . time() . '_' . Str::random(10) . '.' . $extension;
         File::put($directory . DIRECTORY_SEPARATOR . $fileName, $image);
 
         return url($relativeDirectory . '/' . $fileName);
@@ -83,8 +89,14 @@ class FormsRepository
     public function storeDailyVehicleChecklist(Request $request)
     {
         $user = Auth::user();
+        $signature = $this->storeBase64Image(
+            $request->signature,
+            'documents/DailyVehicleChecklist/signatures',
+            $user->id ?? 'guest',
+            'signature'
+        );
 
-        $documentPath = null;
+        $documentPath = $request->input('documents');
         if ($request->hasFile('documents')) {
             $file = $request->file('documents');
             $fileName = $user->id . '_' . time() . '_' . Str::random(32) . '.' . $file->getClientOriginalExtension();
@@ -101,7 +113,7 @@ class FormsRepository
             'fuel' => $request->fuel,
             'assigned_site' => $request->assigned_site,
             'driver' => $request->driver,
-            'signature' => $request->signature,
+            'signature' => $signature,
             'cosmetic_issues' => $request->cosmetic_issues,
             'tires' => $request->tires,
             'windows' => $request->windows,
@@ -112,18 +124,47 @@ class FormsRepository
             'oil_life_percentage' => $request->oil_life_percentage,
             'equipment' => $request->equipment,
             'bwc_used_for_inspection' => $request->bwc_used_for_inspection,
+            'issues_found' => $request->issues_found,
         ]);
+
+        $issueImages = $request->file('issue_images', []);
+
+        if ($issueImages) {
+            File::ensureDirectoryExists(public_path('documents/DailyVehicleChecklist/issues'));
+        }
+
+        foreach ($issueImages as $image) {
+            $fileName = $user->id . '_issue_' . time() . '_' . Str::random(20) . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('documents/DailyVehicleChecklist/issues'), $fileName);
+
+            DailyVehicleChecklistImage::create([
+                'daily_vehicle_checklist_id' => $checklist->id,
+                'image_path' => url('documents/DailyVehicleChecklist/issues/' . $fileName),
+            ]);
+        }
 
         return [
             'status' => true,
             'message' => 'Daily Vehicle Checklist stored successfully.',
-            'checklist' => $checklist,
+            'checklist' => $checklist->load('issueImages'),
         ];
     }
 
     public function storeShiftAdjustmentForm(Request $request)
     {
         $user = Auth::user();
+        $employeeSignature = $this->storeBase64Image(
+            $request->employee_signature,
+            'documents/ShiftAdjustment/signatures',
+            $user->id ?? 'guest',
+            'employee_signature'
+        );
+        $supervisorSignature = $this->storeBase64Image(
+            $request->supervisor_signature,
+            'documents/ShiftAdjustment/signatures',
+            $user->id ?? 'guest',
+            'supervisor_signature'
+        );
 
         $form = ShiftAdjustmentForm::create([
             'user_id'              => $user->id,
@@ -165,8 +206,8 @@ class FormsRepository
             'supervisor_notes'     => $request->supervisor_notes,
 
             // Signatures
-            'employee_signature'   => $request->employee_signature,
-            'supervisor_signature' => $request->supervisor_signature,
+            'employee_signature'   => $employeeSignature,
+            'supervisor_signature' => $supervisorSignature,
         ]);
 
         return [

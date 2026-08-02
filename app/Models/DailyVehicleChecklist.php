@@ -29,10 +29,16 @@ class DailyVehicleChecklist extends Model
         'oil_life_percentage',
         'equipment',
         'bwc_used_for_inspection',
+        'issues_found',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function issueImages()
+    {
+        return $this->hasMany(DailyVehicleChecklistImage::class);
     }
 }
