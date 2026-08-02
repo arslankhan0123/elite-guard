@@ -2977,7 +2977,7 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "employee_name",
@@ -3074,9 +3074,10 @@
                                         "example": "Site Supervisor"
                                     },
                                     "employee_signature": {
-                                        "description": "Base64 data URI of the employee signature image",
+                                        "description": "Employee signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)",
                                         "type": "string",
-                                        "example": "data:image/png;base64,iVBORw0KGgo..."
+                                        "format": "binary",
+                                        "nullable": true
                                     },
                                     "signature_date": {
                                         "type": "string",
@@ -3339,9 +3340,10 @@
                                         "example": "Secured with temporary chain."
                                     },
                                     "signature": {
-                                        "description": "Base64 data URI of the signature image",
+                                        "description": "Signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)",
                                         "type": "string",
-                                        "example": "data:image/png;base64,iVBORw0KGgo..."
+                                        "format": "binary",
+                                        "nullable": true
                                     },
                                     "observation_image_path[]": {
                                         "type": "array",
