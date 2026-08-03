@@ -69,6 +69,7 @@ class ReportsRepository
 
         $form = ReportIncidentForm::create([
             'user_id' => $user->id ?? null,
+            'site_id' => $request->property_id,
             'date_of_report' => $request->date_of_report,
             'time_of_report' => $request->time_of_report,
             'date_of_incident' => $request->date_of_incident,
@@ -118,7 +119,7 @@ class ReportsRepository
         return [
             'status' => true,
             'message' => 'Incident Report Form stored successfully.',
-            'form' => $form->load('images'),
+            'form' => $form->load(['images', 'site']),
         ];
     }
 
@@ -135,6 +136,7 @@ class ReportsRepository
 
         $form = ReportGeneralForm::create([
             'user_id' => $user->id ?? null,
+            'site_id' => $request->site_id,
             'report_date' => $request->report_date,
             'report_time' => $request->report_time,
             'property_location' => $request->property_location,
@@ -200,7 +202,7 @@ class ReportsRepository
         return [
             'status' => true,
             'message' => 'General Report Form stored successfully.',
-            'form' => $form->load('images'),
+            'form' => $form->load(['images', 'site']),
         ];
     }
 

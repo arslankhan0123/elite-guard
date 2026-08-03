@@ -11,6 +11,7 @@ class ReportGeneralForm extends Model
 
     protected $fillable = [
         'user_id',
+        'site_id',
         'report_date',
         'report_time',
         'property_location',
@@ -33,6 +34,11 @@ class ReportGeneralForm extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
     }
 
     public function images()
