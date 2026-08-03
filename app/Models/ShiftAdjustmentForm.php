@@ -11,6 +11,10 @@ class ShiftAdjustmentForm extends Model
 
     protected $fillable = [
         'user_id',
+        'site_id',
+        'current_supervisor_id',
+        'supervisor_id',
+        'approving_supervisor_id',
 
         // Employee Information
         'employee_name',
@@ -68,5 +72,25 @@ class ShiftAdjustmentForm extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
+
+    public function currentSupervisor()
+    {
+        return $this->belongsTo(User::class, 'current_supervisor_id');
+    }
+
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+
+    public function approvingSupervisor()
+    {
+        return $this->belongsTo(User::class, 'approving_supervisor_id');
     }
 }

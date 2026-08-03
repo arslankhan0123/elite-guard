@@ -181,6 +181,10 @@ class FormsRepository
 
         $form = ShiftAdjustmentForm::create([
             'user_id'              => $user->id,
+            'site_id'              => $request->site_id,
+            'current_supervisor_id' => $request->current_supervisor_id,
+            'supervisor_id'        => $request->supervisor_id,
+            'approving_supervisor_id' => $request->approving_supervisor_id,
 
             // Employee Information
             'employee_name'        => $request->employee_name,
@@ -226,7 +230,12 @@ class FormsRepository
         return [
             'status'  => true,
             'message' => 'Shift Adjustment Form stored successfully.',
-            'form'    => $form,
+            'form'    => $form->load([
+                'site',
+                'currentSupervisor',
+                'supervisor',
+                'approvingSupervisor',
+            ]),
         ];
     }
 
