@@ -11,6 +11,7 @@ class Assessment extends Model
 
     protected $fillable = [
         'user_id',
+        'supervisor_id',
         'first_name',
         'last_name',
         'worker_email',
@@ -51,5 +52,10 @@ class Assessment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
     }
 }

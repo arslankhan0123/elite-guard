@@ -32,6 +32,7 @@ class FormsRepository
 
         $assessment = Assessment::create([
             'user_id' => $user->id,
+            'supervisor_id' => $request->supervisor_id,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'worker_email' => $request->worker_email,
@@ -60,7 +61,7 @@ class FormsRepository
         return [
             'status' => true,
             'message' => 'Assessment stored successfully.',
-            'assessment' => $assessment,
+            'assessment' => $assessment->load('supervisor'),
         ];
     }
 

@@ -30,7 +30,8 @@ class FormsApiController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *             required={"first_name","last_name","worker_email","shift_date","location","start_time","compliance_fit_for_duty","any_injuries","physically_prepared","any_symptoms","understand_unethical_work_sick","up_to_date_orders","believe_fit_for_duty","client","supervisor_first_name","supervisor_last_name","position_today","safety_concerns","hazards_identified","right_to_refuse","right_to_participate","signature"},
+     *             required={"supervisor_id","first_name","last_name","worker_email","shift_date","location","start_time","compliance_fit_for_duty","any_injuries","physically_prepared","any_symptoms","understand_unethical_work_sick","up_to_date_orders","believe_fit_for_duty","client","supervisor_first_name","supervisor_last_name","position_today","safety_concerns","hazards_identified","right_to_refuse","right_to_participate","signature"},
+     *             @OA\Property(property="supervisor_id", type="integer", example=5, description="ID of the supervisor"),
      *             @OA\Property(property="first_name", type="string", example="John"),
      *             @OA\Property(property="last_name", type="string", example="Doe"),
      *             @OA\Property(property="worker_email", type="string", format="email", example="john.doe@example.com"),
@@ -88,6 +89,7 @@ class FormsApiController extends Controller
         ]);
 
         $request->validate([
+            'supervisor_id' => 'required|integer',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'worker_email' => 'required|email',
