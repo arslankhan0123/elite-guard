@@ -11,6 +11,7 @@ class ReportIncidentForm extends Model
 
     protected $fillable = [
         'user_id',
+        'site_id',
         'date_of_report',
         'time_of_report',
         'date_of_incident',
@@ -51,6 +52,11 @@ class ReportIncidentForm extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
     }
 
     public function images()

@@ -103,7 +103,8 @@ class ReportsApiController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"date_of_report","time_of_report","location","property","incident_type","reported_by"},
+     *                 required={"property_id","date_of_report","time_of_report","location","property","incident_type","reported_by"},
+     *                 @OA\Property(property="property_id", type="integer", example=1, description="Site/property ID associated with the incident report"),
      *                 @OA\Property(property="date_of_report", type="string", format="date", example="2026-05-03"),
      *                 @OA\Property(property="time_of_report", type="string", example="14:30"),
      *                 @OA\Property(property="location", type="string", example="Main Entrance"),
@@ -143,6 +144,7 @@ class ReportsApiController extends Controller
         Log::info('storeIncidentReportForm called with data: ' . json_encode($request->all()));
         // Validation rules for the incident report form
         $validator = Validator::make($request->all(), [
+            'property_id' => 'required|integer|exists:sites,id',
             'date_of_report' => 'required',
             'time_of_report' => 'required',
             'location' => 'required',
