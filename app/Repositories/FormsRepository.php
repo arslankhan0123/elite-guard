@@ -32,6 +32,7 @@ class FormsRepository
 
         $assessment = Assessment::create([
             'user_id' => $user->id,
+            'supervisor_id' => $request->supervisor_id,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'worker_email' => $request->worker_email,
@@ -60,7 +61,7 @@ class FormsRepository
         return [
             'status' => true,
             'message' => 'Assessment stored successfully.',
-            'assessment' => $assessment,
+            'assessment' => $assessment->load('supervisor'),
         ];
     }
 
@@ -180,6 +181,10 @@ class FormsRepository
 
         $form = ShiftAdjustmentForm::create([
             'user_id'              => $user->id,
+            'site_id'              => $request->site_id,
+            'current_supervisor_id' => $request->current_supervisor_id,
+            'supervisor_id'        => $request->supervisor_id,
+            'approving_supervisor_id' => $request->approving_supervisor_id,
 
             // Employee Information
             'employee_name'        => $request->employee_name,
@@ -225,7 +230,12 @@ class FormsRepository
         return [
             'status'  => true,
             'message' => 'Shift Adjustment Form stored successfully.',
-            'form'    => $form,
+            'form'    => $form->load([
+                'site',
+                'currentSupervisor',
+                'supervisor',
+                'approvingSupervisor',
+            ]),
         ];
     }
 

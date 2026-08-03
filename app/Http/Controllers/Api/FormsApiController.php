@@ -30,7 +30,8 @@ class FormsApiController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *             required={"first_name","last_name","worker_email","shift_date","location","start_time","compliance_fit_for_duty","any_injuries","physically_prepared","any_symptoms","understand_unethical_work_sick","up_to_date_orders","believe_fit_for_duty","client","supervisor_first_name","supervisor_last_name","position_today","safety_concerns","hazards_identified","right_to_refuse","right_to_participate","signature"},
+     *             required={"supervisor_id","first_name","last_name","worker_email","shift_date","location","start_time","compliance_fit_for_duty","any_injuries","physically_prepared","any_symptoms","understand_unethical_work_sick","up_to_date_orders","believe_fit_for_duty","client","supervisor_first_name","supervisor_last_name","position_today","safety_concerns","hazards_identified","right_to_refuse","right_to_participate","signature"},
+     *             @OA\Property(property="supervisor_id", type="integer", example=5, description="ID of the supervisor"),
      *             @OA\Property(property="first_name", type="string", example="John"),
      *             @OA\Property(property="last_name", type="string", example="Doe"),
      *             @OA\Property(property="worker_email", type="string", format="email", example="john.doe@example.com"),
@@ -88,6 +89,7 @@ class FormsApiController extends Controller
         ]);
 
         $request->validate([
+            'supervisor_id' => 'required|integer',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'worker_email' => 'required|email',
@@ -199,8 +201,12 @@ class FormsApiController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *             required={"employee_name","current_date"},
+     *             required={"site_id","current_supervisor_id","supervisor_id","approving_supervisor_id","employee_name","current_date"},
      *
+     *             @OA\Property(property="site_id",                 type="integer", example=1, description="ID of the site"),
+     *             @OA\Property(property="current_supervisor_id",   type="integer", example=5, description="ID of the current supervisor"),
+     *             @OA\Property(property="supervisor_id",           type="integer", example=6, description="ID of the supervisor"),
+     *             @OA\Property(property="approving_supervisor_id", type="integer", example=7, description="ID of the approving supervisor"),
      *             @OA\Property(property="employee_name",        type="string",  example="John Doe"),
      *             @OA\Property(property="employee_id",          type="string",  example="EMP-1024"),
      *             @OA\Property(property="position_site",        type="string",  example="Security Guard / Downtown Mall"),
@@ -236,6 +242,10 @@ class FormsApiController extends Controller
      *             @OA\Property(property="supervisor_signature", type="string", format="binary", nullable=true, description="Supervisor signature image (PNG, JPG, JPEG, or WebP; maximum 5 MB)"),
      *
      *             example={
+     *                 "site_id":                  1,
+     *                 "current_supervisor_id":    5,
+     *                 "supervisor_id":            6,
+     *                 "approving_supervisor_id":  7,
      *                 "employee_name":        "John Doe",
      *                 "employee_id":          "EMP-1024",
      *                 "position_site":        "Security Guard / Downtown Mall",
@@ -301,6 +311,11 @@ class FormsApiController extends Controller
         ]);
 
         $request->validate([
+            'site_id'                   => 'required|integer|exists:sites,id',
+            'current_supervisor_id'     => 'required|integer',
+            'supervisor_id'             => 'required|integer',
+            'approving_supervisor_id'   => 'required|integer',
+
             // Employee Information
             'employee_name'        => 'required|string|max:255',
             'employee_id'          => 'nullable|string|max:100',
