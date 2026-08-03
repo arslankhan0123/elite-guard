@@ -31,6 +31,9 @@ class ReportsRepository
 
         $form = ReportSecurityGuardDisciplinaryForm::create([
             'user_id' => $user->id ?? null,
+            'site_id' => $request->site_id,
+            'supervisor_id' => $request->supervisor_id,
+            'employee_id' => $request->employee_id,
             'employee_name' => $request->employee_name,
             'employee_id_license' => $request->employee_id_license,
             'site_property' => $request->site_property,
@@ -268,6 +271,8 @@ class ReportsRepository
         return DB::transaction(function () use ($request, $user) {
             $report = FireWatchReport::create([
                 'user_id'               => $user->id,
+                'site_id'               => $request->site_id,
+                'supervisor_id'         => $request->supervisor_id,
                 'client_site_name'      => $request->client_site_name,
                 'address_location'      => $request->address_location,
                 'reason_for_fire_watch' => $request->reason_for_fire_watch,
@@ -298,7 +303,7 @@ class ReportsRepository
             return [
                 'status'  => true,
                 'message' => 'Fire Watch Report stored successfully.',
-                'report'  => $report->load('patrolLogs'),
+                'report'  => $report->load(['patrolLogs', 'site', 'supervisorUser']),
             ];
         });
     }

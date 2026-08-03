@@ -1,0 +1,24 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('report_security_guard_disciplinary_forms', function (Blueprint $table) {
+            $table->unsignedBigInteger('site_id')->nullable()->after('user_id')->index();
+            $table->unsignedBigInteger('supervisor_id')->nullable()->after('site_id')->index();
+            $table->unsignedBigInteger('employee_id')->nullable()->after('supervisor_id')->index();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('report_security_guard_disciplinary_forms', function (Blueprint $table) {
+            $table->dropColumn(['site_id', 'supervisor_id', 'employee_id']);
+        });
+    }
+};
