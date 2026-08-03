@@ -135,6 +135,7 @@ class ReportsRepository
 
         $form = ReportGeneralForm::create([
             'user_id' => $user->id ?? null,
+            'site_id' => $request->site_id,
             'report_date' => $request->report_date,
             'report_time' => $request->report_time,
             'property_location' => $request->property_location,
@@ -200,7 +201,7 @@ class ReportsRepository
         return [
             'status' => true,
             'message' => 'General Report Form stored successfully.',
-            'form' => $form->load('images'),
+            'form' => $form->load(['images', 'site']),
         ];
     }
 
