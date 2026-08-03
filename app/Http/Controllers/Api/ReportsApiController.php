@@ -32,7 +32,10 @@ class ReportsApiController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *             required={"employee_name","employee_id_license","site_property","warning_date"},
+     *             required={"site_id","supervisor_id","employee_id","employee_name","employee_id_license","site_property","warning_date"},
+     *             @OA\Property(property="site_id", type="integer", example=1, description="ID of the site associated with the report"),
+     *             @OA\Property(property="supervisor_id", type="integer", example=5, description="ID of the supervisor"),
+     *             @OA\Property(property="employee_id", type="integer", example=12, description="ID of the employee"),
      *             @OA\Property(property="employee_name", type="string", example="John Doe"),
      *             @OA\Property(property="employee_id_license", type="string", example="LIC123456"),
      *             @OA\Property(property="site_property", type="string", example="Downtown Mall"),
@@ -74,6 +77,9 @@ class ReportsApiController extends Controller
     {
         Log::info('storeSecurityGuardDisciplinaryForm called with data: ' . json_encode($request->all()));
         $validator = Validator::make($request->all(), [
+            'site_id' => 'required|integer|exists:sites,id',
+            'supervisor_id' => 'required|integer',
+            'employee_id' => 'required|integer',
             'employee_name' => 'required',
             'employee_id_license' => 'required',
             'site_property' => 'required',
@@ -342,7 +348,9 @@ class ReportsApiController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"client_site_name","address_location","commenced_date","commenced_time","terminated_date","terminated_time"},
+     *             required={"site_id","supervisor_id","client_site_name","address_location","commenced_date","commenced_time","terminated_date","terminated_time"},
+     *             @OA\Property(property="site_id", type="integer", example=1, description="ID of the site associated with the report"),
+     *             @OA\Property(property="supervisor_id", type="integer", example=5, description="ID of the supervisor"),
      *             @OA\Property(property="client_site_name", type="string", example="Elite Plaza"),
      *             @OA\Property(property="address_location", type="string", example="123 Main St, New York, NY"),
      *             @OA\Property(property="reason_for_fire_watch", type="string", example="Broken sprinkler system on 3rd floor"),
@@ -377,6 +385,8 @@ class ReportsApiController extends Controller
      *                 }
      *             ),
      *             example={
+     *                 "site_id": 1,
+     *                 "supervisor_id": 5,
      *                 "client_site_name": "Elite Plaza",
      *                 "address_location": "123 Main St, New York, NY",
      *                 "reason_for_fire_watch": "Broken sprinkler system on 3rd floor",
@@ -420,6 +430,8 @@ class ReportsApiController extends Controller
     {
         Log::info('storeFireWatchReport called with data: ' . json_encode($request->all()));
         $request->validate([
+            'site_id'               => 'required|integer|exists:sites,id',
+            'supervisor_id'         => 'required|integer',
             'client_site_name'      => 'required|string|max:255',
             'address_location'      => 'required|string|max:255',
             'reason_for_fire_watch' => 'nullable|string',

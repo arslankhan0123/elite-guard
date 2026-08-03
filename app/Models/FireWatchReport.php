@@ -11,6 +11,8 @@ class FireWatchReport extends Model
 
     protected $fillable = [
         'user_id',
+        'site_id',
+        'supervisor_id',
         'client_site_name',
         'address_location',
         'reason_for_fire_watch',
@@ -27,6 +29,16 @@ class FireWatchReport extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
+
+    public function supervisorUser()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
     }
 
     public function patrolLogs()

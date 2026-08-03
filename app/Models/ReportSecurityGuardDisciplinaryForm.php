@@ -11,6 +11,9 @@ class ReportSecurityGuardDisciplinaryForm extends Model
 
     protected $fillable = [
         'user_id',
+        'site_id',
+        'supervisor_id',
+        'employee_id',
         'employee_name',
         'employee_id_license',
         'site_property',
@@ -39,5 +42,20 @@ class ReportSecurityGuardDisciplinaryForm extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
+
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 }
