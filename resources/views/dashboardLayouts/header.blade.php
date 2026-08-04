@@ -314,6 +314,9 @@
                                 <a href="{{route('notice-board.index')}}" class="dropdown-item" data-key="t-widgets"><i
                                         class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i>
                                     Notice Board</a>
+                                <a href="{{route('post-esc.index')}}" class="dropdown-item" data-key="t-widgets"><i
+                                        class="icon nav-icon" data-feather="file" style="width:16px; height:16px;"></i>
+                                    Post &amp; ESC</a>
                             </div>
                         </li>
                     </ul>

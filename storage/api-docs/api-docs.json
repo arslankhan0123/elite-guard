@@ -1111,6 +1111,7 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
+                                    "supervisor_id",
                                     "first_name",
                                     "last_name",
                                     "worker_email",
@@ -1135,6 +1136,11 @@
                                     "signature"
                                 ],
                                 "properties": {
+                                    "supervisor_id": {
+                                        "description": "ID of the supervisor",
+                                        "type": "integer",
+                                        "example": 5
+                                    },
                                     "first_name": {
                                         "type": "string",
                                         "example": "John"
@@ -1427,10 +1433,34 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
+                                    "site_id",
+                                    "current_supervisor_id",
+                                    "supervisor_id",
+                                    "approving_supervisor_id",
                                     "employee_name",
                                     "current_date"
                                 ],
                                 "properties": {
+                                    "site_id": {
+                                        "description": "ID of the site",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "current_supervisor_id": {
+                                        "description": "ID of the current supervisor",
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "supervisor_id": {
+                                        "description": "ID of the supervisor",
+                                        "type": "integer",
+                                        "example": 6
+                                    },
+                                    "approving_supervisor_id": {
+                                        "description": "ID of the approving supervisor",
+                                        "type": "integer",
+                                        "example": 7
+                                    },
                                     "employee_name": {
                                         "type": "string",
                                         "example": "John Doe"
@@ -1563,6 +1593,10 @@
                                 },
                                 "type": "object",
                                 "example": {
+                                    "site_id": 1,
+                                    "current_supervisor_id": 5,
+                                    "supervisor_id": 6,
+                                    "approving_supervisor_id": 7,
                                     "employee_name": "John Doe",
                                     "employee_id": "EMP-1024",
                                     "position_site": "Security Guard / Downtown Mall",
@@ -2967,6 +3001,104 @@
                 ]
             }
         },
+        "/api/post-esc": {
+            "get": {
+                "tags": [
+                    "Post & ESC"
+                ],
+                "summary": "Get all Post & ESC records",
+                "operationId": "4aa361bc508f22c817aa9c8d4c7e65ef",
+                "responses": {
+                    "200": {
+                        "description": "Post & ESC data fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Post & ESC data fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Post & ESC data fetched successfully."
+                                                },
+                                                "posts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "date": {
+                                                                "type": "string",
+                                                                "format": "date",
+                                                                "example": "2026-08-04"
+                                                            },
+                                                            "subject": {
+                                                                "type": "string",
+                                                                "example": "Post orders update"
+                                                            },
+                                                            "long_description": {
+                                                                "type": "string",
+                                                                "example": "Updated Post & ESC instructions..."
+                                                            },
+                                                            "pdf_path": {
+                                                                "type": "string",
+                                                                "example": "documents/post-esc/instructions.pdf",
+                                                                "nullable": true
+                                                            },
+                                                            "pdf_url": {
+                                                                "type": "string",
+                                                                "format": "uri",
+                                                                "example": "http://127.0.0.1:8000/storage/documents/post-esc/instructions.pdf",
+                                                                "nullable": true
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2026-08-04T20:37:13Z"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2026-08-04T20:37:13Z"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/reports/security-guard-disciplinary-form/store": {
             "post": {
                 "tags": [
@@ -2980,12 +3112,30 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
+                                    "site_id",
+                                    "supervisor_id",
+                                    "employee_id",
                                     "employee_name",
                                     "employee_id_license",
                                     "site_property",
                                     "warning_date"
                                 ],
                                 "properties": {
+                                    "site_id": {
+                                        "description": "ID of the site associated with the report",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "supervisor_id": {
+                                        "description": "ID of the supervisor",
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "employee_id": {
+                                        "description": "ID of the employee",
+                                        "type": "integer",
+                                        "example": 12
+                                    },
                                     "employee_name": {
                                         "type": "string",
                                         "example": "John Doe"
@@ -3135,6 +3285,7 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
+                                    "property_id",
                                     "date_of_report",
                                     "time_of_report",
                                     "location",
@@ -3143,6 +3294,11 @@
                                     "reported_by"
                                 ],
                                 "properties": {
+                                    "property_id": {
+                                        "description": "Site/property ID associated with the incident report",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
                                     "date_of_report": {
                                         "type": "string",
                                         "format": "date",
@@ -3262,13 +3418,18 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
+                                    "site_id",
                                     "report_date",
                                     "report_time",
                                     "property_location",
-                                    "property_name",
-                                    "reported_by"
+                                    "property_name"
                                 ],
                                 "properties": {
+                                    "site_id": {
+                                        "description": "ID of the site associated with the report",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
                                     "report_date": {
                                         "type": "string",
                                         "format": "date",
@@ -3521,6 +3682,8 @@
                         "application/json": {
                             "schema": {
                                 "required": [
+                                    "site_id",
+                                    "supervisor_id",
                                     "client_site_name",
                                     "address_location",
                                     "commenced_date",
@@ -3529,6 +3692,16 @@
                                     "terminated_time"
                                 ],
                                 "properties": {
+                                    "site_id": {
+                                        "description": "ID of the site associated with the report",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "supervisor_id": {
+                                        "description": "ID of the supervisor",
+                                        "type": "integer",
+                                        "example": 5
+                                    },
                                     "client_site_name": {
                                         "type": "string",
                                         "example": "Elite Plaza"
@@ -3624,6 +3797,8 @@
                                 "type": "object"
                             },
                             "example": {
+                                "site_id": 1,
+                                "supervisor_id": 5,
                                 "client_site_name": "Elite Plaza",
                                 "address_location": "123 Main St, New York, NY",
                                 "reason_for_fire_watch": "Broken sprinkler system on 3rd floor",
@@ -5821,6 +5996,10 @@
         {
             "name": "Policies",
             "description": "Policies"
+        },
+        {
+            "name": "Post & ESC",
+            "description": "Post & ESC"
         },
         {
             "name": "Reports",
