@@ -131,7 +131,8 @@ class FormsApiController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"date","time","vehicle","odometer_reading","fuel","assigned_site","driver"},
+     *                 required={"site_id","date","time","vehicle","odometer_reading","fuel","assigned_site","driver"},
+     *                 @OA\Property(property="site_id", type="integer", example=1, description="ID of the site associated with the checklist"),
      *                 @OA\Property(property="date", type="string", example="2026-04-30"),
      *                 @OA\Property(property="time", type="string", example="10:30 AM"),
      *                 @OA\Property(property="vehicle", type="string", example="Toyota Camry"),
@@ -170,6 +171,7 @@ class FormsApiController extends Controller
     {
         Log::info('storeDailyVehicleChecklist called with data: ' . json_encode($request->all()));
         $request->validate([
+            'site_id' => 'required|integer|exists:sites,id',
             'date' => 'required|string',
             'time' => 'required|string',
             'vehicle' => 'required|string',

@@ -11,6 +11,7 @@ class DailyVehicleChecklist extends Model
 
     protected $fillable = [
         'user_id',
+        'site_id',
         'date',
         'time',
         'vehicle',
@@ -35,6 +36,11 @@ class DailyVehicleChecklist extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
     }
 
     public function issueImages()

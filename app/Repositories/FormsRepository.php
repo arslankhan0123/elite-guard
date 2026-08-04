@@ -119,6 +119,7 @@ class FormsRepository
 
         $checklist = DailyVehicleChecklist::create([
             'user_id' => $user->id,
+            'site_id' => $request->site_id,
             'date' => $request->date,
             'time' => $request->time,
             'vehicle' => $request->vehicle,
@@ -159,7 +160,7 @@ class FormsRepository
         return [
             'status' => true,
             'message' => 'Daily Vehicle Checklist stored successfully.',
-            'checklist' => $checklist->load('issueImages'),
+            'checklist' => $checklist->load(['issueImages', 'site']),
         ];
     }
 
