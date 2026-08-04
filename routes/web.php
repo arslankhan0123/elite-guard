@@ -20,6 +20,7 @@ use App\Http\Controllers\TaxDocController;
 use App\Http\Controllers\TimeClockController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\NoticeBoardController;
+use App\Http\Controllers\PostEscController;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\NfcTag;
@@ -223,6 +224,16 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/edit/{id}', [NoticeBoardController::class, 'edit'])->name('notice-board.edit');
         Route::post('/update/{id}', [NoticeBoardController::class, 'update'])->name('notice-board.update');
         Route::get('/delete/{id}', [NoticeBoardController::class, 'destroy'])->name('notice-board.delete');
+    });
+
+    Route::group(['prefix' => '/post-esc'], function () {
+        Route::get('/', [PostEscController::class, 'index'])->name('post-esc.index');
+        Route::get('/create', [PostEscController::class, 'create'])->name('post-esc.create');
+        Route::post('/store', [PostEscController::class, 'store'])->name('post-esc.store');
+        Route::get('/edit/{id}', [PostEscController::class, 'edit'])->name('post-esc.edit');
+        Route::post('/update/{id}', [PostEscController::class, 'update'])->name('post-esc.update');
+        Route::get('/download/{id}', [PostEscController::class, 'download'])->name('post-esc.download');
+        Route::get('/delete/{id}', [PostEscController::class, 'destroy'])->name('post-esc.delete');
     });
 });
 
