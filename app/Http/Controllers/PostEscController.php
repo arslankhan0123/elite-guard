@@ -25,7 +25,7 @@ class PostEscController extends Controller
         $data = $request->validate($this->rules());
 
         if ($request->hasFile('pdf')) {
-            $data['pdf_path'] = $request->file('pdf')->store('post-esc', 'public');
+            $data['pdf_path'] = $request->file('pdf')->store('documents/post-esc', 'public');
         }
 
         unset($data['pdf']);
@@ -47,7 +47,7 @@ class PostEscController extends Controller
         $data = $request->validate($this->rules());
 
         if ($request->hasFile('pdf')) {
-            $newPath = $request->file('pdf')->store('post-esc', 'public');
+            $newPath = $request->file('pdf')->store('documents/post-esc', 'public');
 
             if ($post->pdf_path) {
                 Storage::disk('public')->delete($post->pdf_path);
