@@ -142,11 +142,31 @@ class UnifiedReportController extends Controller
 
         $rules = [];
         foreach ($attributes as $key => $val) {
-            $rules[$key] = 'nullable';
+            $cast = $report->getCasts()[$key] ?? null;
+            if (in_array($cast, ['date', 'datetime', 'immutable_date', 'immutable_datetime'], true)
+                && is_string($request->input($key))) {
+                $request->merge([$key => trim($request->input($key), "\"'")]);
+            }
+            $rules[$key] = in_array($cast, ['date', 'datetime', 'immutable_date', 'immutable_datetime'], true)
+                ? 'nullable|date'
+                : 'nullable';
         }
         $validated = $request->validate($rules);
 
         foreach ($validated as $key => $value) {
+            $cast = $report->getCasts()[$key] ?? null;
+            if ($cast === 'boolean') {
+                $validated[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                continue;
+            }
+
+            if ($value !== null && in_array($cast, ['date', 'datetime', 'immutable_date', 'immutable_datetime'], true)) {
+                $value = trim($value, "\"'");
+                $validated[$key] = Carbon::parse($value)->format(
+                    in_array($cast, ['datetime', 'immutable_datetime'], true) ? 'Y-m-d H:i:s' : 'Y-m-d'
+                );
+            }
+
             if ($report->hasCast($key, ['array', 'json', 'object', 'collection']) && is_string($value)) {
                 $validated[$key] = json_decode($value, true) ?? $value;
             }

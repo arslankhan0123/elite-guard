@@ -44,14 +44,15 @@
                         <div class="row">
                             @foreach($attributes as $key => $value)
                                 @php
-                                    $isArray = is_array($value) || is_object($value);
+                                    $isDateValue = $value instanceof \DateTimeInterface;
+                                    $isArray = is_array($value) || (is_object($value) && !$isDateValue);
                                     $isLongText = $isArray || in_array(strtolower($key), [
                                         'incident_summary', 'summary', 'observation_situation', 
                                         'reason_for_fire_watch', 'action_taken', 'description', 
                                         'comments', 'observation', 'findings'
                                     ]) || strlen((string)$value) > 100;
                                     
-                                    $isDate = str_contains(strtolower($key), 'date');
+                                    $isDate = str_contains(strtolower($key), 'date') || $isDateValue;
                                     $isTime = str_contains(strtolower($key), 'time');
                                 @endphp
 
@@ -68,15 +69,15 @@
                                             <option value="Approved" {{ old($key, $value) == 'Approved' ? 'selected' : '' }}>Approved</option>
                                             <option value="Denied" {{ old($key, $value) == 'Denied' ? 'selected' : '' }}>Denied</option>
                                         </select>
+                                    @elseif($report->hasCast($key, 'boolean'))
+                                        <select name="{{ $key }}" id="{{ $key }}" class="form-select rounded-3">
+                                            <option value="1" {{ old($key, $value) == '1' || old($key, $value) == 'true' ? 'selected' : '' }}>Yes</option>
+                                            <option value="0" {{ old($key, $value) == '0' || old($key, $value) == 'false' || is_null(old($key, $value)) ? 'selected' : '' }}>No</option>
+                                        </select>
                                     @elseif($isDate)
                                         <input type="date" name="{{ $key }}" id="{{ $key }}" class="form-control rounded-3" value="{{ old($key, ($value instanceof \Carbon\Carbon || $value instanceof \Illuminate\Support\Carbon) ? $value->format('Y-m-d') : (!empty($value) ? date('Y-m-d', strtotime($value)) : '')) }}">
                                     @elseif($isTime)
                                         <input type="time" name="{{ $key }}" id="{{ $key }}" class="form-control rounded-3" value="{{ old($key, $value) }}">
-                                    @elseif($report->hasCast($key, 'boolean'))
-                                        <select name="{{ $key }}" id="{{ $key }}" class="form-select rounded-3">
-                                            <option value="1" {{ old($key, $value) == '1' || old($key, $value) == 'true' ? 'selected' : '' }}>Yes</option>
-                                            <option value="0" {{ old($key, $value) == '0' || old($key, $value) == 'false' ? 'selected' : '' }}>No</option>
-                                        </select>
                                     @else
                                         <input type="text" name="{{ $key }}" id="{{ $key }}" class="form-control rounded-3" value="{{ old($key, $value) }}">
                                     @endif
