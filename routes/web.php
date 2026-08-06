@@ -214,6 +214,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/show/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'show'])->name('reports.show');
         Route::get('/edit/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'edit'])->name('reports.edit');
         Route::put('/update/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'update'])->name('reports.update');
+        Route::delete('/delete/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'destroy'])->name('reports.destroy');
         Route::get('/download/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'downloadPdf'])->name('reports.download');
     });
 

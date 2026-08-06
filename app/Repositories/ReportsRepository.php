@@ -110,8 +110,10 @@ class ReportsRepository
         if (is_array($images)) {
             foreach ($images as $image) {
                 $fileName = ($user->id ?? 'guest') . '_' . time() . '_' . Str::random(20) . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('documents/IncidentReport'), $fileName);
-                $imagePath = url('documents/IncidentReport/' . $fileName);
+                $directory = storage_path('app/public/documents/IncidentReport');
+                File::ensureDirectoryExists($directory);
+                $image->move($directory, $fileName);
+                $imagePath = url('storage/documents/IncidentReport/' . $fileName);
                 ReportIncidentFormImage::create([
                     'report_incident_form_id' => $form->id,
                     'image_path' => $imagePath,
@@ -176,9 +178,11 @@ class ReportsRepository
 
                 $fileName = ($user->id ?? 'guest') . '_obs_' . time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
 
-                $file->move(public_path('documents/GeneralReport'), $fileName);
+                $directory = storage_path('app/public/documents/GeneralReport');
+                File::ensureDirectoryExists($directory);
+                $file->move($directory, $fileName);
 
-                $observationPath = url('documents/GeneralReport/' . $fileName);
+                $observationPath = url('storage/documents/GeneralReport/' . $fileName);
             }
 
             // ✅ Cleared Image
@@ -187,9 +191,11 @@ class ReportsRepository
 
                 $fileName = ($user->id ?? 'guest') . '_clr_' . time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
 
-                $file->move(public_path('documents/GeneralReport'), $fileName);
+                $directory = storage_path('app/public/documents/GeneralReport');
+                File::ensureDirectoryExists($directory);
+                $file->move($directory, $fileName);
 
-                $clearedPath = url('documents/GeneralReport/' . $fileName);
+                $clearedPath = url('storage/documents/GeneralReport/' . $fileName);
             }
 
             // ✅ Save only if at least one exists
@@ -222,13 +228,13 @@ class ReportsRepository
 
         $extension = $image->extension();
         $extension = $extension === 'jpeg' ? 'jpg' : $extension;
-        $directory = public_path($relativeDirectory);
+        $directory = storage_path('app/public/' . trim($relativeDirectory, '/'));
         File::ensureDirectoryExists($directory);
 
         $fileName = $userId . '_' . $name . '_' . time() . '_' . Str::random(10) . '.' . $extension;
         $image->move($directory, $fileName);
 
-        return url(trim($relativeDirectory, '/') . '/' . $fileName);
+        return url('storage/' . trim($relativeDirectory, '/') . '/' . $fileName);
     }
 
     public function storeDailyShiftReportForm($request)
