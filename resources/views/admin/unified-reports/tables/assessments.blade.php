@@ -57,6 +57,7 @@
                             <i class="fa-solid fa-file-arrow-down" style="font-size: 18px; color: white;"></i>
                         </button>
                     </a>
+                    @include('admin.unified-reports.partials.delete-button', ['record' => $assessment])
                 </div>
             </td>
             </tr>

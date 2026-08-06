@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class UnifiedReportController extends Controller
 {
@@ -177,6 +178,29 @@ class UnifiedReportController extends Controller
         return $pdf->download(str_replace(' ', '_', strtolower($title)) . '_' . $id . '.pdf');
     }
 
+    public function destroy($type, $id)
+    {
+        $report = $this->getReportInstance($type, $id);
+        $files = $this->reportFiles($report);
+
+        DB::transaction(function () use ($report) {
+            foreach (['images', 'issueImages', 'patrolLogs', 'patrolEntries'] as $relation) {
+                if ($report->relationLoaded($relation)) {
+                    $report->getRelation($relation)->each->delete();
+                }
+            }
+
+            $report->delete();
+        });
+
+        foreach ($files as $file) {
+            File::delete($file);
+        }
+
+        return redirect()->route('reports.all', ['type' => $type])
+            ->with('success', ucwords(str_replace('-', ' ', $type)) . ' deleted successfully!');
+    }
+
     private function getReportInstance($type, $id)
     {
         $config = [
@@ -207,6 +231,55 @@ class UnifiedReportController extends Controller
     private function mediaFields(): array
     {
         return ['signature', 'employee_signature', 'supervisor_signature', 'documents'];
+    }
+
+    private function reportFiles($report): array
+    {
+        $values = collect($this->mediaFields())
+            ->map(fn ($field) => $report->getAttribute($field));
+
+        foreach (['images', 'issueImages'] as $relation) {
+            if ($report->relationLoaded($relation)) {
+                $values = $values->merge(
+                    $report->getRelation($relation)->flatMap(
+                        fn ($item) => collect(['image_path', 'observation_image_path', 'cleared_area_image_path', 'path'])
+                            ->map(fn ($field) => $item->getAttribute($field))
+                    )
+                );
+            }
+        }
+
+        return $values->filter()
+            ->map(fn ($value) => $this->localFilePath($value))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function localFilePath($value): ?string
+    {
+        if (! is_string($value) || str_starts_with($value, 'data:')) {
+            return null;
+        }
+
+        $path = rawurldecode(parse_url($value, PHP_URL_PATH) ?: $value);
+        $path = ltrim(str_replace('\\', '/', $path), '/');
+        $candidates = str_starts_with($path, 'storage/')
+            ? [storage_path('app/public/' . substr($path, 8))]
+            : [public_path($path), storage_path('app/public/' . $path)];
+
+        $roots = [realpath(public_path()), realpath(storage_path('app/public'))];
+        foreach ($candidates as $candidate) {
+            $real = realpath($candidate);
+            if ($real && collect($roots)->filter()->contains(
+                fn ($root) => $real === $root || str_starts_with($real, $root . DIRECTORY_SEPARATOR)
+            )) {
+                return $real;
+            }
+        }
+
+        return null;
     }
 
     private function editableRelations($report): array

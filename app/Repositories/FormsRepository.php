@@ -21,14 +21,14 @@ class FormsRepository
         $user = Auth::user();
         $signatureFile = $request->file('signature');
         $signatureDirectory = 'documents/Assessments/signatures';
-        $directory = public_path($signatureDirectory);
+        $directory = storage_path('app/public/' . $signatureDirectory);
         File::ensureDirectoryExists($directory);
 
         $extension = $signatureFile->extension();
         $extension = $extension === 'jpeg' ? 'jpg' : $extension;
         $signatureFileName = ($user->id ?? 'guest') . '_signature_' . time() . '_' . Str::random(10) . '.' . $extension;
         $signatureFile->move($directory, $signatureFileName);
-        $signature = url($signatureDirectory . '/' . $signatureFileName);
+        $signature = url('storage/' . $signatureDirectory . '/' . $signatureFileName);
 
         $assessment = Assessment::create([
             'user_id' => $user->id,
@@ -82,13 +82,13 @@ class FormsRepository
         }
 
         $extension = $matches[1] === 'jpeg' ? 'jpg' : $matches[1];
-        $directory = public_path($relativeDirectory);
+        $directory = storage_path('app/public/' . $relativeDirectory);
         File::ensureDirectoryExists($directory);
 
         $fileName = $userId . '_' . $name . '_' . time() . '_' . Str::random(10) . '.' . $extension;
         File::put($directory . DIRECTORY_SEPARATOR . $fileName, $image);
 
-        return url($relativeDirectory . '/' . $fileName);
+        return url('storage/' . $relativeDirectory . '/' . $fileName);
     }
 
     public function storeDailyVehicleChecklist(Request $request)
@@ -99,22 +99,24 @@ class FormsRepository
         if ($request->hasFile('signature')) {
             $signatureFile = $request->file('signature');
             $signatureDirectory = 'documents/DailyVehicleChecklist/signatures';
-            $directory = public_path($signatureDirectory);
+            $directory = storage_path('app/public/' . $signatureDirectory);
             File::ensureDirectoryExists($directory);
 
             $extension = $signatureFile->extension();
             $extension = $extension === 'jpeg' ? 'jpg' : $extension;
             $signatureFileName = ($user->id ?? 'guest') . '_signature_' . time() . '_' . Str::random(10) . '.' . $extension;
             $signatureFile->move($directory, $signatureFileName);
-            $signature = url($signatureDirectory . '/' . $signatureFileName);
+            $signature = url('storage/' . $signatureDirectory . '/' . $signatureFileName);
         }
 
         $documentPath = $request->input('documents');
         if ($request->hasFile('documents')) {
             $file = $request->file('documents');
             $fileName = $user->id . '_' . time() . '_' . Str::random(32) . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('documents/DailyVehicleChecklist'), $fileName);
-            $documentPath = url('documents/DailyVehicleChecklist/' . $fileName);
+            $directory = storage_path('app/public/documents/DailyVehicleChecklist');
+            File::ensureDirectoryExists($directory);
+            $file->move($directory, $fileName);
+            $documentPath = url('storage/documents/DailyVehicleChecklist/' . $fileName);
         }
 
         $checklist = DailyVehicleChecklist::create([
@@ -144,16 +146,16 @@ class FormsRepository
         $issueImages = $request->file('issue_images', []);
 
         if ($issueImages) {
-            File::ensureDirectoryExists(public_path('documents/DailyVehicleChecklist/issues'));
+            File::ensureDirectoryExists(storage_path('app/public/documents/DailyVehicleChecklist/issues'));
         }
 
         foreach ($issueImages as $image) {
             $fileName = $user->id . '_issue_' . time() . '_' . Str::random(20) . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('documents/DailyVehicleChecklist/issues'), $fileName);
+            $image->move(storage_path('app/public/documents/DailyVehicleChecklist/issues'), $fileName);
 
             DailyVehicleChecklistImage::create([
                 'daily_vehicle_checklist_id' => $checklist->id,
-                'image_path' => url('documents/DailyVehicleChecklist/issues/' . $fileName),
+                'image_path' => url('storage/documents/DailyVehicleChecklist/issues/' . $fileName),
             ]);
         }
 
@@ -246,7 +248,7 @@ class FormsRepository
             return null;
         }
 
-        $directory = public_path($relativeDirectory);
+        $directory = storage_path('app/public/' . $relativeDirectory);
         File::ensureDirectoryExists($directory);
 
         $extension = $image->extension();
@@ -254,6 +256,6 @@ class FormsRepository
         $fileName = $userId . '_' . $name . '_' . time() . '_' . Str::random(10) . '.' . $extension;
         $image->move($directory, $fileName);
 
-        return url($relativeDirectory . '/' . $fileName);
+        return url('storage/' . $relativeDirectory . '/' . $fileName);
     }
 }
