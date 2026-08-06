@@ -1,3 +1,4 @@
+@if(Auth::user()->hasAdminPermission('reports-forms', 'delete'))
 <form action="{{ route('reports.destroy', ['type' => $type, 'id' => $record->id]) }}" method="POST" class="d-inline ms-1"
     onsubmit="return confirm('Are you sure you want to delete this record? All attached images, signatures and documents will also be deleted.');">
     @csrf
@@ -17,3 +18,4 @@
         </svg>
     </button>
 </form>
+@endif

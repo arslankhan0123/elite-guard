@@ -114,6 +114,9 @@
                     <button class="nav-link" id="part3-tab" data-bs-toggle="tab" data-bs-target="#part3" type="button" role="tab"><i data-feather="file-text"></i> Licenses</button>
                     <button class="nav-link" id="part4-tab" data-bs-toggle="tab" data-bs-target="#part4" type="button" role="tab"><i data-feather="calendar"></i> Availability</button>
                     <button class="nav-link" id="part5-tab" data-bs-toggle="tab" data-bs-target="#part5" type="button" role="tab"><i data-feather="briefcase"></i> Office Use</button>
+                    @if(Auth::user()->role === 'SuperAdmin')
+                    <button class="nav-link" id="permissions-tab" data-bs-toggle="tab" data-bs-target="#permissions" type="button" role="tab" style="display:none;"><i data-feather="shield"></i> Permissions</button>
+                    @endif
                 </div>
 
                 <div class="card-body p-4 p-md-5">
@@ -145,11 +148,16 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Assigned Role</label>
+                                    @if(Auth::user()->role === 'SuperAdmin')
                                     <select name="role" class="form-select" required>
-                                        <option value="Employee" selected>Employee / Guard</option>
-                                        <option value="Admin">Admin</option>
-                                        <option value="SuperAdmin">SuperAdmin</option>
+                                        <option value="Employee" @selected(old('role', 'Employee') === 'Employee')>Employee / Guard</option>
+                                        <option value="Admin" @selected(old('role') === 'Admin')>Admin</option>
+                                        <option value="SuperAdmin" @selected(old('role') === 'SuperAdmin')>SuperAdmin</option>
                                     </select>
+                                    @else
+                                        <input type="hidden" name="role" value="Employee">
+                                        <input type="text" class="form-control" value="Employee / Guard" disabled>
+                                    @endif
                                     @error('role')
                                         <div class="text-danger mt-1">{{ $message }}</div>
                                     @enderror
@@ -544,6 +552,12 @@
                                 </div>
                             </div>
                         </div>
+                        @if(Auth::user()->role === 'SuperAdmin')
+                        <div class="tab-pane fade" id="permissions" role="tabpanel">
+                            <h4 class="section-title"><i data-feather="shield"></i> Admin Permissions</h4>
+                            @include('admin.employees.partials.admin-permissions')
+                        </div>
+                        @endif
                     </div>
 
                     <div class="mt-5">

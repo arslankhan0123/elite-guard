@@ -9,6 +9,16 @@
 @endsection
 
 @section('content')
+    @if(Auth::user()->role === 'Admin')
+        <style>
+            @if(!Auth::user()->hasAdminPermission('reports-forms', 'view'))
+                .view_btn, a[title="Download PDF"] { display: none !important; }
+            @endif
+            @if(!Auth::user()->hasAdminPermission('reports-forms', 'update'))
+                .editBtn { display: none !important; }
+            @endif
+        </style>
+    @endif
     <div class="row">
         <div class="col-lg-12">
             <!-- Selection Card -->
