@@ -16,12 +16,14 @@
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="card-title text-white mb-0">{{ $title }}</h4>
                     <div class="d-flex align-items-center gap-2">
+                        @if(Auth::user()->hasAdminPermission('reports-forms', 'delete'))
                         <form action="{{ route('reports.destroy', ['type' => $type, 'id' => $report->id]) }}" method="POST"
                             onsubmit="return confirm('Are you sure you want to delete this record? All attached images, signatures and documents will also be deleted.');">
                             @csrf
                             @method('DELETE')
                             @include('admin.unified-reports.partials.delete-icon', ['record' => $report])
                         </form>
+                        @endif
                         <a href="{{ route('reports.all', ['type' => $type]) }}" class="btn btn-light btn-sm"><i class="mdi mdi-arrow-left"></i> Back to List</a>
                     </div>
                 </div>

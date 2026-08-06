@@ -21,9 +21,11 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'name',
         'email',
+        'email_verified_at',
         'password',
         'real_password',
         'role',
+        'admin_permissions',
         'fcm_token',
     ];
 
@@ -47,7 +49,45 @@ class User extends Authenticatable implements JWTSubject
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'admin_permissions' => 'array',
         ];
+    }
+
+    public function hasAdminPermission(string $module, string $action = 'list'): bool
+    {
+        if ($this->role === 'SuperAdmin') {
+            return true;
+        }
+
+        return $this->role === 'Admin'
+            && (bool) data_get($this->admin_permissions ?? [], "$module.$action", false);
+    }
+
+    public function canAccessAdminModule(string $module): bool
+    {
+        if ($this->role === 'SuperAdmin') {
+            return true;
+        }
+
+        return collect(($this->admin_permissions ?? [])[$module] ?? [])->contains(true);
+    }
+
+    public function adminLandingRoute(): string
+    {
+        $routes = [
+            'dashboard' => 'dashboard', 'companies' => 'companies.index', 'sites' => 'sites.index',
+            'site-tours' => 'sites.tours.all', 'nfc' => 'nfc.index', 'schedules' => 'schedules.index',
+            'open-shifts' => 'open-shifts.index',
+            'availabilities' => 'availabilities.index', 'time-clocks' => 'time-clocks.index',
+            'attendance' => 'attendance.index', 'reports-forms' => 'reports.all',
+            'management-reports' => 'reports.index',
+            'employees' => 'employees.index', 'policies' => 'policies.index',
+            'orientations' => 'orientations.index', 'pay-slips' => 'pay-slips.index',
+            'tax-docs' => 'tax-docs.index', 'numbers' => 'numbers.index',
+            'notice-board' => 'notice-board.index', 'post-esc' => 'post-esc.index',
+        ];
+
+        return collect($routes)->first(fn ($route, $module) => $this->hasAdminPermission($module, 'list')) ?? 'profile.edit';
     }
 
     public function employee()

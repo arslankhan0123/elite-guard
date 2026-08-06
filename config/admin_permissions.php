@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'actions' => ['list' => 'Listing', 'view' => 'View Details', 'create' => 'Create', 'update' => 'Update', 'delete' => 'Delete'],
+    'modules' => [
+        'dashboard' => 'Dashboard',
+        'companies' => 'Company',
+        'sites' => 'Sites',
+        'site-tours' => 'Site Tours',
+        'nfc' => 'NFC Tags',
+        'schedules' => 'Schedules',
+        'open-shifts' => 'Open Shifts',
+        'availabilities' => 'Availability',
+        'time-clocks' => 'Time Clock',
+        'attendance' => 'Attendance',
+        'reports-forms' => 'Reports & Forms',
+        'management-reports' => 'Management Reports',
+        'employees' => 'Employees',
+        'policies' => 'Policies',
+        'orientations' => 'Orientations',
+        'pay-slips' => 'Pay Slips',
+        'tax-docs' => 'Tax Documents',
+        'numbers' => 'Numbers',
+        'notice-board' => 'Notice Board',
+        'post-esc' => 'Post & ESC',
+    ],
+];

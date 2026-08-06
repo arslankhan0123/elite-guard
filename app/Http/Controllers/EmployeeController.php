@@ -60,6 +60,7 @@ class EmployeeController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string',
+            'permissions' => 'nullable|array',
             
             // Files
             'void_cheque_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -71,14 +72,17 @@ class EmployeeController extends Controller
 
         $plainPassword = $request->password;
         $isEmailSent = false;
+        $role = auth()->user()->role === 'SuperAdmin' ? $request->role : 'Employee';
 
-        DB::transaction(function () use ($request, $plainPassword, &$isEmailSent) {
+        DB::transaction(function () use ($request, $plainPassword, $role, &$isEmailSent) {
             $user = User::create([
                 'name' => $request->first_name . ' ' . $request->last_name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'real_password' => $request->password,
-                'role' => $request->role,
+                'role' => $role,
+                'email_verified_at' => in_array($role, ['Admin', 'SuperAdmin'], true) ? now() : null,
+                'admin_permissions' => $role === 'Admin' ? $this->validatedAdminPermissions($request) : null,
             ]);
 
             // Part 1: Candidate Information
@@ -210,18 +214,26 @@ class EmployeeController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role' => 'required|string',
+            'permissions' => 'nullable|array',
 
             'password' => 'nullable|string|min:8|confirmed',
             'password_confirmation' => 'required_with:password',
         ]);
 
         $isEmailSent = false;
+        $role = auth()->user()->role === 'SuperAdmin' ? $request->role : $user->role;
 
-        DB::transaction(function () use ($request, $user, $employee, &$isEmailSent) {
+        DB::transaction(function () use ($request, $user, $employee, $role, &$isEmailSent) {
             $user->update([
                 'name' => $request->first_name . ' ' . $request->last_name,
                 'email' => $request->email,
-                'role' => $request->role,
+                'role' => $role,
+                'email_verified_at' => in_array($role, ['Admin', 'SuperAdmin'], true)
+                    ? ($user->email_verified_at ?? now())
+                    : $user->email_verified_at,
+                'admin_permissions' => $role === 'Admin'
+                    ? (auth()->user()->role === 'SuperAdmin' ? $this->validatedAdminPermissions($request) : $user->admin_permissions)
+                    : null,
             ]);
 
             $plainPassword = null;
@@ -354,6 +366,20 @@ class EmployeeController extends Controller
         });
 
         return redirect()->route('employees.index')->with('success', 'Employee and associated documents deleted successfully!');
+    }
+
+    private function validatedAdminPermissions(Request $request): array
+    {
+        $submitted = $request->input('permissions', []);
+
+        return collect(config('admin_permissions.modules'))
+            ->mapWithKeys(function ($label, $module) use ($submitted) {
+                $actions = collect(config('admin_permissions.actions'))
+                    ->mapWithKeys(fn ($actionLabel, $action) => [
+                        $action => isset($submitted[$module][$action]),
+                    ])->all();
+                return [$module => $actions];
+            })->all();
     }
 
     public function assignSites(Request $request, $user_id)
