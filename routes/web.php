@@ -227,6 +227,16 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/delete/{id}', [NoticeBoardController::class, 'destroy'])->name('notice-board.delete');
     });
 
+    Route::group(['prefix' => '/dispatches'], function () {
+        Route::get('/', [\App\Http\Controllers\DispatchController::class, 'index'])->name('dispatches.index');
+        Route::get('/create', [\App\Http\Controllers\DispatchController::class, 'create'])->name('dispatches.create');
+        Route::post('/store', [\App\Http\Controllers\DispatchController::class, 'store'])->name('dispatches.store');
+        Route::get('/show/{id}', [\App\Http\Controllers\DispatchController::class, 'show'])->name('dispatches.show');
+        Route::get('/edit/{id}', [\App\Http\Controllers\DispatchController::class, 'edit'])->name('dispatches.edit');
+        Route::post('/update/{id}', [\App\Http\Controllers\DispatchController::class, 'update'])->name('dispatches.update');
+        Route::get('/delete/{id}', [\App\Http\Controllers\DispatchController::class, 'destroy'])->name('dispatches.delete');
+    });
+
     Route::group(['prefix' => '/post-esc'], function () {
         Route::get('/', [PostEscController::class, 'index'])->name('post-esc.index');
         Route::get('/create', [PostEscController::class, 'create'])->name('post-esc.create');
