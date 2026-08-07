@@ -80,7 +80,7 @@ class User extends Authenticatable implements JWTSubject
             'open-shifts' => 'open-shifts.index',
             'availabilities' => 'availabilities.index', 'time-clocks' => 'time-clocks.index',
             'attendance' => 'attendance.index', 'reports-forms' => 'reports.all',
-            'management-reports' => 'reports.index',
+            'management-reports' => 'reports.index', 'shifts-reports' => 'reports.index',
             'employees' => 'employees.index', 'policies' => 'policies.index',
             'orientations' => 'orientations.index', 'pay-slips' => 'pay-slips.index',
             'tax-docs' => 'tax-docs.index', 'numbers' => 'numbers.index',
