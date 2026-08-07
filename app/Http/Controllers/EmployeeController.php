@@ -12,6 +12,8 @@ use App\Models\EmployeeAvailability;
 use App\Models\EmployeeOfficeDetail;
 use App\Models\EmployeeOfferLetter;
 use App\Models\PaySlip;
+use App\Models\Policy;
+use App\Models\TaxDocument;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -193,9 +195,25 @@ class EmployeeController extends Controller
 
     public function show($id, ProfileCompletionService $profileCompletion)
     {
-        $employee = Employee::with(['user', 'user.candidate', 'user.bankDetail', 'user.licenseDetail', 'user.availability', 'user.officeDetail', 'user.offerLetter', 'user.paySlips'])->findOrFail($id);
+        $employee = Employee::with([
+            'user', 
+            'user.candidate', 
+            'user.bankDetail', 
+            'user.licenseDetail', 
+            'user.availability', 
+            'user.officeDetail', 
+            'user.offerLetter', 
+            'user.paySlips',
+            'user.orientationAttempts.orientation.questions.options',
+            'user.signedPolicies.policy',
+            'user.taxDocumentSubmissions.taxDocument'
+        ])->findOrFail($id);
+        
         $profileCompletion = $profileCompletion->calculate($employee->user);
-        return view('admin.employees.show', compact('employee', 'profileCompletion'));
+        $allPolicies = Policy::where('status', true)->get();
+        $allTaxDocs = TaxDocument::all();
+        
+        return view('admin.employees.show', compact('employee', 'profileCompletion', 'allPolicies', 'allTaxDocs'));
     }
 
     public function edit($id)
