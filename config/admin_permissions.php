@@ -15,6 +15,7 @@ return [
         'attendance' => 'Attendance',
         'reports-forms' => 'Reports & Forms',
         'management-reports' => 'Management Reports',
+        'shifts-reports' => 'Shifts Reports',
         'employees' => 'Employees',
         'policies' => 'Policies',
         'orientations' => 'Orientations',

@@ -316,7 +316,7 @@
                             </a>
                         </li>
                         @endif
-                        @if(collect(['policies', 'orientations', 'employees', 'pay-slips', 'tax-docs', 'management-reports', 'numbers', 'notice-board', 'post-esc'])->contains(fn($module) => Auth::user()->hasAdminPermission($module, 'list')))
+                        @if(collect(['policies', 'orientations', 'employees', 'pay-slips', 'tax-docs', 'management-reports', 'shifts-reports', 'numbers', 'notice-board', 'post-esc'])->contains(fn($module) => Auth::user()->hasAdminPermission($module, 'list')))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-components" role="button"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -354,6 +354,11 @@
                                 <a href="{{route('reports.index')}}" class="dropdown-item" data-key="t-widgets"><i
                                         class="icon nav-icon" data-feather="bar-chart"
                                         style="width:16px; height:16px;"></i> Reports</a>
+                                @endif
+                                @if(Auth::user()->hasAdminPermission('shifts-reports', 'list'))
+                                <a href="{{route('reports.index', ['type' => 'shifts'])}}" class="dropdown-item" data-key="t-widgets"><i
+                                        class="icon nav-icon" data-feather="clock"
+                                        style="width:16px; height:16px;"></i> Shifts reports</a>
                                 @endif
                                 @if(Auth::user()->hasAdminPermission('numbers'))
                                 <a href="{{route('numbers.index')}}" class="dropdown-item" data-key="t-widgets"><i

@@ -44,7 +44,7 @@ class IsSuperAdmin
             str_starts_with($routeName, 'availabilities.') => 'availabilities',
             str_starts_with($routeName, 'time-clocks.') => 'time-clocks',
             str_starts_with($routeName, 'attendance.') => 'attendance',
-            $routeName === 'reports.index' => 'management-reports',
+            $routeName === 'reports.index' => request()->get('type') === 'shifts' ? 'shifts-reports' : 'management-reports',
             str_starts_with($routeName, 'forms.'), str_starts_with($routeName, 'security-reports.'), str_starts_with($routeName, 'reports.') => 'reports-forms',
             str_starts_with($routeName, 'employees.') => 'employees',
             str_starts_with($routeName, 'policies.') => 'policies',

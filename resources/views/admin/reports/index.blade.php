@@ -84,30 +84,136 @@
             </div>
             <div class="card-body p-4">
                 <form action="{{ route('reports.index') }}" method="GET" id="reportFilterForm" class="row g-3 align-items-end mb-4">
-                    <div class="col-md-6">
+                    <div class="{{ $type == 'shifts' ? 'col-md-4' : 'col-md-6' }}">
                         <label for="type" class="form-label fw-semibold text-muted">Report Type</label>
                         <select name="type" id="type" class="form-select border-0 bg-light shadow-none" onchange="this.form.submit()" style="height: 50px; border-radius: 12px; font-weight: 500;">
                             <option value="companies" {{ $type == 'companies' ? 'selected' : '' }}>Companies Report</option>
                             <option value="sites" {{ $type == 'sites' ? 'selected' : '' }}>Sites Report</option>
                             <option value="nfc_tags" {{ $type == 'nfc_tags' ? 'selected' : '' }}>NFC Tags Report</option>
                             <option value="employees" {{ $type == 'employees' ? 'selected' : '' }}>Employees Report</option>
+                            <option value="shifts" {{ $type == 'shifts' ? 'selected' : '' }}>Shifts Report</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
-                        <label for="date_filter" class="form-label fw-semibold text-muted">Date Range</label>
-                        <select name="date_filter" id="date_filter" class="form-select border-0 bg-light shadow-none" onchange="this.form.submit()" style="height: 50px; border-radius: 12px; font-weight: 500;">
-                            <option value="">All Time</option>
-                            <option value="today" {{ $date_filter == 'today' ? 'selected' : '' }}>Today</option>
-                            <option value="yesterday" {{ $date_filter == 'yesterday' ? 'selected' : '' }}>Yesterday</option>
-                            <option value="current_week" {{ $date_filter == 'current_week' ? 'selected' : '' }}>Current Week</option>
-                            <option value="previous_week" {{ $date_filter == 'previous_week' ? 'selected' : '' }}>Previous Week</option>
-                            <option value="current_month" {{ $date_filter == 'current_month' ? 'selected' : '' }}>Current Month</option>
-                            <option value="previous_month" {{ $date_filter == 'previous_month' ? 'selected' : '' }}>Previous Month</option>
-                        </select>
-                    </div>
+
+                    @if($type == 'shifts')
+                        <div class="col-md-4">
+                            <label for="user_id" class="form-label fw-semibold text-muted">Employee (Single Select)</label>
+                            <select name="user_id" id="user_id" class="form-select border-0 bg-light shadow-none select2-single-dropdown" style="height: 50px; border-radius: 12px; font-weight: 500;">
+                                <option value="">Select Employee</option>
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}" {{ ($extraFilters['user_id'] ?? '') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="site_ids" class="form-label fw-semibold text-muted">Sites (Multiple Select)</label>
+                            <select name="site_ids[]" id="site_ids" class="form-select border-0 bg-light shadow-none select2-multiple-dropdown" multiple="multiple" style="height: 50px; border-radius: 12px; font-weight: 500;">
+                                @foreach($sites as $site)
+                                    <option value="{{ $site->id }}" {{ in_array($site->id, $extraFilters['site_ids'] ?? []) ? 'selected' : '' }}>
+                                        {{ $site->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="start_date" class="form-label fw-semibold text-muted">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" value="{{ $extraFilters['start_date'] ?? '' }}" class="form-control border-0 bg-light shadow-none" style="height: 50px; border-radius: 12px; font-weight: 500;">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date" class="form-label fw-semibold text-muted">End Date</label>
+                            <input type="date" name="end_date" id="end_date" value="{{ $extraFilters['end_date'] ?? '' }}" class="form-control border-0 bg-light shadow-none" style="height: 50px; border-radius: 12px; font-weight: 500;">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="start_time" class="form-label fw-semibold text-muted">Start Time</label>
+                            <input type="time" name="start_time" id="start_time" value="{{ $extraFilters['start_time'] ?? '' }}" class="form-control border-0 bg-light shadow-none" style="height: 50px; border-radius: 12px; font-weight: 500;">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="end_time" class="form-label fw-semibold text-muted">End Time</label>
+                            <input type="time" name="end_time" id="end_time" value="{{ $extraFilters['end_time'] ?? '' }}" class="form-control border-0 bg-light shadow-none" style="height: 50px; border-radius: 12px; font-weight: 500;">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center" style="height: 50px; border-radius: 12px;">
+                                <i class="mdi mdi-filter-outline me-1"></i> Filter
+                            </button>
+                        </div>
+                    @else
+                        <div class="col-md-6">
+                            <label for="date_filter" class="form-label fw-semibold text-muted">Date Range</label>
+                            <select name="date_filter" id="date_filter" class="form-select border-0 bg-light shadow-none" onchange="this.form.submit()" style="height: 50px; border-radius: 12px; font-weight: 500;">
+                                <option value="">All Time</option>
+                                <option value="today" {{ $date_filter == 'today' ? 'selected' : '' }}>Today</option>
+                                <option value="yesterday" {{ $date_filter == 'yesterday' ? 'selected' : '' }}>Yesterday</option>
+                                <option value="current_week" {{ $date_filter == 'current_week' ? 'selected' : '' }}>Current Week</option>
+                                <option value="previous_week" {{ $date_filter == 'previous_week' ? 'selected' : '' }}>Previous Week</option>
+                                <option value="current_month" {{ $date_filter == 'current_month' ? 'selected' : '' }}>Current Month</option>
+                                <option value="previous_month" {{ $date_filter == 'previous_month' ? 'selected' : '' }}>Previous Month</option>
+                            </select>
+                        </div>
+                    @endif
                 </form>
 
                 <hr class="my-4 opacity-25">
+
+                @if($type == 'shifts' && $results->count() > 0)
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-3 text-dark">
+                            <i class="mdi mdi-clock-outline me-2 text-primary"></i>Guard Hours Summary Matrix
+                        </h5>
+                        <div class="table-responsive shadow-sm rounded border">
+                            <table class="table table-bordered table-striped align-middle mb-0" style="background-color: #fff;">
+                                <thead>
+                                    <tr>
+                                        <th style="background-color: #ffd966 !important; --bs-table-bg: #ffd966 !important; color: #000 !important; font-weight: 700; width: 220px; border: none !important; box-shadow: none !important;" class="align-middle text-dark">Guard names</th>
+                                        <th class="text-center align-middle bg-primary text-white" style="font-weight: 700; width: 100px; border: none !important; --bs-table-bg: var(--bs-primary) !important;">Sites</th>
+                                        @foreach($reportSites as $s)
+                                            <th class="text-center align-middle fw-bold bg-primary text-white" style="border: none !important; --bs-table-bg: var(--bs-primary) !important;">{{ $s->name }}</th>
+                                        @endforeach
+                                        <th class="text-center align-middle fw-bold bg-primary text-white" style="width: 120px; border: none !important; --bs-table-bg: var(--bs-primary) !important;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($reportUsers as $u)
+                                        <tr>
+                                            <td style="background-color: #ffd966 !important; --bs-table-bg: #ffd966 !important; color: #000 !important; font-weight: 700; box-shadow: none !important;">{{ $u->name }}</td>
+                                            <td class="text-center text-muted">-</td>
+                                            @foreach($reportSites as $s)
+                                                @php
+                                                    $hours = $matrix[$u->id][$s->id] ?? 0;
+                                                @endphp
+                                                <td class="text-center fw-medium">
+                                                    @if($hours > 0)
+                                                        <span class="badge bg-light text-dark border font-size-13 px-2 py-1">{{ number_format($hours, 1) }}</span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                            @endforeach
+                                            <td class="text-center fw-bold bg-light-subtle">
+                                                <span class="badge bg-secondary-subtle text-secondary font-size-13 px-2 py-1">{{ number_format($userTotals[$u->id] ?? 0, 1) }}</span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="fw-bold table-light">
+                                        <td style="background-color: #ffd966 !important; --bs-table-bg: #ffd966 !important; border: none !important; box-shadow: none !important;"></td>
+                                        <td class="text-center text-dark align-middle">Total</td>
+                                        @foreach($reportSites as $s)
+                                            <td class="text-center align-middle">
+                                                <span class="badge bg-danger-subtle text-danger font-size-13 px-2 py-1">{{ number_format($siteTotals[$s->id] ?? 0, 1) }}</span>
+                                            </td>
+                                        @endforeach
+                                        <td class="text-center align-middle text-primary fw-bold" style="background-color: #f1f3f9;">
+                                            <span class="badge bg-primary text-white font-size-13 px-2 py-1">{{ number_format($grandTotal, 1) }}</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4 opacity-25">
+                @endif
 
                 <div class="table-responsive">
                     <table id="custom-table" class="table align-middle table-nowrap mb-0">
@@ -151,6 +257,17 @@
                                     <th>Phone</th>
                                     <th>Joined At</th>
                                     <th>Status</th>
+                                </tr>
+                            @elseif($type == 'shifts')
+                                <tr>
+                                    <th>#</th>
+                                    <th>Employee</th>
+                                    <th>Site</th>
+                                    <th>Company</th>
+                                    <th>Shift Name</th>
+                                    <th>Date</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
                                 </tr>
                             @endif
                         </thead>
@@ -222,10 +339,25 @@
                                             </span>
                                         </td>
                                     </tr>
+                                @elseif($type == 'shifts')
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td class="fw-bold">{{ $item->schedule->user->name ?? 'N/A' }}</td>
+                                        <td>{{ $item->site->name ?? 'N/A' }}</td>
+                                        <td>{{ $item->site->company->name ?? 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1">
+                                                {{ $item->shift_name ?: 'Regular Shift' }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $item->date ? date('M d, Y', strtotime($item->date)) : 'N/A' }}</td>
+                                        <td>{{ $item->start_time ? date('h:i A', strtotime($item->start_time)) : 'N/A' }}</td>
+                                        <td>{{ $item->end_time ? date('h:i A', strtotime($item->end_time)) : 'N/A' }}</td>
+                                    </tr>
                                 @endif
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-5">
+                                    <td colspan="{{ $type == 'shifts' ? 8 : 7 }}" class="text-center py-5">
                                         <div class="text-muted">
                                             <i class="mdi mdi-alert-circle-outline font-size-24 d-block mb-3"></i>
                                             <h5>No records found for this criteria.</h5>
@@ -263,6 +395,17 @@
 </style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+            jQuery('.select2-single-dropdown').select2({
+                placeholder: "Select Employee",
+                allowClear: true
+            });
+            jQuery('.select2-multiple-dropdown').select2({
+                placeholder: "Select Sites",
+                allowClear: true
+            });
+        }
+
         const exportBtn = document.getElementById('exportCsv');
         if (exportBtn) {
             exportBtn.addEventListener('click', function() {
