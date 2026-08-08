@@ -46,6 +46,10 @@ class ShiftRepository
             $start = Carbon::parse($shift->start_time);
             $end = Carbon::parse($shift->end_time);
 
+            if ($end->lt($start)) {
+                $end->addDay();
+            }
+
             $minutes = $start->diffInMinutes($end);
             $totalMinutes += $minutes;
 
@@ -105,7 +109,10 @@ class ShiftRepository
         $today = $date ?: Carbon::now()->toDateString();
         $currentTime = $time ?: Carbon::now()->toTimeString();
 
-        $shift = Shift::with([
+        $yesterday = Carbon::parse($today)->subDay()->toDateString();
+        $tomorrow = Carbon::parse($today)->addDay()->toDateString();
+
+        $shifts = Shift::with([
             'schedule.user',
             'site.company',
             'attendances' => function ($query) use ($userId) {
@@ -115,41 +122,65 @@ class ShiftRepository
             ->whereHas('schedule', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
-            ->where('date', $today)
-            ->where('end_time', '>', $currentTime)
-            ->orderBy('end_time', 'asc')
-            ->first();
+            ->whereIn('date', [$yesterday, $today, $tomorrow])
+            ->get();
 
-        if ($shift) {
+        $currentDateTime = Carbon::parse("$today $currentTime");
+
+        // Map shifts to include real start/end datetimes
+        $mappedShifts = $shifts->map(function ($shift) {
+            $startDt = Carbon::parse($shift->date . ' ' . $shift->start_time);
+            $endDt = Carbon::parse($shift->date . ' ' . $shift->end_time);
+            if ($endDt->lt($startDt)) {
+                $endDt->addDay();
+            }
+            $shift->start_datetime = $startDt;
+            $shift->end_datetime = $endDt;
+            return $shift;
+        });
+
+        // 1. Look for currently active shift
+        $activeShift = $mappedShifts->first(function ($shift) use ($currentDateTime) {
+            return $currentDateTime->between($shift->start_datetime, $shift->end_datetime);
+        });
+
+        // 2. If no active shift, look for the next upcoming shift
+        if (!$activeShift) {
+            $activeShift = $mappedShifts
+                ->filter(function ($shift) use ($currentDateTime) {
+                    return $shift->start_datetime->gt($currentDateTime);
+                })
+                ->sortBy('start_datetime')
+                ->first();
+        }
+
+        if ($activeShift) {
             // Shift Duration Calculation
-            $start = Carbon::parse($shift->start_time);
-            $end = Carbon::parse($shift->end_time);
-
-            $minutes = $start->diffInMinutes($end);
+            $minutes = $activeShift->start_datetime->diffInMinutes($activeShift->end_datetime);
 
             $hours = floor($minutes / 60);
             $remainingMinutes = $minutes % 60;
 
-            $shift->duration = "{$hours}h {$remainingMinutes}m";
+            $activeShift->duration = "{$hours}h {$remainingMinutes}m";
 
             // Attendance Logic
-            $attendance = $shift->attendances->first();
-            $shift->checked_in = $attendance ? true : false;
-            $shift->checked_out = ($attendance && $attendance->clock_out_at) ? true : false;
+            $attendance = $activeShift->attendances->first();
+            $activeShift->checked_in = $attendance ? true : false;
+            $activeShift->checked_out = ($attendance && $attendance->clock_out_at) ? true : false;
 
-            if (!$shift->checked_in) {
-                $shift->Next = "Check In";
-            } elseif (!$shift->checked_out) {
-                $shift->Next = "Check Out";
+            if (!$activeShift->checked_in) {
+                $activeShift->Next = "Check In";
+            } elseif (!$activeShift->checked_out) {
+                $activeShift->Next = "Check Out";
             } else {
-                $shift->Next = "Completed";
+                $activeShift->Next = "Completed";
             }
 
-            $shift->attendance = $attendance;
-            unset($shift->attendances);
+            $activeShift->attendance = $attendance;
+            unset($activeShift->attendances);
         }
 
-        return $shift;
+        return $activeShift;
     }
 
     public function getShiftData($id)

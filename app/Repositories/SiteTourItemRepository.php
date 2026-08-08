@@ -13,9 +13,27 @@ class SiteTourItemRepository
             ->with(['site.nfcTags', 'siteTour']);
             
         if ($start_date && $end_date) {
-            $query->whereBetween('date', [$start_date, $end_date]);
+            $yesterday = \Carbon\Carbon::parse($start_date)->subDay()->toDateString();
+            $query->where(function ($q) use ($start_date, $end_date, $yesterday) {
+                $q->whereBetween('date', [$start_date, $end_date])
+                  ->orWhere(function ($sub) use ($yesterday) {
+                      $sub->where('date', $yesterday)
+                          ->whereHas('siteTour.shift', function ($shiftQuery) {
+                              $shiftQuery->whereColumn('end_time', '<', 'start_time');
+                          });
+                  });
+            });
         } elseif ($start_date) {
-            $query->where('date', '>=', $start_date);
+            $yesterday = \Carbon\Carbon::parse($start_date)->subDay()->toDateString();
+            $query->where(function ($q) use ($start_date, $yesterday) {
+                $q->where('date', '>=', $start_date)
+                  ->orWhere(function ($sub) use ($yesterday) {
+                      $sub->where('date', $yesterday)
+                          ->whereHas('siteTour.shift', function ($shiftQuery) {
+                              $shiftQuery->whereColumn('end_time', '<', 'start_time');
+                          });
+                  });
+            });
         } elseif ($end_date) {
             $query->where('date', '<=', $end_date);
         }
