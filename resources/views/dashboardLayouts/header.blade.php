@@ -160,14 +160,14 @@
                             </a>
                         </li>
                         @endif
-                        @if(Auth::user()->hasAdminPermission('nfc', 'list'))
+                        <!-- @if(Auth::user()->hasAdminPermission('nfc', 'list'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{ route('nfc.index') }}">
                                 <i class="icon nav-icon" data-feather="rss"></i>
                                 <span>NFC Tags</span>
                             </a>
                         </li>
-                        @endif
+                        @endif -->
                         @if(Auth::user()->hasAdminPermission('schedules', 'list'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{ route('schedules.index') }}">
