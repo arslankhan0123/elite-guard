@@ -176,6 +176,14 @@
                             </a>
                         </li>
                         @endif
+                        @if(Auth::user()->hasAdminPermission('dispatches', 'list'))
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{ route('dispatches.index') }}">
+                                <i class="icon nav-icon" data-feather="send"></i>
+                                <span>Dispatch</span>
+                            </a>
+                        </li>
+                        @endif
                         <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('nfc.index')}}" id="topnav-nfc"
                                 role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

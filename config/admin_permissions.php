@@ -24,5 +24,6 @@ return [
         'numbers' => 'Numbers',
         'notice-board' => 'Notice Board',
         'post-esc' => 'Post & ESC',
+        'dispatches' => 'Dispatch Tasks',
     ],
 ];
