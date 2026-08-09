@@ -16,8 +16,12 @@
         <div class="d-flex justify-content-between align-items-center">
             <a href="{{ route('dispatches.index') }}" class="btn btn-light rounded-pill"><i class="mdi mdi-arrow-left me-1"></i> Back to Directory</a>
             <div class="d-flex gap-2">
+                @if(Auth::user()->hasAdminPermission('dispatches', 'update'))
                 <a href="{{ route('dispatches.edit', $dispatch->id) }}" class="btn btn-primary rounded-pill px-4"><i class="mdi mdi-pencil me-1"></i> Edit Details</a>
+                @endif
+                @if(Auth::user()->hasAdminPermission('dispatches', 'delete'))
                 <a href="{{ route('dispatches.delete', $dispatch->id) }}" class="btn btn-outline-danger rounded-pill" onclick="return confirm('Are you sure you want to delete this dispatch record?')"><i class="mdi mdi-trash-can-outline me-1"></i> Delete</a>
+                @endif
             </div>
         </div>
     </div>
@@ -144,21 +148,23 @@
                     <span class="badge bg-light text-dark px-2 py-1 mt-1">{{ $dispatch->caller_type }}</span>
                 </div>
 
-                <!-- Assigned Guard -->
+                <!-- Assigned Guards -->
                 <div class="border-top pt-3">
-                    <span class="text-muted small fw-bold text-uppercase d-block mb-1">Assigned Security Guard</span>
-                    @if($dispatch->assignedGuard)
-                        <div class="d-flex align-items-center mt-2">
-                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 38px; height: 38px; font-size: 0.9rem;">
-                                {{ strtoupper(substr($dispatch->assignedGuard->name, 0, 2)) }}
+                    <span class="text-muted small fw-bold text-uppercase d-block mb-1">Assigned Security Guards</span>
+                    @if($dispatch->assigned_guards && $dispatch->assigned_guards->isNotEmpty())
+                        @foreach($dispatch->assigned_guards as $guard)
+                            <div class="d-flex align-items-center mt-2 pb-2 border-bottom border-light">
+                                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 38px; height: 38px; font-size: 0.9rem;">
+                                    {{ strtoupper(substr($guard->name, 0, 2)) }}
+                                </div>
+                                <div>
+                                    <span class="text-dark fw-bold d-block">{{ $guard->name }}</span>
+                                    <small class="text-muted">{{ $guard->email }}</small>
+                                </div>
                             </div>
-                            <div>
-                                <span class="text-dark fw-bold d-block">{{ $dispatch->assignedGuard->name }}</span>
-                                <small class="text-muted">{{ $dispatch->assignedGuard->email }}</small>
-                            </div>
-                        </div>
+                        @endforeach
                     @else
-                        <span class="text-muted fst-italic d-block py-2"><i class="mdi mdi-account-question-outline me-1"></i>No guard assigned yet.</span>
+                        <span class="text-muted fst-italic d-block py-2"><i class="mdi mdi-account-question-outline me-1"></i>No guards assigned yet.</span>
                     @endif
                 </div>
             </div>

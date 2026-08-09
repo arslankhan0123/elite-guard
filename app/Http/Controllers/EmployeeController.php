@@ -175,8 +175,12 @@ class EmployeeController extends Controller
 
             // Send welcome email with credentials if toggle is on
             if ($request->has('send_email') && $request->send_email == '1') {
-                Mail::to($user->email)->send(new EmployeeWelcomeMail($user, $plainPassword));
-                $isEmailSent = true;
+                try {
+                    Mail::to($user->email)->send(new EmployeeWelcomeMail($user, $plainPassword));
+                    $isEmailSent = true;
+                } catch (\Exception $e) {
+                    logger()->error('Failed to send welcome email: ' . $e->getMessage());
+                }
             }
 
             // Keep the legacy Employee record for compatibility
@@ -357,8 +361,12 @@ class EmployeeController extends Controller
 
             // Send welcome email with credentials if toggle is on
             if ($request->has('send_email') && $request->send_email == '1') {
-                Mail::to($user->email)->send(new EmployeeWelcomeMail($user, $plainPassword));
-                $isEmailSent = true;
+                try {
+                    Mail::to($user->email)->send(new EmployeeWelcomeMail($user, $plainPassword));
+                    $isEmailSent = true;
+                } catch (\Exception $e) {
+                    logger()->error('Failed to send welcome email on update: ' . $e->getMessage());
+                }
             }
 
             // Update is_email_sent on the employee record
@@ -439,8 +447,12 @@ class EmployeeController extends Controller
         if ($request->has('send_email') && $request->send_email == '1') {
             $user = User::find($request->user_id);
             if ($user && $user->email) {
-                Mail::to($user->email)->send(new OfferLetterMail($user, $offer));
-                $isEmailSent = true;
+                try {
+                    Mail::to($user->email)->send(new OfferLetterMail($user, $offer));
+                    $isEmailSent = true;
+                } catch (\Exception $e) {
+                    logger()->error('Failed to send offer letter email: ' . $e->getMessage());
+                }
             }
         }
 

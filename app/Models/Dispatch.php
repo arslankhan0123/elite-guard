@@ -10,7 +10,7 @@ class Dispatch extends Model
     protected $fillable = [
         'company_id',
         'site_id',
-        'assigned_guard_id',
+        'assigned_guard_ids',
         'priority',
         'caller_type',
         'caller_name',
@@ -25,6 +25,13 @@ class Dispatch extends Model
         'status',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'assigned_guard_ids' => 'array',
+        ];
+    }
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
@@ -35,8 +42,12 @@ class Dispatch extends Model
         return $this->belongsTo(Site::class);
     }
 
-    public function assignedGuard(): BelongsTo
+    public function getAssignedGuardsAttribute()
     {
-        return $this->belongsTo(User::class, 'assigned_guard_id');
+        $ids = $this->assigned_guard_ids;
+        if (empty($ids) || !is_array($ids)) {
+            return collect();
+        }
+        return User::whereIn('id', $ids)->get();
     }
 }

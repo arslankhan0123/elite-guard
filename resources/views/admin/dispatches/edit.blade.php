@@ -65,14 +65,17 @@
                             @enderror
                         </div>
                         <div class="col-md-4">
-                            <label for="assigned_guard_id" class="form-label fw-semibold text-secondary">Assign Guard</label>
-                            <select name="assigned_guard_id" id="assigned_guard_id" class="form-select @error('assigned_guard_id') is-invalid @enderror">
-                                <option value="">Select Guard</option>
+                            <label for="assigned_guard_ids" class="form-label fw-semibold text-secondary">Assign Guards</label>
+                            <select name="assigned_guard_ids[]" id="assigned_guard_ids" class="form-select @error('assigned_guard_ids') is-invalid @enderror" multiple="multiple" data-placeholder="Select Guards">
+                                @php
+                                    $selectedGuards = old('assigned_guard_ids', $dispatch->assigned_guard_ids ?? []);
+                                    $selectedGuards = is_array($selectedGuards) ? $selectedGuards : [];
+                                @endphp
                                 @foreach($guards as $guard)
-                                    <option value="{{ $guard->id }}" {{ old('assigned_guard_id', $dispatch->assigned_guard_id) == $guard->id ? 'selected' : '' }}>{{ $guard->name }}</option>
+                                    <option value="{{ $guard->id }}" {{ in_array($guard->id, $selectedGuards) ? 'selected' : '' }}>{{ $guard->name }}</option>
                                 @endforeach
                             </select>
-                            @error('assigned_guard_id')
+                            @error('assigned_guard_ids')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -205,6 +208,13 @@
 </div>
 
 <script>
+    $(document).ready(function() {
+        $('#assigned_guard_ids').select2({
+            placeholder: "Select Guards",
+            allowClear: true
+        });
+    });
+
     // Simple filter to show only sites belonging to the selected client/company
     document.getElementById('company_id').addEventListener('change', function() {
         var companyId = this.value;

@@ -54,6 +54,7 @@ class IsSuperAdmin
             str_starts_with($routeName, 'numbers.') => 'numbers',
             str_starts_with($routeName, 'notice-board.') => 'notice-board',
             str_starts_with($routeName, 'post-esc.') => 'post-esc',
+            str_starts_with($routeName, 'dispatches.') => 'dispatches',
             default => null,
         };
 

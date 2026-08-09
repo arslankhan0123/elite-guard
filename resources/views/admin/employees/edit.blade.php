@@ -125,7 +125,7 @@
                     <button class="nav-link" id="part4-tab" data-bs-toggle="tab" data-bs-target="#part4" type="button" role="tab"><i data-feather="calendar"></i> Availability</button>
                     <button class="nav-link" id="part5-tab" data-bs-toggle="tab" data-bs-target="#part5" type="button" role="tab"><i data-feather="briefcase"></i> Office Use</button>
                     @if(Auth::user()->role === 'SuperAdmin')
-                    <!-- <button class="nav-link" id="permissions-tab" data-bs-toggle="tab" data-bs-target="#permissions" type="button" role="tab" style="display:none;"><i data-feather="shield"></i> Permissions</button> -->
+                    <button class="nav-link" id="permissions-tab" data-bs-toggle="tab" data-bs-target="#permissions" type="button" role="tab" style="display:none;"><i data-feather="shield"></i> Permissions</button>
                     @endif
                 </div>
 

@@ -85,6 +85,7 @@ class User extends Authenticatable implements JWTSubject
             'orientations' => 'orientations.index', 'pay-slips' => 'pay-slips.index',
             'tax-docs' => 'tax-docs.index', 'numbers' => 'numbers.index',
             'notice-board' => 'notice-board.index', 'post-esc' => 'post-esc.index',
+            'dispatches' => 'dispatches.index',
         ];
 
         return collect($routes)->first(fn ($route, $module) => $this->hasAdminPermission($module, 'list')) ?? 'profile.edit';
