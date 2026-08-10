@@ -79,7 +79,7 @@ class DispatchController extends Controller
 
     public function show($id)
     {
-        $dispatch = Dispatch::with(['company', 'site'])->findOrFail($id);
+        $dispatch = Dispatch::with(['company', 'site', 'submissions.user'])->findOrFail($id);
         return view('admin.dispatches.show', compact('dispatch'));
     }
 

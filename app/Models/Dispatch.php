@@ -50,4 +50,9 @@ class Dispatch extends Model
         }
         return User::whereIn('id', $ids)->get();
     }
+
+    public function submissions()
+    {
+        return $this->hasMany(DispatchSubmission::class);
+    }
 }

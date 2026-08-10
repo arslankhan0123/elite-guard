@@ -55,6 +55,14 @@
                     <h6 class="text-secondary small fw-bold text-uppercase mb-2">Description / Details</h6>
                     <div class="bg-light p-3 rounded-3 text-dark style-scroll border" style="max-height: 250px; overflow-y: auto; white-space: pre-wrap;">{{ $dispatch->incident_details }}</div>
                 </div>
+                @if($dispatch->attachment_path)
+                    <div class="mt-3">
+                        <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Initial Attachment</span>
+                        <a href="{{ \Illuminate\Support\Facades\Storage::url($dispatch->attachment_path) }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="mdi mdi-eye-outline me-1"></i> View Initial Attachment
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -64,7 +72,19 @@
                 <h5 class="fw-bold mb-0 text-white"><i class="mdi mdi-check-decagram-outline me-2"></i>Action Taken</h5>
             </div>
             <div class="card-body p-4">
-                @if($dispatch->action_taken)
+                @if($dispatch->submissions && $dispatch->submissions->isNotEmpty())
+                    @foreach($dispatch->submissions as $submission)
+                        <div class="mb-3 pb-3 border-bottom border-light last-border-0">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-dark"><i class="mdi mdi-account-circle text-primary me-1"></i>{{ $submission->user->name ?? 'Unknown Guard' }}</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted"><i class="mdi mdi-clock-outline me-1"></i>{{ $submission->created_at->format('j M Y, g:i A') }}</small>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-success-subtle bg-opacity-10 border border-success-subtle rounded-3 text-dark" style="white-space: pre-wrap;">{{ $submission->action_taken }}</div>
+                        </div>
+                    @endforeach
+                @elseif($dispatch->action_taken)
                     <div class="p-3 bg-success-subtle bg-opacity-10 border border-success-subtle rounded-3 text-dark" style="white-space: pre-wrap;">{{ $dispatch->action_taken }}</div>
                 @else
                     <p class="text-muted fst-italic py-3 mb-0">No actions recorded yet.</p>
@@ -153,41 +173,31 @@
                     <span class="text-muted small fw-bold text-uppercase d-block mb-1">Assigned Security Guards</span>
                     @if($dispatch->assigned_guards && $dispatch->assigned_guards->isNotEmpty())
                         @foreach($dispatch->assigned_guards as $guard)
-                            <div class="d-flex align-items-center mt-2 pb-2 border-bottom border-light">
-                                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 38px; height: 38px; font-size: 0.9rem;">
-                                    {{ strtoupper(substr($guard->name, 0, 2)) }}
+                            <div class="d-flex align-items-center justify-content-between mt-2 pb-2 border-bottom border-light">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 38px; height: 38px; font-size: 0.9rem;">
+                                        {{ strtoupper(substr($guard->name, 0, 2)) }}
+                                    </div>
+                                    <div>
+                                        <span class="text-dark fw-bold d-block">{{ $guard->name }}</span>
+                                        <small class="text-muted">{{ $guard->email }}</small>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="text-dark fw-bold d-block">{{ $guard->name }}</span>
-                                    <small class="text-muted">{{ $guard->email }}</small>
-                                </div>
+                                @php
+                                    $submission = $dispatch->submissions->firstWhere('user_id', $guard->id);
+                                @endphp
+                                @if($submission && $submission->file_attachment)
+                                    <a href="{{ $submission->file_attachment }}" target="_blank" data-bs-toggle="tooltip" title="View Attachment">
+                                        <button class="view_btn">
+                                        </button>
+                                    </a>
+                                @endif
                             </div>
                         @endforeach
                     @else
                         <span class="text-muted fst-italic d-block py-2"><i class="mdi mdi-account-question-outline me-1"></i>No guards assigned yet.</span>
                     @endif
                 </div>
-            </div>
-        </div>
-
-        <!-- Attachment Card -->
-        <div class="card shadow-sm border-0 rounded-4 mb-4">
-            <div class="card-header bg-info text-white py-3 rounded-top-4">
-                <h5 class="fw-bold mb-0 text-white"><i class="mdi mdi-attachment me-2"></i>Attachment</h5>
-            </div>
-            <div class="card-body p-4">
-                @if($dispatch->attachment_path)
-                    <div class="d-flex flex-column gap-2">
-                        <div class="p-2 bg-light rounded border border-light text-truncate mb-2" style="font-size: 0.85rem;">
-                            <i class="mdi mdi-file-outline me-1 text-primary"></i> {{ basename($dispatch->attachment_path) }}
-                        </div>
-                        <a href="{{ \Illuminate\Support\Facades\Storage::url($dispatch->attachment_path) }}" target="_blank" class="btn btn-outline-info rounded-pill w-100 fw-bold">
-                            <i class="mdi mdi-download me-1"></i> Download / View File
-                        </a>
-                    </div>
-                @else
-                    <p class="text-muted fst-italic text-center mb-0 py-2">No attachments uploaded.</p>
-                @endif
             </div>
         </div>
     </div>

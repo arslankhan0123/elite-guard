@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\TaxDocsApiController;
 use App\Http\Controllers\Api\TimeClockApiController;
 use App\Http\Controllers\Api\TimeClockController;
 use App\Http\Controllers\Api\UserApiController;
+use App\Http\Controllers\Api\DispatchApiController;
 use App\Http\Controllers\CompanyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -94,6 +95,11 @@ Route::middleware('auth:api')->group(function () {
 
     Route::group(['prefix' => '/notice-board'], function () {
         Route::get('/', [NoticeBoardApiController::class, 'index']);
+    });
+
+    Route::group(['prefix' => '/dispatches'], function () {
+        Route::get('/getUserDispatches', [DispatchApiController::class, 'index']);
+        Route::post('/{id}/submit', [DispatchApiController::class, 'submit']);
     });
 
     Route::group(['prefix' => '/post-esc'], function () {
