@@ -186,6 +186,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(RunSheet::class);
     }
 
+    public function siteScans()
+    {
+        return $this->hasMany(SiteScan::class);
+    }
+
     /**
      * Route notifications for the FCM channel.
      *

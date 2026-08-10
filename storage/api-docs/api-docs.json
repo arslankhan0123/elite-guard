@@ -692,6 +692,141 @@
                 ]
             }
         },
+        "/api/dispatches": {
+            "get": {
+                "tags": [
+                    "Dispatch Tasks"
+                ],
+                "summary": "Get active dispatch tasks assigned to the logged-in guard",
+                "operationId": "a8eb81717ca135a934d60f35ee999b21",
+                "responses": {
+                    "200": {
+                        "description": "Assigned dispatch tasks fetched successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Assigned dispatch tasks fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Assigned dispatch tasks fetched successfully."
+                                                },
+                                                "dispatches": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/dispatches/{id}/submit": {
+            "post": {
+                "tags": [
+                    "Dispatch Tasks"
+                ],
+                "summary": "Submit dispatch task report / action taken",
+                "operationId": "9d7669b120c51fbfbf538fe86d84732f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the dispatch task",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "action_taken"
+                                ],
+                                "properties": {
+                                    "action_taken": {
+                                        "type": "string",
+                                        "example": "Secured the premises and notified local authorities."
+                                    },
+                                    "attachment": {
+                                        "description": "Optional file attachment (Max 10MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Dispatch task submitted successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Dispatch task submitted successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Dispatch task not found or not assigned to user"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/documents/upload": {
             "post": {
                 "tags": [
@@ -1286,6 +1421,7 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
+                                    "site_id",
                                     "date",
                                     "time",
                                     "vehicle",
@@ -1295,6 +1431,11 @@
                                     "driver"
                                 ],
                                 "properties": {
+                                    "site_id": {
+                                        "description": "ID of the site associated with the checklist",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
                                     "date": {
                                         "type": "string",
                                         "example": "2026-04-30"
@@ -4781,6 +4922,59 @@
                 ]
             }
         },
+        "/api/sites/scan": {
+            "post": {
+                "tags": [
+                    "Sites"
+                ],
+                "summary": "Record an NFC tag scan against a site",
+                "operationId": "e6d5db613d0e95ffb5eed1c61d2fb6fe",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "site_id",
+                                    "nfc_tag_id"
+                                ],
+                                "properties": {
+                                    "site_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "nfc_tag_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Scan recorded successfully"
+                    },
+                    "403": {
+                        "description": "Site is not assigned to the user"
+                    },
+                    "422": {
+                        "description": "Invalid scan data"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/site-tour-items/user": {
             "get": {
                 "tags": [
@@ -5952,6 +6146,10 @@
         {
             "name": "Company",
             "description": "Company"
+        },
+        {
+            "name": "Dispatch Tasks",
+            "description": "Dispatch Tasks"
         },
         {
             "name": "Documents",

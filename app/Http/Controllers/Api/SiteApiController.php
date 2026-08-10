@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Schedule;
 use App\Models\Site;
+use App\Models\NfcTag;
+use App\Models\SiteScan;
 use App\Repositories\ScheduleRepository;
 use Illuminate\Http\Request;
 use App\Repositories\SiteRepository;
 use App\Traits\ApiResponser;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
 class SiteApiController extends Controller
@@ -91,6 +95,85 @@ class SiteApiController extends Controller
         $data = $this->siteRepo->getUserAssignedSites($user);
 
         return $this->successResponse($data, 'Assigned Sites with Company and NFC Tags fetched.');
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/sites/scan",
+     *     summary="Record an NFC tag scan against a site",
+     *     tags={"Sites"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"site_id", "nfc_tag_id"},
+     *                 @OA\Property(property="site_id", type="integer", example=1),
+     *                 @OA\Property(property="nfc_tag_id", type="integer", example=2),
+     *                 @OA\Property(property="image", type="string", format="binary")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Scan recorded successfully"),
+     *     @OA\Response(response=403, description="Site is not assigned to the user"),
+     *     @OA\Response(response=422, description="Invalid scan data")
+     * )
+     */
+    public function storeScan(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'nfc_tag_id' => ['required', 'integer', 'exists:nfc_tags,id'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:10240'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), $validator->errors(), 422);
+        }
+
+        $user = Auth::user();
+
+        if (!$user->sites()->whereKey($request->integer('site_id'))->exists()) {
+            return $this->errorResponse('This site is not assigned to you.', null, 403);
+        }
+
+        $tagBelongsToSite = NfcTag::whereKey($request->integer('nfc_tag_id'))
+            ->where('site_id', $request->integer('site_id'))
+            ->exists();
+
+        if (!$tagBelongsToSite) {
+            return $this->errorResponse('The selected NFC tag does not belong to this site.', null, 422);
+        }
+
+        $imagePath = null;
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('documents/SiteScans', 'public');
+        }
+
+        try {
+            $scannedAt = Carbon::now();
+
+            $scan = SiteScan::create([
+                'site_id' => $request->integer('site_id'),
+                'nfc_tag_id' => $request->integer('nfc_tag_id'),
+                'user_id' => $user->id,
+                'date' => $scannedAt->toDateString(),
+                'time' => $scannedAt->format('H:i:s'),
+                'image' => $imagePath ? Storage::disk('public')->url($imagePath) : null,
+            ]);
+        } catch (\Throwable $exception) {
+            if ($imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            throw $exception;
+        }
+
+        $scan->load(['site:id,name', 'nfcTag:id,site_id,uid,name', 'user:id,name']);
+
+        return $this->successResponse($scan, 'NFC tag scanned and saved successfully.', 201);
     }
     
 }

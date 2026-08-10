@@ -58,6 +58,7 @@ Route::middleware('auth:api')->group(function () {
     Route::group(['prefix' => '/sites'], function () {
         Route::get('/', [SiteApiController::class, 'index']);
         Route::get('/user', [SiteApiController::class, 'userSites']);
+        Route::post('/scan', [SiteApiController::class, 'storeScan']);
     });
 
     Route::group(['prefix' => '/site-tour-items'], function () {

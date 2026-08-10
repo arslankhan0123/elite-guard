@@ -5,20 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class NfcTag extends Model
+class SiteScan extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'site_id',
-        'uid',
-        'name',
-        'type',
-        'status',
+        'nfc_tag_id',
+        'user_id',
+        'date',
+        'time',
+        'image',
     ];
 
     protected $casts = [
-        'status' => 'boolean',
+        'date' => 'date:Y-m-d',
     ];
 
     public function site()
@@ -26,13 +27,13 @@ class NfcTag extends Model
         return $this->belongsTo(Site::class);
     }
 
-    public function timeClocks()
+    public function nfcTag()
     {
-        return $this->hasMany(TimeClock::class, 'nfc_tag_id');
+        return $this->belongsTo(NfcTag::class);
     }
 
-    public function siteScans()
+    public function user()
     {
-        return $this->hasMany(SiteScan::class);
+        return $this->belongsTo(User::class);
     }
 }
