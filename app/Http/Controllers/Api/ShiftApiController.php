@@ -127,20 +127,6 @@ class ShiftApiController extends Controller
      *     description="Returns the first active shift for today whose end time has not passed yet.",
      *     tags={"Shift"},
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="date",
-     *         in="query",
-     *         required=false,
-     *         description="Client's local date (Y-m-d)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="time",
-     *         in="query",
-     *         required=false,
-     *         description="Client's local time (H:i:s)",
-     *         @OA\Schema(type="string")
-     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
@@ -156,12 +142,9 @@ class ShiftApiController extends Controller
      *     )
      * )
      */
-    public function activeShift(Request $request)
+    public function activeShift()
     {
-        $date = $request->query('date');
-        $time = $request->query('time');
-
-        $shift = $this->shiftRepo->getActiveShift($date, $time);
+        $shift = $this->shiftRepo->getActiveShift();
 
         if (!$shift) {
             return $this->successResponse(null, 'No active shift found.');
