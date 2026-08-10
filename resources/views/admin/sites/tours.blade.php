@@ -847,9 +847,8 @@
                     dateFilter.append(new Option(displayDate, d));
                 });
                 
-                // Get local today string in YYYY-MM-DD
-                var now = new Date();
-                var today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                // Use the server date in APP_TIMEZONE, not the browser's local timezone.
+                var today = @json(\Carbon\Carbon::now(config('app.timezone', 'UTC'))->toDateString());
                 
                 var defaultDate = uniqueDates.includes(today) ? today : uniqueDates[0];
                 

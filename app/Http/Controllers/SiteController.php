@@ -115,11 +115,15 @@ class SiteController extends Controller
             'shift_name' => 'nullable|string|max:255',
         ]);
 
+        $timezone = config('app.timezone', 'UTC');
+        $today = \Carbon\Carbon::now($timezone)->toDateString();
         $startDate = \Carbon\Carbon::parse(
-            $request->input('start_date') ?: $request->input('end_date') ?: now()->toDateString()
+            $request->input('start_date') ?: $request->input('end_date') ?: $today,
+            $timezone
         )->startOfDay();
         $endDate = \Carbon\Carbon::parse(
-            $request->input('end_date') ?: $request->input('start_date') ?: now()->toDateString()
+            $request->input('end_date') ?: $request->input('start_date') ?: $today,
+            $timezone
         )->endOfDay();
 
         if ($endDate->lt($startDate)) {
@@ -187,11 +191,15 @@ class SiteController extends Controller
             'shift_name' => 'nullable|string|max:255',
         ]);
 
+        $timezone = config('app.timezone', 'UTC');
+        $today = \Carbon\Carbon::now($timezone)->toDateString();
         $startDate = \Carbon\Carbon::parse(
-            $request->input('start_date') ?: $request->input('end_date') ?: now()->toDateString()
+            $request->input('start_date') ?: $request->input('end_date') ?: $today,
+            $timezone
         )->startOfDay();
         $endDate = \Carbon\Carbon::parse(
-            $request->input('end_date') ?: $request->input('start_date') ?: now()->toDateString()
+            $request->input('end_date') ?: $request->input('start_date') ?: $today,
+            $timezone
         )->endOfDay();
 
         if ($endDate->lt($startDate)) {

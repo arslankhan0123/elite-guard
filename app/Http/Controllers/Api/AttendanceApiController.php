@@ -3,14 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Shift;
 use App\Repositories\AttendanceRepository;
 use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Traits\CommonTrait;
 
 class AttendanceApiController extends Controller
 {
-    use ApiResponser;
+    use ApiResponser, CommonTrait;
 
     protected $attendanceRepo;
 
@@ -61,14 +65,29 @@ class AttendanceApiController extends Controller
             ], 401);
         }
 
-        $result = $this->attendanceRepo->clockIn(
-            $request->shift_id,
-            $request->latitude,
-            $request->longitude
-        );
+        DB::beginTransaction();
 
-        if (!$result['status']) {
-            return $this->errorResponse($result['message'], $result, 422);
+        try {
+            $result = $this->attendanceRepo->clockIn(
+                $request->shift_id,
+                $request->latitude,
+                $request->longitude
+            );
+
+            if (!$result['status']) {
+                DB::rollBack();
+
+                return $this->errorResponse($result['message'], $result, 422);
+            }
+
+            $shift = Shift::with('site.nfcTags')->findOrFail($request->shift_id);
+            $this->syncSiteTourForShift($shift, (int) Auth::id());
+
+            DB::commit();
+        } catch (\Throwable $exception) {
+            DB::rollBack();
+
+            throw $exception;
         }
 
         return $this->successResponse($result['data'], $result['message']);

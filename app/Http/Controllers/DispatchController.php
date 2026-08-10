@@ -13,7 +13,7 @@ class DispatchController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Dispatch::with(['company', 'site', 'assignedGuard']);
+        $query = Dispatch::with(['company', 'site']);
 
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
@@ -51,7 +51,8 @@ class DispatchController extends Controller
         $request->validate([
             'company_id' => 'required|exists:companies,id',
             'site_id' => 'required|exists:sites,id',
-            'assigned_guard_id' => 'nullable|exists:users,id',
+            'assigned_guard_ids' => 'nullable|array',
+            'assigned_guard_ids.*' => 'exists:users,id',
             'priority' => 'required|in:Low,Medium,High,Emergency',
             'caller_type' => 'required|in:Client,Guard,Emergency Services,Other',
             'caller_name' => 'required|string|max:255',
@@ -78,7 +79,7 @@ class DispatchController extends Controller
 
     public function show($id)
     {
-        $dispatch = Dispatch::with(['company', 'site', 'assignedGuard'])->findOrFail($id);
+        $dispatch = Dispatch::with(['company', 'site', 'submissions.user'])->findOrFail($id);
         return view('admin.dispatches.show', compact('dispatch'));
     }
 
@@ -99,7 +100,8 @@ class DispatchController extends Controller
         $request->validate([
             'company_id' => 'required|exists:companies,id',
             'site_id' => 'required|exists:sites,id',
-            'assigned_guard_id' => 'nullable|exists:users,id',
+            'assigned_guard_ids' => 'nullable|array',
+            'assigned_guard_ids.*' => 'exists:users,id',
             'priority' => 'required|in:Low,Medium,High,Emergency',
             'caller_type' => 'required|in:Client,Guard,Emergency Services,Other',
             'caller_name' => 'required|string|max:255',

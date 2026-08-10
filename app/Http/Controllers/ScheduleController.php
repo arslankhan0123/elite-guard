@@ -179,7 +179,9 @@ class ScheduleController extends Controller
                     $assignedSiteIds->put((int) $shift->site_id, true);
                 }
 
-                $this->syncSiteTourForShift($shift, (int) $request->user_id);
+                // Automatic site-tour creation is intentionally disabled.
+                // Keep this call for possible future use; shifts are still created normally.
+                // $this->syncSiteTourForShift($shift, (int) $request->user_id);
             }
 
             DB::commit();

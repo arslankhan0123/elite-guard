@@ -2,9 +2,12 @@
 
 namespace App\Traits;
 
+use App\Models\Shift;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Site;
+use App\Models\SiteTour;
+use App\Models\SiteTourItem;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -114,5 +117,100 @@ trait CommonTrait
         $sites = $user->sites()->get();
         
         return $sites;
+    }
+
+    private function syncSiteTourForShift(Shift $shift, int $userId): void
+    {
+        $site = $shift->site;
+
+        if (!$site || !$shift->date) {
+            return;
+        }
+
+        $interval = (int) $site->interval;
+        $tour = SiteTour::updateOrCreate(
+            ['shift_id' => $shift->id],
+            [
+                'site_id' => $shift->site_id,
+                'user_id' => $userId,
+                'name' => $shift->shift_name ?: 'Regular Shift',
+                'description' => 'This is the site tour for shift: ' . ($shift->shift_name ?: 'Regular Shift') . '.',
+                'scheduled_days' => [Carbon::parse($shift->date)->format('l')],
+                'is_continuous' => false,
+                'schedule_type' => 'Repeat',
+                'specific_times' => [],
+                'max_duration' => [],
+                'tag_type' => 'nfc',
+                'tags' => $site->nfcTags->pluck('id')->values()->all(),
+                'assigned_guards' => [$userId],
+                'interval' => $interval,
+                'open_time' => (int) $site->open_time,
+                'grace_time' => (int) $site->grace_time,
+            ]
+        );
+
+        $intendedItems = [];
+
+        if ($interval > 0 && $shift->start_time && $shift->end_time) {
+            $startTime = Carbon::parse($shift->start_time);
+            $endTime = Carbon::parse($shift->end_time);
+
+            if ($endTime->lt($startTime)) {
+                $endTime->addDay();
+            }
+
+            $itemNumber = 1;
+
+            while ($startTime->copy()->addMinutes(($itemNumber - 1) * $interval)->lt($endTime)) {
+                $itemStart = $startTime->copy()->addMinutes(($itemNumber - 1) * $interval);
+
+                if ($itemNumber > 1) {
+                    $itemStart->addMinute();
+                }
+
+                $itemEnd = $startTime->copy()->addMinutes($itemNumber * $interval);
+
+                if ($itemEnd->gt($endTime)) {
+                    $itemEnd = $endTime->copy();
+                }
+
+                if ($itemStart->lt($itemEnd)) {
+                    $key = $itemStart->format('H:i:s') . '|' . $itemEnd->format('H:i:s');
+                    $intendedItems[$key] = [
+                        'site_tour_id' => $tour->id,
+                        'user_id' => $userId,
+                        'site_id' => $shift->site_id,
+                        'type' => null,
+                        'status' => false,
+                        'date' => Carbon::parse($shift->date)->format('Y-m-d'),
+                        'start_time' => $itemStart->format('H:i:s'),
+                        'end_time' => $itemEnd->format('H:i:s'),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+
+                $itemNumber++;
+            }
+        }
+
+        foreach ($tour->items()->get() as $existingItem) {
+            $key = Carbon::parse($existingItem->start_time)->format('H:i:s')
+                . '|' . Carbon::parse($existingItem->end_time)->format('H:i:s');
+
+            if (
+                isset($intendedItems[$key])
+                && $existingItem->date?->format('Y-m-d') === Carbon::parse($shift->date)->format('Y-m-d')
+                && (int) $existingItem->site_id === (int) $shift->site_id
+            ) {
+                unset($intendedItems[$key]);
+            } else {
+                $existingItem->delete();
+            }
+        }
+
+        if ($intendedItems) {
+            SiteTourItem::insert(array_values($intendedItems));
+        }
     }
 }

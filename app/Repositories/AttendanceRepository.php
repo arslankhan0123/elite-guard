@@ -6,7 +6,6 @@ use App\Models\Shift;
 use App\Models\ShiftAttendance;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 
 class AttendanceRepository
 {
@@ -41,12 +40,12 @@ class AttendanceRepository
         $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time, $timezone);
         $earliestAllowed = $startTime->copy()->subMinutes(30);
 
-        if ($now->lt($earliestAllowed)) {
-            return [
-                'status' => false,
-                'message' => 'You can only clock in starting from 30 minutes before the shift start time (' . $shift->start_time . ').'
-            ];
-        }
+        // if ($now->lt($earliestAllowed)) {
+        //     return [
+        //         'status' => false,
+        //         'message' => 'You can only clock in starting from 30 minutes before the shift start time (' . $shift->start_time . ').'
+        //     ];
+        // }
 
         // Verify if user is assigned to this shift
         // Assuming shift -> schedule -> user relationship
@@ -68,13 +67,13 @@ class AttendanceRepository
 
         $distance = $this->calculateDistance($lat, $long, $site->latitude, $site->longitude);
 
-        if ($distance > 100) { // 100 meters
-            return [
-                'status' => false,
-                'message' => 'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
-                'distance' => $distance
-            ];
-        }
+        // if ($distance > 100) { // 100 meters
+        //     return [
+        //         'status' => false,
+        //         'message' => 'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
+        //         'distance' => $distance
+        //     ];
+        // }
 
         // Check if already clocked in
         $existing = ShiftAttendance::where('shift_id', $shiftId)
@@ -130,13 +129,13 @@ class AttendanceRepository
 
         $distance = $this->calculateDistance($lat, $long, $site->latitude, $site->longitude);
 
-        if ($distance > 100) {
-            return [
-                'status' => false,
-                'message' => 'You are too far from the site to clock out. Distance: ' . round($distance, 2) . 'm',
-                'distance' => $distance
-            ];
-        }
+        // if ($distance > 100) {
+        //     return [
+        //         'status' => false,
+        //         'message' => 'You are too far from the site to clock out. Distance: ' . round($distance, 2) . 'm',
+        //         'distance' => $distance
+        //     ];
+        // }
 
         $attendance->update([
             'clock_out_at' => Carbon::now($this->getUserTimezone()),
@@ -258,24 +257,6 @@ class AttendanceRepository
      */
     private function getUserTimezone()
     {
-        try {
-            $ip = request()->ip();
-
-            // Handle local development
-            if ($ip === '127.0.0.1' || $ip === '::1') {
-                return 'Asia/Karachi'; 
-            }
-
-            // Using free IP-API service
-            $response = Http::timeout(3)->get("http://ip-api.com/json/{$ip}?fields=timezone");
-            
-            if ($response->successful()) {
-                return $response->json('timezone') ?? config('app.timezone', 'UTC');
-            }
-            
-            return config('app.timezone', 'UTC');
-        } catch (\Exception $e) {
-            return config('app.timezone', 'UTC');
-        }
+        return config('app.timezone', 'UTC');
     }
 }

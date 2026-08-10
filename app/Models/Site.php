@@ -60,4 +60,9 @@ class Site extends Model
     {
         return $this->hasMany(SiteTour::class);
     }
+
+    public function scans()
+    {
+        return $this->hasMany(SiteScan::class);
+    }
 }

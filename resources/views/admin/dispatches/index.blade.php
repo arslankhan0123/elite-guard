@@ -14,9 +14,11 @@
         <div class="card shadow-sm border-0 rounded-4">
             <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0 fw-bold text-dark"><i class="mdi mdi-send text-primary me-2"></i>Dispatch Log</h4>
+                @if(Auth::user()->hasAdminPermission('dispatches', 'create'))
                 <a href="{{ route('dispatches.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
                     <i class="mdi mdi-plus-circle me-1"></i> New Dispatch
                 </a>
+                @endif
             </div>
             <div class="card-body">
                 <!-- Search & Filters -->
@@ -56,6 +58,12 @@
                     </div>
                 @endif
 
+                @php
+                    $hasAnyAction = Auth::user()->hasAdminPermission('dispatches', 'view') || 
+                                    Auth::user()->hasAdminPermission('dispatches', 'update') || 
+                                    Auth::user()->hasAdminPermission('dispatches', 'delete');
+                @endphp
+
                 <div class="table-responsive">                   
                     <table id="custom-table" class="table table-striped table-bordered align-middle">
                         <thead>
@@ -68,7 +76,9 @@
                                 <th>Assigned Guard</th>
                                 <th>Priority</th>
                                 <th>Status</th>
+                                @if($hasAnyAction)
                                 <th>Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -89,8 +99,10 @@
                                 </td>
                                 <td><span class="fw-semibold text-dark">{{ $dispatch->incident_type }}</span></td>
                                 <td>
-                                    @if($dispatch->assignedGuard)
-                                        <span class="text-dark fw-bold"><i class="mdi mdi-account text-secondary me-1"></i>{{ $dispatch->assignedGuard->name }}</span>
+                                    @if($dispatch->assigned_guards && $dispatch->assigned_guards->isNotEmpty())
+                                        @foreach($dispatch->assigned_guards as $guard)
+                                            <span class="d-block text-dark fw-bold mb-1"><i class="mdi mdi-account text-secondary me-1"></i>{{ $guard->name }}</span>
+                                        @endforeach
                                     @else
                                         <span class="text-muted fst-italic">Unassigned</span>
                                     @endif
@@ -119,12 +131,16 @@
                                     @endphp
                                     <span class="badge {{ $sBadge }} px-2 py-1 rounded-pill">{{ $dispatch->status }}</span>
                                 </td>
+                                @if($hasAnyAction)
                                 <td>
                                     <div class="btn-group" role="group" aria-label="Dispatch Actions">
+                                        @if(Auth::user()->hasAdminPermission('dispatches', 'view'))
                                         <a class="text-decoration-none text-dark" href="{{ route('dispatches.show', $dispatch->id) }}" data-bs-toggle="tooltip" title="View Details">
                                             <button class="view_btn me-2">
                                             </button>
                                         </a>
+                                        @endif
+                                        @if(Auth::user()->hasAdminPermission('dispatches', 'update'))
                                         <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('dispatches.edit', $dispatch->id) }}" data-bs-toggle="tooltip" title="Edit Dispatch">
                                             <button class="editBtn">
                                                 <svg height="1em" viewBox="0 0 512 512">
@@ -132,6 +148,8 @@
                                                 </svg>
                                             </button>
                                         </a>
+                                        @endif
+                                        @if(Auth::user()->hasAdminPermission('dispatches', 'delete'))
                                         <a href="{{ route('dispatches.delete', $dispatch->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Dispatch" onclick="return confirm('Are you sure you want to delete this dispatch record?')">
                                             <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
@@ -146,12 +164,14 @@
                                                 <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                             </svg>
                                         </a>
+                                        @endif
                                     </div>
                                 </td>
+                                @endif
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="9" class="text-center text-muted py-4">No dispatch logs found.</td>
+                                <td colspan="{{ $hasAnyAction ? 9 : 8 }}" class="text-center text-muted py-4">No dispatch logs found.</td>
                             </tr>
                             @endforelse
                         </tbody>
