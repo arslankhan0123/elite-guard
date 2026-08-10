@@ -169,12 +169,12 @@
                         </li>
                         @endif -->
                         @if(Auth::user()->hasAdminPermission('schedules', 'list'))
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{ route('schedules.index') }}">
                                 <i class="icon nav-icon" data-feather="calendar"></i>
                                 <span>Schedules</span>
                             </a>
-                        </li>
+                        </li> -->
                         @endif
                         @if(Auth::user()->hasAdminPermission('dispatches', 'list'))
                         <li class="nav-item dropdown">
