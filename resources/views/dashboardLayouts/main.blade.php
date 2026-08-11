@@ -509,8 +509,15 @@
 
     <script>
         $(document).ready(function() {
-            $('#custom-table').DataTable({
+            const $customTable = $('#custom-table');
+
+            if (!$customTable.length) {
+                return;
+            }
+
+            $customTable.DataTable({
                 "pagingType": "simple_numbers",
+                "paging": !$customTable.is('[data-server-paginated]'),
                 "lengthChange": false,
                 "searching": true,
                 "ordering": false,
