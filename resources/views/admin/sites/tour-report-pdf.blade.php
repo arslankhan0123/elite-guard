@@ -148,13 +148,13 @@
                         <td class="center">&mdash;</td>
                         <td class="center">1</td>
                         <td class="center">&mdash;</td>
-                        <td class="center"><strong>Site NFC Scan</strong></td>
+                        <td class="center"><strong>NFC Scan</strong></td>
                         <td class="center"><span class="status completed">Scanned</span></td>
                     </tr>
                     <tr class="evidence-row">
                         <td colspan="9">
                             <div class="evidence-box">
-                                <span class="evidence-label">Site Scan:</span>
+                                <span class="evidence-label">Evidence:</span>
                                 <span class="evidence-line">
                                     <span class="scan-chip">
                                         <strong>{{ $siteScan->nfcTag?->name ?? 'Unknown Tag' }}</strong>
