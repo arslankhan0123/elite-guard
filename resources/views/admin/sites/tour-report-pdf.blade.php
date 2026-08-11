@@ -135,7 +135,49 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($reportItems as $index => $row)
+            @forelse($timelineRows as $index => $timelineRow)
+                @if($timelineRow['type'] === 'site_scan')
+                    @php
+                        $siteScan = $timelineRow['scan'];
+                    @endphp
+                    <tr>
+                        <td class="center">{{ $index + 1 }}</td>
+                        <td class="center">{{ $siteScan->date?->format('d M Y') ?? 'N/A' }}</td>
+                        <td class="center">{{ \Carbon\Carbon::parse($siteScan->time)->format('h:i A') }}</td>
+                        <td class="center">&mdash;</td>
+                        <td class="center">&mdash;</td>
+                        <td class="center">1</td>
+                        <td class="center">&mdash;</td>
+                        <td class="center"><strong>Site NFC Scan</strong></td>
+                        <td class="center"><span class="status completed">Scanned</span></td>
+                    </tr>
+                    <tr class="evidence-row">
+                        <td colspan="9">
+                            <div class="evidence-box">
+                                <span class="evidence-label">Site Scan:</span>
+                                <span class="evidence-line">
+                                    <span class="scan-chip">
+                                        <strong>{{ $siteScan->nfcTag?->name ?? 'Unknown Tag' }}</strong>
+                                        | UID: {{ $siteScan->nfcTag?->uid ?? 'N/A' }}
+                                        | Scanned: {{ \Carbon\Carbon::parse($siteScan->time)->format('h:i:s A') }}
+                                        | By: {{ $siteScan->user?->name ?? 'N/A' }}
+                                        @if($siteScan->image)
+                                            @php
+                                                $siteScanImageUrl = \Illuminate\Support\Str::startsWith($siteScan->image, ['http://', 'https://'])
+                                                    ? $siteScan->image
+                                                    : url($siteScan->image);
+                                            @endphp
+                                            <a class="image-link" href="{{ $siteScanImageUrl }}" target="_blank" rel="noopener noreferrer">View Image</a>
+                                        @endif
+                                    </span>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                @else
+                    @php
+                        $row = $timelineRow['report'];
+                    @endphp
                 <tr>
                     <td class="center">{{ $index + 1 }}</td>
                     <td class="center">{{ $row['item']->date?->format('d M Y') ?? 'N/A' }}</td>
@@ -191,6 +233,7 @@
                         </div>
                     </td>
                 </tr>
+                @endif
             @empty
                 <tr><td colspan="9" class="center empty">No interval items were generated for this tour.</td></tr>
             @endforelse
