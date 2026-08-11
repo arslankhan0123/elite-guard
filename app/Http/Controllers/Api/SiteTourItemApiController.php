@@ -116,6 +116,7 @@ class SiteTourItemApiController extends Controller
      */
     public function storeScan(Request $request)
     {
+        Log::info('Store Scan Request:', $request->all());
         $request->validate([
             'site_tour_item_id' => 'required|integer',
             'nfc_tag_id' => 'required|integer',
