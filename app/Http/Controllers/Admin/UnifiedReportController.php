@@ -28,27 +28,27 @@ class UnifiedReportController extends Controller
             case 'disciplinary':
                 $query = ReportSecurityGuardDisciplinaryForm::with('user');
                 $this->applyFilters($query, $request);
-                $data['reports'] = $query->latest()->paginate(10);
+                $data['reports'] = $query->latest()->paginate(10)->withQueryString();
                 break;
             case 'incident':
                 $query = ReportIncidentForm::with(['user', 'images']);
                 $this->applyFilters($query, $request);
-                $data['reports'] = $query->latest()->paginate(10);
+                $data['reports'] = $query->latest()->paginate(10)->withQueryString();
                 break;
             case 'general':
                 $query = ReportGeneralForm::with(['user', 'images']);
                 $this->applyFilters($query, $request);
-                $data['reports'] = $query->latest()->paginate(10);
+                $data['reports'] = $query->latest()->paginate(10)->withQueryString();
                 break;
             case 'daily-shift':
                 $query = ReportDailyShiftForm::with(['user', 'patrolEntries']);
                 $this->applyFilters($query, $request);
-                $data['reports'] = $query->latest()->paginate(10);
+                $data['reports'] = $query->latest()->paginate(10)->withQueryString();
                 break;
             case 'assessments':
                 $query = Assessment::with('user');
                 $this->applyFilters($query, $request);
-                $data['assessments'] = $query->latest()->paginate(10);
+                $data['assessments'] = $query->latest()->paginate(10)->withQueryString();
                 break;
             case 'vehicle-checklist':
                 $query = DailyVehicleChecklist::with(['user', 'issueImages']);
@@ -60,17 +60,17 @@ class UnifiedReportController extends Controller
                         $query->whereNull('documents');
                     }
                 }
-                $data['checklists'] = $query->latest()->paginate(10);
+                $data['checklists'] = $query->latest()->paginate(10)->withQueryString();
                 break;
             case 'fire-watch':
                 $query = \App\Models\FireWatchReport::with(['user', 'patrolLogs']);
                 $this->applyFilters($query, $request);
-                $data['reports'] = $query->latest()->paginate(10);
+                $data['reports'] = $query->latest()->paginate(10)->withQueryString();
                 break;
             case 'shift-adjustment':
                 $query = \App\Models\ShiftAdjustmentForm::with('user');
                 $this->applyFilters($query, $request);
-                $data['adjustments'] = $query->latest()->paginate(10);
+                $data['adjustments'] = $query->latest()->paginate(10)->withQueryString();
                 break;
         }
 
