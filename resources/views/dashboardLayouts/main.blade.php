@@ -676,6 +676,63 @@
             border: none !important;
         }
 
+        /* Laravel server-side pagination, matching the original table controls. */
+        .server-pagination {
+            gap: 20px;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .server-pagination .pagination {
+            gap: 8px;
+        }
+
+        .server-pagination .page-link {
+            min-width: 44px;
+            padding: 11px 16px;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 10px !important;
+            background: #ffffff;
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: all 0.25s ease;
+        }
+
+        .server-pagination .page-item:first-child .page-link,
+        .server-pagination .page-item:last-child .page-link {
+            background: #f1f5f9;
+            border-color: transparent !important;
+        }
+
+        .server-pagination .page-item.active .page-link,
+        .server-pagination .page-link:hover {
+            background: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+        }
+
+        .server-pagination .page-item.disabled .page-link {
+            color: #94a3b8;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 575.98px) {
+            .server-pagination {
+                align-items: flex-start !important;
+                flex-direction: column;
+            }
+
+            .server-pagination .pagination {
+                flex-wrap: wrap;
+            }
+        }
+
         /* Professional DataTable Search */
         .dataTables_filter {
             position: relative;
