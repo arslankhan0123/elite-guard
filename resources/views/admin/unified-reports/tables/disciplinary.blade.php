@@ -1,4 +1,4 @@
-<table id="custom-table" class="table table-striped table-bordered">
+<table id="custom-table" data-server-paginated class="table table-striped table-bordered">
     <thead>
         <tr class="table-dark">
             <th>ID</th>
