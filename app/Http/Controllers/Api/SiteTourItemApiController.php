@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\SiteTourItemRepository;
+use App\Repositories\ShiftRepository;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponser;
 use Illuminate\Support\Facades\Auth;
@@ -13,11 +14,13 @@ class SiteTourItemApiController extends Controller
 {
     use ApiResponser;
     protected $siteTourItemRepo;
+    protected $shiftRepo;
 
     // Inject the repository via constructor
-    public function __construct(SiteTourItemRepository $siteTourItemRepo)
+    public function __construct(SiteTourItemRepository $siteTourItemRepo, ShiftRepository $shiftRepo)
     {
         $this->siteTourItemRepo = $siteTourItemRepo;
+        $this->shiftRepo = $shiftRepo;
     }
 
     /**
@@ -60,24 +63,25 @@ class SiteTourItemApiController extends Controller
         Log::info('userSiteTourItems Request:', $request->all());
 
         $user = Auth::user();
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
-        
-        // Also support single 'date' parameter for backward compatibility if needed
-        $date = $request->input('date');
-        if ($date && !$start_date && !$end_date) {
-            $start_date = $date;
-            $end_date = $date;
+
+        // Automatically resolve the active (or next upcoming) shift.
+        // This way mobile does not need to send shift_id manually.
+        $activeShift = $this->shiftRepo->getActiveShift();
+
+        if (!$activeShift) {
+            return $this->successResponse([
+                'status'          => true,
+                'message'         => 'No active or upcoming shift found.',
+                'shift'           => null,
+                'site_tour_items' => [],
+            ], 'No active or upcoming shift found.');
         }
 
-        // Default to today's date if absolutely no date is provided
-        if (!$start_date && !$end_date && !$date) {
-            $today = \Carbon\Carbon::now()->format('Y-m-d');
-            $start_date = $today;
-            $end_date = $today;
-        }
+        $shift_id  = $activeShift->id;
+        $start_date = $activeShift->date;
+        $end_date   = $activeShift->date;
 
-        $data = $this->siteTourItemRepo->getUserSiteTourItems($user, $start_date, $end_date);
+        $data = $this->siteTourItemRepo->getUserSiteTourItems($user, $start_date, $end_date, $shift_id);
 
         return $this->successResponse($data, 'Assigned site tour items fetched.');
     }

@@ -10,35 +10,51 @@ use Illuminate\Support\Facades\Storage;
 class SiteTourItemRepository
 {
     // Get site tour items assigned to a specific user
-    public function getUserSiteTourItems($user, $start_date = null, $end_date = null)
+    public function getUserSiteTourItems($user, $start_date = null, $end_date = null, $shift_id = null)
     {
         $query = SiteTourItem::where('user_id', $user->id)
             ->with(['site.nfcTags', 'siteTour.shift']);
             
-        if ($start_date && $end_date) {
-            $yesterday = \Carbon\Carbon::parse($start_date)->subDay()->toDateString();
-            $query->where(function ($q) use ($start_date, $end_date, $yesterday) {
-                $q->whereBetween('date', [$start_date, $end_date])
-                  ->orWhere(function ($sub) use ($yesterday) {
-                      $sub->where('date', $yesterday)
-                          ->whereHas('siteTour.shift', function ($shiftQuery) {
-                              $shiftQuery->whereColumn('end_time', '<', 'start_time');
-                          });
-                  });
+        // If a specific shift_id is provided, filter strictly by that shift.
+        // This prevents overnight-shift tours from leaking into the next shift's results.
+        if ($shift_id) {
+            $query->whereHas('siteTour', function ($q) use ($shift_id) {
+                $q->where('shift_id', $shift_id);
             });
-        } elseif ($start_date) {
-            $yesterday = \Carbon\Carbon::parse($start_date)->subDay()->toDateString();
-            $query->where(function ($q) use ($start_date, $yesterday) {
-                $q->where('date', '>=', $start_date)
-                  ->orWhere(function ($sub) use ($yesterday) {
-                      $sub->where('date', $yesterday)
-                          ->whereHas('siteTour.shift', function ($shiftQuery) {
-                              $shiftQuery->whereColumn('end_time', '<', 'start_time');
-                          });
-                  });
-            });
-        } elseif ($end_date) {
-            $query->where('date', '<=', $end_date);
+
+            // Still respect date bounds if provided, for extra safety
+            if ($start_date && $end_date) {
+                // For overnight shifts the item date may be start_date - 1, so widen by 1 day
+                $rangeStart = \Carbon\Carbon::parse($start_date)->subDay()->toDateString();
+                $query->whereBetween('date', [$rangeStart, $end_date]);
+            }
+        } else {
+            // Fallback: date-based filtering with overnight shift support
+            if ($start_date && $end_date) {
+                $yesterday = \Carbon\Carbon::parse($start_date)->subDay()->toDateString();
+                $query->where(function ($q) use ($start_date, $end_date, $yesterday) {
+                    $q->whereBetween('date', [$start_date, $end_date])
+                      ->orWhere(function ($sub) use ($yesterday) {
+                          $sub->where('date', $yesterday)
+                              ->whereHas('siteTour.shift', function ($shiftQuery) {
+                                  $shiftQuery->whereColumn('end_time', '<', 'start_time');
+                              });
+                      });
+                });
+            } elseif ($start_date) {
+                $yesterday = \Carbon\Carbon::parse($start_date)->subDay()->toDateString();
+                $query->where(function ($q) use ($start_date, $yesterday) {
+                    $q->where('date', '>=', $start_date)
+                      ->orWhere(function ($sub) use ($yesterday) {
+                          $sub->where('date', $yesterday)
+                              ->whereHas('siteTour.shift', function ($shiftQuery) {
+                                  $shiftQuery->whereColumn('end_time', '<', 'start_time');
+                              });
+                      });
+                });
+            } elseif ($end_date) {
+                $query->where('date', '<=', $end_date);
+            }
         }
 
         $items = $query->orderBy('date', 'desc')
