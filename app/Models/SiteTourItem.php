@@ -13,6 +13,7 @@ class SiteTourItem extends Model
         'end_time',
         'type',
         'status',
+        'reason',
         'user_id',
         'site_id',
     ];
