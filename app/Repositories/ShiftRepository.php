@@ -108,7 +108,6 @@ class ShiftRepository
         $userId = Auth::id();
         $timezone = config('app.timezone', 'UTC');
         $currentDateTime = Carbon::now($timezone);
-        $today = $currentDateTime->toDateString();
 
         $yesterday = $currentDateTime->copy()->subDay()->toDateString();
 
@@ -139,23 +138,19 @@ class ShiftRepository
             return $shift;
         });
 
-        // 1. Look for currently active shift
+        // 1. Look for currently active shift (time window matches now)
+        //    but skip it if checkIn + checkOut are both done (completed shift).
         $activeShift = $mappedShifts->first(function ($shift) use ($currentDateTime) {
-            return $currentDateTime->between($shift->start_datetime, $shift->end_datetime);
+            if (!$currentDateTime->between($shift->start_datetime, $shift->end_datetime)) {
+                return false;
+            }
+            // If attendance exists and checkout is done, this shift is completed
+            $attendance = $shift->attendances->first();
+            $isCompleted = $attendance && $attendance->clock_out_at;
+            return !$isCompleted;
         });
 
-        // 2. Prefer the latest shift assigned for today, even if its time has
-        // passed. This keeps the active-shift screen on the backend's local date.
-        if (!$activeShift) {
-            $activeShift = $mappedShifts
-                ->filter(function ($shift) use ($today) {
-                    return $shift->date === $today;
-                })
-                ->sortByDesc('start_datetime')
-                ->first();
-        }
-
-        // 3. If today has no shift, return the nearest upcoming shift.
+        // 2. If no active shift, return the nearest upcoming shift in the future.
         if (!$activeShift) {
             $activeShift = $mappedShifts
                 ->filter(function ($shift) use ($currentDateTime) {

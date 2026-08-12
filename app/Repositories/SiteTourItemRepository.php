@@ -13,7 +13,7 @@ class SiteTourItemRepository
     public function getUserSiteTourItems($user, $start_date = null, $end_date = null)
     {
         $query = SiteTourItem::where('user_id', $user->id)
-            ->with(['site.nfcTags', 'siteTour']);
+            ->with(['site.nfcTags', 'siteTour.shift']);
             
         if ($start_date && $end_date) {
             $yesterday = \Carbon\Carbon::parse($start_date)->subDay()->toDateString();
@@ -97,10 +97,23 @@ class SiteTourItemRepository
             $item->setAttribute('scanned_tags_count', $scannedTagsCount);
         }
         
+        // Extract shift info once (all items share the same SiteTour -> Shift)
+        $shiftInfo = null;
+        $firstShift = $items->first()?->siteTour?->shift ?? null;
+        if ($firstShift) {
+            $shiftInfo = [
+                'id'         => $firstShift->id,
+                'shift_name' => $firstShift->shift_name,
+                'start_time' => $firstShift->start_time,
+                'end_time'   => $firstShift->end_time,
+            ];
+        }
+
         return [
-            'status' => true,
-            'message' => 'Assigned site tour items retrieved successfully',
-            'site_tour_items' => $items
+            'status'          => true,
+            'message'         => 'Assigned site tour items retrieved successfully',
+            'shift'           => $shiftInfo,
+            'site_tour_items' => $items,
         ];
     }
     
