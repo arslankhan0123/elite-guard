@@ -99,6 +99,7 @@ class SiteTourItemApiController extends Controller
      *                 @OA\Property(property="site_id", type="integer", example=3),
      *                 @OA\Property(property="date", type="string", format="date", example="2026-07-14"),
      *                 @OA\Property(property="time", type="string", example="14:30:00"),
+     *                 @OA\Property(property="reason", type="string", nullable=true, example="NFC tag was inaccessible"),
      *                 @OA\Property(property="image", type="string", format="binary", description="Optional image/photo taken during scanning")
      *             )
      *         )
@@ -123,6 +124,7 @@ class SiteTourItemApiController extends Controller
             'site_id' => 'required|integer',
             'date' => 'required|date',
             'time' => 'required',
+            'reason' => 'nullable|string',
             'image' => 'nullable|image'
         ]);
 

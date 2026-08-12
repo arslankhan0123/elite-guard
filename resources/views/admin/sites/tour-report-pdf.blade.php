@@ -29,6 +29,7 @@
         .evidence-box { border-left: 2px solid #7c3aed; padding: 2px 5px; line-height: 1.25; }
         .evidence-label { color: #312e81; font-weight: bold; font-size: 5.8px; text-transform: uppercase; margin-right: 5px; }
         .evidence-line { color: #4b5563; font-size: 6px; }
+        .reason-line { color: #4b5563; font-size: 6px; margin-bottom: 3px; }
         .scan-chip { color: #312e81; margin-right: 6px; }
         .image-link {
             display: inline-block;
@@ -202,6 +203,12 @@
                 <tr class="evidence-row">
                     <td colspan="9">
                         <div class="evidence-box">
+                            @if(filled($row['item']->reason))
+                                <div class="reason-line">
+                                    <span class="evidence-label">Reason:</span>
+                                    {{ $row['item']->reason }}
+                                </div>
+                            @endif
                             <span class="evidence-label">Evidence:</span>
                             @if($row['scans']->isNotEmpty())
                                 <span class="evidence-line">

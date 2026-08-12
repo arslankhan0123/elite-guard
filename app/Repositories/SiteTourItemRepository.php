@@ -3,6 +3,9 @@
 namespace App\Repositories;
 
 use App\Models\SiteTourItem;
+use App\Models\SiteTourItemScan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SiteTourItemRepository
 {
@@ -115,10 +118,19 @@ class SiteTourItemRepository
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('documents/SiteTourScans', 'public');
-            $data['image'] = \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+            $data['image'] = Storage::disk('public')->url($path);
         }
 
-        $scan = \App\Models\SiteTourItemScan::create($data);
+        $scan = DB::transaction(function () use ($data, $request) {
+            $siteTourItem = SiteTourItem::findOrFail($data['site_tour_item_id']);
+            if ($request->exists('reason')) {
+                $siteTourItem->update([
+                    'reason' => $request->input('reason'),
+                ]);
+            }
+
+            return SiteTourItemScan::create($data);
+        });
 
         return [
             'status' => true,
