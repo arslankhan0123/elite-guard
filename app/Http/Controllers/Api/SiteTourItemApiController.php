@@ -132,6 +132,7 @@ class SiteTourItemApiController extends Controller
             'image' => 'nullable|image'
         ]);
 
+        
         $user = Auth::user();
         $response = $this->siteTourItemRepo->storeScan($request, $user);
         return $this->successResponse($response, $response['message']);
