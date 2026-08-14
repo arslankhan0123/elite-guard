@@ -692,13 +692,14 @@
                 ]
             }
         },
-        "/api/dispatches": {
+        "/api/dispatches/getUserDispatches": {
             "get": {
                 "tags": [
                     "Dispatch Tasks"
                 ],
                 "summary": "Get active dispatch tasks assigned to the logged-in guard",
-                "operationId": "a8eb81717ca135a934d60f35ee999b21",
+                "description": "Returns dispatches assigned to the authenticated guard which are not Completed or Cancelled and have not already been submitted by this guard.",
+                "operationId": "getUserDispatches",
                 "responses": {
                     "200": {
                         "description": "Assigned dispatch tasks fetched successfully.",
@@ -727,6 +728,136 @@
                                                 "dispatches": {
                                                     "type": "array",
                                                     "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 12
+                                                            },
+                                                            "company_id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "site_id": {
+                                                                "type": "integer",
+                                                                "example": 4
+                                                            },
+                                                            "assigned_guard_ids": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "example": [
+                                                                    3,
+                                                                    7
+                                                                ]
+                                                            },
+                                                            "priority": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "Low",
+                                                                    "Medium",
+                                                                    "High",
+                                                                    "Emergency"
+                                                                ],
+                                                                "example": "High"
+                                                            },
+                                                            "caller_type": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "Client",
+                                                                    "Guard",
+                                                                    "Emergency Services",
+                                                                    "Other"
+                                                                ],
+                                                                "example": "Client"
+                                                            },
+                                                            "caller_name": {
+                                                                "type": "string",
+                                                                "example": "John Smith"
+                                                            },
+                                                            "incident_location": {
+                                                                "type": "string",
+                                                                "example": "Main entrance"
+                                                            },
+                                                            "incident_type": {
+                                                                "type": "string",
+                                                                "example": "Unauthorized access"
+                                                            },
+                                                            "incident_date": {
+                                                                "type": "string",
+                                                                "format": "date",
+                                                                "example": "2026-08-15"
+                                                            },
+                                                            "incident_time": {
+                                                                "type": "string",
+                                                                "format": "time",
+                                                                "example": "21:30:00"
+                                                            },
+                                                            "incident_details": {
+                                                                "type": "string",
+                                                                "example": "An unknown person attempted to enter the premises."
+                                                            },
+                                                            "action_taken": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "internal_notes": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "attachment_path": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "Pending",
+                                                                    "In Progress"
+                                                                ],
+                                                                "example": "Pending"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            },
+                                                            "company": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 1
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Elite Security"
+                                                                    }
+                                                                },
+                                                                "type": "object",
+                                                                "nullable": true
+                                                            },
+                                                            "site": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 4
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Downtown Plaza"
+                                                                    },
+                                                                    "address": {
+                                                                        "type": "string",
+                                                                        "nullable": true
+                                                                    }
+                                                                },
+                                                                "type": "object",
+                                                                "nullable": true
+                                                            }
+                                                        },
                                                         "type": "object"
                                                     }
                                                 }
@@ -740,7 +871,20 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthenticated"
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -756,7 +900,8 @@
                     "Dispatch Tasks"
                 ],
                 "summary": "Submit dispatch task report / action taken",
-                "operationId": "9d7669b120c51fbfbf538fe86d84732f",
+                "description": "Creates one submission for the authenticated guard. The dispatch becomes Completed after all assigned guards submit; otherwise a Pending dispatch becomes In Progress.",
+                "operationId": "submitDispatch",
                 "parameters": [
                     {
                         "name": "id",
@@ -808,6 +953,50 @@
                                             "example": "Dispatch task submitted successfully."
                                         },
                                         "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Dispatch task submitted successfully."
+                                                },
+                                                "submission": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 25
+                                                        },
+                                                        "dispatch_id": {
+                                                            "type": "integer",
+                                                            "example": 12
+                                                        },
+                                                        "user_id": {
+                                                            "type": "integer",
+                                                            "example": 3
+                                                        },
+                                                        "action_taken": {
+                                                            "type": "string",
+                                                            "example": "Secured the premises and notified local authorities."
+                                                        },
+                                                        "file_attachment": {
+                                                            "type": "string",
+                                                            "format": "uri",
+                                                            "nullable": true
+                                                        },
+                                                        "created_at": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        },
+                                                        "updated_at": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },
@@ -816,8 +1005,34 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
                     "404": {
-                        "description": "Dispatch task not found or not assigned to user"
+                        "description": "Dispatch task not found or not assigned to the authenticated guard"
+                    },
+                    "422": {
+                        "description": "Validation failed or report already submitted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You have already submitted a report for this dispatch task."
+                                        },
+                                        "data": {
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -4661,26 +4876,6 @@
                 "summary": "Get the current active shift for the logged-in user",
                 "description": "Returns the first active shift for today whose end time has not passed yet.",
                 "operationId": "40b5078800930700e51537aabbf3c37d",
-                "parameters": [
-                    {
-                        "name": "date",
-                        "in": "query",
-                        "description": "Client's local date (Y-m-d)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "time",
-                        "in": "query",
-                        "description": "Client's local time (H:i:s)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -5090,6 +5285,11 @@
                                     "time": {
                                         "type": "string",
                                         "example": "14:30:00"
+                                    },
+                                    "reason": {
+                                        "type": "string",
+                                        "example": "NFC tag was inaccessible",
+                                        "nullable": true
                                     },
                                     "image": {
                                         "description": "Optional image/photo taken during scanning",
