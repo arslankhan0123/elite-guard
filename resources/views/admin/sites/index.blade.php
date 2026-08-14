@@ -53,6 +53,11 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group" aria-label="Site Actions">
+                                        <a class="text-decoration-none text-dark me-2" href="{{ route('sites.scan-report', $site->id) }}" data-bs-toggle="tooltip" title="Checkpoint Scan Report">
+                                            <button class="btn btn-sm btn-danger d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; border-radius: 6px;" type="button">
+                                                <i data-feather="file-text" style="width: 16px; height: 16px;"></i>
+                                            </button>
+                                        </a>
                                         <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('sites.nfcTags', $site->id) }}" data-bs-toggle="tooltip" title="View Check Points">
                                             <button class="view_btn me-2" fdprocessedid="pxicc">
                                             </button>

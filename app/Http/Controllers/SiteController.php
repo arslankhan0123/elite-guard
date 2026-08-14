@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Site;
 use App\Models\Schedule;
+use App\Models\SiteScan;
+use App\Models\User;
 use App\Repositories\SiteRepository;
 use Illuminate\Http\Request;
 
@@ -103,6 +105,98 @@ class SiteController extends Controller
         }])->findOrFail($site_id);
 
         return view('admin.sites.nfc-tags', compact('site'));
+    }
+
+    public function scanReport($site_id, Request $request)
+    {
+        $filters = $this->validatedScanReportFilters($request);
+        $site = Site::with(['company', 'nfcTags'])->findOrFail($site_id);
+        $scans = $this->siteScanReportQuery($site, $filters)->paginate(25)->withQueryString();
+        $users = User::whereHas('siteScans', fn ($query) => $query->where('site_id', $site->id))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('admin.sites.scan-report', compact('site', 'scans', 'users', 'filters'));
+    }
+
+    public function exportScanReport($site_id, string $format, Request $request)
+    {
+        $filters = $this->validatedScanReportFilters($request);
+        $site = Site::with(['company', 'nfcTags'])->findOrFail($site_id);
+        $scans = $this->siteScanReportQuery($site, $filters)->get();
+        $fileName = 'site-scan-report-' . $site->id . '-' . now()->format('Ymd-His');
+
+        if ($format === 'pdf') {
+            $summary = [
+                'total_scans' => $scans->count(),
+                'site_checkpoints' => $site->nfcTags->count(),
+                'checkpoints_scanned' => $scans->pluck('nfc_tag_id')->unique()->count(),
+                'guards' => $scans->pluck('user_id')->unique()->count(),
+                'days' => $scans->pluck('date')->map(fn ($date) => $date?->format('Y-m-d'))->filter()->unique()->count(),
+                'evidence' => $scans->whereNotNull('image')->count(),
+            ];
+            $selectedUser = !empty($filters['user_id']) ? User::find($filters['user_id']) : null;
+
+            return \Barryvdh\DomPDF\Facade\Pdf::loadView(
+                'admin.sites.scan-report-pdf',
+                compact('site', 'scans', 'filters', 'summary', 'selectedUser')
+            )->setPaper('a4', 'landscape')->stream($fileName . '.pdf');
+        }
+
+        return response()->streamDownload(function () use ($scans) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['#', 'Date', 'Time', 'User', 'Checkpoint / Tag', 'Tag UID', 'Image']);
+
+            foreach ($scans as $index => $scan) {
+                fputcsv($handle, [
+                    $index + 1,
+                    $scan->date?->format('d/m/Y'),
+                    $scan->time ? \Carbon\Carbon::parse($scan->time)->format('h:i:s A') : '',
+                    $scan->user?->name ?? 'N/A',
+                    $scan->nfcTag?->name ?? 'N/A',
+                    $scan->nfcTag?->uid ?? 'N/A',
+                    $scan->image ? asset('storage/' . ltrim($scan->image, '/')) : '',
+                ]);
+            }
+
+            fclose($handle);
+        }, $fileName . '.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    private function validatedScanReportFilters(Request $request): array
+    {
+        $filters = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'user_id' => 'nullable|integer|exists:users,id',
+            'search' => 'nullable|string|max:255',
+        ]);
+
+        $today = now(config('app.timezone', 'UTC'))->toDateString();
+        $filters['start_date'] = $filters['start_date'] ?? $filters['end_date'] ?? $today;
+        $filters['end_date'] = $filters['end_date'] ?? $filters['start_date'];
+
+        return $filters;
+    }
+
+    private function siteScanReportQuery(Site $site, array $filters)
+    {
+        return SiteScan::query()
+            ->with(['user:id,name', 'nfcTag:id,name,uid'])
+            ->where('site_id', $site->id)
+            ->whereBetween('date', [$filters['start_date'], $filters['end_date']])
+            ->when(!empty($filters['user_id']), fn ($query) => $query->where('user_id', $filters['user_id']))
+            ->when(!empty($filters['search']), function ($query) use ($filters) {
+                $search = $filters['search'];
+                $query->where(function ($query) use ($search) {
+                    $query->whereHas('user', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('nfcTag', fn ($q) => $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('uid', 'like', "%{$search}%"));
+                });
+            })
+            ->orderByDesc('date')
+            ->orderByDesc('time');
     }
 
     public function tours($site_id, Request $request)
