@@ -134,7 +134,6 @@ class SiteTourItemApiController extends Controller
 
         $user = Auth::user();
         $response = $this->siteTourItemRepo->storeScan($request, $user);
-
         return $this->successResponse($response, $response['message']);
     }
 }
