@@ -125,10 +125,23 @@ class SiteTourItemRepository
             ];
         }
 
+        // Extract SiteTour info once (open_time & grace_time are same for all items)
+        $siteTourInfo = null;
+        $firstSiteTour = $items->first()?->siteTour ?? null;
+        if ($firstSiteTour) {
+            $siteTourInfo = [
+                'id'         => $firstSiteTour->id,
+                'name'       => $firstSiteTour->name,
+                'open_time'  => $firstSiteTour->open_time,
+                'grace_time' => $firstSiteTour->grace_time,
+            ];
+        }
+
         return [
             'status'          => true,
             'message'         => 'Assigned site tour items retrieved successfully',
             'shift'           => $shiftInfo,
+            'site_tour'       => $siteTourInfo,
             'site_tour_items' => $items,
         ];
     }

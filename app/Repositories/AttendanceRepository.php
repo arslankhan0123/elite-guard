@@ -26,7 +26,7 @@ class AttendanceRepository
 
         $timezone = $this->getUserTimezone();
         $now = Carbon::now($timezone);
-        $shiftDate = Carbon::parse($shift->date);
+        $shiftDate = Carbon::parse($shift->date, $timezone);
 
         // 1. Check if the date matches
         if (!$now->isSameDay($shiftDate)) {
