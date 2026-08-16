@@ -20,4 +20,11 @@ class WeeklyRunSheet extends Model
             ->orderBy('sequence')
             ->orderBy('start_time');
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_weekly_run_sheet')
+            ->withPivot('assigned_at')
+            ->withTimestamps();
+    }
 }

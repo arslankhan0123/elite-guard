@@ -6335,6 +6335,44 @@
                     }
                 ]
             }
+        },
+        "/api/run-sheets/weekly": {
+            "get": {
+                "tags": [
+                    "Weekly Runsheets"
+                ],
+                "summary": "Get all weekly runsheets",
+                "operationId": "9a94b8346f553449f5808083fe360cc2",
+                "responses": {
+                    "200": {
+                        "description": "Weekly runsheets fetched successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/run-sheets/user": {
+            "get": {
+                "tags": [
+                    "Weekly Runsheets"
+                ],
+                "summary": "Get weekly runsheets assigned to the authenticated user",
+                "operationId": "aa1410d11c43f3c5b4040d69e7c933d1",
+                "responses": {
+                    "200": {
+                        "description": "Assigned weekly runsheets fetched successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -6462,6 +6500,10 @@
         {
             "name": "User",
             "description": "User"
+        },
+        {
+            "name": "Weekly Runsheets",
+            "description": "Weekly Runsheets"
         }
     ]
 }

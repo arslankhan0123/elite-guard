@@ -174,6 +174,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
             Route::post('/update/{id}', [EmployeeController::class, 'update'])->name('employees.update');
             Route::get('/delete/{id}', [EmployeeController::class, 'delete'])->name('employees.delete');
             Route::post('/assign-sites/{user_id}', [EmployeeController::class, 'assignSites'])->name('employees.assignSites');
+            Route::post('/assign-weekly-run-sheets/{user_id}', [EmployeeController::class, 'assignWeeklyRunSheets'])->name('employees.assignWeeklyRunSheets');
             Route::post('/update-offer-letter', [EmployeeController::class, 'updateOfferLetter'])->name('employees.updateOfferLetter');
             Route::post('/update-pay-slip', [EmployeeController::class, 'updatePaySlip'])->name('employees.updatePaySlip');
             Route::get('/check-pay-slip', [EmployeeController::class, 'checkPaySlip'])->name('employees.checkPaySlip');

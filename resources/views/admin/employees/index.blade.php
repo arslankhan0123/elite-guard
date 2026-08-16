@@ -164,11 +164,11 @@
                                                     <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-sm me-2 btn-outline-warning rounded-pill px-3"
-                                                    title="Assign Run Sheets" data-bs-toggle="modal"
-                                                    data-bs-target="#assignRunSheetsModal"
+                                                    title="Assign Weekly Runsheets" data-bs-toggle="modal"
+                                                    data-bs-target="#assignWeeklyRunSheetsModal"
                                                     data-user-id="{{ $employee->user->id }}"
                                                     data-name="{{ $employee->user->name }}"
-                                                    data-run-sheets="{{ $employee->user->runSheets->toJson() }}">
+                                                    data-assigned-run-sheets="{{ $employee->user->weeklyRunSheets->pluck('id')->toJson() }}">
                                                     <i data-feather="clipboard" style="width: 14px; height: 14px;"></i>
                                                 </button>
                                                 <a class="text-decoration-none text-dark me-2" href="{{ route('employees.show', $employee->id) }}" data-bs-toggle="tooltip" title="View Details">
@@ -475,6 +475,47 @@
                             data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-warning text-dark rounded-pill px-4 fw-bold shadow-sm">
                             <i data-feather="check" style="width: 18px; height: 18px;" class="me-1"></i> Save Run Sheets
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Weekly Runsheets Modal -->
+    <div class="modal fade" id="assignWeeklyRunSheetsModal" tabindex="-1" aria-labelledby="assignWeeklyRunSheetsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="assignWeeklyRunSheetsModalLabel">
+                        <i data-feather="clipboard" class="me-2 text-warning"></i> Assign Weekly Runsheets
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="assignWeeklyRunSheetsForm" action="" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <p class="text-muted">Assign multiple runsheets to <strong id="assignRunsheetsEmployeeName"></strong></p>
+                        <div class="d-flex flex-column gap-2 mt-3" style="max-height: 340px; overflow-y: auto; padding-right: 10px;">
+                            @forelse($weeklyRunSheets as $weeklyRunSheet)
+                                <div class="p-2 rounded-3 border bg-light d-flex align-items-start gap-3">
+                                    <input class="form-check-input flex-shrink-0 weekly-runsheet-checkbox" type="checkbox" name="weekly_run_sheet_ids[]" value="{{ $weeklyRunSheet->id }}" id="weekly_runsheet_{{ $weeklyRunSheet->id }}" style="width:20px; height:20px; margin-top:3px; cursor:pointer;">
+                                    <label class="flex-grow-1 mb-0" for="weekly_runsheet_{{ $weeklyRunSheet->id }}" style="cursor:pointer; line-height:1.4;">
+                                        <span class="fw-bold d-block text-dark" style="font-size:.9rem;">{{ $weeklyRunSheet->name }}</span>
+                                        <small class="text-muted d-block" style="font-size:.75rem;">
+                                            {{ $weeklyRunSheet->week_start_date->format('d M Y') }} - {{ $weeklyRunSheet->week_start_date->copy()->endOfWeek()->format('d M Y') }} · {{ $weeklyRunSheet->entries_count }} tours
+                                        </small>
+                                    </label>
+                                </div>
+                            @empty
+                                <div class="text-center text-muted py-4">No weekly runsheets available.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light p-3 mt-3">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning text-dark rounded-pill px-4 fw-bold shadow-sm">
+                            <i data-feather="check" style="width:18px; height:18px" class="me-1"></i> Update Assignments
                         </button>
                     </div>
                 </form>
@@ -1205,6 +1246,26 @@
                 const checkboxes = assignUserSitesModal.querySelectorAll('.site-checkbox');
                 checkboxes.forEach(cb => {
                     cb.checked = assignedSites.includes(parseInt(cb.value));
+                });
+
+                feather.replace();
+            });
+
+            const assignWeeklyRunSheetsModal = document.getElementById('assignWeeklyRunSheetsModal');
+            assignWeeklyRunSheetsModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const userId = button.getAttribute('data-user-id');
+                const employeeName = button.getAttribute('data-name');
+                const assignedRunSheets = JSON.parse(button.getAttribute('data-assigned-run-sheets') || '[]');
+
+                document.getElementById('assignRunsheetsEmployeeName').textContent = employeeName;
+
+                const form = document.getElementById('assignWeeklyRunSheetsForm');
+                let routeUrl = "{{ route('employees.assignWeeklyRunSheets', ':id') }}";
+                form.action = routeUrl.replace(':id', userId);
+
+                assignWeeklyRunSheetsModal.querySelectorAll('.weekly-runsheet-checkbox').forEach(checkbox => {
+                    checkbox.checked = assignedRunSheets.includes(parseInt(checkbox.value));
                 });
 
                 feather.replace();

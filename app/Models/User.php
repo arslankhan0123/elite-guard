@@ -186,6 +186,13 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(RunSheet::class);
     }
 
+    public function weeklyRunSheets()
+    {
+        return $this->belongsToMany(WeeklyRunSheet::class, 'user_weekly_run_sheet')
+            ->withPivot('assigned_at')
+            ->withTimestamps();
+    }
+
     public function siteScans()
     {
         return $this->hasMany(SiteScan::class);
