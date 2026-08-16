@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Site;
 use App\Models\Schedule;
-use App\Models\SiteScan;
+use App\Models\SiteItemScan;
 use App\Models\User;
 use App\Repositories\SiteRepository;
 use Illuminate\Http\Request;
@@ -112,7 +112,7 @@ class SiteController extends Controller
         $filters = $this->validatedScanReportFilters($request);
         $site = Site::with(['company', 'nfcTags'])->findOrFail($site_id);
         $scans = $this->siteScanReportQuery($site, $filters)->paginate(25)->withQueryString();
-        $users = User::whereHas('siteScans', fn ($query) => $query->where('site_id', $site->id))
+        $users = User::whereHas('siteItemScans', fn ($query) => $query->where('site_id', $site->id))
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -182,7 +182,7 @@ class SiteController extends Controller
 
     private function siteScanReportQuery(Site $site, array $filters)
     {
-        return SiteScan::query()
+        return SiteItemScan::query()
             ->with(['user:id,name', 'nfcTag:id,name,uid'])
             ->where('site_id', $site->id)
             ->whereBetween('date', [$filters['start_date'], $filters['end_date']])
@@ -371,7 +371,7 @@ class SiteController extends Controller
             ->unique()
             ->values();
 
-        $siteScansByDate = \App\Models\SiteScan::with(['nfcTag', 'user'])
+        $siteScansByDate = \App\Models\SiteItemScan::with(['nfcTag', 'user'])
             ->where('site_id', $tour->site_id)
             ->whereIn('nfc_tag_id', $requiredTagIds)
             ->whereIn('date', $itemDates)
