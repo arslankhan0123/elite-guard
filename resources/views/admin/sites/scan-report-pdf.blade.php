@@ -193,7 +193,7 @@
         .evidence-image {
             display: block;
             width: 100%;
-            height: 82px;
+            height: 104px;
             max-width: 100%;
             object-fit: cover;
             border-radius: 3px
@@ -203,11 +203,11 @@
         .items .scan-grid td { border: 0; background: transparent; padding: 2px; vertical-align: top; }
         .items .scan-grid .scan-grid-cell { width: 33.333%; max-width: 33.333%; }
         .scan-evidence-card { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
-        .items .scan-evidence-card .scan-photo-cell { width: 55%; padding: 2px; background: #fff; }
+        .items .scan-evidence-card .scan-photo-cell { width: 55%; height: 108px; padding: 2px; background: #fff; vertical-align: middle; }
         .items .scan-evidence-card .scan-data-cell { width: 45%; padding: 6px; background: #fff; color: #374151; font-size: 9px; line-height: 1.55; word-wrap: break-word; }
         .scan-tag { color: #312e81; font-size: 10px; font-weight: bold; margin-bottom: 4px; }
         .scan-data-cell strong { color: #172033; font-weight: bold; }
-        .no-photo { height: 82px; line-height: 82px; text-align: center; color: #4b5563; background: #f3f4f6; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .no-photo { height: 18px; padding: 43px 0; text-align: center; color: #4b5563; background: #f3f4f6; border-radius: 3px; font-size: 12px; line-height: 18px; font-weight: bold; }
         }
 
         .missing-line {
@@ -301,9 +301,10 @@
             }
 
             $path = parse_url($image, PHP_URL_PATH) ?: $image;
+            $path = '/' . ltrim(str_replace('\\', '/', $path), '/');
 
-            if (\Illuminate\Support\Str::startsWith($path, ['/storage/', 'storage/'])) {
-                $storagePath = preg_replace('#^/?storage/#', '', $path);
+            if (\Illuminate\Support\Str::startsWith($path, '/storage/')) {
+                $storagePath = preg_replace('#^/storage/#', '', $path);
 
                 if (\Illuminate\Support\Facades\Storage::disk('public')->exists($storagePath)) {
                     $contents = \Illuminate\Support\Facades\Storage::disk('public')->get($storagePath);
