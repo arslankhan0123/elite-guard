@@ -203,6 +203,8 @@ class SiteController extends Controller
         $filters = $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after_or_equal:start_time',
             'user_id' => 'nullable|integer|exists:users,id',
             'search' => 'nullable|string|max:255',
         ]);
@@ -220,6 +222,14 @@ class SiteController extends Controller
             ->with(['user:id,name', 'nfcTag:id,name,uid'])
             ->where('site_id', $site->id)
             ->whereBetween('date', [$filters['start_date'], $filters['end_date']])
+            ->when(!empty($filters['start_time']), fn ($query) => $query->whereHas(
+                'siteItem',
+                fn ($itemQuery) => $itemQuery->whereTime('start_time', '>=', $filters['start_time'])
+            ))
+            ->when(!empty($filters['end_time']), fn ($query) => $query->whereHas(
+                'siteItem',
+                fn ($itemQuery) => $itemQuery->whereTime('end_time', '<=', $filters['end_time'])
+            ))
             ->when(!empty($filters['user_id']), fn ($query) => $query->where('user_id', $filters['user_id']))
             ->when(!empty($filters['search']), function ($query) use ($filters) {
                 $search = $filters['search'];
@@ -244,6 +254,8 @@ class SiteController extends Controller
             ])
             ->where('site_id', $site->id)
             ->whereBetween('date', [$filters['start_date'], $filters['end_date']])
+            ->when(!empty($filters['start_time']), fn ($query) => $query->whereTime('start_time', '>=', $filters['start_time']))
+            ->when(!empty($filters['end_time']), fn ($query) => $query->whereTime('end_time', '<=', $filters['end_time']))
             ->when(!empty($filters['user_id']), fn ($query) => $query->where('user_id', $filters['user_id']))
             ->when(!empty($filters['search']), function ($query) use ($filters) {
                 $search = $filters['search'];

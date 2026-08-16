@@ -341,8 +341,12 @@
         <tr>
             <td><span class="label">Start Date</span><span class="value">{{ \Carbon\Carbon::parse($filters['start_date'])->format('l, d M Y') }}</span></td>
             <td><span class="label">End Date</span><span class="value">{{ \Carbon\Carbon::parse($filters['end_date'])->format('l, d M Y') }}</span></td>
-            <td><span class="label">Search Filter</span><span class="value">{{ $filters['search'] ?? 'None' }}</span></td>
-            <td><span class="label">Report Status</span><span class="value">Final / Generated</span></td>
+            <td><span class="label">Start Time</span><span class="value">{{ !empty($filters['start_time']) ? \Carbon\Carbon::parse($filters['start_time'])->format('h:i A') : 'Any Time' }}</span></td>
+            <td><span class="label">End Time</span><span class="value">{{ !empty($filters['end_time']) ? \Carbon\Carbon::parse($filters['end_time'])->format('h:i A') : 'Any Time' }}</span></td>
+        </tr>
+        <tr>
+            <td colspan="2"><span class="label">Search Filter</span><span class="value">{{ $filters['search'] ?? 'None' }}</span></td>
+            <td colspan="2"><span class="label">Report Status</span><span class="value">Final / Generated</span></td>
         </tr>
     </table>
     <div class="section-title">Site Item Performance</div>
