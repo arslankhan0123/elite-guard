@@ -36,18 +36,18 @@
 
 @foreach($days as $dayNumber => $dayName)
 @php $entries = $runSheet->entries->where('day_of_week', $dayNumber); @endphp
-<div class="card border-0 shadow-sm mb-3" style="border-left:4px solid #6f42c1 !important">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+<div class="card border-0 shadow-sm mb-3 runsheet-day-card">
+    <div class="card-header runsheet-day-header d-flex justify-content-between align-items-center py-3">
         <h5 class="mb-0">{{ $dayName }}</h5>
-        <span class="badge bg-primary">{{ $entries->count() }} {{ \Illuminate\Support\Str::plural('tour', $entries->count()) }}</span>
+        <span class="runsheet-tour-count">{{ $entries->count() }} {{ \Illuminate\Support\Str::plural('tour', $entries->count()) }}</span>
     </div>
     <div class="card-body p-0">
         @if($entries->isEmpty())
             <div class="text-center text-muted py-4">No tours scheduled.</div>
         @else
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light"><tr><th style="width:70px">#</th><th>Tour Name</th><th>Site</th><th>Start Time</th><th>End Time</th><th>Duration</th></tr></thead>
+                <table class="table table-hover align-middle mb-0 runsheet-day-table">
+                    <thead><tr><th style="width:70px">#</th><th>Tour Name</th><th>Site</th><th>Start Time</th><th>End Time</th><th>Duration</th></tr></thead>
                     <tbody>
                     @foreach($entries as $entry)
                         @php
@@ -74,6 +74,14 @@
 
 <style>
     .runsheet-actions { min-width: max-content; }
+    .runsheet-day-card { border-left: 4px solid #7c3aed !important; border-radius: 10px; overflow: hidden; margin-bottom: 30px !important; }
+    .runsheet-day-header { background: #1e1b4b !important; color: #fff; border-bottom: 0; }
+    .runsheet-day-header h5 { color: #fff; font-weight: 700; letter-spacing: .01em; }
+    .runsheet-tour-count { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 20px; background: #fff; color: #1e1b4b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .runsheet-day-table thead th { background: #f1f3f7 !important; color: #1e293b !important; border: 0 !important; border-bottom: 1px solid #e2e8f0 !important; padding: 13px 16px !important; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .runsheet-day-table tbody td { padding: 13px 16px; border-color: #eef0f5; }
+    .runsheet-day-table tbody tr:nth-child(even) { background: #faf9ff; }
+    .runsheet-day-table tbody tr:hover { background: #f5f3ff; }
     .runsheet-action-link { display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
     .backBtn {
         width: 1.875rem;
