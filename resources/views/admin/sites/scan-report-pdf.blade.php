@@ -207,7 +207,7 @@
         .items .scan-evidence-card .scan-data-cell { width: 45%; padding: 6px; background: #fff; color: #374151; font-size: 9px; line-height: 1.55; word-wrap: break-word; }
         .scan-tag { color: #312e81; font-size: 10px; font-weight: bold; margin-bottom: 4px; }
         .scan-data-cell strong { color: #172033; font-weight: bold; }
-        .no-photo { height: 82px; line-height: 82px; text-align: center; color: #6b7280; background: #f3f4f6; border-radius: 3px; font-size: 9px; }
+        .no-photo { height: 82px; line-height: 82px; text-align: center; color: #4b5563; background: #f3f4f6; border-radius: 3px; font-size: 12px; font-weight: bold; }
         }
 
         .missing-line {
@@ -294,14 +294,34 @@
 
 <body>
     @php
-        $resolvePdfImage = function ($image) {
+        $pdfImageCache = [];
+        $resolvePdfImage = function ($image) use (&$pdfImageCache) {
+            if (array_key_exists($image, $pdfImageCache)) {
+                return $pdfImageCache[$image];
+            }
+
             $path = parse_url($image, PHP_URL_PATH) ?: $image;
 
             if (\Illuminate\Support\Str::startsWith($path, ['/storage/', 'storage/'])) {
-                return public_path(ltrim($path, '/'));
+                $storagePath = preg_replace('#^/?storage/#', '', $path);
+
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($storagePath)) {
+                    $contents = \Illuminate\Support\Facades\Storage::disk('public')->get($storagePath);
+                    $mimeType = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($storagePath) ?: 'image/jpeg';
+
+                    return $pdfImageCache[$image] = 'data:' . $mimeType . ';base64,' . base64_encode($contents);
+                }
+
+                return $pdfImageCache[$image] = null;
             }
 
-            return $image;
+            if (is_file($image)) {
+                $mimeType = mime_content_type($image) ?: 'image/jpeg';
+
+                return $pdfImageCache[$image] = 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($image));
+            }
+
+            return $pdfImageCache[$image] = null;
         };
     @endphp
     <div class="header">

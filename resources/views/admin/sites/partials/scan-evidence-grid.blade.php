@@ -3,6 +3,9 @@
         @foreach($scans->chunk(3) as $scanRow)
             <tr>
                 @foreach($scanRow as $scan)
+                    @php
+                        $imageSource = $scan->image ? $resolvePdfImage($scan->image) : null;
+                    @endphp
                     <td class="scan-grid-cell">
                         <table class="scan-evidence-card">
                             <tr>
@@ -12,13 +15,13 @@
                                     <div><strong>Time:</strong> {{ $scan->time ? \Carbon\Carbon::parse($scan->time)->format('h:i:s A') : 'N/A' }}</div>
                                     <div><strong>By:</strong> {{ $scan->user?->name ?? $fallbackUser ?? 'N/A' }}</div>
                                 </td>
-                                @if($scan->image)
+                                @if($imageSource)
                                     <td class="scan-photo-cell">
-                                        <img class="evidence-image" src="{{ $resolvePdfImage($scan->image) }}" alt="Scan evidence">
+                                        <img class="evidence-image" src="{{ $imageSource }}" alt="Evidence">
                                     </td>
                                 @else
                                     <td class="scan-photo-cell">
-                                        <div class="no-photo">No photo</div>
+                                        <div class="no-photo">No Image</div>
                                     </td>
                                 @endif
                             </tr>
