@@ -42,8 +42,8 @@
 
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Runsheet Name <span class="text-danger">*</span></label>
-                    <input type="text" name="name" value="{{ old('name', $runSheet->name) }}" class="form-control" placeholder="e.g. Mobile Patrol Weekly Runsheet" required>
+                    <label class="form-label fw-semibold">Route Name <span class="text-danger">*</span></label>
+                    <input type="text" name="name" value="{{ old('name', $runSheet->name) }}" class="form-control" placeholder="e.g. Mobile Patrol Route" required>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Week Starting <span class="text-danger">*</span></label>

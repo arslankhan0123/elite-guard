@@ -21,7 +21,7 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Name</th>
+                                <th>Route Name</th>
                                 <th>Week</th>
                                 <th>Sites</th>
                                 <th>Total Tours</th>
