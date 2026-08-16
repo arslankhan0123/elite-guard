@@ -21,15 +21,23 @@
             </div>
             <div class="card-body">
                 <form method="GET" action="{{ route('sites.scan-report', $site->id) }}" class="row g-3 align-items-end mb-4">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Start Date</label>
                         <input type="date" name="start_date" class="form-control" value="{{ $filters['start_date'] }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">End Date</label>
                         <input type="date" name="end_date" class="form-control" value="{{ $filters['end_date'] }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <label class="form-label">Start Time</label>
+                        <input type="time" name="start_time" class="form-control" value="{{ $filters['start_time'] ?? '' }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">End Time</label>
+                        <input type="time" name="end_time" class="form-control" value="{{ $filters['end_time'] ?? '' }}">
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label">User</label>
                         <select name="user_id" class="form-select">
                             <option value="">All Users</option>
@@ -38,15 +46,15 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Search</label>
                         <input type="search" name="search" class="form-control" placeholder="User, checkpoint or UID" value="{{ $filters['search'] ?? '' }}">
                     </div>
                     <div class="col-12 d-flex flex-wrap gap-2">
                         <button class="btn btn-info" type="submit"><i data-feather="filter" class="me-1"></i> Filter</button>
                         <a class="btn btn-light" href="{{ route('sites.scan-report', $site->id) }}">Today</a>
-                        <a class="btn btn-danger ms-md-auto" target="_blank" href="{{ route('sites.scan-report.export', array_merge(['site_id' => $site->id, 'format' => 'pdf'], request()->only(['start_date', 'end_date', 'user_id', 'search']))) }}"><i data-feather="file-text" class="me-1"></i> View PDF Report</a>
-                        <a class="btn btn-success" href="{{ route('sites.scan-report.export', array_merge(['site_id' => $site->id, 'format' => 'csv'], request()->only(['start_date', 'end_date', 'user_id', 'search']))) }}"><i data-feather="download" class="me-1"></i> Export CSV</a>
+                        <a class="btn btn-danger ms-md-auto" target="_blank" href="{{ route('sites.scan-report.export', array_merge(['site_id' => $site->id, 'format' => 'pdf'], request()->only(['start_date', 'end_date', 'start_time', 'end_time', 'user_id', 'search']))) }}"><i data-feather="file-text" class="me-1"></i> View PDF Report</a>
+                        <a class="btn btn-success" href="{{ route('sites.scan-report.export', array_merge(['site_id' => $site->id, 'format' => 'csv'], request()->only(['start_date', 'end_date', 'start_time', 'end_time', 'user_id', 'search']))) }}"><i data-feather="download" class="me-1"></i> Export CSV</a>
                     </div>
                 </form>
 

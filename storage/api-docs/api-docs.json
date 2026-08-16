@@ -5125,13 +5125,16 @@
                 "summary": "Record an NFC tag scan against a site",
                 "operationId": "e6d5db613d0e95ffb5eed1c61d2fb6fe",
                 "requestBody": {
+                    "description": "Scans with the same site_id, authenticated user, app_date and app_time are grouped under the same SiteItem. A different app_date or app_time creates a new SiteItem.",
                     "required": true,
                     "content": {
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "site_id",
-                                    "nfc_tag_id"
+                                    "nfc_tag_id",
+                                    "app_date",
+                                    "app_time"
                                 ],
                                 "properties": {
                                     "site_id": {
@@ -5141,6 +5144,27 @@
                                     "nfc_tag_id": {
                                         "type": "integer",
                                         "example": 2
+                                    },
+                                    "app_date": {
+                                        "description": "App date in YYYY-MM-DD format",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-08-16"
+                                    },
+                                    "app_time": {
+                                        "description": "App time in HH:mm:ss 24-hour format",
+                                        "type": "string",
+                                        "format": "time",
+                                        "example": "09:30:00"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "scan"
+                                    },
+                                    "reason": {
+                                        "type": "string",
+                                        "example": "Routine checkpoint scan",
+                                        "nullable": true
                                     },
                                     "image": {
                                         "type": "string",

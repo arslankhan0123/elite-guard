@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Schedule;
 use App\Models\Site;
 use App\Models\NfcTag;
-use App\Models\SiteScan;
+use App\Models\SiteItem;
+use App\Models\SiteItemScan;
 use App\Repositories\ScheduleRepository;
 use Illuminate\Http\Request;
 use App\Repositories\SiteRepository;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class SiteApiController extends Controller
 {
@@ -106,12 +108,17 @@ class SiteApiController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
+     *         description="Scans with the same site_id, authenticated user, app_date and app_time are grouped under the same SiteItem. A different app_date or app_time creates a new SiteItem.",
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"site_id", "nfc_tag_id"},
+     *                 required={"site_id", "nfc_tag_id", "app_date", "app_time"},
      *                 @OA\Property(property="site_id", type="integer", example=1),
      *                 @OA\Property(property="nfc_tag_id", type="integer", example=2),
+     *                 @OA\Property(property="app_date", type="string", format="date", example="2026-08-16", description="App date in YYYY-MM-DD format"),
+     *                 @OA\Property(property="app_time", type="string", format="time", example="09:30:00", description="App time in HH:mm:ss 24-hour format"),
+     *                 @OA\Property(property="type", type="string", example="scan"),
+     *                 @OA\Property(property="reason", type="string", nullable=true, example="Routine checkpoint scan"),
      *                 @OA\Property(property="image", type="string", format="binary")
      *             )
      *         )
@@ -127,7 +134,11 @@ class SiteApiController extends Controller
         $validator = Validator::make($request->all(), [
             'site_id' => ['required', 'integer', 'exists:sites,id'],
             'nfc_tag_id' => ['required', 'integer', 'exists:nfc_tags,id'],
+            'app_date' => ['required', 'date_format:Y-m-d'],
+            'app_time' => ['required', 'date_format:H:i:s'],
             'image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:10240'],
+            'type' => ['nullable', 'string', 'max:100'],
+            'reason' => ['nullable', 'string'],
         ]);
 
         if ($validator->fails()) {
@@ -157,14 +168,52 @@ class SiteApiController extends Controller
         try {
             $scannedAt = Carbon::now();
 
-            $scan = SiteScan::create([
-                'site_id' => $request->integer('site_id'),
-                'nfc_tag_id' => $request->integer('nfc_tag_id'),
-                'user_id' => $user->id,
-                'date' => $scannedAt->toDateString(),
-                'time' => $scannedAt->format('H:i:s'),
-                'image' => $imagePath ? Storage::disk('public')->url($imagePath) : null,
-            ]);
+            $scan = DB::transaction(function () use ($request, $user, $scannedAt, $imagePath) {
+                $date = $scannedAt->toDateString();
+                $time = $scannedAt->format('H:i:s');
+                $type = $request->filled('type') ? $request->input('type') : 'scan';
+
+                $siteItem = SiteItem::firstOrCreate(
+                    [
+                        'site_id' => $request->integer('site_id'),
+                        'user_id' => $user->id,
+                        'app_date' => $request->input('app_date'),
+                        'app_time' => $request->input('app_time'),
+                    ],
+                    [
+                        'date' => $date,
+                        'type' => $type,
+                        'start_time' => $time,
+                        'end_time' => $time,
+                        'status' => false,
+                        'reason' => $request->input('reason'),
+                    ]
+                );
+
+                $scan = SiteItemScan::create([
+                    'site_item_id' => $siteItem->id,
+                    'site_id' => $request->integer('site_id'),
+                    'nfc_tag_id' => $request->integer('nfc_tag_id'),
+                    'user_id' => $user->id,
+                    'date' => $date,
+                    'time' => $time,
+                    'image' => $imagePath ? Storage::disk('public')->url($imagePath) : null,
+                ]);
+
+                $totalTags = NfcTag::where('site_id', $siteItem->site_id)->count();
+                $scannedTags = $siteItem->scans()->distinct()->count('nfc_tag_id');
+
+                $siteItem->update([
+                    'end_time' => $time,
+                    'status' => $totalTags > 0 && $scannedTags >= $totalTags,
+                    'type' => $type,
+                    'reason' => $request->exists('reason')
+                        ? $request->input('reason')
+                        : $siteItem->reason,
+                ]);
+
+                return $scan;
+            });
         } catch (\Throwable $exception) {
             if ($imagePath) {
                 Storage::disk('public')->delete($imagePath);
@@ -173,7 +222,12 @@ class SiteApiController extends Controller
             throw $exception;
         }
 
-        $scan->load(['site:id,name', 'nfcTag:id,site_id,uid,name', 'user:id,name']);
+        $scan->load([
+            'siteItem.site:id,name',
+            'siteItem.user:id,name',
+            'nfcTag:id,site_id,uid,name',
+            'user:id,name',
+        ]);
 
         return $this->successResponse($scan, 'NFC tag scanned and saved successfully.', 201);
     }

@@ -65,4 +65,14 @@ class Site extends Model
     {
         return $this->hasMany(SiteScan::class);
     }
+
+    public function siteItems()
+    {
+        return $this->hasMany(SiteItem::class);
+    }
+
+    public function siteItemScans()
+    {
+        return $this->hasMany(SiteItemScan::class);
+    }
 }

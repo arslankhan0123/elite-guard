@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Site;
 use App\Models\Schedule;
-use App\Models\SiteScan;
+use App\Models\SiteItemScan;
 use App\Models\User;
 use App\Repositories\SiteRepository;
 use Illuminate\Http\Request;
@@ -112,7 +112,7 @@ class SiteController extends Controller
         $filters = $this->validatedScanReportFilters($request);
         $site = Site::with(['company', 'nfcTags'])->findOrFail($site_id);
         $scans = $this->siteScanReportQuery($site, $filters)->paginate(25)->withQueryString();
-        $users = User::whereHas('siteScans', fn ($query) => $query->where('site_id', $site->id))
+        $users = User::whereHas('siteItemScans', fn ($query) => $query->where('site_id', $site->id))
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -127,19 +127,53 @@ class SiteController extends Controller
         $fileName = 'site-scan-report-' . $site->id . '-' . now()->format('Ymd-His');
 
         if ($format === 'pdf') {
+            $siteItems = $this->siteItemReportQuery($site, $filters)->get();
+            $requiredTags = $site->nfcTags;
+            $requiredTagIds = $requiredTags->pluck('id');
+
+            $reportItems = $siteItems->map(function ($item) use ($requiredTags, $requiredTagIds) {
+                $validScans = $item->scans
+                    ->whereIn('nfc_tag_id', $requiredTagIds)
+                    ->sortBy('time')
+                    ->values();
+                $scannedTagIds = $validScans->pluck('nfc_tag_id')->unique();
+                $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds)->values();
+                $requiredCount = $requiredTags->count();
+                $scannedCount = $scannedTagIds->count();
+                $completion = $requiredCount > 0
+                    ? min(100, round(($scannedCount / $requiredCount) * 100))
+                    : 0;
+
+                return [
+                    'item' => $item,
+                    'required_count' => $requiredCount,
+                    'scanned_count' => $scannedCount,
+                    'missing_count' => $missingTags->count(),
+                    'completion' => $completion,
+                    'status' => $requiredCount > 0 && $scannedCount >= $requiredCount
+                        ? 'Completed'
+                        : ($scannedCount > 0 ? 'Partial' : 'Missed'),
+                    'scans' => $validScans,
+                    'missing_tags' => $missingTags,
+                ];
+            });
+
+            $expectedScans = $reportItems->sum('required_count');
             $summary = [
-                'total_scans' => $scans->count(),
-                'site_checkpoints' => $site->nfcTags->count(),
-                'checkpoints_scanned' => $scans->pluck('nfc_tag_id')->unique()->count(),
-                'guards' => $scans->pluck('user_id')->unique()->count(),
-                'days' => $scans->pluck('date')->map(fn ($date) => $date?->format('Y-m-d'))->filter()->unique()->count(),
-                'evidence' => $scans->whereNotNull('image')->count(),
+                'total_items' => $reportItems->count(),
+                'required_tags' => $requiredTags->count(),
+                'completed_items' => $reportItems->where('status', 'Completed')->count(),
+                'partial_items' => $reportItems->where('status', 'Partial')->count(),
+                'missed_items' => $reportItems->where('status', 'Missed')->count(),
+                'overall_completion' => $expectedScans > 0
+                    ? min(100, round(($reportItems->sum('scanned_count') / $expectedScans) * 100))
+                    : 0,
             ];
             $selectedUser = !empty($filters['user_id']) ? User::find($filters['user_id']) : null;
 
             return \Barryvdh\DomPDF\Facade\Pdf::loadView(
                 'admin.sites.scan-report-pdf',
-                compact('site', 'scans', 'filters', 'summary', 'selectedUser')
+                compact('site', 'reportItems', 'filters', 'summary', 'selectedUser')
             )->setPaper('a4', 'landscape')->stream($fileName . '.pdf');
         }
 
@@ -169,6 +203,8 @@ class SiteController extends Controller
         $filters = $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after_or_equal:start_time',
             'user_id' => 'nullable|integer|exists:users,id',
             'search' => 'nullable|string|max:255',
         ]);
@@ -182,10 +218,18 @@ class SiteController extends Controller
 
     private function siteScanReportQuery(Site $site, array $filters)
     {
-        return SiteScan::query()
+        return SiteItemScan::query()
             ->with(['user:id,name', 'nfcTag:id,name,uid'])
             ->where('site_id', $site->id)
             ->whereBetween('date', [$filters['start_date'], $filters['end_date']])
+            ->when(!empty($filters['start_time']), fn ($query) => $query->whereHas(
+                'siteItem',
+                fn ($itemQuery) => $itemQuery->whereTime('start_time', '>=', $filters['start_time'])
+            ))
+            ->when(!empty($filters['end_time']), fn ($query) => $query->whereHas(
+                'siteItem',
+                fn ($itemQuery) => $itemQuery->whereTime('end_time', '<=', $filters['end_time'])
+            ))
             ->when(!empty($filters['user_id']), fn ($query) => $query->where('user_id', $filters['user_id']))
             ->when(!empty($filters['search']), function ($query) use ($filters) {
                 $search = $filters['search'];
@@ -197,6 +241,34 @@ class SiteController extends Controller
             })
             ->orderByDesc('date')
             ->orderByDesc('time');
+    }
+
+    private function siteItemReportQuery(Site $site, array $filters)
+    {
+        return \App\Models\SiteItem::query()
+            ->with([
+                'user:id,name',
+                'scans' => fn ($query) => $query
+                    ->with(['user:id,name', 'nfcTag:id,name,uid'])
+                    ->orderBy('time'),
+            ])
+            ->where('site_id', $site->id)
+            ->whereBetween('date', [$filters['start_date'], $filters['end_date']])
+            ->when(!empty($filters['start_time']), fn ($query) => $query->whereTime('start_time', '>=', $filters['start_time']))
+            ->when(!empty($filters['end_time']), fn ($query) => $query->whereTime('end_time', '<=', $filters['end_time']))
+            ->when(!empty($filters['user_id']), fn ($query) => $query->where('user_id', $filters['user_id']))
+            ->when(!empty($filters['search']), function ($query) use ($filters) {
+                $search = $filters['search'];
+                $query->where(function ($query) use ($search) {
+                    $query->where('type', 'like', "%{$search}%")
+                        ->orWhere('reason', 'like', "%{$search}%")
+                        ->orWhereHas('user', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('scans.nfcTag', fn ($q) => $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('uid', 'like', "%{$search}%"));
+                });
+            })
+            ->orderByDesc('date')
+            ->orderByDesc('start_time');
     }
 
     public function tours($site_id, Request $request)
@@ -371,44 +443,22 @@ class SiteController extends Controller
             ->unique()
             ->values();
 
-        $siteScansByDate = \App\Models\SiteScan::with(['nfcTag', 'user'])
+        $siteItems = \App\Models\SiteItem::with([
+            'user:id,name',
+            'scans' => function ($query) use ($requiredTagIds) {
+                $query->with(['nfcTag:id,name,uid', 'user:id,name'])
+                    ->whereIn('nfc_tag_id', $requiredTagIds)
+                    ->orderBy('time');
+            },
+        ])
             ->where('site_id', $tour->site_id)
-            ->whereIn('nfc_tag_id', $requiredTagIds)
             ->whereIn('date', $itemDates)
             ->orderBy('date')
-            ->orderBy('time')
-            ->get()
-            ->groupBy(fn ($scan) => $scan->date->format('Y-m-d'));
+            ->orderBy('start_time')
+            ->get();
 
-        $siteScansByItemId = collect();
-
-        $tour->items
-            ->groupBy(fn ($item) => $item->date?->format('Y-m-d'))
-            ->each(function ($dateItems, $date) use ($siteScansByDate, $siteScansByItemId) {
-                $orderedItems = $dateItems->sortBy('end_time')->values();
-
-                foreach ($siteScansByDate->get($date, collect()) as $scan) {
-                    $scanTime = \Carbon\Carbon::parse($scan->time)->format('H:i:s');
-                    $matchingItem = $orderedItems->first(function ($item) use ($scanTime) {
-                        $itemEnd = \Carbon\Carbon::parse($item->end_time)->format('H:i:s');
-
-                        return $scanTime <= $itemEnd;
-                    });
-
-                    if ($matchingItem) {
-                        $siteScansByItemId->put(
-                            $matchingItem->id,
-                            $siteScansByItemId->get($matchingItem->id, collect())->push($scan)
-                        );
-                    }
-                }
-            });
-
-        $reportItems = $tour->items->map(function ($item) use ($requiredTags, $requiredTagIds, $siteScansByItemId) {
-            $matchedSiteScans = $siteScansByItemId->get($item->id, collect());
-
+        $reportItems = $tour->items->map(function ($item) use ($requiredTags, $requiredTagIds) {
             $validScans = $item->scans
-                ->concat($matchedSiteScans)
                 ->whereIn('nfc_tag_id', $requiredTagIds)
                 ->unique('nfc_tag_id')
                 ->sortBy('time')
@@ -455,18 +505,37 @@ class SiteController extends Controller
         $timelineRows = collect();
 
         foreach ($reportItems as $reportItem) {
-            foreach ($siteScansByItemId->get($reportItem['item']->id, collect())->sortBy('time') as $siteScan) {
-                $timelineRows->push([
-                    'type' => 'site_scan',
-                    'scan' => $siteScan,
-                ]);
-            }
-
             $timelineRows->push([
                 'type' => 'interval',
                 'report' => $reportItem,
+                'sort_at' => $reportItem['item']->date?->format('Y-m-d') . ' ' . $reportItem['item']->start_time,
             ]);
         }
+
+        foreach ($siteItems as $siteItem) {
+            $scannedTagIds = $siteItem->scans->pluck('nfc_tag_id')->unique();
+            $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds)->values();
+            $requiredCount = $requiredTags->count();
+            $scannedCount = $scannedTagIds->count();
+            $completion = $requiredCount > 0
+                ? min(100, round(($scannedCount / $requiredCount) * 100))
+                : 0;
+
+            $timelineRows->push([
+                'type' => 'site_item',
+                'site_item' => $siteItem,
+                'required_count' => $requiredCount,
+                'scanned_count' => $scannedCount,
+                'missing_tags' => $missingTags,
+                'completion' => $completion,
+                'status' => $requiredCount > 0 && $scannedCount >= $requiredCount
+                    ? 'Completed'
+                    : ($scannedCount > 0 ? 'Partial' : 'Missed'),
+                'sort_at' => $siteItem->date?->format('Y-m-d') . ' ' . $siteItem->start_time,
+            ]);
+        }
+
+        $timelineRows = $timelineRows->sortBy('sort_at')->values();
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
             'admin.sites.tour-report-pdf',
