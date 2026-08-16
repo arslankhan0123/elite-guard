@@ -192,23 +192,26 @@
 
         .evidence-image {
             display: block;
-            width: 72px;
-            height: 54px;
+            width: 100%;
+            height: 82px;
+            max-width: 100%;
             object-fit: cover;
             border-radius: 3px
         }
 
-        .scan-grid { width: 100%; border-collapse: collapse; margin-top: 2px; }
+        .scan-grid { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 2px; }
         .items .scan-grid td { border: 0; background: transparent; padding: 2px; vertical-align: top; }
-        .scan-evidence-card { width: 100%; border-collapse: collapse; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
-        .items .scan-evidence-card .scan-photo-cell { width: 76px; padding: 2px; background: #fff; }
-        .items .scan-evidence-card .scan-data-cell { padding: 4px; background: #fff; color: #4b5563; font-size: 6px; line-height: 1.45; }
-        .scan-tag { color: #312e81; font-size: 6.5px; font-weight: bold; margin-bottom: 2px; }
+        .items .scan-grid .scan-grid-cell { width: 33.333%; max-width: 33.333%; }
+        .scan-evidence-card { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
+        .items .scan-evidence-card .scan-photo-cell { width: 58%; padding: 2px; background: #fff; }
+        .items .scan-evidence-card .scan-data-cell { width: 42%; padding: 5px; background: #fff; color: #4b5563; font-size: 7px; line-height: 1.5; word-wrap: break-word; }
+        .scan-tag { color: #312e81; font-size: 7.5px; font-weight: bold; margin-bottom: 3px; }
+        .no-photo { height: 82px; line-height: 82px; text-align: center; color: #9ca3af; background: #f3f4f6; border-radius: 3px; font-size: 7px; }
         }
 
         .missing-line {
             color: #b91c1c;
-            margin-left: 7px
+            margin: 3px 0 0 2px
         }
 
         .center {
