@@ -127,19 +127,53 @@ class SiteController extends Controller
         $fileName = 'site-scan-report-' . $site->id . '-' . now()->format('Ymd-His');
 
         if ($format === 'pdf') {
+            $siteItems = $this->siteItemReportQuery($site, $filters)->get();
+            $requiredTags = $site->nfcTags;
+            $requiredTagIds = $requiredTags->pluck('id');
+
+            $reportItems = $siteItems->map(function ($item) use ($requiredTags, $requiredTagIds) {
+                $validScans = $item->scans
+                    ->whereIn('nfc_tag_id', $requiredTagIds)
+                    ->sortBy('time')
+                    ->values();
+                $scannedTagIds = $validScans->pluck('nfc_tag_id')->unique();
+                $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds)->values();
+                $requiredCount = $requiredTags->count();
+                $scannedCount = $scannedTagIds->count();
+                $completion = $requiredCount > 0
+                    ? min(100, round(($scannedCount / $requiredCount) * 100))
+                    : 0;
+
+                return [
+                    'item' => $item,
+                    'required_count' => $requiredCount,
+                    'scanned_count' => $scannedCount,
+                    'missing_count' => $missingTags->count(),
+                    'completion' => $completion,
+                    'status' => $requiredCount > 0 && $scannedCount >= $requiredCount
+                        ? 'Completed'
+                        : ($scannedCount > 0 ? 'Partial' : 'Missed'),
+                    'scans' => $validScans,
+                    'missing_tags' => $missingTags,
+                ];
+            });
+
+            $expectedScans = $reportItems->sum('required_count');
             $summary = [
-                'total_scans' => $scans->count(),
-                'site_checkpoints' => $site->nfcTags->count(),
-                'checkpoints_scanned' => $scans->pluck('nfc_tag_id')->unique()->count(),
-                'guards' => $scans->pluck('user_id')->unique()->count(),
-                'days' => $scans->pluck('date')->map(fn ($date) => $date?->format('Y-m-d'))->filter()->unique()->count(),
-                'evidence' => $scans->whereNotNull('image')->count(),
+                'total_items' => $reportItems->count(),
+                'required_tags' => $requiredTags->count(),
+                'completed_items' => $reportItems->where('status', 'Completed')->count(),
+                'partial_items' => $reportItems->where('status', 'Partial')->count(),
+                'missed_items' => $reportItems->where('status', 'Missed')->count(),
+                'overall_completion' => $expectedScans > 0
+                    ? min(100, round(($reportItems->sum('scanned_count') / $expectedScans) * 100))
+                    : 0,
             ];
             $selectedUser = !empty($filters['user_id']) ? User::find($filters['user_id']) : null;
 
             return \Barryvdh\DomPDF\Facade\Pdf::loadView(
                 'admin.sites.scan-report-pdf',
-                compact('site', 'scans', 'filters', 'summary', 'selectedUser')
+                compact('site', 'reportItems', 'filters', 'summary', 'selectedUser')
             )->setPaper('a4', 'landscape')->stream($fileName . '.pdf');
         }
 
@@ -197,6 +231,32 @@ class SiteController extends Controller
             })
             ->orderByDesc('date')
             ->orderByDesc('time');
+    }
+
+    private function siteItemReportQuery(Site $site, array $filters)
+    {
+        return \App\Models\SiteItem::query()
+            ->with([
+                'user:id,name',
+                'scans' => fn ($query) => $query
+                    ->with(['user:id,name', 'nfcTag:id,name,uid'])
+                    ->orderBy('time'),
+            ])
+            ->where('site_id', $site->id)
+            ->whereBetween('date', [$filters['start_date'], $filters['end_date']])
+            ->when(!empty($filters['user_id']), fn ($query) => $query->where('user_id', $filters['user_id']))
+            ->when(!empty($filters['search']), function ($query) use ($filters) {
+                $search = $filters['search'];
+                $query->where(function ($query) use ($search) {
+                    $query->where('type', 'like', "%{$search}%")
+                        ->orWhere('reason', 'like', "%{$search}%")
+                        ->orWhereHas('user', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('scans.nfcTag', fn ($q) => $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('uid', 'like', "%{$search}%"));
+                });
+            })
+            ->orderByDesc('date')
+            ->orderByDesc('start_time');
     }
 
     public function tours($site_id, Request $request)
