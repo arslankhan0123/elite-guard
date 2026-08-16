@@ -18,7 +18,7 @@
             margin: 0;
             font-family: DejaVu Sans, sans-serif;
             color: #182236;
-            font-size: 7.5px
+            font-size: 9px
         }
 
         .header {
@@ -53,13 +53,13 @@
         }
 
         .brand {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             letter-spacing: .5px
         }
 
         .report-title {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             text-align: right
         }
@@ -68,7 +68,7 @@
             color: #c9c5ff;
             text-align: right;
             margin-top: 2px;
-            font-size: 6.5px
+            font-size: 8px
         }
 
         .accent {
@@ -92,7 +92,7 @@
 
         .metric {
             display: block;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             color: #312e81
         }
@@ -101,7 +101,7 @@
             display: block;
             margin-top: 1px;
             color: #697386;
-            font-size: 5.8px;
+            font-size: 8px;
             text-transform: uppercase
         }
 
@@ -110,7 +110,7 @@
             padding: 4px 7px;
             color: #fff;
             background: #312e81;
-            font-size: 8px;
+            font-size: 10px;
             font-weight: bold;
             border-radius: 3px
         }
@@ -125,7 +125,7 @@
         .label {
             display: block;
             color: #7b8494;
-            font-size: 5.5px;
+            font-size: 7.5px;
             text-transform: uppercase;
             margin-bottom: 1px
         }
@@ -145,7 +145,7 @@
             background: #ede9fe;
             color: #312e81;
             padding: 4px 3px;
-            font-size: 5.8px;
+            font-size: 8px;
             text-transform: uppercase;
             border: 1px solid #ddd6fe
         }
@@ -175,7 +175,7 @@
         .evidence-label {
             color: #312e81;
             font-weight: bold;
-            font-size: 5.8px;
+            font-size: 8px;
             text-transform: uppercase;
             margin-right: 5px
         }
@@ -183,7 +183,7 @@
         .evidence-line,
         .reason-line {
             color: #4b5563;
-            font-size: 6px
+            font-size: 8px
         }
 
         .reason-line {
@@ -203,10 +203,11 @@
         .items .scan-grid td { border: 0; background: transparent; padding: 2px; vertical-align: top; }
         .items .scan-grid .scan-grid-cell { width: 33.333%; max-width: 33.333%; }
         .scan-evidence-card { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
-        .items .scan-evidence-card .scan-photo-cell { width: 58%; padding: 2px; background: #fff; }
-        .items .scan-evidence-card .scan-data-cell { width: 42%; padding: 5px; background: #fff; color: #4b5563; font-size: 7px; line-height: 1.5; word-wrap: break-word; }
-        .scan-tag { color: #312e81; font-size: 7.5px; font-weight: bold; margin-bottom: 3px; }
-        .no-photo { height: 82px; line-height: 82px; text-align: center; color: #9ca3af; background: #f3f4f6; border-radius: 3px; font-size: 7px; }
+        .items .scan-evidence-card .scan-photo-cell { width: 55%; padding: 2px; background: #fff; }
+        .items .scan-evidence-card .scan-data-cell { width: 45%; padding: 6px; background: #fff; color: #374151; font-size: 9px; line-height: 1.55; word-wrap: break-word; }
+        .scan-tag { color: #312e81; font-size: 10px; font-weight: bold; margin-bottom: 4px; }
+        .scan-data-cell strong { color: #172033; font-weight: bold; }
+        .no-photo { height: 82px; line-height: 82px; text-align: center; color: #6b7280; background: #f3f4f6; border-radius: 3px; font-size: 9px; }
         }
 
         .missing-line {
@@ -223,7 +224,7 @@
             font-weight: bold;
             padding: 2px 5px;
             border-radius: 7px;
-            font-size: 5.8px
+            font-size: 8px
         }
 
         .status.completed {
@@ -280,7 +281,7 @@
             left: 0;
             right: 0;
             color: #7b8494;
-            font-size: 5.8px;
+            font-size: 8px;
             border-top: 1px solid #e5e7eb;
             padding-top: 4px
         }
