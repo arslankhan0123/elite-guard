@@ -9,7 +9,7 @@
                     <td class="scan-grid-cell">
                         <table class="scan-evidence-card">
                             <tr>
-                                <td class="scan-data-cell">
+                                <td class="scan-data-cell{{ !$imageSource ? ' scan-data-only-cell' : '' }}" @if(!$imageSource) colspan="2" @endif>
                                     <div class="scan-tag">{{ $scan->nfcTag?->name ?? 'Unknown Tag' }}</div>
                                     <div><strong>UID:</strong> {{ $scan->nfcTag?->uid ?? 'N/A' }}</div>
                                     <div><strong>Time:</strong> {{ $scan->time ? \Carbon\Carbon::parse($scan->time)->format('h:i:s A') : 'N/A' }}</div>
@@ -18,10 +18,6 @@
                                 @if($imageSource)
                                     <td class="scan-photo-cell">
                                         <img class="evidence-image" src="{{ $imageSource }}" alt="Evidence">
-                                    </td>
-                                @else
-                                    <td class="scan-photo-cell">
-                                        <div class="no-photo">No Image</div>
                                     </td>
                                 @endif
                             </tr>
