@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class SiteApiController extends Controller
 {
@@ -122,6 +123,7 @@ class SiteApiController extends Controller
      */
     public function storeScan(Request $request)
     {
+        Log::info('Store Scan Request Data: ', $request->all());
         $validator = Validator::make($request->all(), [
             'site_id' => ['required', 'integer', 'exists:sites,id'],
             'nfc_tag_id' => ['required', 'integer', 'exists:nfc_tags,id'],
