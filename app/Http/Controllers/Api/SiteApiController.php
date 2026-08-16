@@ -108,12 +108,17 @@ class SiteApiController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
+     *         description="Scans with the same site_id, authenticated user, app_date and app_time are grouped under the same SiteItem. A different app_date or app_time creates a new SiteItem.",
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"site_id", "nfc_tag_id"},
+     *                 required={"site_id", "nfc_tag_id", "app_date", "app_time"},
      *                 @OA\Property(property="site_id", type="integer", example=1),
      *                 @OA\Property(property="nfc_tag_id", type="integer", example=2),
+     *                 @OA\Property(property="app_date", type="string", format="date", example="2026-08-16", description="App date in YYYY-MM-DD format"),
+     *                 @OA\Property(property="app_time", type="string", format="time", example="09:30:00", description="App time in HH:mm:ss 24-hour format"),
+     *                 @OA\Property(property="type", type="string", example="scan"),
+     *                 @OA\Property(property="reason", type="string", nullable=true, example="Routine checkpoint scan"),
      *                 @OA\Property(property="image", type="string", format="binary")
      *             )
      *         )
@@ -129,6 +134,8 @@ class SiteApiController extends Controller
         $validator = Validator::make($request->all(), [
             'site_id' => ['required', 'integer', 'exists:sites,id'],
             'nfc_tag_id' => ['required', 'integer', 'exists:nfc_tags,id'],
+            'app_date' => ['required', 'date_format:Y-m-d'],
+            'app_time' => ['required', 'date_format:H:i:s'],
             'image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:10240'],
             'type' => ['nullable', 'string', 'max:100'],
             'reason' => ['nullable', 'string'],
@@ -170,10 +177,12 @@ class SiteApiController extends Controller
                     [
                         'site_id' => $request->integer('site_id'),
                         'user_id' => $user->id,
-                        'date' => $date,
-                        'type' => $type,
+                        'app_date' => $request->input('app_date'),
+                        'app_time' => $request->input('app_time'),
                     ],
                     [
+                        'date' => $date,
+                        'type' => $type,
                         'start_time' => $time,
                         'end_time' => $time,
                         'status' => false,
@@ -197,6 +206,7 @@ class SiteApiController extends Controller
                 $siteItem->update([
                     'end_time' => $time,
                     'status' => $totalTags > 0 && $scannedTags >= $totalTags,
+                    'type' => $type,
                     'reason' => $request->exists('reason')
                         ? $request->input('reason')
                         : $siteItem->reason,

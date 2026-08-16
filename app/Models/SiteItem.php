@@ -18,10 +18,13 @@ class SiteItem extends Model
         'reason',
         'end_time',
         'date',
+        'app_date',
+        'app_time',
     ];
 
     protected $casts = [
         'date' => 'date:Y-m-d',
+        'app_date' => 'date:Y-m-d',
         'status' => 'boolean',
     ];
 
