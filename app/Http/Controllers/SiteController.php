@@ -371,44 +371,22 @@ class SiteController extends Controller
             ->unique()
             ->values();
 
-        $siteScansByDate = \App\Models\SiteItemScan::with(['nfcTag', 'user'])
+        $siteItems = \App\Models\SiteItem::with([
+            'user:id,name',
+            'scans' => function ($query) use ($requiredTagIds) {
+                $query->with(['nfcTag:id,name,uid', 'user:id,name'])
+                    ->whereIn('nfc_tag_id', $requiredTagIds)
+                    ->orderBy('time');
+            },
+        ])
             ->where('site_id', $tour->site_id)
-            ->whereIn('nfc_tag_id', $requiredTagIds)
             ->whereIn('date', $itemDates)
             ->orderBy('date')
-            ->orderBy('time')
-            ->get()
-            ->groupBy(fn ($scan) => $scan->date->format('Y-m-d'));
+            ->orderBy('start_time')
+            ->get();
 
-        $siteScansByItemId = collect();
-
-        $tour->items
-            ->groupBy(fn ($item) => $item->date?->format('Y-m-d'))
-            ->each(function ($dateItems, $date) use ($siteScansByDate, $siteScansByItemId) {
-                $orderedItems = $dateItems->sortBy('end_time')->values();
-
-                foreach ($siteScansByDate->get($date, collect()) as $scan) {
-                    $scanTime = \Carbon\Carbon::parse($scan->time)->format('H:i:s');
-                    $matchingItem = $orderedItems->first(function ($item) use ($scanTime) {
-                        $itemEnd = \Carbon\Carbon::parse($item->end_time)->format('H:i:s');
-
-                        return $scanTime <= $itemEnd;
-                    });
-
-                    if ($matchingItem) {
-                        $siteScansByItemId->put(
-                            $matchingItem->id,
-                            $siteScansByItemId->get($matchingItem->id, collect())->push($scan)
-                        );
-                    }
-                }
-            });
-
-        $reportItems = $tour->items->map(function ($item) use ($requiredTags, $requiredTagIds, $siteScansByItemId) {
-            $matchedSiteScans = $siteScansByItemId->get($item->id, collect());
-
+        $reportItems = $tour->items->map(function ($item) use ($requiredTags, $requiredTagIds) {
             $validScans = $item->scans
-                ->concat($matchedSiteScans)
                 ->whereIn('nfc_tag_id', $requiredTagIds)
                 ->unique('nfc_tag_id')
                 ->sortBy('time')
@@ -455,18 +433,37 @@ class SiteController extends Controller
         $timelineRows = collect();
 
         foreach ($reportItems as $reportItem) {
-            foreach ($siteScansByItemId->get($reportItem['item']->id, collect())->sortBy('time') as $siteScan) {
-                $timelineRows->push([
-                    'type' => 'site_scan',
-                    'scan' => $siteScan,
-                ]);
-            }
-
             $timelineRows->push([
                 'type' => 'interval',
                 'report' => $reportItem,
+                'sort_at' => $reportItem['item']->date?->format('Y-m-d') . ' ' . $reportItem['item']->start_time,
             ]);
         }
+
+        foreach ($siteItems as $siteItem) {
+            $scannedTagIds = $siteItem->scans->pluck('nfc_tag_id')->unique();
+            $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds)->values();
+            $requiredCount = $requiredTags->count();
+            $scannedCount = $scannedTagIds->count();
+            $completion = $requiredCount > 0
+                ? min(100, round(($scannedCount / $requiredCount) * 100))
+                : 0;
+
+            $timelineRows->push([
+                'type' => 'site_item',
+                'site_item' => $siteItem,
+                'required_count' => $requiredCount,
+                'scanned_count' => $scannedCount,
+                'missing_tags' => $missingTags,
+                'completion' => $completion,
+                'status' => $requiredCount > 0 && $scannedCount >= $requiredCount
+                    ? 'Completed'
+                    : ($scannedCount > 0 ? 'Partial' : 'Missed'),
+                'sort_at' => $siteItem->date?->format('Y-m-d') . ' ' . $siteItem->start_time,
+            ]);
+        }
+
+        $timelineRows = $timelineRows->sortBy('sort_at')->values();
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
             'admin.sites.tour-report-pdf',

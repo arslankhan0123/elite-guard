@@ -137,40 +137,62 @@
         </thead>
         <tbody>
             @forelse($timelineRows as $index => $timelineRow)
-                @if($timelineRow['type'] === 'site_scan')
+                @if($timelineRow['type'] === 'site_item')
                     @php
-                        $siteScan = $timelineRow['scan'];
+                        $siteItem = $timelineRow['site_item'];
+                        $siteItemStatus = $timelineRow['status'];
+                        $siteItemProgressColor = match ($siteItemStatus) {
+                            'Completed' => '#059669',
+                            'Partial' => '#312e81',
+                            default => '#dc2626',
+                        };
                     @endphp
                     <tr>
                         <td class="center">{{ $index + 1 }}</td>
-                        <td class="center">{{ $siteScan->date?->format('d M Y') ?? 'N/A' }}</td>
-                        <td class="center">{{ \Carbon\Carbon::parse($siteScan->time)->format('h:i A') }}</td>
-                        <td class="center">&mdash;</td>
-                        <td class="center">&mdash;</td>
-                        <td class="center">1</td>
-                        <td class="center">&mdash;</td>
-                        <td class="center"><strong>NFC Scan</strong></td>
-                        <td class="center"><span class="status completed">Scanned</span></td>
+                        <td class="center">{{ $siteItem->date?->format('d M Y') ?? 'N/A' }}</td>
+                        <td class="center">{{ \Carbon\Carbon::parse($siteItem->start_time)->format('h:i A') }}</td>
+                        <td class="center">{{ $siteItem->end_time ? \Carbon\Carbon::parse($siteItem->end_time)->format('h:i A') : '—' }}</td>
+                        <td class="center">{{ $timelineRow['required_count'] }}</td>
+                        <td class="center">{{ $timelineRow['scanned_count'] }}</td>
+                        <td class="center">{{ $timelineRow['missing_tags']->count() }}</td>
+                        <td class="center">
+                            <span class="progress-wrap"><span class="progress" style="width:{{ max(3, $timelineRow['completion']) }}%; background-color:{{ $siteItemProgressColor }};"></span></span>
+                            <span class="completion-value {{ strtolower($siteItemStatus) }}">{{ $timelineRow['completion'] }}%</span>
+                        </td>
+                        <td class="center"><span class="status {{ strtolower($siteItemStatus) }}">{{ $siteItemStatus }}</span></td>
                     </tr>
                     <tr class="evidence-row">
                         <td colspan="9">
                             <div class="evidence-box">
+                                <div class="reason-line">
+                                    <span class="evidence-label">Site Item:</span>
+                                    {{ ucfirst($siteItem->type) }}
+                                    @if(filled($siteItem->reason)) | {{ $siteItem->reason }} @endif
+                                </div>
                                 <span class="evidence-label">Evidence:</span>
-                                <span class="evidence-line">
-                                    <span class="scan-chip">
-                                        <strong>{{ $siteScan->nfcTag?->name ?? 'Unknown Tag' }}</strong>
-                                        | UID: {{ $siteScan->nfcTag?->uid ?? 'N/A' }}
-                                        | Scanned: {{ \Carbon\Carbon::parse($siteScan->time)->format('h:i:s A') }}
-                                        | By: {{ $siteScan->user?->name ?? 'N/A' }}
-                                        @if($siteScan->image)
-                                            @php
-                                                $siteScanImageUrl = \Illuminate\Support\Str::startsWith($siteScan->image, ['http://', 'https://'])
-                                                    ? $siteScan->image
-                                                    : url($siteScan->image);
-                                            @endphp
-                                            <a class="image-link" href="{{ $siteScanImageUrl }}" target="_blank" rel="noopener noreferrer">View Image</a>
-                                        @endif
+                                @forelse($siteItem->scans as $siteScan)
+                                    <span class="evidence-line">
+                                        <span class="scan-chip">
+                                            <strong>{{ $siteScan->nfcTag?->name ?? 'Unknown Tag' }}</strong>
+                                            | UID: {{ $siteScan->nfcTag?->uid ?? 'N/A' }}
+                                            | Scanned: {{ \Carbon\Carbon::parse($siteScan->time)->format('h:i:s A') }}
+                                            | By: {{ $siteScan->user?->name ?? $siteItem->user?->name ?? 'N/A' }}
+                                            @if($siteScan->image)
+                                                @php
+                                                    $siteScanImageUrl = \Illuminate\Support\Str::startsWith($siteScan->image, ['http://', 'https://'])
+                                                        ? $siteScan->image
+                                                        : url($siteScan->image);
+                                                @endphp
+                                                <a class="image-link" href="{{ $siteScanImageUrl }}" target="_blank" rel="noopener noreferrer">View Image</a>
+                                            @endif
+                                        </span>
                                     </span>
+                                @empty
+                                    <span class="evidence-line empty">No NFC tags scanned.</span>
+                                @endforelse
+                                <span class="missing-line">
+                                    <strong>Missing:</strong>
+                                    {{ $timelineRow['missing_tags']->isNotEmpty() ? $timelineRow['missing_tags']->pluck('name')->implode(', ') : 'None' }}
                                 </span>
                             </div>
                         </td>
