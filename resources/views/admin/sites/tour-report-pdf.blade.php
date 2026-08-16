@@ -191,25 +191,20 @@
             margin-bottom: 3px;
         }
 
-        .scan-chip {
-            color: #312e81;
-            margin-right: 6px;
+        .evidence-image {
+            display: block;
+            width: 72px;
+            height: 54px;
+            object-fit: cover;
+            border-radius: 3px;
         }
 
-        .image-link {
-            display: inline-block;
-            margin: 0 0 0 3px;
-            padding: 1px 5px;
-            color: #fff;
-            background: #7c3aed;
-            border-radius: 5px;
-            font-size: 5.5px;
-            font-weight: bold;
-            line-height: 1.25;
-            text-decoration: none;
-            vertical-align: middle;
-            white-space: nowrap;
-        }
+        .scan-grid { width: 100%; border-collapse: collapse; margin-top: 2px; }
+        .items .scan-grid td { border: 0; background: transparent; padding: 2px; vertical-align: top; }
+        .scan-evidence-card { width: 100%; border-collapse: collapse; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
+        .items .scan-evidence-card .scan-photo-cell { width: 76px; padding: 2px; background: #fff; }
+        .items .scan-evidence-card .scan-data-cell { padding: 4px; background: #fff; color: #4b5563; font-size: 6px; line-height: 1.45; }
+        .scan-tag { color: #312e81; font-size: 6.5px; font-weight: bold; margin-bottom: 2px; }
 
         .missing-line {
             color: #b91c1c;
@@ -339,6 +334,17 @@
 </head>
 
 <body>
+    @php
+        $resolvePdfImage = function ($image) {
+            $path = parse_url($image, PHP_URL_PATH) ?: $image;
+
+            if (\Illuminate\Support\Str::startsWith($path, ['/storage/', 'storage/'])) {
+                return public_path(ltrim($path, '/'));
+            }
+
+            return $image;
+        };
+    @endphp
     <div class="header">
         <table class="header-table">
             <tr>
@@ -440,30 +446,11 @@
                             @if(filled($siteItem->reason)) | {{ $siteItem->reason }} @endif
                         </div>
                         <span class="evidence-label">Evidence:</span>
-                        @forelse($siteItem->scans as $siteScan)
-                        <span class="evidence-line">
-                            <span class="scan-chip">
-                                <strong>{{ $siteScan->nfcTag?->name ?? 'Unknown Tag' }}</strong>
-                                | UID: {{ $siteScan->nfcTag?->uid ?? 'N/A' }}
-                                | Scanned: {{ \Carbon\Carbon::parse($siteScan->time)->format('h:i:s A') }}
-                                | By: {{ $siteScan->user?->name ?? $siteItem->user?->name ?? 'N/A' }}
-                                @if($siteScan->image)
-                                @php
-                                $siteScanImageUrl = \Illuminate\Support\Str::startsWith($siteScan->image, ['http://', 'https://'])
-                                ? $siteScan->image
-                                : url($siteScan->image);
-                                @endphp
-                                <a class="image-link" href="{{ $siteScanImageUrl }}" target="_blank" rel="noopener noreferrer">View Image</a>
-                                @endif
-                            </span>
-                        </span>
-                        @empty
-                        <span class="evidence-line empty">No NFC tags scanned.</span>
-                        @endforelse
-                        <span class="missing-line">
+                        @include('admin.sites.partials.scan-evidence-grid', ['scans' => $siteItem->scans, 'fallbackUser' => $siteItem->user?->name])
+                        <div class="missing-line">
                             <strong>Missing:</strong>
                             {{ $timelineRow['missing_tags']->isNotEmpty() ? $timelineRow['missing_tags']->pluck('name')->implode(', ') : 'None' }}
-                        </span>
+                        </div>
                     </div>
                 </td>
             </tr>
@@ -502,33 +489,11 @@
                         </div>
                         @endif
                         <span class="evidence-label">Evidence:</span>
-                        @if($row['scans']->isNotEmpty())
-                        <span class="evidence-line">
-                            @foreach($row['scans'] as $scan)
-                            <span class="scan-chip">
-                                <strong>{{ $scan->nfcTag?->name ?? 'Unknown Tag' }}</strong>
-                                | UID: {{ $scan->nfcTag?->uid ?? 'N/A' }}
-                                | Scanned: {{ $scan->time ? \Carbon\Carbon::parse($scan->time)->format('h:i:s A') : 'N/A' }}
-                                | By: {{ $scan->user?->name ?? $tour->user?->name ?? 'N/A' }}
-                                @if($scan->image)
-                                @php
-                                $imageUrl = \Illuminate\Support\Str::startsWith($scan->image, ['http://', 'https://'])
-                                ? $scan->image
-                                : url($scan->image);
-                                @endphp
-                                <a class="image-link" href="{{ $imageUrl }}" target="_blank" rel="noopener noreferrer">View Image</a>
-                                @endif
-                            </span>
-                            @endforeach
-                        </span>
-                        @else
-                        <span class="evidence-line empty">No NFC tags scanned.</span>
-                        @endif
-
-                        <span class="missing-line">
+                        @include('admin.sites.partials.scan-evidence-grid', ['scans' => $row['scans'], 'fallbackUser' => $tour->user?->name])
+                        <div class="missing-line">
                             <strong>Missing:</strong>
                             {{ $row['missing_tags']->isNotEmpty() ? $row['missing_tags']->pluck('name')->implode(', ') : 'None' }}
-                        </span>
+                        </div>
                     </div>
                 </td>
             </tr>
