@@ -150,6 +150,15 @@
                             </a>
                         </li>
                         @endif
+                        @if(Auth::user()->hasAdminPermission('sites', 'list'))
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{ route('weekly-run-sheets.index') }}"
+                                id="topnav-run-sheets" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="clipboard"></i>
+                                <span data-key="t-run-sheets">Runsheets</span>
+                            </a>
+                        </li>
+                        @endif
                         @if(Auth::user()->hasAdminPermission('site-tours', 'list'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('sites.tours.all')}}"

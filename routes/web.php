@@ -21,6 +21,7 @@ use App\Http\Controllers\TimeClockController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\NoticeBoardController;
 use App\Http\Controllers\PostEscController;
+use App\Http\Controllers\WeeklyRunSheetController;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\NfcTag;
@@ -87,6 +88,10 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::delete('/tours/delete-week/{site_id}', [SiteController::class, 'deleteWeekTours'])->name('sites.tours.deleteWeek');
     });
 
+    Route::resource('/run-sheets', WeeklyRunSheetController::class)
+        ->parameters(['run-sheets' => 'weeklyRunSheet'])
+        ->names('weekly-run-sheets');
+
     Route::group(['prefix' => '/nfc'], function () {
         Route::get('/', [NfcTagController::class, 'index'])->name('nfc.index');
         Route::get('/create', [NfcTagController::class, 'create'])->name('nfc.create');
@@ -107,7 +112,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/ajax/{user_id}', [ScheduleController::class, 'getAjaxSchedule'])->name('schedules.ajax');
     });
 
-    Route::post('/run-sheets/update', [\App\Http\Controllers\RunSheetController::class, 'update'])->name('run-sheets.update');
+    Route::post('/employee-run-sheets/update', [\App\Http\Controllers\RunSheetController::class, 'update'])->name('run-sheets.update');
 
     Route::group(['prefix' => '/open-shifts'], function () {
         Route::get('/', [OpenShiftController::class, 'index'])->name('open-shifts.index');
