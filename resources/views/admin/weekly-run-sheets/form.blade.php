@@ -89,7 +89,7 @@
     .day-card { border-left: 4px solid #6f42c1 !important; }
     .tour-entry { background: #f8f7ff; border: 1px solid #e7e1ff; border-radius: 10px; padding: 12px; margin: 8px 0; }
     .tour-number { width: 28px; height: 28px; border-radius: 50%; background: #6f42c1; color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
-    .remove-entry { width: 34px; height: 34px; padding: 0; }
+    .remove-entry { flex-shrink: 0; }
     .sticky-save { position: sticky; bottom: 0; z-index: 5; background: rgba(245,247,251,.94); border-top: 1px solid #e5e7eb; }
 </style>
 @endsection
@@ -137,7 +137,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="time" name="entries[${index}][end_time]" value="${escapeHtml((data.end_time || '').substring(0, 5))}" class="form-control" required>
                 </div>
                 <div class="col-auto">
-                    <button type="button" class="btn btn-outline-danger remove-entry" title="Remove tour"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="bin-button remove-entry" title="Remove tour" aria-label="Remove tour">
+                        <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg"><line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line><line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line></svg>
+                        <svg class="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="entry-bin-${index}" fill="white"><path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path></mask><path d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-.418 43-4 39.418-4 35H4H29H37ZM4 43C-.418 43-4 39.418-4 35V0H4V35V43ZM37 0V35C37 39.418 33.418 43 29 43V35V0H37Z" fill="white" mask="url(#entry-bin-${index})"></path><path d="M12 6V29M21 6V29" stroke="white" stroke-width="4"></path></svg>
+                    </button>
                 </div>
             </div>`;
 

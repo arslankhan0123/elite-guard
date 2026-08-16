@@ -45,28 +45,34 @@
         @if($entries->isEmpty())
             <div class="text-center text-muted py-4">No tours scheduled.</div>
         @else
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 runsheet-day-table">
-                    <thead><tr><th style="width:70px">#</th><th>Tour Name</th><th>Site</th><th>Start Time</th><th>End Time</th><th>Duration</th></tr></thead>
-                    <tbody>
-                    @foreach($entries as $entry)
+            <div class="row g-3 p-3 runsheet-tour-grid" data-day="{{ $dayNumber }}">
+                @foreach($entries as $entry)
                         @php
                             $start = \Carbon\Carbon::parse($entry->start_time);
                             $end = \Carbon\Carbon::parse($entry->end_time);
                             if ($end->lt($start)) $end->addDay();
                         @endphp
-                        <tr>
-                            <td><span class="badge bg-primary">{{ $loop->iteration }}</span></td>
-                            <td class="fw-semibold">{{ $entry->tour_name }}</td>
-                            <td>{{ $entry->site?->name ?? 'N/A' }}</td>
-                            <td>{{ $start->format('h:i A') }}</td>
-                            <td>{{ $end->format('h:i A') }}</td>
-                            <td>{{ $start->diff($end)->format('%hh %im') }}</td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+                    <div class="col-xl-4 col-md-6{{ $loop->iteration > 6 ? ' runsheet-extra-tour' : '' }}">
+                        <div class="runsheet-tour-card h-100">
+                            <div class="runsheet-tour-card-head">
+                                <span class="runsheet-tour-number">{{ $loop->iteration }}</span>
+                                <strong>{{ $entry->tour_name }}</strong>
+                            </div>
+                            <div class="runsheet-tour-site"><i data-feather="map-pin"></i> {{ $entry->site?->name ?? 'N/A' }}</div>
+                            <div class="runsheet-tour-times">
+                                <div><span>Start</span><strong>{{ $start->format('h:i A') }}</strong></div>
+                                <div><span>End</span><strong>{{ $end->format('h:i A') }}</strong></div>
+                                <div><span>Duration</span><strong>{{ $start->diff($end)->format('%hh %im') }}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
+            @if($entries->count() > 6)
+                <div class="text-center pb-3">
+                    <button type="button" class="btn runsheet-toggle-tours" data-day="{{ $dayNumber }}" data-more="{{ $entries->count() - 6 }}">See More ({{ $entries->count() - 6 }})</button>
+                </div>
+            @endif
         @endif
     </div>
 </div>
@@ -78,10 +84,20 @@
     .runsheet-day-header { background: #1e1b4b !important; color: #fff; border-bottom: 0; }
     .runsheet-day-header h5 { color: #fff; font-weight: 700; letter-spacing: .01em; }
     .runsheet-tour-count { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 20px; background: #fff; color: #1e1b4b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-    .runsheet-day-table thead th { background: #f1f3f7 !important; color: #1e293b !important; border: 0 !important; border-bottom: 1px solid #e2e8f0 !important; padding: 13px 16px !important; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-    .runsheet-day-table tbody td { padding: 13px 16px; border-color: #eef0f5; }
-    .runsheet-day-table tbody tr:nth-child(even) { background: #faf9ff; }
-    .runsheet-day-table tbody tr:hover { background: #f5f3ff; }
+    .runsheet-tour-card { padding: 14px; border: 1px solid #e5e7eb; border-radius: 9px; background: #fff; box-shadow: 0 3px 8px rgba(30,27,75,.06); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .runsheet-tour-card:hover { transform: translateY(-2px); border-color: #c4b5fd; box-shadow: 0 7px 16px rgba(30,27,75,.12); }
+    .runsheet-tour-card-head { display: flex; align-items: center; gap: 9px; color: #1e1b4b; font-size: 14px; }
+    .runsheet-tour-number { flex: 0 0 25px; width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; background: #7c3aed; color: #fff; font-size: 11px; font-weight: 700; }
+    .runsheet-tour-site { display: flex; align-items: center; gap: 5px; margin: 12px 0; color: #64748b; font-size: 12px; }
+    .runsheet-tour-site svg { width: 14px; height: 14px; color: #7c3aed; }
+    .runsheet-tour-times { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding-top: 10px; border-top: 1px solid #eef0f5; }
+    .runsheet-tour-times div { min-width: 0; }
+    .runsheet-tour-times span { display: block; margin-bottom: 3px; color: #94a3b8; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+    .runsheet-tour-times strong { display: block; color: #334155; font-size: 11px; white-space: nowrap; }
+    .runsheet-extra-tour { display: none; }
+    .runsheet-tour-grid.is-expanded .runsheet-extra-tour { display: block; }
+    .runsheet-toggle-tours { padding: 6px 15px; border: 1px solid #ddd6fe; border-radius: 20px; background: #f5f3ff; color: #6d28d9; font-size: 11px; font-weight: 700; }
+    .runsheet-toggle-tours:hover { background: #7c3aed; color: #fff; }
     .runsheet-action-link { display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
     .backBtn {
         width: 1.875rem;
@@ -108,4 +124,18 @@
         to { transform: translateX(-3px); }
     }
 </style>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.runsheet-toggle-tours').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const grid = document.querySelector(`.runsheet-tour-grid[data-day="${button.dataset.day}"]`);
+            const expanded = grid.classList.toggle('is-expanded');
+            button.textContent = expanded ? 'See Less' : `See More (${button.dataset.more})`;
+        });
+    });
+});
+</script>
 @endsection
