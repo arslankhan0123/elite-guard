@@ -24,6 +24,24 @@ class WeeklyRunSheetRepository
         ];
     }
 
+    public function getUserAssignedAllWeeklyRunSheets(User $user): array
+    {
+        $runSheets = $user->weeklyRunSheets()
+            ->with([
+                'entries.site.company',
+                'entries.site.nfcTags',
+            ])
+            ->orderByDesc('weekly_run_sheets.week_start_date')
+            ->get();
+
+        return [
+            'status' => true,
+            'message' => 'Assigned weekly runsheets retrieved successfully',
+            'total_run_sheets' => $runSheets->count(),
+            'run_sheets' => $runSheets,
+        ];
+    }
+
     public function getUserAssignedWeeklyRunSheets(User $user): array
     {
         $today = Carbon::now(config('app.timezone', 'UTC'));

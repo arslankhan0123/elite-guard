@@ -18,8 +18,8 @@ class WeeklyRunSheetApiController extends Controller
     /**
      * @OA\Get(
      *     path="/api/run-sheets/weekly",
-     *     summary="Get all weekly runsheets",
-     *     description="Returns all weekly runsheets with all weekday child entries.",
+     *     summary="Get all weekly runsheets assigned to the authenticated user",
+     *     description="Returns only weekly runsheets assigned to the authenticated user, including all weekday child entries. Unassigned runsheets are omitted.",
      *     tags={"Weekly Runsheets"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Response(response=200, description="Weekly runsheets fetched successfully")
@@ -28,8 +28,8 @@ class WeeklyRunSheetApiController extends Controller
     public function index(Request $request)
     {
         return $this->successResponse(
-            $this->runSheetRepository->getAllWeeklyRunSheets(),
-            'Weekly runsheets fetched successfully.'
+            $this->runSheetRepository->getUserAssignedAllWeeklyRunSheets($request->user()),
+            'Assigned weekly runsheets fetched successfully.'
         );
     }
 

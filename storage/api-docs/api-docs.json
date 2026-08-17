@@ -6341,8 +6341,8 @@
                 "tags": [
                     "Weekly Runsheets"
                 ],
-                "summary": "Get all weekly runsheets",
-                "description": "Returns all weekly runsheets with all weekday child entries.",
+                "summary": "Get all weekly runsheets assigned to the authenticated user",
+                "description": "Returns only weekly runsheets assigned to the authenticated user, including all weekday child entries. Unassigned runsheets are omitted.",
                 "operationId": "9a94b8346f553449f5808083fe360cc2",
                 "responses": {
                     "200": {
