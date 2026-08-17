@@ -72,6 +72,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/scan', [RunSheetApiController::class, 'storeScan']);
         Route::get('/weekly', [WeeklyRunSheetApiController::class, 'index']);
         Route::get('/user', [WeeklyRunSheetApiController::class, 'userRunSheets']);
+        Route::post('/weekly/scan', [WeeklyRunSheetApiController::class, 'storeScan']);
     });
 
     Route::group(['prefix' => '/check-points'], function () {

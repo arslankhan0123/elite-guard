@@ -6493,6 +6493,85 @@
                     }
                 ]
             }
+        },
+        "/api/run-sheets/weekly/scan": {
+            "post": {
+                "tags": [
+                    "Weekly Runsheets"
+                ],
+                "summary": "Record an NFC tag scan for a weekly run sheet entry",
+                "description": "Validates scan location and prevents duplicate scans for the same day.",
+                "operationId": "2cf3a4c7459663750da42f0989b02f3c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "weekly_run_sheet_id",
+                                    "weekly_run_sheet_entry_id",
+                                    "nfc_tag_id"
+                                ],
+                                "properties": {
+                                    "weekly_run_sheet_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "weekly_run_sheet_entry_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "nfc_tag_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-08-17"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "example": "14:30:00"
+                                    },
+                                    "latitude": {
+                                        "type": "string",
+                                        "example": "31.5038682"
+                                    },
+                                    "longitude": {
+                                        "type": "string",
+                                        "example": "74.3480792"
+                                    },
+                                    "reason": {
+                                        "type": "string",
+                                        "example": "NFC tag was inaccessible",
+                                        "nullable": true
+                                    },
+                                    "image": {
+                                        "description": "Optional image/photo taken during scanning",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Scan recorded successfully."
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
