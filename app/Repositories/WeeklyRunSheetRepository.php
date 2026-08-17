@@ -46,24 +46,74 @@ class WeeklyRunSheetRepository
     {
         $today = Carbon::now(config('app.timezone', 'UTC'));
         $dayOfWeek = $today->dayOfWeekIso;
+        $dateStr = $today->toDateString();
 
         $runSheets = $user->weeklyRunSheets()
             ->whereHas('entries', fn ($query) => $query->where('day_of_week', $dayOfWeek))
             ->with(['entries' => fn ($query) => $query
                 ->where('day_of_week', $dayOfWeek)
-                ->with(['site.company', 'site.nfcTags'])
+                ->with([
+                    'site.company', 
+                    'site.nfcTags',
+                    'scans' => fn ($q) => $q->where('date', $dateStr)
+                ])
                 ->orderBy('sequence')
                 ->orderBy('start_time')])
             ->orderBy('weekly_run_sheets.name')
             ->get();
 
+        $runSheetsData = $runSheets->map(function ($runSheet) {
+            $sheetArray = $runSheet->toArray();
+            
+            if (isset($sheetArray['entries'])) {
+                foreach ($sheetArray['entries'] as &$entry) {
+                    $scannedTagIds = collect($entry['scans'] ?? [])
+                        ->pluck('nfc_tag_id')
+                        ->map(fn($id) => (int)$id)
+                        ->toArray();
+                    
+                    if (isset($entry['site']['nfc_tags'])) {
+                        foreach ($entry['site']['nfc_tags'] as &$tag) {
+                            $tag['scanned'] = in_array((int)$tag['id'], $scannedTagIds);
+                        }
+                    }
+
+                    if (isset($entry['site']['nfcTags'])) {
+                        foreach ($entry['site']['nfcTags'] as &$tag) {
+                            $tag['scanned'] = in_array((int)$tag['id'], $scannedTagIds);
+                        }
+                    }
+                }
+            }
+            return $sheetArray;
+        });
+
         return [
             'status' => true,
             'message' => 'Today assigned weekly runsheets retrieved successfully',
-            'date' => $today->toDateString(),
+            'date' => $dateStr,
             'day' => $today->format('l'),
             'total_run_sheets' => $runSheets->count(),
-            'run_sheets' => $runSheets,
+            'run_sheets' => $runSheetsData,
         ];
+    }
+
+    public function storeScan(array $data)
+    {
+        $scan = \App\Models\WeeklyRunSheetScan::create($data);
+        return [
+            'status' => true,
+            'message' => 'Scan recorded successfully',
+            'scan' => $scan
+        ];
+    }
+
+    public function isAlreadyScanned(array $data)
+    {
+        return \App\Models\WeeklyRunSheetScan::where('user_id', $data['user_id'])
+            ->where('weekly_run_sheet_entry_id', $data['weekly_run_sheet_entry_id'])
+            ->where('nfc_tag_id', $data['nfc_tag_id'])
+            ->where('date', $data['date'])
+            ->exists();
     }
 }

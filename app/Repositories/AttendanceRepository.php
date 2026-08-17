@@ -40,12 +40,12 @@ class AttendanceRepository
         $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time, $timezone);
         $earliestAllowed = $startTime->copy()->subMinutes(30);
 
-        // if ($now->lt($earliestAllowed)) {
-        //     return [
-        //         'status' => false,
-        //         'message' => 'You can only clock in starting from 30 minutes before the shift start time (' . $shift->start_time . ').'
-        //     ];
-        // }
+        if ($now->lt($earliestAllowed)) {
+            return [
+                'status' => false,
+                'message' => 'You can only clock in starting from 30 minutes before the shift start time (' . $shift->start_time . ').'
+            ];
+        }
 
         // Verify if user is assigned to this shift
         // Assuming shift -> schedule -> user relationship
@@ -67,13 +67,13 @@ class AttendanceRepository
 
         $distance = $this->calculateDistance($lat, $long, $site->latitude, $site->longitude);
 
-        // if ($distance > 100) { // 100 meters
-        //     return [
-        //         'status' => false,
-        //         'message' => 'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
-        //         'distance' => $distance
-        //     ];
-        // }
+        if ($distance > 100) { // 100 meters
+            return [
+                'status' => false,
+                'message' => 'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
+                'distance' => $distance
+            ];
+        }
 
         // Check if already clocked in
         $existing = ShiftAttendance::where('shift_id', $shiftId)

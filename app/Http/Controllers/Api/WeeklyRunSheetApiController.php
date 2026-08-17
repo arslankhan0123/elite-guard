@@ -5,11 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Repositories\WeeklyRunSheetRepository;
 use App\Traits\ApiResponser;
+use App\Traits\CommonTrait;
 use Illuminate\Http\Request;
+use App\Models\WeeklyRunSheetEntry;
+use App\Models\Site;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class WeeklyRunSheetApiController extends Controller
 {
-    use ApiResponser;
+    use ApiResponser, CommonTrait;
 
     public function __construct(private WeeklyRunSheetRepository $runSheetRepository)
     {
@@ -82,5 +89,112 @@ class WeeklyRunSheetApiController extends Controller
             $this->runSheetRepository->getUserAssignedWeeklyRunSheets($request->user()),
             "Today's assigned weekly runsheets fetched successfully."
         );
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/run-sheets/weekly/scan",
+     *     summary="Record an NFC tag scan for a weekly run sheet entry",
+     *     description="Validates scan location and prevents duplicate scans for the same day.",
+     *     tags={"Weekly Runsheets"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"weekly_run_sheet_id", "weekly_run_sheet_entry_id", "nfc_tag_id"},
+     *                 @OA\Property(property="weekly_run_sheet_id", type="integer", example=1),
+     *                 @OA\Property(property="weekly_run_sheet_entry_id", type="integer", example=1),
+     *                 @OA\Property(property="nfc_tag_id", type="integer", example=2),
+     *                 @OA\Property(property="date", type="string", format="date", example="2026-08-17"),
+     *                 @OA\Property(property="time", type="string", example="14:30:00"),
+     *                 @OA\Property(property="latitude", type="string", example="31.5038682"),
+     *                 @OA\Property(property="longitude", type="string", example="74.3480792"),
+     *                 @OA\Property(property="reason", type="string", nullable=true, example="NFC tag was inaccessible"),
+     *                 @OA\Property(property="image", type="string", format="binary", description="Optional image/photo taken during scanning")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Scan recorded successfully."
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation Error"
+     *     )
+     * )
+     */
+    public function storeScan(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'weekly_run_sheet_id' => 'required|exists:weekly_run_sheets,id',
+            'weekly_run_sheet_entry_id' => 'required|exists:weekly_run_sheet_entries,id',
+            'nfc_tag_id' => 'required|exists:nfc_tags,id',
+            'date' => 'nullable|date',
+            'time' => 'nullable',
+            'latitude' => 'required|string',
+            'longitude' => 'required|string',
+            'reason' => 'nullable|string',
+            'image' => 'nullable|image'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), null, 422);
+        }
+
+        $entry = WeeklyRunSheetEntry::find($request->weekly_run_sheet_entry_id);
+        if (!$entry) {
+            return $this->errorResponse('Weekly run sheet entry not found.', null, 404);
+        }
+
+        $site = Site::find($entry->site_id);
+        if (!$site) {
+            return $this->errorResponse('Associated site not found.', null, 404);
+        }
+
+        // Distance validation
+        if ($request->latitude && $request->longitude) {
+            $distance = $this->calculateDistance($request->latitude, $request->longitude, $site->latitude, $site->longitude);
+
+            if ($distance > 100) { // 100 meters
+                return $this->errorResponse(
+                    'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
+                    ['distance' => round($distance, 2)],
+                    422
+                );
+            }
+        }
+
+        $date = $request->input('date') ?: Carbon::now(config('app.timezone', 'UTC'))->toDateString();
+        $time = $request->input('time') ?: Carbon::now(config('app.timezone', 'UTC'))->toTimeString();
+
+        $data = [
+            'weekly_run_sheet_id' => (int)$request->weekly_run_sheet_id,
+            'weekly_run_sheet_entry_id' => (int)$request->weekly_run_sheet_entry_id,
+            'nfc_tag_id' => (int)$request->nfc_tag_id,
+            'user_id' => Auth::id(),
+            'date' => $date,
+            'time' => $time,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'reason' => $request->reason,
+        ];
+
+        // Check if already scanned on this date
+        if ($this->runSheetRepository->isAlreadyScanned($data)) {
+            return $this->errorResponse('This NFC tag has already been scanned for this weekly run sheet entry today.', null, 422);
+        }
+
+        // Image upload handling
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('documents/WeeklyRunSheetScans', 'public');
+            $data['image'] = Storage::disk('public')->url($path);
+        }
+
+        $result = $this->runSheetRepository->storeScan($data);
+
+        return $this->successResponse($result['scan'], 'Scan recorded successfully.');
     }
 }

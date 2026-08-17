@@ -27,4 +27,9 @@ class WeeklyRunSheet extends Model
             ->withPivot('assigned_at')
             ->withTimestamps();
     }
+
+    public function scans()
+    {
+        return $this->hasMany(WeeklyRunSheetScan::class);
+    }
 }

@@ -27,4 +27,9 @@ class WeeklyRunSheetEntry extends Model
     {
         return $this->belongsTo(Site::class);
     }
+
+    public function scans()
+    {
+        return $this->hasMany(WeeklyRunSheetScan::class, 'weekly_run_sheet_entry_id');
+    }
 }
