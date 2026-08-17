@@ -206,6 +206,7 @@
         .scan-evidence-card { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
         .items .scan-evidence-card .scan-photo-cell { width: 55%; height: 108px; padding: 2px; background: #fff; vertical-align: middle; }
         .items .scan-evidence-card .scan-data-cell { width: 45%; padding: 6px; background: #fff; color: #374151; font-size: 9px; line-height: 1.55; word-wrap: break-word; }
+        .items .scan-evidence-card .scan-data-only-cell { width: 100%; }
         .scan-tag { color: #312e81; font-size: 10px; font-weight: bold; margin-bottom: 4px; }
         .scan-data-cell strong { color: #172033; font-weight: bold; }
         .no-photo { height: 18px; padding: 43px 0; text-align: center; color: #4b5563; background: #f3f4f6; border-radius: 3px; font-size: 12px; line-height: 18px; font-weight: bold; }

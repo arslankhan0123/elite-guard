@@ -38,6 +38,7 @@ class IsSuperAdmin
             str_starts_with($routeName, 'sites.tours.') => 'site-tours',
             str_starts_with($routeName, 'companies.') => 'companies',
             str_starts_with($routeName, 'sites.') => 'sites',
+            str_starts_with($routeName, 'weekly-run-sheets.') => 'sites',
             str_starts_with($routeName, 'nfc.') => 'nfc',
             str_starts_with($routeName, 'schedules.'), str_starts_with($routeName, 'run-sheets.') => 'schedules',
             str_starts_with($routeName, 'open-shifts.') => 'open-shifts',
@@ -63,7 +64,7 @@ class IsSuperAdmin
             str_contains($routeName, 'create'), str_contains($routeName, 'store') => 'create',
             str_contains($routeName, 'edit'), str_contains($routeName, 'update'), str_contains($routeName, 'approve'), str_contains($routeName, 'reject'), str_contains($routeName, 'assign') => 'update',
             $routeName === 'dashboard', str_ends_with($routeName, '.index'),
-                in_array($routeName, ['reports.all', 'sites.tours.all', 'sites.tours', 'sites.nfcTags', 'schedules.ajax', 'open-shifts.claims'], true),
+                in_array($routeName, ['reports.all', 'sites.tours.all', 'sites.tours', 'sites.nfcTags', 'weekly-run-sheets.show', 'schedules.ajax', 'open-shifts.claims'], true),
                 str_starts_with($routeName, 'forms.'), str_starts_with($routeName, 'security-reports.') => 'list',
             default => 'view',
         };

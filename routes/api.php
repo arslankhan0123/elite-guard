@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\TaxDocsApiController;
 use App\Http\Controllers\Api\TimeClockApiController;
 use App\Http\Controllers\Api\TimeClockController;
 use App\Http\Controllers\Api\UserApiController;
+use App\Http\Controllers\Api\WeeklyRunSheetApiController;
 use App\Http\Controllers\Api\DispatchApiController;
 use App\Http\Controllers\CompanyController;
 use Illuminate\Http\Request;
@@ -69,6 +70,8 @@ Route::middleware('auth:api')->group(function () {
     Route::group(['prefix' => '/run-sheets'], function () {
         Route::get('/', [RunSheetApiController::class, 'index']);
         Route::post('/scan', [RunSheetApiController::class, 'storeScan']);
+        Route::get('/weekly', [WeeklyRunSheetApiController::class, 'index']);
+        Route::get('/user', [WeeklyRunSheetApiController::class, 'userRunSheets']);
     });
 
     Route::group(['prefix' => '/check-points'], function () {

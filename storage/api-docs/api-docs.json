@@ -6335,6 +6335,164 @@
                     }
                 ]
             }
+        },
+        "/api/run-sheets/weekly": {
+            "get": {
+                "tags": [
+                    "Weekly Runsheets"
+                ],
+                "summary": "Get all weekly runsheets assigned to the authenticated user",
+                "description": "Returns only weekly runsheets assigned to the authenticated user, including all weekday child entries. Unassigned runsheets are omitted.",
+                "operationId": "9a94b8346f553449f5808083fe360cc2",
+                "responses": {
+                    "200": {
+                        "description": "Weekly runsheets fetched successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/run-sheets/user": {
+            "get": {
+                "tags": [
+                    "Weekly Runsheets"
+                ],
+                "summary": "Get today's tours from weekly runsheets assigned to the authenticated user",
+                "description": "Checks every weekly runsheet assigned to the authenticated user and returns only today's weekday child tours under each parent. A runsheet with no tours scheduled for today's weekday is omitted. The parent runsheet's stored week date does not restrict this recurring weekday schedule.",
+                "operationId": "aa1410d11c43f3c5b4040d69e7c933d1",
+                "responses": {
+                    "200": {
+                        "description": "Today's assigned weekly runsheets fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Today's assigned weekly runsheets fetched successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2026-08-17"
+                                                },
+                                                "day": {
+                                                    "type": "string",
+                                                    "example": "Monday"
+                                                },
+                                                "total_run_sheets": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "run_sheets": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Mobile Patrol Route"
+                                                            },
+                                                            "week_start_date": {
+                                                                "type": "string",
+                                                                "format": "date",
+                                                                "example": "2026-08-17"
+                                                            },
+                                                            "notes": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "entries": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "type": "integer",
+                                                                            "example": 10
+                                                                        },
+                                                                        "day_of_week": {
+                                                                            "type": "integer",
+                                                                            "example": 1
+                                                                        },
+                                                                        "tour_name": {
+                                                                            "type": "string",
+                                                                            "example": "Morning Patrol"
+                                                                        },
+                                                                        "start_time": {
+                                                                            "type": "string",
+                                                                            "example": "08:00:00"
+                                                                        },
+                                                                        "end_time": {
+                                                                            "type": "string",
+                                                                            "example": "09:00:00"
+                                                                        },
+                                                                        "sequence": {
+                                                                            "type": "integer",
+                                                                            "example": 1
+                                                                        },
+                                                                        "site": {
+                                                                            "properties": {
+                                                                                "id": {
+                                                                                    "type": "integer",
+                                                                                    "example": 4
+                                                                                },
+                                                                                "name": {
+                                                                                    "type": "string",
+                                                                                    "example": "Elite Plaza"
+                                                                                },
+                                                                                "company": {
+                                                                                    "type": "object"
+                                                                                },
+                                                                                "nfc_tags": {
+                                                                                    "type": "array",
+                                                                                    "items": {
+                                                                                        "type": "object"
+                                                                                    }
+                                                                                }
+                                                                            },
+                                                                            "type": "object"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -6462,6 +6620,10 @@
         {
             "name": "User",
             "description": "User"
+        },
+        {
+            "name": "Weekly Runsheets",
+            "description": "Weekly Runsheets"
         }
     ]
 }

@@ -21,6 +21,7 @@ use App\Http\Controllers\TimeClockController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\NoticeBoardController;
 use App\Http\Controllers\PostEscController;
+use App\Http\Controllers\WeeklyRunSheetController;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\NfcTag;
@@ -87,6 +88,10 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::delete('/tours/delete-week/{site_id}', [SiteController::class, 'deleteWeekTours'])->name('sites.tours.deleteWeek');
     });
 
+    Route::resource('/run-sheets', WeeklyRunSheetController::class)
+        ->parameters(['run-sheets' => 'weeklyRunSheet'])
+        ->names('weekly-run-sheets');
+
     Route::group(['prefix' => '/nfc'], function () {
         Route::get('/', [NfcTagController::class, 'index'])->name('nfc.index');
         Route::get('/create', [NfcTagController::class, 'create'])->name('nfc.create');
@@ -107,7 +112,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/ajax/{user_id}', [ScheduleController::class, 'getAjaxSchedule'])->name('schedules.ajax');
     });
 
-    Route::post('/run-sheets/update', [\App\Http\Controllers\RunSheetController::class, 'update'])->name('run-sheets.update');
+    Route::post('/employee-run-sheets/update', [\App\Http\Controllers\RunSheetController::class, 'update'])->name('run-sheets.update');
 
     Route::group(['prefix' => '/open-shifts'], function () {
         Route::get('/', [OpenShiftController::class, 'index'])->name('open-shifts.index');
@@ -169,6 +174,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
             Route::post('/update/{id}', [EmployeeController::class, 'update'])->name('employees.update');
             Route::get('/delete/{id}', [EmployeeController::class, 'delete'])->name('employees.delete');
             Route::post('/assign-sites/{user_id}', [EmployeeController::class, 'assignSites'])->name('employees.assignSites');
+            Route::post('/assign-weekly-run-sheets/{user_id}', [EmployeeController::class, 'assignWeeklyRunSheets'])->name('employees.assignWeeklyRunSheets');
             Route::post('/update-offer-letter', [EmployeeController::class, 'updateOfferLetter'])->name('employees.updateOfferLetter');
             Route::post('/update-pay-slip', [EmployeeController::class, 'updatePaySlip'])->name('employees.updatePaySlip');
             Route::get('/check-pay-slip', [EmployeeController::class, 'checkPaySlip'])->name('employees.checkPaySlip');

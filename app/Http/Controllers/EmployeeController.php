@@ -14,6 +14,7 @@ use App\Models\EmployeeOfferLetter;
 use App\Models\PaySlip;
 use App\Models\Policy;
 use App\Models\TaxDocument;
+use App\Models\WeeklyRunSheet;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -35,7 +36,7 @@ class EmployeeController extends Controller
         
         $employees = Employee::with(['user', 'user.candidate', 'user.bankDetail', 'user.licenseDetail',
             'user.orientationAttempts', 'user.signedPolicies', 'user.taxDocumentSubmissions',
-            'user.sites', 'user.offerLetter', 'user.runSheets' => function($query) use ($currentMonday) {
+            'user.sites', 'user.weeklyRunSheets', 'user.offerLetter', 'user.runSheets' => function($query) use ($currentMonday) {
             $weekEnd = Carbon::parse($currentMonday)->endOfWeek(Carbon::SUNDAY)->format('Y-m-d');
             $query->whereBetween('date', [$currentMonday, $weekEnd]);
         }, 'user.schedules' => function($query) use ($currentMonday) {
@@ -46,7 +47,8 @@ class EmployeeController extends Controller
             $employee->user->profile_completion = $profileCompletion->calculate($employee->user);
         });
         $sites = Site::orderBy('name')->get();
-        return view('admin.employees.index', compact('employees', 'sites', 'currentMonday'));
+        $weeklyRunSheets = WeeklyRunSheet::withCount('entries')->orderByDesc('week_start_date')->get();
+        return view('admin.employees.index', compact('employees', 'sites', 'weeklyRunSheets', 'currentMonday'));
     }
 
     public function create()
@@ -421,6 +423,23 @@ class EmployeeController extends Controller
         $user->sites()->sync($siteData);
 
         return redirect()->route('employees.index')->with('success', 'Sites assigned to ' . $user->name . ' successfully!');
+    }
+
+    public function assignWeeklyRunSheets(Request $request, $user_id)
+    {
+        $validated = $request->validate([
+            'weekly_run_sheet_ids' => ['nullable', 'array'],
+            'weekly_run_sheet_ids.*' => ['integer', 'exists:weekly_run_sheets,id'],
+        ]);
+
+        $user = User::findOrFail($user_id);
+        $assignments = collect($validated['weekly_run_sheet_ids'] ?? [])
+            ->mapWithKeys(fn ($id) => [(int) $id => ['assigned_at' => now()]])
+            ->all();
+
+        $user->weeklyRunSheets()->sync($assignments);
+
+        return redirect()->route('employees.index')->with('success', 'Runsheets assigned to ' . $user->name . ' successfully!');
     }
 
     public function updateOfferLetter(Request $request)
