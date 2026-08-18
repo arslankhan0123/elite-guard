@@ -14,7 +14,7 @@
     <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
         <div>
             <h4 class="card-title mb-1">{{ $runSheet->name }}</h4>
-            <p class="text-muted mb-0">{{ $runSheet->week_start_date->format('d M Y') }} – {{ $runSheet->week_start_date->copy()->endOfWeek()->format('d M Y') }}</p>
+            <p class="text-muted mb-0"><span class="badge bg-success-subtle text-success">Recurring Weekly Schedule</span></p>
         </div>
         <div class="runsheet-actions d-flex align-items-center flex-nowrap gap-2">
             <a class="runsheet-action-link" href="{{ route('weekly-run-sheets.index') }}" data-bs-toggle="tooltip" title="Back to Runsheets">

@@ -22,7 +22,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Route Name</th>
-                                <th>Week</th>
+                                <th>Type</th>
                                 <th>Sites</th>
                                 <th>Total Tours</th>
                                 <th>Notes</th>
@@ -34,10 +34,7 @@
                             <tr>
                                 <td>{{ $runSheet->id }}</td>
                                 <td class="fw-semibold text-dark">{{ $runSheet->name }}</td>
-                                <td>
-                                    {{ $runSheet->week_start_date->format('d M Y') }}
-                                    <span class="text-muted">– {{ $runSheet->week_start_date->copy()->endOfWeek()->format('d M Y') }}</span>
-                                </td>
+                                <td><span class="badge bg-success-subtle text-success">Recurring</span></td>
                                 <td>{{ $runSheet->entries->pluck('site_id')->unique()->count() }}</td>
                                 <td><span class="badge bg-primary-subtle text-primary">{{ $runSheet->entries_count }}</span></td>
                                 <td class="text-muted">{{ \Illuminate\Support\Str::limit($runSheet->notes, 45) ?: '—' }}</td>

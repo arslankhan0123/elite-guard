@@ -503,7 +503,7 @@
                                     <label class="flex-grow-1 mb-0" for="weekly_runsheet_{{ $weeklyRunSheet->id }}" style="cursor:pointer; line-height:1.4;">
                                         <span class="fw-bold d-block text-dark" style="font-size:.9rem;">{{ $weeklyRunSheet->name }}</span>
                                         <small class="text-muted d-block" style="font-size:.75rem;">
-                                            {{ $weeklyRunSheet->week_start_date->format('d M Y') }} - {{ $weeklyRunSheet->week_start_date->copy()->endOfWeek()->format('d M Y') }} · {{ $weeklyRunSheet->entries_count }} tours
+                                            Recurring Schedule · {{ $weeklyRunSheet->entries_count }} tours
                                         </small>
                                     </label>
                                 </div>

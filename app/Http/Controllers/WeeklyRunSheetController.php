@@ -50,7 +50,7 @@ class WeeklyRunSheetController extends Controller
         DB::transaction(function () use ($validated) {
             $runSheet = WeeklyRunSheet::create([
                 'name' => $validated['name'],
-                'week_start_date' => Carbon::parse($validated['week_start_date'])->startOfWeek(Carbon::MONDAY),
+                'week_start_date' => Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString(),
                 'notes' => $validated['notes'] ?? null,
             ]);
 
@@ -77,7 +77,7 @@ class WeeklyRunSheetController extends Controller
         DB::transaction(function () use ($validated, $weeklyRunSheet) {
             $weeklyRunSheet->update([
                 'name' => $validated['name'],
-                'week_start_date' => Carbon::parse($validated['week_start_date'])->startOfWeek(Carbon::MONDAY),
+                'week_start_date' => $weeklyRunSheet->week_start_date ?? Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString(),
                 'notes' => $validated['notes'] ?? null,
             ]);
 
@@ -99,7 +99,6 @@ class WeeklyRunSheetController extends Controller
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'week_start_date' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'entries' => ['required', 'array', 'min:1'],
             'entries.*.day_of_week' => ['required', 'integer', 'between:1,7'],
