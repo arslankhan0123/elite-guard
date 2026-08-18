@@ -41,14 +41,9 @@
             @endif
 
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <label class="form-label fw-semibold">Route Name <span class="text-danger">*</span></label>
                     <input type="text" name="name" value="{{ old('name', $runSheet->name) }}" class="form-control" placeholder="e.g. Mobile Patrol Route" required>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Week Starting <span class="text-danger">*</span></label>
-                    <input type="date" name="week_start_date" value="{{ old('week_start_date', optional($runSheet->week_start_date)->format('Y-m-d')) }}" class="form-control" required>
-                    <small class="text-muted">Saved as Monday of the selected week.</small>
                 </div>
                 <div class="col-md-12">
                     <label class="form-label fw-semibold">Notes</label>
