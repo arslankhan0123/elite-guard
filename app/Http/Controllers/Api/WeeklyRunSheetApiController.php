@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class WeeklyRunSheetApiController extends Controller
 {
@@ -128,6 +129,7 @@ class WeeklyRunSheetApiController extends Controller
      */
     public function storeScan(Request $request)
     {
+        Log::info('Received scan request', $request->all());
         $validator = Validator::make($request->all(), [
             'weekly_run_sheet_id' => 'required|exists:weekly_run_sheets,id',
             'weekly_run_sheet_entry_id' => 'required|exists:weekly_run_sheet_entries,id',
