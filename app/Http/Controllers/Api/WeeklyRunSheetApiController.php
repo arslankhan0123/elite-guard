@@ -86,8 +86,9 @@ class WeeklyRunSheetApiController extends Controller
      */
     public function userRunSheets(Request $request)
     {
+        $date = $request->query('date');
         return $this->successResponse(
-            $this->runSheetRepository->getUserAssignedWeeklyRunSheets($request->user()),
+            $this->runSheetRepository->getUserAssignedWeeklyRunSheets($request->user(), $date),
             "Today's assigned weekly runsheets fetched successfully."
         );
     }
