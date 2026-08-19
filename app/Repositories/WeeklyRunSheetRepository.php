@@ -42,9 +42,9 @@ class WeeklyRunSheetRepository
         ];
     }
 
-    public function getUserAssignedWeeklyRunSheets(User $user): array
+    public function getUserAssignedWeeklyRunSheets(User $user, ?string $date = null): array
     {
-        $today = Carbon::now(config('app.timezone', 'UTC'));
+        $today = $date ? Carbon::parse($date) : Carbon::now(config('app.timezone', 'UTC'));
         $dayOfWeek = $today->dayOfWeekIso;
         $dateStr = $today->toDateString();
 
@@ -83,6 +83,11 @@ class WeeklyRunSheetRepository
                             $tag['scanned'] = in_array((int)$tag['id'], $scannedTagIds);
                         }
                     }
+
+                    $entry['is_scanned'] = count($entry['scans'] ?? []) > 0;
+                    $tags = $entry['site']['nfc_tags'] ?? $entry['site']['nfcTags'] ?? [];
+                    $entry['total_tags'] = count($tags);
+                    $entry['scanned_tags_count'] = count($scannedTagIds);
                 }
             }
             return $sheetArray;
