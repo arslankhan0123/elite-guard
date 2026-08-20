@@ -12,6 +12,8 @@ class Shift extends Model
     protected $fillable = [
         'schedule_id',
         'site_id',
+        'type',
+        'weekly_run_sheet_id',
         'date',
         'shift_name',
         'start_time',
@@ -32,6 +34,14 @@ class Shift extends Model
     public function site()
     {
         return $this->belongsTo(Site::class);
+    }
+
+    /**
+     * Get the weekly runsheet assigned in this shift.
+     */
+    public function weeklyRunSheet()
+    {
+        return $this->belongsTo(WeeklyRunSheet::class, 'weekly_run_sheet_id');
     }
 
     /**

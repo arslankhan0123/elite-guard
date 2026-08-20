@@ -41,13 +41,13 @@ class EmployeeController extends Controller
             $query->whereBetween('date', [$currentMonday, $weekEnd]);
         }, 'user.schedules' => function($query) use ($currentMonday) {
             $query->where('week_start_date', $currentMonday);
-        }, 'user.schedules.shifts.site'])->get();
+        }, 'user.schedules.shifts.site', 'user.schedules.shifts.weeklyRunSheet'])->get();
         
         $employees->each(function ($employee) use ($profileCompletion) {
             $employee->user->profile_completion = $profileCompletion->calculate($employee->user);
         });
         $sites = Site::orderBy('name')->get();
-        $weeklyRunSheets = WeeklyRunSheet::withCount('entries')->orderByDesc('week_start_date')->get();
+        $weeklyRunSheets = WeeklyRunSheet::with(['entries.site'])->withCount('entries')->orderByDesc('week_start_date')->get();
         return view('admin.employees.index', compact('employees', 'sites', 'weeklyRunSheets', 'currentMonday'));
     }
 

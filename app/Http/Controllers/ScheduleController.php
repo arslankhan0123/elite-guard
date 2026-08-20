@@ -9,6 +9,7 @@ use App\Models\Site;
 use App\Models\Employee;
 use App\Models\SiteTour;
 use App\Models\SiteTourItem;
+use App\Models\WeeklyRunSheet;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -33,18 +34,20 @@ class ScheduleController extends Controller
         $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
 
         // Fetch schedules for this week
-        $schedules = Schedule::with(['user', 'shifts.site.company'])
+        $schedules = Schedule::with(['user', 'shifts.site.company', 'shifts.weeklyRunSheet'])
             ->where('week_start_date', $weekStart->format('Y-m-d'))
             ->get();
 
-        // Fetch employees and sites for the creation form
+        // Fetch employees, sites, and weekly runsheets for the creation form
         $employees = User::whereHas('employee')->orderBy('name')->get();
         $sites = Site::orderBy('name')->get();
+        $weeklyRunSheets = WeeklyRunSheet::with(['entries.site'])->withCount('entries')->orderByDesc('week_start_date')->get();
 
         return view('admin.schedules.index', compact(
             'schedules',
             'employees',
             'sites',
+            'weeklyRunSheets',
             'weekStart',
             'weekEnd'
         ));
@@ -81,6 +84,7 @@ class ScheduleController extends Controller
             if (!$exists) {
                 $schedule->shifts()->create([
                     'site_id' => $site_id,
+                    'type' => 'site',
                     'date' => $weekStart, // Default to Monday if no specific date is given in simple store
                     'shift_name' => 'Regular Shift',
                     'start_time' => '08:00:00',
@@ -110,7 +114,9 @@ class ScheduleController extends Controller
             'week_start_date' => 'required|date',
             'shifts' => 'nullable|array',
             'shifts.*.id' => 'nullable|exists:shifts,id',
-            'shifts.*.site_id' => 'required|exists:sites,id',
+            'shifts.*.site_id' => 'nullable|exists:sites,id',
+            'shifts.*.type' => 'nullable|string|in:site,runsheet',
+            'shifts.*.weekly_run_sheet_id' => 'nullable|exists:weekly_run_sheets,id',
             'shifts.*.shift_name' => 'nullable|string',
             'shifts.*.start_time' => 'required',
             'shifts.*.end_time' => 'required',
@@ -143,8 +149,25 @@ class ScheduleController extends Controller
 
             if ($request->has('shifts')) {
                 foreach ($request->shifts as $shiftData) {
+                    $shiftType = $shiftData['type'] ?? 'site';
+                    $siteId = $shiftData['site_id'] ?? null;
+                    $weeklyRunSheetId = ($shiftType === 'runsheet' && !empty($shiftData['weekly_run_sheet_id'])) ? $shiftData['weekly_run_sheet_id'] : null;
+
+                    if ($shiftType === 'runsheet' && $weeklyRunSheetId) {
+                        $runsheet = WeeklyRunSheet::with('entries')->find($weeklyRunSheetId);
+                        if ($runsheet && $runsheet->entries->isNotEmpty()) {
+                            $siteId = $siteId ?: $runsheet->entries->first()->site_id;
+                        }
+                    }
+
+                    if (!$siteId) {
+                        $siteId = Site::first()?->id;
+                    }
+
                     $baseData = [
-                        'site_id' => $shiftData['site_id'],
+                        'site_id' => $siteId,
+                        'type' => $shiftType,
+                        'weekly_run_sheet_id' => $weeklyRunSheetId,
                         'shift_name' => $shiftData['shift_name'] ?? 'Regular Shift',
                         'start_time' => $shiftData['start_time'],
                         'end_time' => $shiftData['end_time'],
@@ -179,9 +202,11 @@ class ScheduleController extends Controller
                     $assignedSiteIds->put((int) $shift->site_id, true);
                 }
 
-                // Automatic site-tour creation is intentionally disabled.
-                // Keep this call for possible future use; shifts are still created normally.
-                // $this->syncSiteTourForShift($shift, (int) $request->user_id);
+                if ($shift->weekly_run_sheet_id) {
+                    $scheduleUser->weeklyRunSheets()->syncWithoutDetaching([
+                        $shift->weekly_run_sheet_id => ['assigned_at' => now()]
+                    ]);
+                }
             }
 
             DB::commit();
