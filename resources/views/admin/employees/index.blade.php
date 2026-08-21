@@ -973,16 +973,21 @@
             if (runsheet) {
                 const dayOfWeek = moment(date).isoWeekday();
                 const entry = (runsheet.entries || []).find(e => e.day_of_week == dayOfWeek) || (runsheet.entries || [])[0];
+                const dayTime = (runsheet.day_times || {})[dayOfWeek] || (runsheet.day_times || {})[1] || {};
+
+                const startTimeVal = (entry && entry.start_time) ? entry.start_time : (dayTime.start_time || '08:00');
+                const endTimeVal = (entry && entry.end_time) ? entry.end_time : (dayTime.end_time || '16:00');
 
                 if (entry) {
                     if (siteSelect) siteSelect.value = entry.site_id;
                     if (shiftNameInput) shiftNameInput.value = entry.tour_name || runsheet.name;
-                    if (startTimeInput && entry.start_time) startTimeInput.value = entry.start_time.substring(0, 5);
-                    if (endTimeInput && entry.end_time) endTimeInput.value = entry.end_time.substring(0, 5);
                 } else {
                     if (shiftNameInput) shiftNameInput.value = runsheet.name;
                     if (sites.length > 0 && siteSelect && !siteSelect.value) siteSelect.value = sites[0].id;
                 }
+
+                if (startTimeInput) startTimeInput.value = startTimeVal.substring(0, 5);
+                if (endTimeInput) endTimeInput.value = endTimeVal.substring(0, 5);
 
                 updateShiftTotalTime(shiftItem);
             }
