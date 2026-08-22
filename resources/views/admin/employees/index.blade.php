@@ -865,7 +865,7 @@
             
             let sitesHtml = `<option value="">Select Site</option>`;
             sites.forEach(site => {
-                sitesHtml += `<option value="${site.id}" ${data && data.site_id == site.id ? 'selected' : ''}>${site.name}</option>`;
+                sitesHtml += `<option value="${site.id}" ${data && !isRunsheet && data.site_id == site.id ? 'selected' : ''}>${site.name}</option>`;
             });
 
             let weeklyRunSheetsHtml = `<option value="">Select Runsheet</option>`;
@@ -944,6 +944,7 @@
             if (type === 'runsheet') {
                 siteContainer.style.display = 'none';
                 siteSelect.removeAttribute('required');
+                siteSelect.value = '';
                 runsheetContainer.style.display = 'block';
                 runsheetSelect.setAttribute('required', 'required');
                 if (runsheetSelect.value) {
@@ -978,12 +979,12 @@
                 const startTimeVal = (entry && entry.start_time) ? entry.start_time : (dayTime.start_time || '08:00');
                 const endTimeVal = (entry && entry.end_time) ? entry.end_time : (dayTime.end_time || '16:00');
 
+                if (siteSelect) siteSelect.value = '';
+
                 if (entry) {
-                    if (siteSelect) siteSelect.value = entry.site_id;
                     if (shiftNameInput) shiftNameInput.value = entry.tour_name || runsheet.name;
                 } else {
                     if (shiftNameInput) shiftNameInput.value = runsheet.name;
-                    if (sites.length > 0 && siteSelect && !siteSelect.value) siteSelect.value = sites[0].id;
                 }
 
                 if (startTimeInput) startTimeInput.value = startTimeVal.substring(0, 5);

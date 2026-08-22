@@ -58,21 +58,23 @@ class AttendanceRepository
 
         // Geofencing Check
         $site = $shift->site;
-        if (!$site->latitude || !$site->longitude) {
-            return [
-                'status' => false,
-                'message' => 'Site coordinates are not set. Contact admin.'
-            ];
-        }
+        if ($site) {
+            if (!$site->latitude || !$site->longitude) {
+                return [
+                    'status' => false,
+                    'message' => 'Site coordinates are not set. Contact admin.'
+                ];
+            }
 
-        $distance = $this->calculateDistance($lat, $long, $site->latitude, $site->longitude);
+            $distance = $this->calculateDistance($lat, $long, $site->latitude, $site->longitude);
 
-        if ($distance > 100) { // 100 meters
-            return [
-                'status' => false,
-                'message' => 'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
-                'distance' => $distance
-            ];
+            if ($distance > 100) { // 100 meters
+                return [
+                    'status' => false,
+                    'message' => 'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
+                    'distance' => $distance
+                ];
+            }
         }
 
         // Check if already clocked in

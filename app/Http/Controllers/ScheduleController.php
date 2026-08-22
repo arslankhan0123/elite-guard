@@ -150,17 +150,10 @@ class ScheduleController extends Controller
             if ($request->has('shifts')) {
                 foreach ($request->shifts as $shiftData) {
                     $shiftType = $shiftData['type'] ?? 'site';
-                    $siteId = $shiftData['site_id'] ?? null;
+                    $siteId = ($shiftType === 'site') ? ($shiftData['site_id'] ?? null) : null;
                     $weeklyRunSheetId = ($shiftType === 'runsheet' && !empty($shiftData['weekly_run_sheet_id'])) ? $shiftData['weekly_run_sheet_id'] : null;
 
-                    if ($shiftType === 'runsheet' && $weeklyRunSheetId) {
-                        $runsheet = WeeklyRunSheet::with('entries')->find($weeklyRunSheetId);
-                        if ($runsheet && $runsheet->entries->isNotEmpty()) {
-                            $siteId = $siteId ?: $runsheet->entries->first()->site_id;
-                        }
-                    }
-
-                    if (!$siteId) {
+                    if ($shiftType === 'site' && !$siteId) {
                         $siteId = Site::first()?->id;
                     }
 

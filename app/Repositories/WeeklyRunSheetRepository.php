@@ -42,13 +42,18 @@ class WeeklyRunSheetRepository
         ];
     }
 
-    public function getUserAssignedWeeklyRunSheets(User $user, ?string $date = null): array
+    public function getUserAssignedWeeklyRunSheets(User $user, ?string $date = null, ?int $weeklyRunSheetId = null): array
     {
         $today = $date ? Carbon::parse($date) : Carbon::now(config('app.timezone', 'UTC'));
         $dayOfWeek = $today->dayOfWeekIso;
         $dateStr = $today->toDateString();
 
-        $runSheets = $user->weeklyRunSheets()
+        $query = $user->weeklyRunSheets();
+        if ($weeklyRunSheetId !== null) {
+            $query->where('weekly_run_sheets.id', $weeklyRunSheetId);
+        }
+
+        $runSheets = $query
             ->whereHas('entries', fn ($query) => $query->where('day_of_week', $dayOfWeek))
             ->with(['entries' => fn ($query) => $query
                 ->where('day_of_week', $dayOfWeek)
