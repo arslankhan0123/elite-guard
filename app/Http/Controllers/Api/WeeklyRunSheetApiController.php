@@ -7,6 +7,7 @@ use App\Repositories\WeeklyRunSheetRepository;
 use App\Traits\ApiResponser;
 use App\Traits\CommonTrait;
 use Illuminate\Http\Request;
+use App\Repositories\ShiftRepository;
 use App\Models\WeeklyRunSheetEntry;
 use App\Models\Site;
 use Illuminate\Support\Facades\Auth;
@@ -19,8 +20,10 @@ class WeeklyRunSheetApiController extends Controller
 {
     use ApiResponser, CommonTrait;
 
-    public function __construct(private WeeklyRunSheetRepository $runSheetRepository)
-    {
+    public function __construct(
+        private WeeklyRunSheetRepository $runSheetRepository,
+        private ShiftRepository $shiftRepo
+    ) {
     }
 
     /**
@@ -86,11 +89,41 @@ class WeeklyRunSheetApiController extends Controller
      */
     public function userRunSheets(Request $request)
     {
-        $date = $request->query('date');
-        return $this->successResponse(
-            $this->runSheetRepository->getUserAssignedWeeklyRunSheets($request->user(), $date),
-            "Today's assigned weekly runsheets fetched successfully."
+        $user = $request->user();
+
+        // Automatically resolve the active (or next upcoming) shift.
+        $activeShift = $this->shiftRepo->getActiveShift();
+
+        if (!$activeShift || Carbon::now(config('app.timezone', 'UTC'))->gt($activeShift->end_datetime)) {
+            return $this->successResponse([
+                'status'          => true,
+                'message'         => 'No active or upcoming shift found.',
+                'shift'           => null,
+                'run_sheets'      => [],
+            ], 'No active or upcoming shift found.');
+        }
+
+        // If the active shift does not have a weekly runsheet assigned, return empty list
+        if (!$activeShift->weekly_run_sheet_id) {
+            return $this->successResponse([
+                'status'          => true,
+                'message'         => 'Active shift is not a runsheet shift.',
+                'shift'           => $activeShift,
+                'run_sheets'      => [],
+            ], 'Active shift is not a runsheet shift.');
+        }
+
+        $date = $request->query('date') ?: $activeShift->date;
+
+        $data = $this->runSheetRepository->getUserAssignedWeeklyRunSheets(
+            $user,
+            $date,
+            $activeShift->weekly_run_sheet_id
         );
+
+        $data['shift'] = $activeShift;
+
+        return $this->successResponse($data, "Today's assigned weekly runsheets fetched successfully.");
     }
 
     /**

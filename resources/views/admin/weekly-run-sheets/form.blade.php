@@ -57,14 +57,31 @@
         @foreach($days as $dayNumber => $dayName)
         <div class="col-12">
             <div class="card border-0 shadow-sm day-card" data-day="{{ $dayNumber }}">
-                <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
-                    <div>
-                        <h5 class="mb-0 text-dark">{{ $dayName }}</h5>
+                <div class="card-header bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <h5 class="mb-0 text-dark fw-bold">{{ $dayName }}</h5>
                         <small class="text-muted day-count">No tours</small>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-primary add-entry" data-day="{{ $dayNumber }}">
-                        <i data-feather="plus" style="width:14px"></i> Add Tour
-                    </button>
+                    <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+                        @php
+                            $dayKey = strtolower($dayName);
+                            $startCol = "{$dayKey}_start_time";
+                            $endCol = "{$dayKey}_end_time";
+                            $startTimeVal = old($startCol, $runSheet->$startCol ? substr($runSheet->$startCol, 0, 5) : '08:00');
+                            $endTimeVal = old($endCol, $runSheet->$endCol ? substr($runSheet->$endCol, 0, 5) : '16:00');
+                        @endphp
+                        <div class="d-flex align-items-center gap-1">
+                            <label class="form-label small fw-semibold mb-0 text-muted me-1">Start Time <span class="text-danger">*</span></label>
+                            <input type="time" name="{{ $startCol }}" value="{{ $startTimeVal }}" class="form-control form-control-sm" style="width: 130px;" required>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <label class="form-label small fw-semibold mb-0 text-muted me-1">End Time <span class="text-danger">*</span></label>
+                            <input type="time" name="{{ $endCol }}" value="{{ $endTimeVal }}" class="form-control form-control-sm" style="width: 130px;" required>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary add-entry ms-2" data-day="{{ $dayNumber }}">
+                            <i data-feather="plus" style="width:14px"></i> Add Tour
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body entries-container py-2" data-day="{{ $dayNumber }}">
                     <div class="empty-day text-center text-muted py-3">No tours scheduled for {{ $dayName }}.</div>
@@ -124,12 +141,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     <select name="entries[${index}][site_id]" class="form-select" required>${siteOptions(data.site_id)}</select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small fw-semibold mb-1">Start Time</label>
-                    <input type="time" name="entries[${index}][start_time]" value="${escapeHtml((data.start_time || '').substring(0, 5))}" class="form-control" required>
+                    <label class="form-label small fw-semibold mb-1">Start Time <small class="text-muted fw-normal">(Optional)</small></label>
+                    <input type="time" name="entries[${index}][start_time]" value="${escapeHtml((data.start_time || '').substring(0, 5))}" class="form-control">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small fw-semibold mb-1">End Time</label>
-                    <input type="time" name="entries[${index}][end_time]" value="${escapeHtml((data.end_time || '').substring(0, 5))}" class="form-control" required>
+                    <label class="form-label small fw-semibold mb-1">End Time <small class="text-muted fw-normal">(Optional)</small></label>
+                    <input type="time" name="entries[${index}][end_time]" value="${escapeHtml((data.end_time || '').substring(0, 5))}" class="form-control">
                 </div>
                 <div class="col-auto">
                     <button type="button" class="bin-button remove-entry" title="Remove tour" aria-label="Remove tour">

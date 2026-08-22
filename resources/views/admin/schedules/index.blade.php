@@ -349,6 +349,7 @@
         let shiftIndex = 0;
         const currentMonday = "{{ $weekStart->format('Y-m-d') }}";
         const sites = @json($sites);
+        const weeklyRunSheets = @json($weeklyRunSheets);
 
         function generateDaySections() {
             const container = document.getElementById('days-container');
@@ -395,29 +396,52 @@
             const shiftItem = document.createElement('div');
             shiftItem.className = 'shift-item';
             
+            const isRunsheet = data && data.type === 'runsheet';
+            
             let sitesHtml = `<option value="">Select Site</option>`;
             sites.forEach(site => {
-                sitesHtml += `<option value="${site.id}" ${data && data.site_id == site.id ? 'selected' : ''}>${site.name}</option>`;
+                sitesHtml += `<option value="${site.id}" ${data && !isRunsheet && data.site_id == site.id ? 'selected' : ''}>${site.name}</option>`;
+            });
+
+            let weeklyRunSheetsHtml = `<option value="">Select Runsheet</option>`;
+            weeklyRunSheets.forEach(rs => {
+                weeklyRunSheetsHtml += `<option value="${rs.id}" ${data && data.weekly_run_sheet_id == rs.id ? 'selected' : ''}>${rs.name}</option>`;
             });
 
             shiftItem.innerHTML = `
                 <button type="button" class="btn-remove-shift" onclick="removeShift(this, '${date}')">
                     <i data-feather="x" style="width: 12px; height: 12px;"></i>
                 </button>
+                <input type="hidden" name="shifts[${index}][id]" value="${data ? data.id : ''}">
                 <input type="hidden" name="shifts[${index}][date]" value="${date}">
+
                 <div class="row g-2 mb-2">
-                    <div class="col-md-7">
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted mb-1">Shift Type</label>
+                        <select name="shifts[${index}][type]" class="form-select form-select-sm rounded-3 border-0 bg-light shift-type-select" required onchange="onShiftTypeChange(this, '${date}')">
+                            <option value="site" ${!isRunsheet ? 'selected' : ''}>Assigned Site</option>
+                            <option value="runsheet" ${isRunsheet ? 'selected' : ''}>Runsheet</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 site-select-container" style="${isRunsheet ? 'display:none;' : ''}">
                         <label class="small fw-bold text-muted mb-1">Assigned Site</label>
-                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light" required>
+                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light site-select-input" ${!isRunsheet ? 'required' : ''} onchange="onSiteSelectChange(this)">
                             ${sitesHtml}
                         </select>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-4 runsheet-select-container" style="${!isRunsheet ? 'display:none;' : ''}">
+                        <label class="small fw-bold text-muted mb-1">Select Runsheet</label>
+                        <select name="shifts[${index}][weekly_run_sheet_id]" class="form-select form-select-sm rounded-3 border-0 bg-light runsheet-select-input" ${isRunsheet ? 'required' : ''} onchange="onRunsheetSelectChange(this, '${date}')">
+                            ${weeklyRunSheetsHtml}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label class="small fw-bold text-muted mb-1">Shift Name</label>
-                        <input type="text" name="shifts[${index}][shift_name]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
+                        <input type="text" name="shifts[${index}][shift_name]" class="form-control form-control-sm rounded-3 border-0 bg-light shift-name-input" 
                                value="${data ? data.shift_name : 'Regular Shift'}" placeholder="e.g. Day Shift">
                     </div>
                 </div>
+
                 <div class="row g-2">
                     <div class="col-6">
                         <label class="small fw-bold text-muted mb-1">Start Time</label>
@@ -434,6 +458,88 @@
             
             container.appendChild(shiftItem);
             feather.replace();
+        }
+
+        		function onShiftTypeChange(selectElement, date) {
+            const shiftItem = selectElement.closest('.shift-item');
+            if (!shiftItem) return;
+
+            const type = selectElement.value;
+            const siteContainer = shiftItem.querySelector('.site-select-container');
+            const runsheetContainer = shiftItem.querySelector('.runsheet-select-container');
+            const siteSelect = shiftItem.querySelector('.site-select-input');
+            const runsheetSelect = shiftItem.querySelector('.runsheet-select-input');
+
+            if (type === 'runsheet') {
+                siteContainer.style.display = 'none';
+                siteSelect.removeAttribute('required');
+                siteSelect.value = '';
+                runsheetContainer.style.display = 'block';
+                runsheetSelect.setAttribute('required', 'required');
+                if (runsheetSelect.value) {
+                    onRunsheetSelectChange(runsheetSelect, date);
+                }
+            } else {
+                runsheetContainer.style.display = 'none';
+                runsheetSelect.removeAttribute('required');
+                siteContainer.style.display = 'block';
+                siteSelect.setAttribute('required', 'required');
+            }
+        }
+
+        function onRunsheetSelectChange(selectElement, date) {
+            const weeklyRunSheetId = selectElement.value;
+            const shiftItem = selectElement.closest('.shift-item');
+            if (!shiftItem) return;
+
+            const siteSelect = shiftItem.querySelector('.site-select-input');
+            const shiftNameInput = shiftItem.querySelector('.shift-name-input');
+            const startTimeInput = shiftItem.querySelector('input[type="time"][name*="[start_time]"]');
+            const endTimeInput = shiftItem.querySelector('input[type="time"][name*="[end_time]"]');
+
+            if (!weeklyRunSheetId) return;
+
+            const runsheet = weeklyRunSheets.find(rs => rs.id == weeklyRunSheetId);
+            if (runsheet) {
+                const dayOfWeek = moment(date).isoWeekday();
+                const entry = (runsheet.entries || []).find(e => e.day_of_week == dayOfWeek) || (runsheet.entries || [])[0];
+                const dayTime = (runsheet.day_times || {})[dayOfWeek] || (runsheet.day_times || {})[1] || {};
+
+                const startTimeVal = (entry && entry.start_time) ? entry.start_time : (dayTime.start_time || '08:00');
+                const endTimeVal = (entry && entry.end_time) ? entry.end_time : (dayTime.end_time || '16:00');
+
+                if (siteSelect) siteSelect.value = '';
+
+                if (entry) {
+                    if (shiftNameInput) shiftNameInput.value = entry.tour_name || runsheet.name;
+                } else {
+                    if (shiftNameInput) shiftNameInput.value = runsheet.name;
+                }
+
+                if (startTimeInput) startTimeInput.value = startTimeVal.substring(0, 5);
+                if (endTimeInput) endTimeInput.value = endTimeVal.substring(0, 5);
+            }
+        }
+
+        function onSiteSelectChange(selectElement) {
+            const siteId = selectElement.value;
+            if (!siteId) return;
+
+            const site = sites.find(s => s.id == siteId);
+            if (site) {
+                const parentItem = selectElement.closest('.shift-item');
+                if (parentItem) {
+                    const startTimeInput = parentItem.querySelector('input[type="time"][name*="[start_time]"]');
+                    const endTimeInput = parentItem.querySelector('input[type="time"][name*="[end_time]"]');
+                    
+                    if (startTimeInput) {
+                        startTimeInput.value = site.start_time ? site.start_time.substring(0, 5) : '08:00';
+                    }
+                    if (endTimeInput) {
+                        endTimeInput.value = site.end_time ? site.end_time.substring(0, 5) : '16:00';
+                    }
+                }
+            }
         }
 
         function removeShift(btn, date) {

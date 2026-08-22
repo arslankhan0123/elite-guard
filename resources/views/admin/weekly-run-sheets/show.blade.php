@@ -35,10 +35,22 @@
 </div>
 
 @foreach($days as $dayNumber => $dayName)
-@php $entries = $runSheet->entries->where('day_of_week', $dayNumber); @endphp
+@php 
+    $entries = $runSheet->entries->where('day_of_week', $dayNumber); 
+    $dayStartTime = $runSheet->getDayStartTime($dayNumber);
+    $dayEndTime = $runSheet->getDayEndTime($dayNumber);
+@endphp
 <div class="card border-0 shadow-sm mb-3 runsheet-day-card">
-    <div class="card-header runsheet-day-header d-flex justify-content-between align-items-center py-3">
-        <h5 class="mb-0">{{ $dayName }}</h5>
+    <div class="card-header runsheet-day-header d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+        <div class="d-flex align-items-center gap-3">
+            <h5 class="mb-0">{{ $dayName }}</h5>
+            @if($dayStartTime && $dayEndTime)
+                <span class="badge bg-white text-dark rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">
+                    <i data-feather="clock" class="me-1 text-primary" style="width:12px; height:12px;"></i>
+                    {{ \Carbon\Carbon::parse($dayStartTime)->format('h:i A') }} - {{ \Carbon\Carbon::parse($dayEndTime)->format('h:i A') }}
+                </span>
+            @endif
+        </div>
         <span class="runsheet-tour-count">{{ $entries->count() }} {{ \Illuminate\Support\Str::plural('tour', $entries->count()) }}</span>
     </div>
     <div class="card-body p-0">
@@ -48,9 +60,12 @@
             <div class="row g-3 p-3 runsheet-tour-grid" data-day="{{ $dayNumber }}">
                 @foreach($entries as $entry)
                         @php
-                            $start = \Carbon\Carbon::parse($entry->start_time);
-                            $end = \Carbon\Carbon::parse($entry->end_time);
-                            if ($end->lt($start)) $end->addDay();
+                            $hasTimes = !empty($entry->start_time) && !empty($entry->end_time);
+                            if ($hasTimes) {
+                                $start = \Carbon\Carbon::parse($entry->start_time);
+                                $end = \Carbon\Carbon::parse($entry->end_time);
+                                if ($end->lt($start)) $end->addDay();
+                            }
                         @endphp
                     <div class="col-xl-4 col-md-6{{ $loop->iteration > 6 ? ' runsheet-extra-tour' : '' }}">
                         <div class="runsheet-tour-card h-100">
@@ -60,9 +75,9 @@
                             </div>
                             <div class="runsheet-tour-site"><i data-feather="map-pin"></i> {{ $entry->site?->name ?? 'N/A' }}</div>
                             <div class="runsheet-tour-times">
-                                <div><span>Start</span><strong>{{ $start->format('h:i A') }}</strong></div>
-                                <div><span>End</span><strong>{{ $end->format('h:i A') }}</strong></div>
-                                <div><span>Duration</span><strong>{{ $start->diff($end)->format('%hh %im') }}</strong></div>
+                                <div><span>Start</span><strong>{{ $hasTimes ? $start->format('h:i A') : 'N/A' }}</strong></div>
+                                <div><span>End</span><strong>{{ $hasTimes ? $end->format('h:i A') : 'N/A' }}</strong></div>
+                                <div><span>Duration</span><strong>{{ $hasTimes ? $start->diff($end)->format('%hh %im') : 'N/A' }}</strong></div>
                             </div>
                         </div>
                     </div>

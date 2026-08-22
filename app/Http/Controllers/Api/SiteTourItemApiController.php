@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Traits\ApiResponser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class SiteTourItemApiController extends Controller
 {
@@ -68,7 +69,7 @@ class SiteTourItemApiController extends Controller
         // This way mobile does not need to send shift_id manually.
         $activeShift = $this->shiftRepo->getActiveShift();
 
-        if (!$activeShift) {
+        if (!$activeShift || Carbon::now(config('app.timezone', 'UTC'))->gt($activeShift->end_datetime)) {
             return $this->successResponse([
                 'status'          => true,
                 'message'         => 'No active or upcoming shift found.',
@@ -82,6 +83,7 @@ class SiteTourItemApiController extends Controller
         $end_date   = $activeShift->date;
 
         $data = $this->siteTourItemRepo->getUserSiteTourItems($user, $start_date, $end_date, $shift_id);
+        $data['shift'] = $activeShift;
 
         return $this->successResponse($data, 'Assigned site tour items fetched.');
     }
