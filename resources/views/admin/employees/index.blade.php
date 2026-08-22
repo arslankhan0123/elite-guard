@@ -163,14 +163,14 @@
                                                     data-name="{{ $employee->user->name }}">
                                                     <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-sm me-2 btn-outline-warning rounded-pill px-3"
+                                                <!-- <button type="button" class="btn btn-sm me-2 btn-outline-warning rounded-pill px-3"
                                                     title="Assign Weekly Runsheets" data-bs-toggle="modal"
                                                     data-bs-target="#assignWeeklyRunSheetsModal"
                                                     data-user-id="{{ $employee->user->id }}"
                                                     data-name="{{ $employee->user->name }}"
                                                     data-assigned-run-sheets="{{ $employee->user->weeklyRunSheets->pluck('id')->toJson() }}">
                                                     <i data-feather="clipboard" style="width: 14px; height: 14px;"></i>
-                                                </button>
+                                                </button> -->
                                                 <a class="text-decoration-none text-dark me-2" href="{{ route('employees.show', $employee->id) }}" data-bs-toggle="tooltip" title="View Details">
                                                     <button class="view_btn"></button>
                                                 </a>
