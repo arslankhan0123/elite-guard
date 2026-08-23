@@ -197,7 +197,7 @@ class ChronologicalReportController extends Controller
             $dateStr = $rs->date ? (is_string($rs->date) ? $rs->date : $rs->date->format('Y-m-d')) : 'N/A';
 
             $merged->push([
-                'type' => 'Runsheet',
+                'type' => 'Runsheet Tour',
                 'name' => $rs->run_sheet_name ?? 'Runsheet Patrol',
                 'user' => $rs->user?->name ?? 'N/A',
                 'site' => $rs->site?->name ?? 'N/A',
@@ -261,7 +261,7 @@ class ChronologicalReportController extends Controller
             $dateStr = $sItem->date ? (is_string($sItem->date) ? $sItem->date : $sItem->date->format('Y-m-d')) : 'N/A';
 
             $merged->push([
-                'type' => 'Site Tour Checkpoint',
+                'type' => 'Site Checkpoints Tour',
                 'name' => $sItem->type ?? 'Checkpoint Patrol',
                 'user' => $sItem->user?->name ?? 'N/A',
                 'site' => $sItem->site?->name ?? 'N/A',
