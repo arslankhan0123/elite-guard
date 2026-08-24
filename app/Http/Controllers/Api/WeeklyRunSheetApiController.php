@@ -138,7 +138,7 @@ class WeeklyRunSheetApiController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"weekly_run_sheet_id", "weekly_run_sheet_entry_id", "nfc_tag_id"},
+     *                 required={"weekly_run_sheet_id", "weekly_run_sheet_entry_id", "nfc_tag_id", "latitude", "longitude"},
      *                 @OA\Property(property="weekly_run_sheet_id", type="integer", example=1),
      *                 @OA\Property(property="weekly_run_sheet_entry_id", type="integer", example=1),
      *                 @OA\Property(property="nfc_tag_id", type="integer", example=2),
@@ -228,6 +228,7 @@ class WeeklyRunSheetApiController extends Controller
             $path = $request->file('image')->store('documents/WeeklyRunSheetScans', 'public');
             $data['image'] = Storage::disk('public')->url($path);
         }
+        Log::info("WeeklyRunSheetApiController: storeScan", $data);
 
         $result = $this->runSheetRepository->storeScan($data);
 
