@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\WeeklyRunSheet;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class WeeklyRunSheetRepository
 {
@@ -110,6 +111,7 @@ class WeeklyRunSheetRepository
 
     public function storeScan(array $data)
     {
+        Log::info('Storing scan data: ', $data);
         $scan = \App\Models\WeeklyRunSheetScan::create($data);
         return [
             'status' => true,

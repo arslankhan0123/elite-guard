@@ -6510,7 +6510,9 @@
                                 "required": [
                                     "weekly_run_sheet_id",
                                     "weekly_run_sheet_entry_id",
-                                    "nfc_tag_id"
+                                    "nfc_tag_id",
+                                    "latitude",
+                                    "longitude"
                                 ],
                                 "properties": {
                                     "weekly_run_sheet_id": {
