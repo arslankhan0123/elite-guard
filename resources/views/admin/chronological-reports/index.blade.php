@@ -123,21 +123,38 @@
                                             <div class="mb-2">
                                                 <strong class="text-primary"><i class="mdi mdi-check-circle-outline"></i> Scanned Checkpoints:</strong>
                                                 @if(count($report['scans']) > 0)
-                                                    <div class="d-flex flex-wrap gap-2 mt-1">
-                                                        @foreach($report['scans'] as $scan)
-                                                            <div class="p-2 border rounded bg-white shadow-sm d-flex align-items-center gap-2" style="min-width: 180px;">
-                                                                @if(!empty($scan['image']))
-                                                                    <a href="{{ asset('storage/' . ltrim($scan['image'], '/')) }}" target="_blank">
-                                                                        <img src="{{ asset('storage/' . ltrim($scan['image'], '/')) }}" alt="scan" class="rounded" style="width: 32px; height: 32px; object-fit: cover;">
-                                                                    </a>
-                                                                @endif
-                                                                <div>
-                                                                    <span class="d-block fw-bold small text-dark">{{ $scan['name'] }}</span>
-                                                                    <small class="text-muted"><i class="mdi mdi-clock-outline"></i> {{ \Carbon\Carbon::parse($scan['time'])->format('h:i A') }}</small>
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
+                                                     <div class="d-flex flex-wrap gap-2 mt-2">
+                                                         @foreach($report['scans'] as $scan)
+                                                             @php
+                                                                 $scanImg = null;
+                                                                 if (!empty($scan['image'])) {
+                                                                     $scanImg = $scan['image'];
+                                                                     if (!str_starts_with($scanImg, 'http://') && !str_starts_with($scanImg, 'https://')) {
+                                                                         if (str_starts_with($scanImg, 'storage/')) {
+                                                                             $scanImg = asset($scanImg);
+                                                                         } elseif (str_starts_with($scanImg, '/storage/')) {
+                                                                             $scanImg = asset(ltrim($scanImg, '/'));
+                                                                         } else {
+                                                                             $scanImg = asset('storage/' . ltrim($scanImg, '/'));
+                                                                         }
+                                                                     }
+                                                                 }
+                                                             @endphp
+                                                             <div class="card p-2 border rounded shadow-sm d-flex flex-row align-items-center justify-content-between bg-white m-0" style="width: 280px; min-height: 96px;">
+                                                                 <div style="flex: 1; min-width: 0; padding-right: 8px;">
+                                                                     <div class="fw-bold text-dark text-truncate" style="font-size: 11.5px;" title="{{ $scan['name'] }}">{{ $scan['name'] }}</div>
+                                                                     <div class="text-muted text-truncate" style="font-size: 9.5px;"><strong>UID:</strong> {{ $scan['uid'] }}</div>
+                                                                     <div class="text-muted" style="font-size: 9.5px;"><strong>Time:</strong> {{ \Carbon\Carbon::parse($scan['time'])->format('h:i:s A') }}</div>
+                                                                     <div class="text-muted text-truncate" style="font-size: 9.5px;"><strong>By:</strong> {{ $scan['user'] }}</div>
+                                                                 </div>
+                                                                 @if($scanImg)
+                                                                     <div style="flex-shrink: 0;">
+                                                                         <img src="{{ $scanImg }}" alt="scan" class="rounded border" style="width: 75px; height: 75px; object-fit: cover;">
+                                                                     </div>
+                                                                 @endif
+                                                             </div>
+                                                         @endforeach
+                                                     </div>
                                                 @else
                                                     <span class="text-muted italic ms-1">No NFC tags scanned</span>
                                                 @endif

@@ -89,10 +89,19 @@ class ChronologicalReportController extends Controller
         if ($siteId) {
             $tourQuery->where('site_id', $siteId);
         }
-        if ($startTime) {
+        if ($startTime && $endTime) {
+            if ($startTime > $endTime) {
+                $tourQuery->where(function($q) use ($startTime, $endTime) {
+                    $q->whereTime('start_time', '>=', $startTime)
+                      ->orWhereTime('start_time', '<=', $endTime);
+                });
+            } else {
+                $tourQuery->whereTime('start_time', '>=', $startTime)
+                          ->whereTime('start_time', '<=', $endTime);
+            }
+        } elseif ($startTime) {
             $tourQuery->whereTime('start_time', '>=', $startTime);
-        }
-        if ($endTime) {
+        } elseif ($endTime) {
             $tourQuery->whereTime('start_time', '<=', $endTime);
         }
 
@@ -196,11 +205,28 @@ class ChronologicalReportController extends Controller
                 $startTimeFormatted = $startTime ? \Carbon\Carbon::parse($startTime)->format('H:i:s') : null;
                 $endTimeFormatted = $endTime ? \Carbon\Carbon::parse($endTime)->format('H:i:s') : null;
 
-                // Filter by time if start_time/end_time filter is provided
-                if ($startTimeFormatted && $entryStartFormatted && $entryStartFormatted < $startTimeFormatted) {
-                    continue;
+                $isWithinTime = true;
+                if ($startTimeFormatted && $endTimeFormatted) {
+                    if ($startTimeFormatted > $endTimeFormatted) {
+                        if (!($entryStartFormatted >= $startTimeFormatted || $entryStartFormatted <= $endTimeFormatted)) {
+                            $isWithinTime = false;
+                        }
+                    } else {
+                        if (!($entryStartFormatted >= $startTimeFormatted && $entryStartFormatted <= $endTimeFormatted)) {
+                            $isWithinTime = false;
+                        }
+                    }
+                } elseif ($startTimeFormatted) {
+                    if ($entryStartFormatted < $startTimeFormatted) {
+                        $isWithinTime = false;
+                    }
+                } elseif ($endTimeFormatted) {
+                    if ($entryStartFormatted > $endTimeFormatted) {
+                        $isWithinTime = false;
+                    }
                 }
-                if ($endTimeFormatted && $entryStartFormatted && $entryStartFormatted > $endTimeFormatted) {
+
+                if (!$isWithinTime) {
                     continue;
                 }
 
@@ -260,10 +286,19 @@ class ChronologicalReportController extends Controller
         if ($siteId) {
             $siteItemQuery->where('site_id', $siteId);
         }
-        if ($startTime) {
+        if ($startTime && $endTime) {
+            if ($startTime > $endTime) {
+                $siteItemQuery->where(function($q) use ($startTime, $endTime) {
+                    $q->whereTime('start_time', '>=', $startTime)
+                      ->orWhereTime('start_time', '<=', $endTime);
+                });
+            } else {
+                $siteItemQuery->whereTime('start_time', '>=', $startTime)
+                              ->whereTime('start_time', '<=', $endTime);
+            }
+        } elseif ($startTime) {
             $siteItemQuery->whereTime('start_time', '>=', $startTime);
-        }
-        if ($endTime) {
+        } elseif ($endTime) {
             $siteItemQuery->whereTime('start_time', '<=', $endTime);
         }
 
