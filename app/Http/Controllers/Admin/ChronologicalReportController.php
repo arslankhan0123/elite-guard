@@ -176,8 +176,9 @@ class ChronologicalReportController extends Controller
         $runsheetShifts = $runsheetShiftsQuery->get();
         foreach ($runsheetShifts as $shift) {
             $user = $shift->schedule?->user;
-            $weeklyRunSheet = \App\Models\WeeklyRunSheet::with(['entries.site.nfcTags', 'entries.scans' => function($q) use ($shift, $userId) {
-                $q->whereDate('date', $shift->date);
+            $dateStrForScans = \Carbon\Carbon::parse($shift->date)->format('Y-m-d');
+            $weeklyRunSheet = \App\Models\WeeklyRunSheet::with(['entries.site.nfcTags', 'entries.scans' => function($q) use ($dateStrForScans, $userId) {
+                $q->where('date', $dateStrForScans);
                 if ($userId) {
                     $q->where('user_id', $userId);
                 }
