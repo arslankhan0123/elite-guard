@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\RunSheet;
 use App\Models\Site;
+use App\Models\WeeklyRunSheetEntry;
 use App\Repositories\RunSheetRepository;
 use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
@@ -129,7 +130,7 @@ class RunSheetApiController extends Controller
     public function storeScan(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'run_sheet_id' => 'required|exists:run_sheets,id',
+            'run_sheet_id' => 'required|exists:weekly_run_sheet_entries,id',
             'nfc_tag_id' => 'required|exists:nfc_tags,id',
             'latitude' => 'nullable|string',
             'longitude' => 'nullable|string',
@@ -139,7 +140,7 @@ class RunSheetApiController extends Controller
             return $this->errorResponse($validator->errors()->first(), null, 422);
         }
 
-        $runsheet = RunSheet::where('id', $request->run_sheet_id)->first();
+        $runsheet = WeeklyRunSheetEntry::where('id', $request->run_sheet_id)->first();
         if (!$runsheet) {
             return $this->errorResponse('Run sheet not found.', null, 404);
         }

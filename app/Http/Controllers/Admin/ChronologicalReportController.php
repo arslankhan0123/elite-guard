@@ -148,68 +148,102 @@ class ChronologicalReportController extends Controller
             ]);
         }
 
-        // 2. RunSheets (Structured Patrols)
-        $runsheetQuery = \App\Models\RunSheet::with(['site.nfcTags', 'scans.nfcTag', 'scans.user', 'user'])
+        // 2. Weekly RunSheets (Structured Patrols via Shifts of type runsheet)
+        $runsheetShiftsQuery = \App\Models\Shift::with(['schedule.user', 'weeklyRunSheet'])
+            ->where('type', 'runsheet')
             ->whereBetween('date', [$startDate, $endDate]);
 
         if ($userId) {
-            $runsheetQuery->where('user_id', $userId);
+            $runsheetShiftsQuery->whereHas('schedule', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            });
         }
         if ($siteId) {
-            $runsheetQuery->where('site_id', $siteId);
-        }
-        if ($startTime) {
-            $runsheetQuery->whereTime('start_time', '>=', $startTime);
-        }
-        if ($endTime) {
-            $runsheetQuery->whereTime('end_time', '<=', $endTime);
+            $runsheetShiftsQuery->whereHas('weeklyRunSheet.entries', function ($q) use ($siteId) {
+                $q->where('site_id', $siteId);
+            });
         }
 
-        $runsheets = $runsheetQuery->get();
-        foreach ($runsheets as $rs) {
-            $requiredTags = $rs->site?->nfcTags ?? collect();
-            $requiredTagIds = $requiredTags->pluck('id')->toArray();
+        $runsheetShifts = $runsheetShiftsQuery->get();
+        foreach ($runsheetShifts as $shift) {
+            $user = $shift->schedule?->user;
+            $weeklyRunSheet = \App\Models\WeeklyRunSheet::with(['entries.site.nfcTags', 'entries.scans' => function($q) use ($shift, $userId) {
+                $q->whereDate('date', $shift->date);
+                if ($userId) {
+                    $q->where('user_id', $userId);
+                }
+            }])->find($shift->weekly_run_sheet_id);
 
-            $validScans = $rs->scans
-                ->whereIn('nfc_tag_id', $requiredTagIds)
-                ->unique('nfc_tag_id')
-                ->sortBy('time');
+            if (!$weeklyRunSheet) {
+                continue;
+            }
 
-            $scannedTagIds = $validScans->pluck('nfc_tag_id')->toArray();
-            $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds);
+            $dayOfWeek = Carbon::parse($shift->date)->dayOfWeekIso;
 
-            $requiredCount = count($requiredTagIds);
-            $scannedCount = count($scannedTagIds);
-            $status = $requiredCount > 0 && $scannedCount >= $requiredCount
-                ? 'Completed'
-                : ($scannedCount > 0 ? 'Partial' : 'Missed');
+            // Filter entries for the specific day of the week
+            $entries = $weeklyRunSheet->entries->where('day_of_week', $dayOfWeek);
 
-            $scansList = $validScans->map(function($scan) {
-                return [
-                    'time' => $scan->time,
-                    'name' => $scan->nfcTag?->name ?? 'N/A',
-                    'uid' => $scan->nfcTag?->uid ?? 'N/A',
-                    'image' => null,
-                    'user' => $scan->user?->name ?? 'N/A',
-                ];
-            })->values()->all();
+            foreach ($entries as $entry) {
+                // If filter by site is set, filter entries by site_id
+                if ($siteId && $entry->site_id != $siteId) {
+                    continue;
+                }
 
-            $dateStr = $rs->date ? (is_string($rs->date) ? $rs->date : $rs->date->format('Y-m-d')) : 'N/A';
+                $entryStart = $entry->start_time ?: $weeklyRunSheet->getDayStartTime($dayOfWeek);
+                $entryEnd = $entry->end_time ?: $weeklyRunSheet->getDayEndTime($dayOfWeek);
 
-            $merged->push([
-                'type' => 'Runsheet Tour',
-                'name' => $rs->run_sheet_name ?? 'Runsheet Patrol',
-                'user' => $rs->user?->name ?? 'N/A',
-                'site' => $rs->site?->name ?? 'N/A',
-                'date' => $dateStr,
-                'start_time' => $rs->start_time,
-                'end_time' => $rs->end_time,
-                'required_count' => $requiredCount,
-                'scanned_count' => $scannedCount,
-                'status' => $status,
-                'scans' => $scansList,
-                'missing_tags' => $missingTags->pluck('name')->values()->all(),
-            ]);
+                // Filter by time if start_time/end_time filter is provided
+                if ($startTime && $entryStart && $entryStart < $startTime) {
+                    continue;
+                }
+                if ($endTime && $entryEnd && $entryEnd > $endTime) {
+                    continue;
+                }
+
+                $requiredTags = $entry->site?->nfcTags ?? collect();
+                $requiredTagIds = $requiredTags->pluck('id')->toArray();
+
+                // Get scans for this entry on this date
+                $scans = $entry->scans;
+                $validScans = $scans
+                    ->whereIn('nfc_tag_id', $requiredTagIds)
+                    ->unique('nfc_tag_id')
+                    ->sortBy('time');
+
+                $scannedTagIds = $validScans->pluck('nfc_tag_id')->toArray();
+                $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds);
+
+                $requiredCount = count($requiredTagIds);
+                $scannedCount = count($scannedTagIds);
+                $status = $requiredCount > 0 && $scannedCount >= $requiredCount
+                    ? 'Completed'
+                    : ($scannedCount > 0 ? 'Partial' : 'Missed');
+
+                $scansList = $validScans->map(function($scan) {
+                    return [
+                        'time' => $scan->time,
+                        'name' => $scan->nfcTag?->name ?? 'N/A',
+                        'uid' => $scan->nfcTag?->uid ?? 'N/A',
+                        'image' => $scan->image, // Runsheet scans have images
+                        'user' => $scan->user?->name ?? 'N/A',
+                    ];
+                })->values()->all();
+
+                $merged->push([
+                    'type' => 'Runsheet Tour',
+                    'name' => $entry->tour_name ?: ($weeklyRunSheet->name ?? 'Runsheet Tour'),
+                    'user' => $user?->name ?? 'N/A',
+                    'site' => $entry->site?->name ?? 'N/A',
+                    'date' => $shift->date,
+                    'start_time' => $entryStart ?: '00:00:00',
+                    'end_time' => $entryEnd ?: '23:59:59',
+                    'required_count' => $requiredCount,
+                    'scanned_count' => $scannedCount,
+                    'status' => $status,
+                    'scans' => $scansList,
+                    'missing_tags' => $missingTags->pluck('name')->values()->all(),
+                ]);
+            }
         }
 
         // 3. SiteItems (Structured Generic Checkpoints)
