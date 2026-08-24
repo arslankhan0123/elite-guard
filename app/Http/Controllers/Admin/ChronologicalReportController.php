@@ -93,7 +93,7 @@ class ChronologicalReportController extends Controller
             $tourQuery->whereTime('start_time', '>=', $startTime);
         }
         if ($endTime) {
-            $tourQuery->whereTime('end_time', '<=', $endTime);
+            $tourQuery->whereTime('start_time', '<=', $endTime);
         }
 
         $tourItems = $tourQuery->get();
@@ -192,11 +192,15 @@ class ChronologicalReportController extends Controller
                 $entryStart = $entry->start_time ?: $weeklyRunSheet->getDayStartTime($dayOfWeek);
                 $entryEnd = $entry->end_time ?: $weeklyRunSheet->getDayEndTime($dayOfWeek);
 
+                $entryStartFormatted = $entryStart ? \Carbon\Carbon::parse($entryStart)->format('H:i:s') : null;
+                $startTimeFormatted = $startTime ? \Carbon\Carbon::parse($startTime)->format('H:i:s') : null;
+                $endTimeFormatted = $endTime ? \Carbon\Carbon::parse($endTime)->format('H:i:s') : null;
+
                 // Filter by time if start_time/end_time filter is provided
-                if ($startTime && $entryStart && $entryStart < $startTime) {
+                if ($startTimeFormatted && $entryStartFormatted && $entryStartFormatted < $startTimeFormatted) {
                     continue;
                 }
-                if ($endTime && $entryEnd && $entryEnd > $endTime) {
+                if ($endTimeFormatted && $entryStartFormatted && $entryStartFormatted > $endTimeFormatted) {
                     continue;
                 }
 
@@ -260,7 +264,7 @@ class ChronologicalReportController extends Controller
             $siteItemQuery->whereTime('start_time', '>=', $startTime);
         }
         if ($endTime) {
-            $siteItemQuery->whereTime('end_time', '<=', $endTime);
+            $siteItemQuery->whereTime('start_time', '<=', $endTime);
         }
 
         $siteItems = $siteItemQuery->get();
