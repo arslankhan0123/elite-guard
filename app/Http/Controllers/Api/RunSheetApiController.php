@@ -161,15 +161,29 @@ class RunSheetApiController extends Controller
             }
         }
 
-        $data = $request->only(['run_sheet_id', 'nfc_tag_id', 'latitude', 'longitude']);
-        $data['user_id'] = Auth::id();
+        $scanData = [
+            'weekly_run_sheet_id' => $runsheet->weekly_run_sheet_id,
+            'weekly_run_sheet_entry_id' => $runsheet->id,
+            'nfc_tag_id' => (int)$request->nfc_tag_id,
+            'user_id' => Auth::id(),
+            'date' => \Carbon\Carbon::now()->format('Y-m-d'),
+            'time' => \Carbon\Carbon::now()->format('H:i:s'),
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+        ];
 
         // Check if already scanned today
-        if ($this->runSheetRepo->isAlreadyScanned($data)) {
+        $alreadyScanned = \App\Models\WeeklyRunSheetScan::where('user_id', $scanData['user_id'])
+            ->where('weekly_run_sheet_entry_id', $scanData['weekly_run_sheet_entry_id'])
+            ->where('nfc_tag_id', $scanData['nfc_tag_id'])
+            ->where('date', $scanData['date'])
+            ->exists();
+
+        if ($alreadyScanned) {
             return $this->errorResponse('This NFC tag has already been scanned for this run sheet today.', null, 422);
         }
 
-        $scan = $this->runSheetRepo->storeScan($data);
+        $scan = \App\Models\WeeklyRunSheetScan::create($scanData);
 
         return $this->successResponse($scan, 'Scan recorded successfully.');
     }
