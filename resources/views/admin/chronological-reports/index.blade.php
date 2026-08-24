@@ -1,0 +1,191 @@
+@extends('dashboardLayouts.main')
+@section('title', 'System Reports')
+
+@section('breadcrumbTitle', 'System Reports')
+
+@section('breadcrumbs')
+<li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">System Reports</li>
+@endsection
+
+@section('content')
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0 fw-bold text-dark"><i class="mdi mdi-chart-timeline-variant text-primary me-2"></i>System Scans & Patrol Activity Log</h4>
+            </div>
+            <div class="card-body">
+                <!-- Search & Filters -->
+                <form action="{{ route('chronological-reports.index') }}" method="GET" class="row g-3 mb-4 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-muted">User/Guard</label>
+                        <select name="user_id" class="form-select bg-light">
+                            <option value="">All Guards</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ $selectedUser == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-muted">Site</label>
+                        <select name="site_id" class="form-select bg-light">
+                            <option value="">All Sites</option>
+                            @foreach($sites as $site)
+                                <option value="{{ $site->id }}" {{ $selectedSite == $site->id ? 'selected' : '' }}>{{ $site->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-muted">Start Date <span class="text-danger">*</span></label>
+                        <input type="date" name="start_date" class="form-control bg-light" value="{{ $startDate }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-muted">End Date <span class="text-danger">*</span></label>
+                        <input type="date" name="end_date" class="form-control bg-light" value="{{ $endDate }}" required>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label fw-semibold text-muted">Start Time</label>
+                        <input type="time" name="start_time" class="form-control bg-light" value="{{ $startTime }}">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label fw-semibold text-muted">End Time</label>
+                        <input type="time" name="end_time" class="form-control bg-light" value="{{ $endTime }}">
+                    </div>
+                    <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                        <a href="{{ route('chronological-reports.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Reset</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">
+                            <i class="mdi mdi-magnify me-1"></i> Generate Report
+                        </button>
+                    </div>
+                </form>
+
+                @if($hasSearched)
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0">Chronological Activity Log: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</h5>
+                        @if(count($reports) > 0)
+                            <a href="{{ route('chronological-reports.pdf', request()->query()) }}" class="btn btn-danger rounded-pill px-4">
+                                <i class="mdi mdi-file-pdf-box me-1"></i> Export PDF
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="table-responsive">                   
+                        <table id="custom-table" class="table table-bordered align-middle">
+                            <thead>
+                                <tr class="table-light">
+                                    <th style="width: 50px;">#</th>
+                                    <th>Date</th>
+                                    <th>Interval (Time)</th>
+                                    <th>User</th>
+                                    <th>Site</th>
+                                    <th>Tour / Patrol Name</th>
+                                    <th class="text-center">Required</th>
+                                    <th class="text-center">Scanned</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($reports as $index => $report)
+                                @php 
+                                    $statusClass = match($report['status']) {
+                                        'Completed' => 'bg-success',
+                                        'Partial' => 'bg-warning text-dark',
+                                        default => 'bg-danger'
+                                    };
+                                @endphp
+                                <tr>
+                                    <td class="text-center">{{ $index + 1 }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($report['date'])->format('d M Y') }}</td>
+                                    <td class="fw-bold text-primary">
+                                        {{ \Carbon\Carbon::parse($report['start_time'])->format('h:i A') }} - 
+                                        {{ \Carbon\Carbon::parse($report['end_time'])->format('h:i A') }}
+                                    </td>
+                                    <td>{{ $report['user'] }}</td>
+                                    <td>{{ $report['site'] }}</td>
+                                    <td>
+                                        <span class="badge bg-soft-info text-info px-2 py-1 me-1">
+                                            {{ $report['type'] }}
+                                        </span>
+                                        <strong>{{ $report['name'] }}</strong>
+                                    </td>
+                                    <td class="text-center fw-bold">{{ $report['required_count'] }}</td>
+                                    <td class="text-center fw-bold text-success">{{ $report['scanned_count'] }}</td>
+                                    <td class="text-center">
+                                        <span class="badge {{ $statusClass }} px-3 py-1 rounded-pill">{{ $report['status'] }}</span>
+                                    </td>
+                                </tr>
+                                <tr class="bg-light-subtle">
+                                    <td></td>
+                                    <td colspan="8" class="p-3">
+                                        <div class="ps-2" style="border-left: 3px solid #7c3aed;">
+                                            <div class="mb-2">
+                                                <strong class="text-primary"><i class="mdi mdi-check-circle-outline"></i> Scanned Checkpoints:</strong>
+                                                @if(count($report['scans']) > 0)
+                                                     <div class="d-flex flex-wrap gap-2 mt-2">
+                                                         @foreach($report['scans'] as $scan)
+                                                             @php
+                                                                 $scanImg = null;
+                                                                 if (!empty($scan['image'])) {
+                                                                     $scanImg = $scan['image'];
+                                                                     if (!str_starts_with($scanImg, 'http://') && !str_starts_with($scanImg, 'https://')) {
+                                                                         if (str_starts_with($scanImg, 'storage/')) {
+                                                                             $scanImg = asset($scanImg);
+                                                                         } elseif (str_starts_with($scanImg, '/storage/')) {
+                                                                             $scanImg = asset(ltrim($scanImg, '/'));
+                                                                         } else {
+                                                                             $scanImg = asset('storage/' . ltrim($scanImg, '/'));
+                                                                         }
+                                                                     }
+                                                                 }
+                                                             @endphp
+                                                             <div class="card p-2 border rounded shadow-sm d-flex flex-row align-items-center justify-content-between bg-white m-0" style="width: 280px; min-height: 96px;">
+                                                                 <div style="flex: 1; min-width: 0; padding-right: 8px;">
+                                                                     <div class="fw-bold text-dark text-truncate" style="font-size: 11.5px;" title="{{ $scan['name'] }}">{{ $scan['name'] }}</div>
+                                                                     <div class="text-muted text-truncate" style="font-size: 9.5px;"><strong>UID:</strong> {{ $scan['uid'] }}</div>
+                                                                     <div class="text-muted" style="font-size: 9.5px;"><strong>Time:</strong> {{ \Carbon\Carbon::parse($scan['time'])->format('h:i:s A') }}</div>
+                                                                     <div class="text-muted text-truncate" style="font-size: 9.5px;"><strong>By:</strong> {{ $scan['user'] }}</div>
+                                                                 </div>
+                                                                 @if($scanImg)
+                                                                     <div style="flex-shrink: 0;">
+                                                                         <img src="{{ $scanImg }}" alt="scan" class="rounded border" style="width: 75px; height: 75px; object-fit: cover;">
+                                                                     </div>
+                                                                 @endif
+                                                             </div>
+                                                         @endforeach
+                                                     </div>
+                                                @else
+                                                    <span class="text-muted italic ms-1">No NFC tags scanned</span>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <strong class="text-danger"><i class="mdi mdi-alert-circle-outline"></i> Missing Checkpoints:</strong>
+                                                @if(count($report['missing_tags']) > 0)
+                                                    <span class="text-danger-emphasis fw-bold ms-1">
+                                                        {{ implode(', ', $report['missing_tags']) }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-success fw-bold ms-1">None</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-5">
+                                        <i class="mdi mdi-alert-circle-outline font-size-24 mb-2 d-block text-warning"></i>
+                                        No activity logs or scans found for the selected parameters.
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

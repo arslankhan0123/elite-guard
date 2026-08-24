@@ -193,6 +193,14 @@
                             </a>
                         </li>
                         @endif
+                        @if(Auth::user()->role === 'SuperAdmin' || Auth::user()->role === 'Admin')
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{ route('chronological-reports.index') }}">
+                                <i class="icon nav-icon" data-feather="bar-chart-2"></i>
+                                <span>System Reports</span>
+                            </a>
+                        </li>
+                        @endif
                         <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('nfc.index')}}" id="topnav-nfc"
                                 role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

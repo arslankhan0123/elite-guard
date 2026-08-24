@@ -228,6 +228,11 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/download/{type}/{id}', [\App\Http\Controllers\Admin\UnifiedReportController::class, 'downloadPdf'])->name('reports.download');
     });
 
+    Route::group(['prefix' => '/chronological-reports'], function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ChronologicalReportController::class, 'index'])->name('chronological-reports.index');
+        Route::get('/pdf', [\App\Http\Controllers\Admin\ChronologicalReportController::class, 'exportPdf'])->name('chronological-reports.pdf');
+    });
+
     Route::group(['prefix' => '/notice-board'], function () {
         Route::get('/', [NoticeBoardController::class, 'index'])->name('notice-board.index');
         Route::get('/create', [NoticeBoardController::class, 'create'])->name('notice-board.create');
