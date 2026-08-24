@@ -203,7 +203,8 @@ class WeeklyRunSheetApiController extends Controller
             }
         }
 
-        $date = $request->input('date') ?: Carbon::now(config('app.timezone', 'UTC'))->toDateString();
+        $activeShift = $this->shiftRepo->getActiveShift();
+        $date = $request->input('date') ?: ($activeShift ? $activeShift->date : Carbon::now(config('app.timezone', 'UTC'))->toDateString());
         $time = $request->input('time') ?: Carbon::now(config('app.timezone', 'UTC'))->toTimeString();
 
         $data = [
