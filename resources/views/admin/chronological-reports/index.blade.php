@@ -18,7 +18,7 @@
             <div class="card-body">
                 <!-- Search & Filters -->
                 <form action="{{ route('chronological-reports.index') }}" method="GET" class="row g-3 mb-4 align-items-end">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label fw-semibold text-muted">User/Guard</label>
                         <select name="user_id" class="form-select bg-light">
                             <option value="">All Guards</option>
@@ -27,12 +27,21 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label fw-semibold text-muted">Site</label>
                         <select name="site_id" class="form-select bg-light">
                             <option value="">All Sites</option>
                             @foreach($sites as $site)
                                 <option value="{{ $site->id }}" {{ $selectedSite == $site->id ? 'selected' : '' }}>{{ $site->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-muted">Weekly Runsheet</label>
+                        <select name="weekly_run_sheet_id" class="form-select bg-light">
+                            <option value="">All Runsheets</option>
+                            @foreach($weeklyRunSheets as $wrs)
+                                <option value="{{ $wrs->id }}" {{ $selectedWeeklyRunSheet == $wrs->id ? 'selected' : '' }}>{{ $wrs->name }}</option>
                             @endforeach
                         </select>
                     </div>

@@ -161,12 +161,16 @@ class RunSheetApiController extends Controller
             }
         }
 
+        $shiftRepo = app(\App\Repositories\ShiftRepository::class);
+        $activeShift = $shiftRepo->getActiveShift();
+        $scanDate = $request->input('date') ?: ($activeShift ? $activeShift->date : \Carbon\Carbon::now()->format('Y-m-d'));
+
         $scanData = [
             'weekly_run_sheet_id' => $runsheet->weekly_run_sheet_id,
             'weekly_run_sheet_entry_id' => $runsheet->id,
             'nfc_tag_id' => (int)$request->nfc_tag_id,
             'user_id' => Auth::id(),
-            'date' => \Carbon\Carbon::now()->format('Y-m-d'),
+            'date' => $scanDate,
             'time' => \Carbon\Carbon::now()->format('H:i:s'),
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,

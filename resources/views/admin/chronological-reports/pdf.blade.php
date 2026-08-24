@@ -228,13 +228,14 @@
     <div class="section-title">Report Scope & Parameters</div>
     <table class="info-table">
         <tr>
-            <td><span class="label">Date Range</span><span class="value">
+            <td style="width: 20%;"><span class="label">Date Range</span><span class="value">
                 {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - 
                 {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
             </span></td>
-            <td><span class="label">Selected User</span><span class="value">{{ $userObj?->name ?? 'All Guards' }}</span></td>
-            <td><span class="label">Selected Site</span><span class="value">{{ $siteObj?->name ?? 'All Sites' }}</span></td>
-            <td><span class="label">Time Range</span><span class="value">
+            <td style="width: 20%;"><span class="label">Selected User</span><span class="value">{{ $userObj?->name ?? 'All Guards' }}</span></td>
+            <td style="width: 20%;"><span class="label">Selected Site</span><span class="value">{{ $siteObj?->name ?? 'All Sites' }}</span></td>
+            <td style="width: 20%;"><span class="label">Weekly Runsheet</span><span class="value">{{ $weeklyRunSheetObj?->name ?? 'All Runsheets' }}</span></td>
+            <td style="width: 20%;"><span class="label">Time Range</span><span class="value">
                 {{ $startTime ? \Carbon\Carbon::parse($startTime)->format('h:i A') : '00:00 AM' }} - 
                 {{ $endTime ? \Carbon\Carbon::parse($endTime)->format('h:i A') : '11:59 PM' }}
             </span></td>

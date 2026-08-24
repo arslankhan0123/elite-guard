@@ -18,9 +18,11 @@ class ChronologicalReportController extends Controller
     {
         $users = User::orderBy('name')->get();
         $sites = Site::orderBy('name')->get();
+        $weeklyRunSheets = \App\Models\WeeklyRunSheet::orderBy('name')->get();
 
         $selectedUser = $request->get('user_id');
         $selectedSite = $request->get('site_id');
+        $selectedWeeklyRunSheet = $request->get('weekly_run_sheet_id');
         $startDate = $request->get('start_date') ?: Carbon::today()->format('Y-m-d');
         $endDate = $request->get('end_date') ?: Carbon::today()->format('Y-m-d');
         $startTime = $request->get('start_time');
@@ -30,15 +32,17 @@ class ChronologicalReportController extends Controller
         $hasSearched = $request->has('start_date');
 
         if ($hasSearched) {
-            $reports = $this->getChronologicalData($selectedUser, $selectedSite, $startDate, $endDate, $startTime, $endTime);
+            $reports = $this->getChronologicalData($selectedUser, $selectedSite, $selectedWeeklyRunSheet, $startDate, $endDate, $startTime, $endTime);
         }
 
         return view('admin.chronological-reports.index', compact(
             'users',
             'sites',
+            'weeklyRunSheets',
             'reports',
             'selectedUser',
             'selectedSite',
+            'selectedWeeklyRunSheet',
             'startDate',
             'endDate',
             'startTime',
@@ -51,20 +55,23 @@ class ChronologicalReportController extends Controller
     {
         $selectedUser = $request->get('user_id');
         $selectedSite = $request->get('site_id');
+        $selectedWeeklyRunSheet = $request->get('weekly_run_sheet_id');
         $startDate = $request->get('start_date') ?: Carbon::today()->format('Y-m-d');
         $endDate = $request->get('end_date') ?: Carbon::today()->format('Y-m-d');
         $startTime = $request->get('start_time');
         $endTime = $request->get('end_time');
 
-        $reports = $this->getChronologicalData($selectedUser, $selectedSite, $startDate, $endDate, $startTime, $endTime);
+        $reports = $this->getChronologicalData($selectedUser, $selectedSite, $selectedWeeklyRunSheet, $startDate, $endDate, $startTime, $endTime);
 
         $userObj = $selectedUser ? User::find($selectedUser) : null;
         $siteObj = $selectedSite ? Site::find($selectedSite) : null;
+        $weeklyRunSheetObj = $selectedWeeklyRunSheet ? \App\Models\WeeklyRunSheet::find($selectedWeeklyRunSheet) : null;
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.chronological-reports.pdf', compact(
             'reports',
             'userObj',
             'siteObj',
+            'weeklyRunSheetObj',
             'startDate',
             'endDate',
             'startTime',
@@ -75,7 +82,7 @@ class ChronologicalReportController extends Controller
         return $pdf->download($filename);
     }
 
-    private function getChronologicalData($userId, $siteId, $startDate, $endDate, $startTime, $endTime)
+    private function getChronologicalData($userId, $siteId, $weeklyRunSheetId, $startDate, $endDate, $startTime, $endTime)
     {
         $merged = collect();
 
@@ -105,7 +112,7 @@ class ChronologicalReportController extends Controller
             $tourQuery->whereTime('start_time', '<=', $endTime);
         }
 
-        $tourItems = $tourQuery->get();
+        $tourItems = $weeklyRunSheetId ? collect() : $tourQuery->get();
         foreach ($tourItems as $item) {
             $siteTags = \App\Models\NfcTag::where('site_id', $item->site_id)->get();
             $tourTagIds = $item->siteTour?->tags;
@@ -171,6 +178,9 @@ class ChronologicalReportController extends Controller
             $runsheetShiftsQuery->whereHas('weeklyRunSheet.entries', function ($q) use ($siteId) {
                 $q->where('site_id', $siteId);
             });
+        }
+        if ($weeklyRunSheetId) {
+            $runsheetShiftsQuery->where('weekly_run_sheet_id', $weeklyRunSheetId);
         }
 
         $runsheetShifts = $runsheetShiftsQuery->get();
@@ -303,7 +313,7 @@ class ChronologicalReportController extends Controller
             $siteItemQuery->whereTime('start_time', '<=', $endTime);
         }
 
-        $siteItems = $siteItemQuery->get();
+        $siteItems = $weeklyRunSheetId ? collect() : $siteItemQuery->get();
         foreach ($siteItems as $sItem) {
             $requiredTags = $sItem->site?->nfcTags ?? collect();
             $requiredTagIds = $requiredTags->pluck('id')->toArray();
