@@ -360,8 +360,8 @@ class ChronologicalReportController extends Controller
             ]);
         }
 
-        // Sort chronologically by date and start_time
-        return $merged->sortBy(function ($item) {
+        // Sort chronologically by date and start_time descending (latest records first)
+        return $merged->sortByDesc(function ($item) {
             return $item['date'] . ' ' . $item['start_time'];
         })->values()->all();
     }
