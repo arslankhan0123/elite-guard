@@ -9,6 +9,51 @@
 @endsection
 
 @section('content')
+<style>
+    /* Styling the Select2 Multiple dropdown to match Bootstrap form-select style and height */
+    .select2-container--default .select2-selection--multiple {
+        background-color: #f8f9fa !important;
+        border: 1px solid #eff0f2 !important;
+        border-radius: 6px !important;
+        min-height: 38px !important;
+        padding: 2px 6px !important;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #86b7fe !important;
+        outline: 0 !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #00249c !important;
+        color: white !important;
+        border: 1px solid #00249c !important;
+        border-radius: 4px !important;
+        padding: 1px 8px !important;
+        margin: 2px 4px 2px 0 !important;
+        font-size: 12px !important;
+        display: inline-flex;
+        align-items: center;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: white !important;
+        margin-right: 5px !important;
+        order: -1;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: #ff5f5f !important;
+    }
+    .select2-container--default .select2-search--inline .select2-search__field {
+        margin: 2px 0 !important;
+        height: 26px !important;
+        font-family: inherit;
+    }
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
 <div class="row">
     <div class="col-lg-12">
         <div class="card shadow-sm border-0 rounded-4">
@@ -41,11 +86,10 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold text-muted">Site</label>
-                        <select name="site_id" class="form-select bg-light">
-                            <option value="">All Sites</option>
+                        <label class="form-label fw-semibold text-muted">Sites</label>
+                        <select name="site_ids[]" id="site_ids_select" class="form-select select2 bg-light" multiple="multiple" data-placeholder="Select Sites">
                             @foreach($sites as $site)
-                                <option value="{{ $site->id }}" {{ $selectedSite == $site->id ? 'selected' : '' }}>{{ $site->name }}</option>
+                                <option value="{{ $site->id }}" {{ in_array($site->id, (array)$selectedSites) ? 'selected' : '' }}>{{ $site->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -245,5 +289,12 @@ function confirmDelete(name, type, id, date) {
         document.getElementById('delete-form').submit();
     }
 }
+
+$(document).ready(function() {
+    $('#site_ids_select').select2({
+        placeholder: "Select Sites",
+        allowClear: true
+    });
+});
 </script>
 @endsection

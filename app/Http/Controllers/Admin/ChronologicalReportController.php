@@ -21,7 +21,15 @@ class ChronologicalReportController extends Controller
         $weeklyRunSheets = \App\Models\WeeklyRunSheet::orderBy('name')->get();
 
         $selectedUser = $request->get('user_id');
-        $selectedSite = $request->get('site_id');
+        $selectedSites = $request->get('site_ids') ?: [];
+        if (!is_array($selectedSites)) {
+            $selectedSites = $selectedSites ? [$selectedSites] : [];
+        }
+        // Support fallback to site_id if passed
+        if ($request->has('site_id') && $request->get('site_id') && empty($selectedSites)) {
+            $selectedSites = [$request->get('site_id')];
+        }
+
         $selectedWeeklyRunSheet = $request->get('weekly_run_sheet_id');
         $startDate = $request->get('start_date') ?: Carbon::today()->format('Y-m-d');
         $endDate = $request->get('end_date') ?: Carbon::today()->format('Y-m-d');
@@ -32,7 +40,7 @@ class ChronologicalReportController extends Controller
         $hasSearched = $request->has('start_date');
 
         if ($hasSearched) {
-            $reports = $this->getChronologicalData($selectedUser, $selectedSite, $selectedWeeklyRunSheet, $startDate, $endDate, $startTime, $endTime);
+            $reports = $this->getChronologicalData($selectedUser, $selectedSites, $selectedWeeklyRunSheet, $startDate, $endDate, $startTime, $endTime);
         }
 
         return view('admin.chronological-reports.index', compact(
@@ -41,7 +49,7 @@ class ChronologicalReportController extends Controller
             'weeklyRunSheets',
             'reports',
             'selectedUser',
-            'selectedSite',
+            'selectedSites',
             'selectedWeeklyRunSheet',
             'startDate',
             'endDate',
@@ -54,23 +62,29 @@ class ChronologicalReportController extends Controller
     public function exportPdf(Request $request)
     {
         $selectedUser = $request->get('user_id');
-        $selectedSite = $request->get('site_id');
+        $selectedSites = $request->get('site_ids') ?: [];
+        if (!is_array($selectedSites)) {
+            $selectedSites = $selectedSites ? [$selectedSites] : [];
+        }
+        if ($request->has('site_id') && $request->get('site_id') && empty($selectedSites)) {
+            $selectedSites = [$request->get('site_id')];
+        }
         $selectedWeeklyRunSheet = $request->get('weekly_run_sheet_id');
         $startDate = $request->get('start_date') ?: Carbon::today()->format('Y-m-d');
         $endDate = $request->get('end_date') ?: Carbon::today()->format('Y-m-d');
         $startTime = $request->get('start_time');
         $endTime = $request->get('end_time');
 
-        $reports = $this->getChronologicalData($selectedUser, $selectedSite, $selectedWeeklyRunSheet, $startDate, $endDate, $startTime, $endTime);
+        $reports = $this->getChronologicalData($selectedUser, $selectedSites, $selectedWeeklyRunSheet, $startDate, $endDate, $startTime, $endTime);
 
         $userObj = $selectedUser ? User::find($selectedUser) : null;
-        $siteObj = $selectedSite ? Site::find($selectedSite) : null;
+        $sitesObj = !empty($selectedSites) ? Site::whereIn('id', $selectedSites)->get() : collect();
         $weeklyRunSheetObj = $selectedWeeklyRunSheet ? \App\Models\WeeklyRunSheet::find($selectedWeeklyRunSheet) : null;
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.chronological-reports.pdf', compact(
             'reports',
             'userObj',
-            'siteObj',
+            'sitesObj',
             'weeklyRunSheetObj',
             'startDate',
             'endDate',
@@ -82,9 +96,12 @@ class ChronologicalReportController extends Controller
         return $pdf->download($filename);
     }
 
-    private function getChronologicalData($userId, $siteId, $weeklyRunSheetId, $startDate, $endDate, $startTime, $endTime)
+    private function getChronologicalData($userId, $siteIds, $weeklyRunSheetId, $startDate, $endDate, $startTime, $endTime)
     {
         $merged = collect();
+        if (!is_array($siteIds)) {
+            $siteIds = $siteIds ? [$siteIds] : [];
+        }
 
         // 1. Site Tour Items (Structured Tours)
         $tourQuery = \App\Models\SiteTourItem::with(['siteTour', 'scans.nfcTag', 'scans.user', 'user', 'site'])
@@ -93,8 +110,8 @@ class ChronologicalReportController extends Controller
         if ($userId) {
             $tourQuery->where('user_id', $userId);
         }
-        if ($siteId) {
-            $tourQuery->where('site_id', $siteId);
+        if (!empty($siteIds)) {
+            $tourQuery->whereIn('site_id', $siteIds);
         }
         if ($startTime && $endTime) {
             if ($startTime > $endTime) {
@@ -175,9 +192,9 @@ class ChronologicalReportController extends Controller
                 $q->where('user_id', $userId);
             });
         }
-        if ($siteId) {
-            $runsheetShiftsQuery->whereHas('weeklyRunSheet.entries', function ($q) use ($siteId) {
-                $q->where('site_id', $siteId);
+        if (!empty($siteIds)) {
+            $runsheetShiftsQuery->whereHas('weeklyRunSheet.entries', function ($q) use ($siteIds) {
+                $q->whereIn('site_id', $siteIds);
             });
         }
         if ($weeklyRunSheetId) {
@@ -206,7 +223,7 @@ class ChronologicalReportController extends Controller
 
             foreach ($entries as $entry) {
                 // If filter by site is set, filter entries by site_id
-                if ($siteId && $entry->site_id != $siteId) {
+                if (!empty($siteIds) && !in_array($entry->site_id, $siteIds)) {
                     continue;
                 }
 
@@ -296,8 +313,8 @@ class ChronologicalReportController extends Controller
         if ($userId) {
             $siteItemQuery->where('user_id', $userId);
         }
-        if ($siteId) {
-            $siteItemQuery->where('site_id', $siteId);
+        if (!empty($siteIds)) {
+            $siteItemQuery->whereIn('site_id', $siteIds);
         }
         if ($startTime && $endTime) {
             if ($startTime > $endTime) {
