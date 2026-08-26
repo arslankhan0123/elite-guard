@@ -231,6 +231,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
     Route::group(['prefix' => '/chronological-reports'], function () {
         Route::get('/', [\App\Http\Controllers\Admin\ChronologicalReportController::class, 'index'])->name('chronological-reports.index');
         Route::get('/pdf', [\App\Http\Controllers\Admin\ChronologicalReportController::class, 'exportPdf'])->name('chronological-reports.pdf');
+        Route::delete('/delete', [\App\Http\Controllers\Admin\ChronologicalReportController::class, 'destroy'])->name('chronological-reports.destroy');
     });
 
     Route::group(['prefix' => '/notice-board'], function () {

@@ -16,6 +16,19 @@
                 <h4 class="card-title mb-0 fw-bold text-dark"><i class="mdi mdi-chart-timeline-variant text-primary me-2"></i>System Scans & Patrol Activity Log</h4>
             </div>
             <div class="card-body">
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
                 <!-- Search & Filters -->
                 <form action="{{ route('chronological-reports.index') }}" method="GET" class="row g-3 mb-4 align-items-end">
                     <div class="col-md-2">
@@ -93,6 +106,7 @@
                                     <th class="text-center">Required</th>
                                     <th class="text-center">Scanned</th>
                                     <th class="text-center">Status</th>
+                                    <th class="text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -124,10 +138,26 @@
                                     <td class="text-center">
                                         <span class="badge {{ $statusClass }} px-3 py-1 rounded-pill">{{ $report['status'] }}</span>
                                     </td>
+                                    <td class="text-center">
+                                        <button type="button" class="bin-button mx-auto" onclick="confirmDelete('{{ addslashes($report['name']) }}', '{{ $report['type'] }}', '{{ $report['id'] }}', '{{ $report['date'] }}')">
+                                            <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+                                                <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+                                            </svg>
+                                            <svg class="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <mask id="path-1-inside-1_8_19" fill="white">
+                                                    <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
+                                                </mask>
+                                                <path d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" fill="white" mask="url(#path-1-inside-1_8_19)"></path>
+                                                <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+                                                <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
                                 </tr>
                                 <tr class="bg-light-subtle">
                                     <td></td>
-                                    <td colspan="8" class="p-3">
+                                    <td colspan="9" class="p-3">
                                         <div class="ps-2" style="border-left: 3px solid #7c3aed;">
                                             <div class="mb-2">
                                                 <strong class="text-primary"><i class="mdi mdi-check-circle-outline"></i> Scanned Checkpoints:</strong>
@@ -183,7 +213,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted py-5">
+                                    <td colspan="10" class="text-center text-muted py-5">
                                         <i class="mdi mdi-alert-circle-outline font-size-24 mb-2 d-block text-warning"></i>
                                         No activity logs or scans found for the selected parameters.
                                     </td>
@@ -197,4 +227,23 @@
         </div>
     </div>
 </div>
+
+<form id="delete-form" action="{{ route('chronological-reports.destroy') }}" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+    <input type="hidden" name="type" id="delete-type">
+    <input type="hidden" name="id" id="delete-id">
+    <input type="hidden" name="date" id="delete-date">
+</form>
+
+<script>
+function confirmDelete(name, type, id, date) {
+    if (confirm("Are you sure you want to delete " + name + "?")) {
+        document.getElementById('delete-type').value = type;
+        document.getElementById('delete-id').value = id;
+        document.getElementById('delete-date').value = date;
+        document.getElementById('delete-form').submit();
+    }
+}
+</script>
 @endsection

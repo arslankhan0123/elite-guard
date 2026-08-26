@@ -149,6 +149,7 @@ class ChronologicalReportController extends Controller
             $dateStr = $item->date ? (is_string($item->date) ? $item->date : $item->date->format('Y-m-d')) : 'N/A';
 
             $merged->push([
+                'id' => $item->id,
                 'type' => 'Site Tour',
                 'name' => $item->siteTour?->name ?? 'Site Tour',
                 'user' => $item->user?->name ?? 'N/A',
@@ -271,6 +272,7 @@ class ChronologicalReportController extends Controller
                 })->values()->all();
 
                 $merged->push([
+                    'id' => $entry->id,
                     'type' => 'Runsheet Tour',
                     'name' => $entry->tour_name ?: ($weeklyRunSheet->name ?? 'Runsheet Tour'),
                     'user' => $user?->name ?? 'N/A',
@@ -345,6 +347,7 @@ class ChronologicalReportController extends Controller
             $dateStr = $sItem->date ? (is_string($sItem->date) ? $sItem->date : $sItem->date->format('Y-m-d')) : 'N/A';
 
             $merged->push([
+                'id' => $sItem->id,
                 'type' => 'Site Checkpoints Tour',
                 'name' => $sItem->type ?? 'Checkpoint Patrol',
                 'user' => $sItem->user?->name ?? 'N/A',
@@ -364,5 +367,85 @@ class ChronologicalReportController extends Controller
         return $merged->sortByDesc(function ($item) {
             return $item['date'] . ' ' . $item['start_time'];
         })->values()->all();
+    }
+
+    public function destroy(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|string',
+            'id' => 'required',
+            'date' => 'nullable|date',
+        ]);
+
+        $type = $request->get('type');
+        $id = $request->get('id');
+        $date = $request->get('date');
+
+        try {
+            if ($type === 'Site Tour') {
+                $item = \App\Models\SiteTourItem::find($id);
+                if ($item) {
+                    foreach ($item->scans as $scan) {
+                        if ($scan->image) {
+                            $path = parse_url($scan->image, PHP_URL_PATH);
+                            if ($path) {
+                                $pos = strpos($path, 'storage/');
+                                if ($pos !== false) {
+                                    $relativePath = substr($path, $pos + 8);
+                                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($relativePath)) {
+                                        \Illuminate\Support\Facades\Storage::disk('public')->delete($relativePath);
+                                    }
+                                }
+                            }
+                        }
+                        $scan->delete();
+                    }
+                    $item->delete();
+                }
+            } elseif ($type === 'Runsheet Tour') {
+                $scans = \App\Models\WeeklyRunSheetScan::where('weekly_run_sheet_entry_id', $id)
+                    ->whereDate('date', $date)
+                    ->get();
+                foreach ($scans as $scan) {
+                    if ($scan->image) {
+                        $path = parse_url($scan->image, PHP_URL_PATH);
+                        if ($path) {
+                            $pos = strpos($path, 'storage/');
+                            if ($pos !== false) {
+                                $relativePath = substr($path, $pos + 8);
+                                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($relativePath)) {
+                                    \Illuminate\Support\Facades\Storage::disk('public')->delete($relativePath);
+                                }
+                            }
+                        }
+                    }
+                    $scan->delete();
+                }
+            } elseif ($type === 'Site Checkpoints Tour') {
+                $item = \App\Models\SiteItem::find($id);
+                if ($item) {
+                    foreach ($item->scans as $scan) {
+                        if ($scan->image) {
+                            $path = parse_url($scan->image, PHP_URL_PATH);
+                            if ($path) {
+                                $pos = strpos($path, 'storage/');
+                                if ($pos !== false) {
+                                    $relativePath = substr($path, $pos + 8);
+                                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($relativePath)) {
+                                        \Illuminate\Support\Facades\Storage::disk('public')->delete($relativePath);
+                                    }
+                                }
+                            }
+                        }
+                        $scan->delete();
+                    }
+                    $item->delete();
+                }
+            }
+
+            return redirect()->back()->with('success', 'Tour data deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete tour data: ' . $e->getMessage());
+        }
     }
 }
