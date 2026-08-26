@@ -233,7 +233,13 @@
                 {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
             </span></td>
             <td style="width: 20%;"><span class="label">Selected User</span><span class="value">{{ $userObj?->name ?? 'All Guards' }}</span></td>
-            <td style="width: 20%;"><span class="label">Selected Site</span><span class="value">{{ $siteObj?->name ?? 'All Sites' }}</span></td>
+            <td style="width: 20%;"><span class="label">Selected Sites</span><span class="value">
+                @if(isset($sitesObj) && $sitesObj->count() > 0)
+                    {{ implode(', ', $sitesObj->pluck('name')->toArray()) }}
+                @else
+                    All Sites
+                @endif
+            </span></td>
             <td style="width: 20%;"><span class="label">Weekly Runsheet</span><span class="value">{{ $weeklyRunSheetObj?->name ?? 'All Runsheets' }}</span></td>
             <td style="width: 20%;"><span class="label">Time Range</span><span class="value">
                 {{ $startTime ? \Carbon\Carbon::parse($startTime)->format('h:i A') : '00:00 AM' }} - 
