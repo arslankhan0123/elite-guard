@@ -103,9 +103,19 @@ class ChronologicalReportController extends Controller
             $siteIds = $siteIds ? [$siteIds] : [];
         }
 
+        // Determine actual end date (handle same-day wrap around)
+        $actualEndDate = $endDate;
+        if ($startTime && $endTime && $startDate === $endDate && $startTime > $endTime) {
+            $actualEndDate = Carbon::parse($endDate)->addDay()->format('Y-m-d');
+        }
+
+        // Define datetime filter bounds
+        $filterStartDatetime = $startDate . ' ' . ($startTime ?: '00:00:00');
+        $filterEndDatetime = $actualEndDate . ' ' . ($endTime ?: '23:59:59');
+
         // 1. Site Tour Items (Structured Tours)
         $tourQuery = \App\Models\SiteTourItem::with(['siteTour', 'scans.nfcTag', 'scans.user', 'user', 'site'])
-            ->whereBetween('date', [$startDate, $endDate]);
+            ->whereBetween('date', [$startDate, $actualEndDate]);
 
         if ($userId) {
             $tourQuery->where('user_id', $userId);
@@ -113,23 +123,18 @@ class ChronologicalReportController extends Controller
         if (!empty($siteIds)) {
             $tourQuery->whereIn('site_id', $siteIds);
         }
-        if ($startTime && $endTime) {
-            if ($startTime > $endTime) {
-                $tourQuery->where(function($q) use ($startTime, $endTime) {
-                    $q->whereTime('start_time', '>=', $startTime)
-                      ->orWhereTime('start_time', '<=', $endTime);
-                });
-            } else {
-                $tourQuery->whereTime('start_time', '>=', $startTime)
-                          ->whereTime('start_time', '<=', $endTime);
-            }
-        } elseif ($startTime) {
-            $tourQuery->whereTime('start_time', '>=', $startTime);
-        } elseif ($endTime) {
-            $tourQuery->whereTime('start_time', '<=', $endTime);
-        }
 
         $tourItems = $weeklyRunSheetId ? collect() : $tourQuery->get();
+
+        if ($startTime || $endTime) {
+            $tourItems = $tourItems->filter(function ($item) use ($filterStartDatetime, $filterEndDatetime) {
+                $itemStart = $item->date ? (is_string($item->date) ? $item->date : $item->date->format('Y-m-d')) : 'N/A';
+                $itemTime = $item->start_time ?: '00:00:00';
+                $itemStartDatetime = $itemStart . ' ' . $itemTime;
+                return $itemStartDatetime >= $filterStartDatetime && $itemStartDatetime <= $filterEndDatetime;
+            });
+        }
+
         foreach ($tourItems as $item) {
             $siteTags = \App\Models\NfcTag::where('site_id', $item->site_id)->get();
             $tourTagIds = $item->siteTour?->tags;
@@ -185,7 +190,7 @@ class ChronologicalReportController extends Controller
         // 2. Weekly RunSheets (Structured Patrols via Shifts of type runsheet)
         $runsheetShiftsQuery = \App\Models\Shift::with(['schedule.user', 'weeklyRunSheet'])
             ->where('type', 'runsheet')
-            ->whereBetween('date', [$startDate, $endDate]);
+            ->whereBetween('date', [$startDate, $actualEndDate]);
 
         if ($userId) {
             $runsheetShiftsQuery->whereHas('schedule', function ($q) use ($userId) {
@@ -230,32 +235,11 @@ class ChronologicalReportController extends Controller
                 $entryStart = $entry->start_time ?: $weeklyRunSheet->getDayStartTime($dayOfWeek);
                 $entryEnd = $entry->end_time ?: $weeklyRunSheet->getDayEndTime($dayOfWeek);
 
-                $entryStartFormatted = $entryStart ? \Carbon\Carbon::parse($entryStart)->format('H:i:s') : null;
-                $startTimeFormatted = $startTime ? \Carbon\Carbon::parse($startTime)->format('H:i:s') : null;
-                $endTimeFormatted = $endTime ? \Carbon\Carbon::parse($endTime)->format('H:i:s') : null;
+                $entryStartFormatted = $entryStart ? \Carbon\Carbon::parse($entryStart)->format('H:i:s') : '00:00:00';
 
-                $isWithinTime = true;
-                if ($startTimeFormatted && $endTimeFormatted) {
-                    if ($startTimeFormatted > $endTimeFormatted) {
-                        if (!($entryStartFormatted >= $startTimeFormatted || $entryStartFormatted <= $endTimeFormatted)) {
-                            $isWithinTime = false;
-                        }
-                    } else {
-                        if (!($entryStartFormatted >= $startTimeFormatted && $entryStartFormatted <= $endTimeFormatted)) {
-                            $isWithinTime = false;
-                        }
-                    }
-                } elseif ($startTimeFormatted) {
-                    if ($entryStartFormatted < $startTimeFormatted) {
-                        $isWithinTime = false;
-                    }
-                } elseif ($endTimeFormatted) {
-                    if ($entryStartFormatted > $endTimeFormatted) {
-                        $isWithinTime = false;
-                    }
-                }
-
-                if (!$isWithinTime) {
+                // Check using datetime comparison
+                $entryStartDatetime = $shift->date . ' ' . $entryStartFormatted;
+                if ($entryStartDatetime < $filterStartDatetime || $entryStartDatetime > $filterEndDatetime) {
                     continue;
                 }
 
@@ -308,7 +292,7 @@ class ChronologicalReportController extends Controller
 
         // 3. SiteItems (Structured Generic Checkpoints)
         $siteItemQuery = \App\Models\SiteItem::with(['site.nfcTags', 'scans.nfcTag', 'scans.user', 'user', 'site'])
-            ->whereBetween('date', [$startDate, $endDate]);
+            ->whereBetween('date', [$startDate, $actualEndDate]);
 
         if ($userId) {
             $siteItemQuery->where('user_id', $userId);
@@ -316,23 +300,18 @@ class ChronologicalReportController extends Controller
         if (!empty($siteIds)) {
             $siteItemQuery->whereIn('site_id', $siteIds);
         }
-        if ($startTime && $endTime) {
-            if ($startTime > $endTime) {
-                $siteItemQuery->where(function($q) use ($startTime, $endTime) {
-                    $q->whereTime('start_time', '>=', $startTime)
-                      ->orWhereTime('start_time', '<=', $endTime);
-                });
-            } else {
-                $siteItemQuery->whereTime('start_time', '>=', $startTime)
-                              ->whereTime('start_time', '<=', $endTime);
-            }
-        } elseif ($startTime) {
-            $siteItemQuery->whereTime('start_time', '>=', $startTime);
-        } elseif ($endTime) {
-            $siteItemQuery->whereTime('start_time', '<=', $endTime);
-        }
 
         $siteItems = $weeklyRunSheetId ? collect() : $siteItemQuery->get();
+
+        if ($startTime || $endTime) {
+            $siteItems = $siteItems->filter(function ($sItem) use ($filterStartDatetime, $filterEndDatetime) {
+                $itemStart = $sItem->date ? (is_string($sItem->date) ? $sItem->date : $sItem->date->format('Y-m-d')) : 'N/A';
+                $itemTime = $sItem->start_time ?: '00:00:00';
+                $itemStartDatetime = $itemStart . ' ' . $itemTime;
+                return $itemStartDatetime >= $filterStartDatetime && $itemStartDatetime <= $filterEndDatetime;
+            });
+        }
+
         foreach ($siteItems as $sItem) {
             $requiredTags = $sItem->site?->nfcTags ?? collect();
             $requiredTagIds = $requiredTags->pluck('id')->toArray();
