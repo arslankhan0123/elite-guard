@@ -104,16 +104,14 @@
                                         </td>
                                         <td>
                                             @if($employee->status)
-                                                <span
-                                                    class="badge bg-soft-success text-success fw-bold px-3 rounded-pill">Active</span>
+                                                <span class="badge bg-success px-3 py-1 rounded-pill">Active</span>
                                             @else
-                                                <span
-                                                    class="badge bg-soft-secondary text-secondary fw-bold px-3 rounded-pill">Inactive</span>
+                                                <span class="badge bg-danger px-3 py-1 rounded-pill">Inactive</span>
                                             @endif
                                         </td>
                                         <td class="text-center">
                                             @if($employee->is_email_sent)
-                                                <span class="badge bg-soft-success text-success fw-bold px-3 rounded-pill">
+                                                <span class="badge bg-success text-white fw-bold px-3 rounded-pill">
                                                     <i data-feather="mail" style="width: 11px; height: 11px;"></i> Sent
                                                 </span>
                                             @else
