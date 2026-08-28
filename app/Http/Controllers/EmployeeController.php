@@ -72,6 +72,7 @@ class EmployeeController extends Controller
             'drivers_license_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'work_eligibility_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'other_documents_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'status' => 'nullable|in:0,1',
         ]);
 
         $plainPassword = $request->password;
@@ -87,6 +88,7 @@ class EmployeeController extends Controller
                 'role' => $role,
                 'email_verified_at' => in_array($role, ['Admin', 'SuperAdmin'], true) ? now() : null,
                 'admin_permissions' => $role === 'Admin' ? $this->validatedAdminPermissions($request) : null,
+                'status' => $request->get('status', 1),
             ]);
 
             // Part 1: Candidate Information
@@ -190,7 +192,7 @@ class EmployeeController extends Controller
                 'user_id' => $user->id,
                 'phone' => $request->phone,
                 'address' => $request->address,
-                'status' => true,
+                'status' => $request->get('status', 1),
                 'is_email_sent' => $isEmailSent,
             ]);
         });
@@ -242,6 +244,7 @@ class EmployeeController extends Controller
 
             'password' => 'nullable|string|min:8|confirmed',
             'password_confirmation' => 'required_with:password',
+            'status' => 'nullable|in:0,1',
         ]);
 
         $isEmailSent = false;
@@ -258,6 +261,7 @@ class EmployeeController extends Controller
                 'admin_permissions' => $role === 'Admin'
                     ? (auth()->user()->role === 'SuperAdmin' ? $this->validatedAdminPermissions($request) : $user->admin_permissions)
                     : null,
+                'status' => $request->get('status', 1),
             ]);
 
             $plainPassword = null;
@@ -371,8 +375,11 @@ class EmployeeController extends Controller
                 }
             }
 
-            // Update is_email_sent on the employee record
-            $employee->update(['is_email_sent' => $isEmailSent ? true : $employee->is_email_sent]);
+            // Update is_email_sent and status on the employee record
+            $employee->update([
+                'is_email_sent' => $isEmailSent ? true : $employee->is_email_sent,
+                'status' => $request->get('status', 1),
+            ]);
         });
 
         $message = 'Employee updated successfully!' . ($isEmailSent ? ' Login credentials sent via email.' : '');
@@ -591,5 +598,83 @@ class EmployeeController extends Controller
         }
 
         return response()->json(['exists' => false]);
+    }
+
+    public function updateProfilePicture(Request $request, $id)
+    {
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
+        ]);
+
+        $employee = Employee::findOrFail($id);
+        $user = $employee->user;
+
+        if ($request->hasFile('profile_picture')) {
+            $file = $request->file('profile_picture');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            $destinationPath = public_path('images/profileImages');
+            if (!File::exists($destinationPath)) {
+                File::makeDirectory($destinationPath, 0755, true);
+            }
+
+            $file->move($destinationPath, $filename);
+
+            // Delete old profile picture if exists
+            $candidate = $user->candidate;
+            if ($candidate && $candidate->profile_picture) {
+                $parsedPath = parse_url($candidate->profile_picture, PHP_URL_PATH);
+                $relativePath = ltrim($parsedPath, '/');
+                $oldFile = public_path($relativePath);
+                if (File::exists($oldFile)) {
+                    File::delete($oldFile);
+                }
+            }
+
+            $dbPath = url('images/profileImages/' . $filename);
+            $user->candidate()->updateOrCreate(
+                ['user_id' => $user->id],
+                ['profile_picture' => $dbPath]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture updated successfully',
+                'url' => $dbPath
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No image was selected'
+        ], 400);
+    }
+
+    public function deleteProfilePicture($id)
+    {
+        $employee = Employee::findOrFail($id);
+        $user = $employee->user;
+        $candidate = $user->candidate;
+
+        if ($candidate && $candidate->profile_picture) {
+            $parsedPath = parse_url($candidate->profile_picture, PHP_URL_PATH);
+            $relativePath = ltrim($parsedPath, '/');
+            $oldFile = public_path($relativePath);
+            if (File::exists($oldFile)) {
+                File::delete($oldFile);
+            }
+
+            $candidate->update(['profile_picture' => null]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture deleted successfully'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No profile picture to delete'
+        ], 400);
     }
 }

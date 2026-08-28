@@ -27,6 +27,7 @@ class User extends Authenticatable implements JWTSubject
         'role',
         'admin_permissions',
         'fcm_token',
+        'status',
     ];
 
     /**
@@ -50,6 +51,7 @@ class User extends Authenticatable implements JWTSubject
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'admin_permissions' => 'array',
+            'status' => 'boolean',
         ];
     }
 

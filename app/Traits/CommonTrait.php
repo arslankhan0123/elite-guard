@@ -152,8 +152,8 @@ trait CommonTrait
         $intendedItems = [];
 
         if ($interval > 0 && $shift->start_time && $shift->end_time) {
-            $startTime = Carbon::parse($shift->start_time);
-            $endTime = Carbon::parse($shift->end_time);
+            $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time);
+            $endTime = Carbon::parse($shift->date . ' ' . $shift->end_time);
 
             if ($endTime->lt($startTime)) {
                 $endTime->addDay();
@@ -182,7 +182,7 @@ trait CommonTrait
                         'site_id' => $shift->site_id,
                         'type' => null,
                         'status' => false,
-                        'date' => Carbon::parse($shift->date)->format('Y-m-d'),
+                        'date' => $itemStart->format('Y-m-d'),
                         'start_time' => $itemStart->format('H:i:s'),
                         'end_time' => $itemEnd->format('H:i:s'),
                         'created_at' => now(),
@@ -200,7 +200,7 @@ trait CommonTrait
 
             if (
                 isset($intendedItems[$key])
-                && $existingItem->date?->format('Y-m-d') === Carbon::parse($shift->date)->format('Y-m-d')
+                && $existingItem->date?->format('Y-m-d') === $intendedItems[$key]['date']
                 && (int) $existingItem->site_id === (int) $shift->site_id
             ) {
                 unset($intendedItems[$key]);

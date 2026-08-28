@@ -21,6 +21,7 @@ class UnifiedReportController extends Controller
     {
         $type = $request->get('type', 'general'); // Default to general report
         $users = User::all();
+        $sites = \App\Models\Site::orderBy('name')->get();
         $data = [];
         $view = 'admin.unified-reports.partials.' . $type;
 
@@ -74,13 +75,26 @@ class UnifiedReportController extends Controller
                 break;
         }
 
-        return view('admin.unified-reports.index', compact('users', 'type', 'data'));
+        return view('admin.unified-reports.index', compact('users', 'sites', 'type', 'data'));
     }
 
     private function applyFilters($query, $request)
     {
         if ($request->user_id) {
             $query->where('user_id', $request->user_id);
+        }
+
+        if ($request->site_id) {
+            $siteId = $request->site_id;
+            if ($query->getModel() instanceof \App\Models\ReportDailyShiftForm) {
+                $query->whereHas('shift', function ($q) use ($siteId) {
+                    $q->where('site_id', $siteId);
+                });
+            } else if ($query->getModel() instanceof \App\Models\Assessment) {
+                // Assessment does not have site_id
+            } else {
+                $query->where('site_id', $siteId);
+            }
         }
 
         if ($request->date_range) {

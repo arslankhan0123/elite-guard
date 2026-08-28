@@ -120,6 +120,7 @@
 
                 <div class="collapse navbar-collapse" id="topnav-menu-content">
                     <ul class="navbar-nav">
+                        @if(Auth::user()->status)
                         @if(Auth::user()->hasAdminPermission('dashboard', 'list'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('dashboard')}}"
@@ -150,40 +151,71 @@
                             </a>
                         </li>
                         @endif
-                        @if(Auth::user()->hasAdminPermission('sites', 'list'))
+                        @if(Auth::user()->role === 'SuperAdmin' || Auth::user()->role === 'Admin')
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none" href="{{ route('weekly-run-sheets.index') }}"
-                                id="topnav-run-sheets" role="button" aria-haspopup="true" aria-expanded="false">
-                                <i class="icon nav-icon" data-feather="clipboard"></i>
-                                <span data-key="t-run-sheets">Runsheets</span>
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{ route('chronological-reports.index') }}">
+                                <i class="icon nav-icon" data-feather="bar-chart-2"></i>
+                                <span>System Reports</span>
                             </a>
                         </li>
                         @endif
-                        @if(Auth::user()->hasAdminPermission('site-tours', 'list'))
+                        @if(Auth::user()->hasAdminPermission('reports-forms', 'list'))
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('sites.tours.all')}}"
-                                id="topnav-tours" role="button" data-toggle="dropdown" aria-haspopup="true"
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('reports.all')}}"
+                                id="topnav-reports" role="button" data-toggle="dropdown" aria-haspopup="true"
                                 aria-expanded="false">
-                                <i class="icon nav-icon" data-feather="map"></i>
-                                <span data-key="t-tours">Site Tours</span>
+                                <i class="icon nav-icon" data-feather="file-text"></i>
+                                <span data-key="t-reports">Reports & Forms</span>
                             </a>
                         </li>
                         @endif
-                        <!-- @if(Auth::user()->hasAdminPermission('nfc', 'list'))
+                        @if(Auth::user()->hasAdminPermission('shifts-reports', 'list'))
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none" href="{{ route('nfc.index') }}">
-                                <i class="icon nav-icon" data-feather="rss"></i>
-                                <span>NFC Tags</span>
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('reports.index', ['type' => 'shifts'])}}"
+                                id="topnav-run-sheets" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="clock" style="width:16px; height:16px;"></i>
+                                <span data-key="t-run-sheets">Shifts reports</span>
                             </a>
                         </li>
-                        @endif -->
+                        @endif
+                        @if(Auth::user()->hasAdminPermission('employees'))
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('employees.index')}}"
+                                id="topnav-run-sheets" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="users" style="width:16px; height:16px;"></i>
+                                <span data-key="t-run-sheets">Employees</span>
+                            </a>
+                        </li>
+                        @endif
+
+
+
+
+
+
+
+
+
+
+
+
                         @if(Auth::user()->hasAdminPermission('schedules', 'list'))
-                        <!-- <li class="nav-item dropdown">
+                        <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{ route('schedules.index') }}">
                                 <i class="icon nav-icon" data-feather="calendar"></i>
                                 <span>Schedules</span>
                             </a>
-                        </li> -->
+                        </li>
+                        @endif
+                        @if(Auth::user()->hasAdminPermission('attendance', 'list'))
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('attendance.index')}}"
+                                id="topnav-attendance" role="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="check-circle"></i>
+                                <span data-key="t-attendance">Attendance</span>
+                            </a>
+                        </li>
                         @endif
                         @if(Auth::user()->hasAdminPermission('dispatches', 'list'))
                         <li class="nav-item dropdown">
@@ -193,14 +225,30 @@
                             </a>
                         </li>
                         @endif
-                        @if(Auth::user()->role === 'SuperAdmin' || Auth::user()->role === 'Admin')
+
+
+
+
+                        @if(Auth::user()->hasAdminPermission('site-tours', 'list'))
+                        <!-- <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('sites.tours.all')}}"
+                                id="topnav-tours" role="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="map"></i>
+                                <span data-key="t-tours">Site Tours</span>
+                            </a>
+                        </li> -->
+                        @endif
+                        <!-- @if(Auth::user()->hasAdminPermission('nfc', 'list'))
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none" href="{{ route('chronological-reports.index') }}">
-                                <i class="icon nav-icon" data-feather="bar-chart-2"></i>
-                                <span>System Reports</span>
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{ route('nfc.index') }}">
+                                <i class="icon nav-icon" data-feather="rss"></i>
+                                <span>NFC Tags</span>
                             </a>
                         </li>
-                        @endif
+                        @endif -->
+                        
+                        
                         <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('nfc.index')}}" id="topnav-nfc"
                                 role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -225,8 +273,8 @@
                                 <span data-key="t-open-shifts">Open Shifts</span>
                                 @php $pendingOpenShiftClaims = \App\Models\OpenShiftClaim::where('status', 'pending')->count(); @endphp
                                 @if($pendingOpenShiftClaims > 0)
-                                    <span class="badge bg-danger rounded-pill ms-1"
-                                        style="font-size:.65rem;">{{ $pendingOpenShiftClaims }}</span>
+                                <span class="badge bg-danger rounded-pill ms-1"
+                                    style="font-size:.65rem;">{{ $pendingOpenShiftClaims }}</span>
                                 @endif
                             </a>
                         </li>
@@ -240,8 +288,8 @@
                                 <span data-key="t-availabilities">Availability</span>
                                 @php $pendingAvailCount = \App\Models\Availability::where('status', 'pending')->count(); @endphp
                                 @if($pendingAvailCount > 0)
-                                    <span class="badge bg-warning rounded-pill ms-1"
-                                        style="font-size:.65rem; color:#000;">{{ $pendingAvailCount }}</span>
+                                <span class="badge bg-warning rounded-pill ms-1"
+                                    style="font-size:.65rem; color:#000;">{{ $pendingAvailCount }}</span>
                                 @endif
                             </a>
                         </li>
@@ -255,14 +303,14 @@
                             </a>
                         </li> -->
                         @if(Auth::user()->hasAdminPermission('time-clocks', 'list'))
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('time-clocks.index')}}"
                                 id="topnav-time-clocks" role="button" data-toggle="dropdown" aria-haspopup="true"
                                 aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="clock"></i>
                                 <span data-key="t-time-clocks">Time Clock</span>
                             </a>
-                        </li>
+                        </li> -->
                         @endif
                         <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-forms" role="button"
@@ -305,16 +353,7 @@
                                 </a>
                             </div>
                         </li> -->
-                        @if(Auth::user()->hasAdminPermission('attendance', 'list'))
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('attendance.index')}}"
-                                id="topnav-attendance" role="button" data-toggle="dropdown" aria-haspopup="true"
-                                aria-expanded="false">
-                                <i class="icon nav-icon" data-feather="check-circle"></i>
-                                <span data-key="t-attendance">Attendance</span>
-                            </a>
-                        </li>
-                        @endif
+                        
                         <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('reports.index')}}"
                                 id="topnav-reports" role="button" data-toggle="dropdown" aria-haspopup="true"
@@ -331,15 +370,6 @@
                                 <span data-key="t-numbers">Numbers</span>
                             </a>
                         </li> -->
-                        @if(Auth::user()->hasAdminPermission('reports-forms', 'list'))
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none" href="{{route('reports.all')}}"
-                                id="topnav-reports" role="button" data-toggle="dropdown" aria-haspopup="true"
-                                aria-expanded="false">
-                                <i class="icon nav-icon" data-feather="file-text"></i>
-                                <span data-key="t-reports">Reports & Forms</span>
-                            </a>
-                        </li>
                         @endif
                         @if(collect(['policies', 'orientations', 'employees', 'pay-slips', 'tax-docs', 'management-reports', 'shifts-reports', 'numbers', 'notice-board', 'post-esc'])->contains(fn($module) => Auth::user()->hasAdminPermission($module, 'list')))
                         <li class="nav-item dropdown">
@@ -350,6 +380,14 @@
                                 <div class="arrow-down"></div>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="topnav-components">
+
+
+                                @if(Auth::user()->hasAdminPermission('sites', 'list'))
+                                <a href="{{route('policies.index')}}" class="dropdown-item" data-key="t-widgets"> 
+                                    <i class="icon nav-icon" data-feather="clipboard" style="width:16px; height:16px;"></i>
+                                    Runsheets</a>
+                                @endif
+
                                 @if(Auth::user()->hasAdminPermission('policies'))
                                 <a href="{{route('policies.index')}}" class="dropdown-item" data-key="t-widgets"> <i
                                         class="icon nav-icon" data-feather="file-text"
@@ -359,11 +397,6 @@
                                 <a href="{{route('orientations.index')}}" class="dropdown-item" data-key="t-widgets"> <i
                                         class="icon nav-icon" data-feather="layers"
                                         style="width:16px; height:16px;"></i> Orientations</a>
-                                @endif
-                                @if(Auth::user()->hasAdminPermission('employees'))
-                                <a href="{{route('employees.index')}}" class="dropdown-item" data-key="t-widgets"><i
-                                        class="icon nav-icon" data-feather="users" style="width:16px; height:16px;"></i>
-                                    Employees</a>
                                 @endif
                                 @if(Auth::user()->hasAdminPermission('pay-slips'))
                                 <a href="{{route('pay-slips.index')}}" class="dropdown-item" data-key="t-widgets"><i
@@ -379,11 +412,6 @@
                                 <a href="{{route('reports.index')}}" class="dropdown-item" data-key="t-widgets"><i
                                         class="icon nav-icon" data-feather="bar-chart"
                                         style="width:16px; height:16px;"></i> Reports</a>
-                                @endif
-                                @if(Auth::user()->hasAdminPermission('shifts-reports', 'list'))
-                                <a href="{{route('reports.index', ['type' => 'shifts'])}}" class="dropdown-item" data-key="t-widgets"><i
-                                        class="icon nav-icon" data-feather="clock"
-                                        style="width:16px; height:16px;"></i> Shifts reports</a>
                                 @endif
                                 @if(Auth::user()->hasAdminPermission('numbers'))
                                 <a href="{{route('numbers.index')}}" class="dropdown-item" data-key="t-widgets"><i

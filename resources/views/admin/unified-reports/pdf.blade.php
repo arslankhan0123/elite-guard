@@ -32,20 +32,20 @@
             vertical-align: middle;
         }
         .logo-img {
-            max-height: 35px;
-            margin-right: 8px;
+            max-height: 48px;
+            margin-right: 12px;
         }
         .company-title {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: bold;
             color: #0369a1;
-            letter-spacing: 0.01em;
+            letter-spacing: 0.02em;
+            margin-bottom: 2px;
         }
-        .company-subtitle {
+        .company-info {
             font-size: 8px;
-            color: #0284c7;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            color: #334155;
+            line-height: 1.25;
         }
         .report-title-cell {
             text-align: right;
@@ -192,12 +192,15 @@
     <div class="card-header-sky">
         <table class="header-table">
             <tr>
-                <td style="width: 45px;">
+                <td style="width: 55px;">
                     <img src="{{ public_path('logo.png') }}" class="logo-img" alt="Logo">
                 </td>
                 <td>
                     <div class="company-title">ELITE GUARD INC.</div>
-                    <div class="company-subtitle">Premium Security Services & Solutions</div>
+                    <div class="company-info">
+                        3961 52 Ave NE #2104, Calgary, AB T3J 0J7<br>
+                        Phone: +1 (403) 830-7772 &bull; Email: Info@eliteguardinc.ca
+                    </div>
                 </td>
                 <td class="report-title-cell">
                     <div class="report-badge">{{ $title }}</div>

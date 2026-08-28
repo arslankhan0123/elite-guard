@@ -162,10 +162,20 @@
                                         <div class="text-danger mt-1">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-12">
+                                <div class="col-md-6">
                                     <label class="form-label">Designation</label>
                                     <input type="text" name="designation" class="form-control" value="{{ old('designation') }}">
                                     @error('designation')
+                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">User Status</label>
+                                    <select name="status" class="form-select" required>
+                                        <option value="1" @selected(old('status', 1) == 1)>Active</option>
+                                        <option value="0" @selected(old('status', 1) == 0)>Inactive</option>
+                                    </select>
+                                    @error('status')
                                         <div class="text-danger mt-1">{{ $message }}</div>
                                     @enderror
                                 </div>

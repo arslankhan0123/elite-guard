@@ -35,6 +35,10 @@
                                 <div id="profile-initials" class="rounded-circle bg-white text-primary fw-bold d-flex align-items-center justify-content-center border border-2 border-white shadow-sm @if($profilePicture) d-none @endif" style="width: 60px; height: 60px; font-size: 1.4rem; box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
                                     {{ $initials }}
                                 </div>
+                                <button class="btn btn-light btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center shadow position-absolute bottom-0 end-0" type="button" onclick="handleProfilePicClick()" style="width: 28px; height: 28px; border: 1.5px solid #fff; background-color: #f8f9fa; z-index: 3;">
+                                    <i class="mdi mdi-camera text-dark" style="font-size: 14px;"></i>
+                                </button>
+                                <input type="file" id="profilePicInput" style="display: none;" accept="image/*" onchange="uploadProfilePicture(this)">
                             </div>
                             <div>
                                 <h4 class="fw-bold mb-0 text-white">{{ $name }}</h4>
@@ -707,4 +711,111 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function handleProfilePicClick() {
+            let hasPhoto = {{ $profilePicture ? 'true' : 'false' }};
+            if (!hasPhoto) {
+                document.getElementById('profilePicInput').click();
+            } else {
+                Swal.fire({
+                    title: 'Profile Picture Options',
+                    text: 'Choose an option to update or remove the profile picture:',
+                    icon: 'question',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonColor: '#3085d6',
+                    denyButtonColor: '#d33',
+                    cancelButtonColor: '#aaa',
+                    confirmButtonText: 'Edit Photo',
+                    denyButtonText: 'Delete Photo',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('profilePicInput').click();
+                    } else if (result.isDenied) {
+                        deleteProfilePicture();
+                    }
+                });
+            }
+        }
+
+        function uploadProfilePicture(input) {
+            if (input.files && input.files[0]) {
+                let formData = new FormData();
+                formData.append('profile_picture', input.files[0]);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                Swal.fire({
+                    title: 'Uploading...',
+                    text: 'Please wait while the image is being uploaded.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch("{{ route('employees.updateProfilePicture', $employee->id) }}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message,
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', data.message || 'Something went wrong', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    Swal.fire('Error', 'Upload failed. Please try again.', 'error');
+                });
+            }
+        }
+
+        function deleteProfilePicture() {
+            let formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+
+            fetch("{{ route('employees.deleteProfilePicture', $employee->id) }}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.message || 'Something went wrong', 'error');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                Swal.fire('Error', 'Delete failed. Please try again.', 'error');
+            });
+        }
+    </script>
 @endsection

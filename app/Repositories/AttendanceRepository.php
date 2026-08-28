@@ -30,12 +30,12 @@ class AttendanceRepository
 
         if ($shift->type == 'site') {
             // 1. Check if the date matches
-            if (!$now->isSameDay($shiftDate)) {
-                return [
-                    'status' => false,
-                    'message' => 'You can only clock in on the date assigned to this shift: ' . $shift->date
-                ];
-            }
+            // if (!$now->isSameDay($shiftDate)) {
+            //     return [
+            //         'status' => false,
+            //         'message' => 'You can only clock in on the date assigned to this shift: ' . $shift->date
+            //     ];
+            // }
 
             // 2. Check if it's too early (allowed only from 30 mins before start_time)
             $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time, $timezone);

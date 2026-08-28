@@ -56,7 +56,7 @@
                         <hr>
                         <form id="filterForm" action="{{ route('reports.all') }}" method="GET" class="row">
                             <input type="hidden" name="type" value="{{ $type }}">
-                            <div class="col-md-4 mb-3 d-flex flex-column">
+                            <div class="col-md-3 mb-3 d-flex flex-column">
                                 <label for="user_id" class="form-label fw-bold">Employee</label>
                                 <select name="user_id" id="user_id" class="form-select select2" onchange="this.form.submit()">
                                     <option value="">All Employees</option>
@@ -67,7 +67,18 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-4 mb-3 d-flex flex-column">
+                            <div class="col-md-3 mb-3 d-flex flex-column">
+                                <label for="site_id" class="form-label fw-bold">Site</label>
+                                <select name="site_id" id="site_id" class="form-select select2" onchange="this.form.submit()">
+                                    <option value="">All Sites</option>
+                                    @foreach($sites as $site)
+                                        <option value="{{ $site->id }}" {{ request('site_id') == $site->id ? 'selected' : '' }}>
+                                            {{ $site->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3 d-flex flex-column">
                                 <label for="date_range" class="form-label fw-bold">Date Range</label>
                                 <select name="date_range" id="date_range" class="form-select" onchange="this.form.submit()">
                                     <option value="">All Time</option>
@@ -88,7 +99,7 @@
                                 </select>
                             </div>
                             @if($type == 'vehicle-checklist')
-                                <div class="col-md-4 mb-3 d-flex flex-column">
+                                <div class="col-md-3 mb-3 d-flex flex-column">
                                     <label for="document_status" class="form-label fw-bold">Document Status</label>
                                     <select name="document_status" id="document_status" class="form-select"
                                         onchange="this.form.submit()">
