@@ -120,6 +120,7 @@
 
                 <div class="collapse navbar-collapse" id="topnav-menu-content">
                     <ul class="navbar-nav">
+                        @if(Auth::user()->status)
                         @if(Auth::user()->hasAdminPermission('dashboard', 'list'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('dashboard')}}"
@@ -369,6 +370,7 @@
                                 <span data-key="t-numbers">Numbers</span>
                             </a>
                         </li> -->
+                        @endif
                         @if(collect(['policies', 'orientations', 'employees', 'pay-slips', 'tax-docs', 'management-reports', 'shifts-reports', 'numbers', 'notice-board', 'post-esc'])->contains(fn($module) => Auth::user()->hasAdminPermission($module, 'list')))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-components" role="button"
