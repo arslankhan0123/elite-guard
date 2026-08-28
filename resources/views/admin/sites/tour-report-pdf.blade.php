@@ -40,11 +40,11 @@
         }
 
         .brand-logo {
-            width: 30px;
-            height: 30px;
+            width: 42px;
+            height: 42px;
             object-fit: contain;
             vertical-align: middle;
-            margin-right: 7px;
+            margin-right: 8px;
         }
 
         .brand-block {
@@ -194,20 +194,20 @@
         .evidence-image {
             display: block;
             width: 100%;
-            height: 104px;
+            height: 81px;
             max-width: 100%;
             object-fit: cover;
             border-radius: 3px;
         }
 
         .scan-grid { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 2px; }
-        .items .scan-grid td { border: 0; background: transparent; padding: 2px; vertical-align: top; }
+        .items .scan-grid td { border: 0; background: transparent; padding: 1px; vertical-align: top; }
         .items .scan-grid .scan-grid-cell { width: 33.333%; max-width: 33.333%; }
-        .scan-evidence-card { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
-        .items .scan-evidence-card .scan-photo-cell { width: 55%; height: 108px; padding: 2px; background: #fff; vertical-align: middle; }
-        .items .scan-evidence-card .scan-data-cell { width: 45%; padding: 6px; background: #fff; color: #374151; font-size: 9px; line-height: 1.55; word-wrap: break-word; }
+        .scan-evidence-card { width: 100%; height: 85px; border-collapse: collapse; table-layout: fixed; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
+        .items .scan-evidence-card .scan-photo-cell { width: 55%; height: 85px; padding: 2px; background: #fff; vertical-align: middle; }
+        .items .scan-evidence-card .scan-data-cell { width: 45%; height: 85px; padding: 4px 6px; background: #fff; color: #374151; font-size: 8.5px; line-height: 1.35; word-wrap: break-word; vertical-align: middle; }
         .items .scan-evidence-card .scan-data-only-cell { width: 100%; }
-        .scan-tag { color: #312e81; font-size: 10px; font-weight: bold; margin-bottom: 4px; }
+        .scan-tag { color: #312e81; font-size: 9.5px; font-weight: bold; margin-bottom: 3px; }
         .scan-data-cell strong { color: #172033; font-weight: bold; }
         .no-photo { height: 18px; padding: 43px 0; text-align: center; color: #4b5563; background: #f3f4f6; border-radius: 3px; font-size: 12px; line-height: 18px; font-weight: bold; }
 
@@ -377,8 +377,11 @@
                 <td class="brand-cell">
                     <img class="brand-logo" src="{{ public_path('logo.png') }}" alt="Elite Guard">
                     <div class="brand-block">
-                        <div class="brand">ELITE SECURITY</div>
-                        <div class="accent"></div>
+                        <div class="brand">ELITE GUARD INC.</div>
+                        <div style="font-size: 8px; color: #ffffff; margin-top: 2px; line-height: 1.2;">
+                            3961 52 Ave NE #2104, Calgary, AB T3J 0J7<br>
+                            Phone: +1 (403) 830-7772 &bull; Email: Info@eliteguardinc.ca
+                        </div>
                     </div>
                 </td>
                 <td>
@@ -533,7 +536,7 @@
     </table>
 
     <div class="footer">
-        Confidential operational report - Elite Security
+        Confidential operational report - Elite Guard Inc.
         <span class="footer-right">Site Tour #{{ $tour->id }}</span>
     </div>
     <script type="text/php">

@@ -223,7 +223,7 @@
                                                                      }
                                                                  }
                                                              @endphp
-                                                             <div class="card p-2 border rounded shadow-sm d-flex flex-row align-items-center justify-content-between bg-white m-0" style="width: 280px; min-height: 96px;">
+                                                             <div class="card p-2 border rounded shadow-sm d-flex flex-row align-items-center justify-content-between bg-white m-0" style="width: 280px; min-width: 280px; flex: 0 0 280px; min-height: 96px;">
                                                                  <div style="flex: 1; min-width: 0; padding-right: 8px;">
                                                                      <div class="fw-bold text-dark text-truncate" style="font-size: 11.5px;" title="{{ $scan['name'] }}">{{ $scan['name'] }}</div>
                                                                      <div class="text-muted text-truncate" style="font-size: 9.5px;"><strong>UID:</strong> {{ $scan['uid'] }}</div>

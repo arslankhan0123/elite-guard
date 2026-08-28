@@ -39,11 +39,11 @@
         }
 
         .brand-logo {
-            width: 30px;
-            height: 30px;
+            width: 42px;
+            height: 42px;
             object-fit: contain;
             vertical-align: middle;
-            margin-right: 7px
+            margin-right: 8px
         }
 
         .brand-block {
@@ -163,12 +163,15 @@
             float: right
         }
 
-        .scan-img {
-            max-height: 40px;
-            max-width: 60px;
-            border-radius: 3px;
-            border: 1px solid #e5e7eb;
-        }
+        .scan-grid { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 2px; }
+        .scan-grid-cell { width: 33.333%; max-width: 33.333%; padding: 1px; vertical-align: top; }
+        .scan-evidence-card { width: 100%; height: 85px; border-collapse: collapse; table-layout: fixed; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
+        .scan-photo-cell { width: 55%; height: 85px; padding: 2px; background: #fff; vertical-align: middle; }
+        .scan-data-cell { width: 45%; height: 85px; padding: 4px 6px; background: #fff; color: #374151; font-size: 8.5px; line-height: 1.35; word-wrap: break-word; vertical-align: middle; }
+        .scan-data-only-cell { width: 100%; }
+        .scan-tag { color: #312e81; font-size: 9.5px; font-weight: bold; margin-bottom: 3px; }
+        .evidence-image { display: block; width: 100%; height: 81px; max-width: 100%; object-fit: cover; border-radius: 3px; }
+        .scan-grid-empty { background: transparent !important; border: 0 !important; }
     </style>
 </head>
 
@@ -213,8 +216,11 @@
                 <td class="brand-cell">
                     <img class="brand-logo" src="{{ public_path('logo.png') }}" alt="Elite Guard">
                     <div class="brand-block">
-                        <div class="brand">ELITE SECURITY</div>
-                        <div class="accent"></div>
+                        <div class="brand">ELITE GUARD INC.</div>
+                        <div style="font-size: 8px; color: #ffffff; margin-top: 2px; line-height: 1.2;">
+                            3961 52 Ave NE #2104, Calgary, AB T3J 0J7<br>
+                            Phone: +1 (403) 830-7772 &bull; Email: Info@eliteguardinc.ca
+                        </div>
                     </div>
                 </td>
                 <td>
@@ -295,26 +301,36 @@
                         <div style="margin-bottom: 4px;">
                             <strong style="color: #312e81;">Evidence (Scanned Checkpoints):</strong>
                             @if(count($report['scans']) > 0)
-                                <table style="width: 100%; border-collapse: collapse; margin-top: 3px;">
-                                    <tr>
-                                        @foreach($report['scans'] as $scan)
-                                            <td style="width: 25%; padding: 3px; border: 1px solid #ddd6fe; background: #fff; vertical-align: middle;">
-                                                <div style="font-size: 7.5px;">
-                                                    <strong style="color: #111827;">{{ $scan['name'] }}</strong><br>
-                                                    <span style="color: #6b7280;">Time: {{ \Carbon\Carbon::parse($scan['time'])->format('h:i A') }}</span>
-                                                </div>
-                                                @if(!empty($scan['image']))
-                                                    @php $resolvedImg = $resolvePdfImage($scan['image']); @endphp
-                                                    @if($resolvedImg)
-                                                        <div style="margin-top: 2px;"><img src="{{ $resolvedImg }}" style="max-height: 25px; border-radius: 2px;" alt="img"></div>
-                                                    @endif
-                                                @endif
-                                            </td>
-                                            @if($loop->iteration % 4 == 0 && !$loop->last)
-                                                </tr><tr>
-                                            @endif
-                                        @endforeach
-                                    </tr>
+                                <table class="scan-grid">
+                                    @foreach(collect($report['scans'])->chunk(3) as $scanRow)
+                                        <tr>
+                                            @foreach($scanRow as $scan)
+                                                @php
+                                                    $imageSource = !empty($scan['image']) ? $resolvePdfImage($scan['image']) : null;
+                                                @endphp
+                                                <td class="scan-grid-cell" style="border: 0; background: transparent; padding: 2px;">
+                                                    <table class="scan-evidence-card">
+                                                        <tr>
+                                                            <td class="scan-data-cell{{ !$imageSource ? ' scan-data-only-cell' : '' }}" @if(!$imageSource) colspan="2" @endif>
+                                                                <div class="scan-tag">{{ $scan['name'] ?? 'Unknown Tag' }}</div>
+                                                                <div><strong>UID:</strong> {{ $scan['uid'] ?? 'N/A' }}</div>
+                                                                <div><strong>Time:</strong> {{ $scan['time'] ? \Carbon\Carbon::parse($scan['time'])->format('h:i:s A') : 'N/A' }}</div>
+                                                                <div><strong>By:</strong> {{ $scan['user'] ?? 'N/A' }}</div>
+                                                            </td>
+                                                            @if($imageSource)
+                                                                <td class="scan-photo-cell">
+                                                                    <img class="evidence-image" src="{{ $imageSource }}" alt="Evidence">
+                                                                </td>
+                                                            @endif
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            @endforeach
+                                            @for($emptyCell = $scanRow->count(); $emptyCell < 3; $emptyCell++)
+                                                <td class="scan-grid-cell scan-grid-empty" style="border: 0; background: transparent; padding: 2px;"></td>
+                                            @endfor
+                                        </tr>
+                                    @endforeach
                                 </table>
                             @else
                                 <span style="color: #6b7280; font-style: italic;">No NFC tags scanned</span>
@@ -341,7 +357,7 @@
         </tbody>
     </table>
 
-    <div class="footer">Confidential operational report - Elite Security<span class="footer-right">Generated on {{ now()->format('Y-m-d') }}</span></div>
+    <div class="footer">Confidential operational report - Elite Guard Inc.<span class="footer-right">Generated on {{ now()->format('Y-m-d') }}</span></div>
     <script type="text/php">if(isset($pdf)){$pdf->page_text(735,570,"Page {PAGE_NUM} of {PAGE_COUNT}",null,7,array(.45,.49,.58));}</script>
 </body>
 
