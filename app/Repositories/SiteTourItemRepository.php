@@ -128,21 +128,31 @@ class SiteTourItemRepository
         // Extract SiteTour info once (open_time & grace_time are same for all items)
         $siteTourInfo = null;
         $firstSiteTour = $items->first()?->siteTour ?? null;
+        
+        $totalItems = $items->count();
+        $scannedItems = $items->filter(function ($item) {
+            return $item->getAttribute('scanned_tags_count') > 0;
+        })->count();
+
         if ($firstSiteTour) {
             $siteTourInfo = [
-                'id'         => $firstSiteTour->id,
-                'name'       => $firstSiteTour->name,
-                'open_time'  => $firstSiteTour->open_time,
-                'grace_time' => $firstSiteTour->grace_time,
+                'id'            => $firstSiteTour->id,
+                'name'          => $firstSiteTour->name,
+                'open_time'     => $firstSiteTour->open_time,
+                'grace_time'    => $firstSiteTour->grace_time,
+                'total_items'   => $totalItems,
+                'scanned_items' => $scannedItems,
             ];
         }
 
         return [
-            'status'          => true,
-            'message'         => 'Assigned site tour items retrieved successfully',
-            'shift'           => $shiftInfo,
-            'site_tour'       => $siteTourInfo,
-            'site_tour_items' => $items,
+            'status'                  => true,
+            'message'                 => 'Assigned site tour items retrieved successfully',
+            'shift'                   => $shiftInfo,
+            'site_tour'               => $siteTourInfo,
+            'total_site_tour_items'   => $totalItems,
+            'scanned_site_tour_items' => $scannedItems,
+            'site_tour_items'         => $items,
         ];
     }
     

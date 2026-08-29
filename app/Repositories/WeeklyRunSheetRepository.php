@@ -68,10 +68,17 @@ class WeeklyRunSheetRepository
             ->orderBy('weekly_run_sheets.name')
             ->get();
 
-        $runSheetsData = $runSheets->map(function ($runSheet) {
+        $totalAllEntries = 0;
+        $scannedAllEntries = 0;
+
+        $runSheetsData = $runSheets->map(function ($runSheet) use (&$totalAllEntries, &$scannedAllEntries) {
             $sheetArray = $runSheet->toArray();
             
+            $totalEntries = 0;
+            $scannedEntries = 0;
+            
             if (isset($sheetArray['entries'])) {
+                $totalEntries = count($sheetArray['entries']);
                 foreach ($sheetArray['entries'] as &$entry) {
                     $scannedTagIds = collect($entry['scans'] ?? [])
                         ->pluck('nfc_tag_id')
@@ -90,12 +97,24 @@ class WeeklyRunSheetRepository
                         }
                     }
 
-                    $entry['is_scanned'] = count($entry['scans'] ?? []) > 0;
+                    $isScanned = count($entry['scans'] ?? []) > 0;
+                    $entry['is_scanned'] = $isScanned;
+                    if ($isScanned) {
+                        $scannedEntries++;
+                    }
+                    
                     $tags = $entry['site']['nfc_tags'] ?? $entry['site']['nfcTags'] ?? [];
                     $entry['total_tags'] = count($tags);
                     $entry['scanned_tags_count'] = count($scannedTagIds);
                 }
             }
+            
+            $sheetArray['total_entries'] = $totalEntries;
+            $sheetArray['scanned_entries'] = $scannedEntries;
+
+            $totalAllEntries += $totalEntries;
+            $scannedAllEntries += $scannedEntries;
+
             return $sheetArray;
         });
 
@@ -105,6 +124,8 @@ class WeeklyRunSheetRepository
             'date' => $dateStr,
             'day' => $today->format('l'),
             'total_run_sheets' => $runSheets->count(),
+            'total_entries' => $totalAllEntries,
+            'scanned_entries' => $scannedAllEntries,
             'run_sheets' => $runSheetsData,
         ];
     }
