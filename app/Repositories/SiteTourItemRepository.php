@@ -158,12 +158,23 @@ class SiteTourItemRepository
         
         $data['user_id'] = $user->id;
 
+        $uploadedImages = [];
+
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('documents/SiteTourScans', 'public');
             $data['image'] = Storage::disk('public')->url($path);
         }
 
-        $scan = DB::transaction(function () use ($data, $request) {
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                if ($file->isValid()) {
+                    $path = $file->store('documents/SiteTourScans', 'public');
+                    $uploadedImages[] = Storage::disk('public')->url($path);
+                }
+            }
+        }
+
+        $scan = DB::transaction(function () use ($data, $request, $uploadedImages) {
             $siteTourItem = SiteTourItem::findOrFail($data['site_tour_item_id']);
             if ($request->exists('reason')) {
                 $siteTourItem->update([
@@ -171,8 +182,19 @@ class SiteTourItemRepository
                 ]);
             }
 
-            return SiteTourItemScan::create($data);
+            $scanRecord = SiteTourItemScan::create($data);
+
+            foreach ($uploadedImages as $imageUrl) {
+                \App\Models\SiteTourItemImage::create([
+                    'site_tour_item_id' => $data['site_tour_item_id'],
+                    'image_path' => $imageUrl,
+                ]);
+            }
+
+            return $scanRecord;
         });
+
+        $scan->load('siteTourItem.images');
 
         return [
             'status' => true,

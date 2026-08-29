@@ -131,7 +131,9 @@ class SiteTourItemApiController extends Controller
             'date' => 'required|date',
             'time' => 'required',
             'reason' => 'nullable|string',
-            'image' => 'nullable|image'
+            'image' => 'nullable|image',
+            'images' => 'nullable|array',
+            'images.*' => 'nullable|image'
         ]);
 
         
