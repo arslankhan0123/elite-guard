@@ -264,36 +264,7 @@
                                 <span data-key="t-schedules">Schedule</span>
                             </a>
                         </li> -->
-                        @if(Auth::user()->hasAdminPermission('open-shifts', 'list'))
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none position-relative"
-                                href="{{route('open-shifts.index')}}" id="topnav-open-shifts" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="icon nav-icon" data-feather="layers"></i>
-                                <span data-key="t-open-shifts">Open Shifts</span>
-                                @php $pendingOpenShiftClaims = \App\Models\OpenShiftClaim::where('status', 'pending')->count(); @endphp
-                                @if($pendingOpenShiftClaims > 0)
-                                <span class="badge bg-danger rounded-pill ms-1"
-                                    style="font-size:.65rem;">{{ $pendingOpenShiftClaims }}</span>
-                                @endif
-                            </a>
-                        </li>
-                        @endif
-                        @if(Auth::user()->hasAdminPermission('availabilities', 'list'))
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle arrow-none position-relative"
-                                href="{{route('availabilities.index')}}" id="topnav-availabilities" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="icon nav-icon" data-feather="calendar"></i>
-                                <span data-key="t-availabilities">Availability</span>
-                                @php $pendingAvailCount = \App\Models\Availability::where('status', 'pending')->count(); @endphp
-                                @if($pendingAvailCount > 0)
-                                <span class="badge bg-warning rounded-pill ms-1"
-                                    style="font-size:.65rem; color:#000;">{{ $pendingAvailCount }}</span>
-                                @endif
-                            </a>
-                        </li>
-                        @endif
+                        {{-- Moved to dropdown --}}
                         <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('employees.index')}}"
                                 id="topnav-employees" role="button" data-toggle="dropdown" aria-haspopup="true"
@@ -427,6 +398,28 @@
                                 <a href="{{route('post-esc.index')}}" class="dropdown-item" data-key="t-widgets"><i
                                         class="icon nav-icon" data-feather="file" style="width:16px; height:16px;"></i>
                                     Post &amp; ESC</a>
+                                @endif
+
+                                @if(Auth::user()->hasAdminPermission('open-shifts', 'list'))
+                                <a href="{{route('open-shifts.index')}}" class="dropdown-item" data-key="t-widgets">
+                                    <i class="icon nav-icon" data-feather="layers" style="width:16px; height:16px;"></i>
+                                    Open Shifts
+                                    @php $pendingOpenShiftClaims = \App\Models\OpenShiftClaim::where('status', 'pending')->count(); @endphp
+                                    @if($pendingOpenShiftClaims > 0)
+                                    <span class="badge bg-danger rounded-pill ms-1" style="font-size:.65rem;">{{ $pendingOpenShiftClaims }}</span>
+                                    @endif
+                                </a>
+                                @endif
+
+                                @if(Auth::user()->hasAdminPermission('availabilities', 'list'))
+                                <a href="{{route('availabilities.index')}}" class="dropdown-item" data-key="t-widgets">
+                                    <i class="icon nav-icon" data-feather="calendar" style="width:16px; height:16px;"></i>
+                                    Availability
+                                    @php $pendingAvailCount = \App\Models\Availability::where('status', 'pending')->count(); @endphp
+                                    @if($pendingAvailCount > 0)
+                                    <span class="badge bg-warning text-dark rounded-pill ms-1" style="font-size:.65rem;">{{ $pendingAvailCount }}</span>
+                                    @endif
+                                </a>
                                 @endif
                             </div>
                         </li>
