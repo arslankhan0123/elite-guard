@@ -248,6 +248,83 @@
             </a>
         </div>
     </div>
+
+    <!-- Real-time Activity Logs Section -->
+    <div class="row g-4 mt-2">
+        <!-- Live Attendance Tracker Card -->
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="activity" class="text-primary me-2"></i> Live Shift Attendance
+                    </h5>
+                    <span class="badge bg-soft-success text-success rounded-pill px-3 py-1 fw-bold align-items-center gap-1 d-flex" style="font-size: 0.75rem;">
+                        <span class="spinner-grow spinner-grow-sm text-success" role="status" aria-hidden="true"></span> Realtime
+                    </span>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div id="attendance-toast" class="alert alert-success py-2 px-3 mb-3 small d-none align-items-center justify-content-between rounded-3 border-0 shadow-sm" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                        <span><i data-feather="check-circle" class="me-1" style="width: 14px; height: 14px;"></i> Attendance fetched successfully</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="live-attendance-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Guard</th>
+                                    <th>Site</th>
+                                    <th>Action</th>
+                                    <th>Time</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Loading active sessions...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Tours Tracker Card -->
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="navigation" class="text-info me-2"></i> Recent Site Tour Scans
+                    </h5>
+                    <span class="badge bg-soft-success text-success rounded-pill px-3 py-1 fw-bold align-items-center gap-1 d-flex" style="font-size: 0.75rem;">
+                        <span class="spinner-grow spinner-grow-sm text-success" role="status" aria-hidden="true"></span> Realtime
+                    </span>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div id="tours-toast" class="alert alert-success py-2 px-3 mb-3 small d-none align-items-center justify-content-between rounded-3 border-0 shadow-sm" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                        <span><i data-feather="check-circle" class="me-1" style="width: 14px; height: 14px;"></i> Tours fetched successfully</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="live-tours-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tour Name</th>
+                                    <th>Site</th>
+                                    <th>Guard</th>
+                                    <th>Progress</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Loading tour logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Attendance Section -->
     <div class="row g-4 mt-2">
@@ -377,4 +454,97 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let isFirstLoad = true;
+
+        function fetchLiveDashboardData() {
+            fetch("{{ route('dashboard.live-data') }}")
+                .then(response => response.json())
+                .then(data => {
+                    // 1. Render Attendances
+                    const attBody = document.querySelector('#live-attendance-table tbody');
+                    if (data.attendances && data.attendances.length > 0) {
+                        let attHtml = '';
+                        data.attendances.forEach(att => {
+                            const badgeClass = att.type === 'Checked Out' ? 'bg-soft-danger text-danger' : 'bg-soft-success text-success';
+                            attHtml += `
+                                <tr>
+                                    <td class="fw-semibold text-dark">${att.user_name}</td>
+                                    <td class="text-secondary">${att.site_name}</td>
+                                    <td><span class="badge ${badgeClass} rounded-pill px-2 py-1 fw-semibold">${att.type}</span></td>
+                                    <td class="fw-bold text-dark">${att.time}</td>
+                                    <td class="text-muted small">${att.date}</td>
+                                </tr>
+                            `;
+                        });
+                        attBody.innerHTML = attHtml;
+                    } else {
+                        attBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No attendance logs found today.</td></tr>`;
+                    }
+
+                    // 2. Render Tours
+                    const tourBody = document.querySelector('#live-tours-table tbody');
+                    if (data.tours && data.tours.length > 0) {
+                        let tourHtml = '';
+                        data.tours.forEach(tour => {
+                            let statusBadge = 'bg-soft-warning text-warning';
+                            if (tour.status === 'Completed') {
+                                statusBadge = 'bg-soft-success text-success';
+                            } else if (tour.status === 'Missed') {
+                                statusBadge = 'bg-soft-danger text-danger';
+                            }
+
+                            tourHtml += `
+                                <tr>
+                                    <td class="fw-semibold text-dark">${tour.tour_name}</td>
+                                    <td class="text-secondary">${tour.site_name}</td>
+                                    <td class="text-secondary">${tour.user_name}</td>
+                                    <td class="fw-bold text-primary">${tour.progress}</td>
+                                    <td><span class="badge ${statusBadge} rounded-pill px-2 py-1 fw-semibold">${tour.status}</span></td>
+                                </tr>
+                            `;
+                        });
+                        tourBody.innerHTML = tourHtml;
+                    } else {
+                        tourBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent site tours found.</td></tr>`;
+                    }
+                    
+                    if (typeof feather !== 'undefined') {
+                        feather.replace();
+                    }
+
+                    // Show temporary toast alerts on data refresh (skip first load)
+                    if (!isFirstLoad) {
+                        const attToast = document.getElementById('attendance-toast');
+                        const toursToast = document.getElementById('tours-toast');
+
+                        attToast.classList.remove('d-none');
+                        attToast.classList.add('d-flex');
+                        toursToast.classList.remove('d-none');
+                        toursToast.classList.add('d-flex');
+
+                        if (typeof feather !== 'undefined') {
+                            feather.replace();
+                        }
+
+                        setTimeout(() => {
+                            attToast.classList.remove('d-flex');
+                            attToast.classList.add('d-none');
+                            toursToast.classList.remove('d-flex');
+                            toursToast.classList.add('d-none');
+                        }, 5000);
+                    }
+
+                    isFirstLoad = false;
+                })
+                .catch(error => console.error("Error fetching live dashboard data:", error));
+        }
+
+        // Fetch immediately and poll every 30 seconds (30000ms)
+        fetchLiveDashboardData();
+        setInterval(fetchLiveDashboardData, 30000);
+    });
+</script>
 @endsection

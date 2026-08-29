@@ -58,6 +58,59 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount', 'pendingOpenShiftClaimsCount', 'pendingAvailCount', 'todayAttendanceCount'));
     })->name('dashboard');
 
+    Route::get('/dashboard/live-data', function () {
+        $attendances = \App\Models\ShiftAttendance::with(['user', 'shift.site'])
+            ->orderByRaw('COALESCE(clock_out_at, clock_in_at) DESC')
+            ->limit(5)
+            ->get()
+            ->map(function ($att) {
+                return [
+                    'user_name' => $att->user?->name ?? 'N/A',
+                    'site_name' => $att->shift?->site?->name ?? 'N/A',
+                    'type' => $att->clock_out_at ? 'Checked Out' : 'Checked In',
+                    'time' => $att->clock_out_at 
+                        ? \Carbon\Carbon::parse($att->clock_out_at)->format('g:i A') 
+                        : \Carbon\Carbon::parse($att->clock_in_at)->format('g:i A'),
+                    'date' => \Carbon\Carbon::parse($att->clock_in_at)->format('d-M'),
+                ];
+            });
+
+        $tours = \App\Models\SiteTourItem::with(['siteTour', 'scans.nfcTag', 'user', 'site'])
+            ->orderBy('date', 'desc')
+            ->orderBy('start_time', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($item) {
+                $siteTags = \App\Models\NfcTag::where('site_id', $item->site_id)->get();
+                $tourTagIds = $item->siteTour?->tags;
+                $requiredTags = !empty($tourTagIds) && is_array($tourTagIds) 
+                    ? $siteTags->whereIn('id', $tourTagIds) 
+                    : $siteTags;
+
+                $requiredCount = $requiredTags->count();
+                $scannedCount = $item->scans
+                    ->whereIn('nfc_tag_id', $requiredTags->pluck('id')->toArray())
+                    ->unique('nfc_tag_id')
+                    ->count();
+
+                return [
+                    'tour_name' => $item->siteTour?->name ?? 'Site Tour',
+                    'site_name' => $item->site?->name ?? 'N/A',
+                    'user_name' => $item->user?->name ?? 'N/A',
+                    'progress' => "{$scannedCount}/{$requiredCount}",
+                    'status' => $requiredCount > 0 && $scannedCount >= $requiredCount 
+                        ? 'Completed' 
+                        : ($scannedCount > 0 ? 'Partial' : 'Missed'),
+                    'date' => $item->date ? (is_string($item->date) ? $item->date : $item->date->format('d-M')) : 'N/A',
+                ];
+            });
+
+        return response()->json([
+            'attendances' => $attendances,
+            'tours' => $tours,
+        ]);
+    })->name('dashboard.live-data');
+
     Route::group(['prefix' => '/company'], function () {
         Route::get('/', [CompanyController::class, 'index'])->name('companies.index');
         Route::get('/create', [CompanyController::class, 'create'])->name('companies.create');
