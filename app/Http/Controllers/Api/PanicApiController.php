@@ -42,28 +42,42 @@ class PanicApiController extends Controller
             'sender_name' => $sender->name
         ]);
 
-        // Fetch all users who have an FCM token AND an active session
-        $users = User::whereNotNull('fcm_token')->where('id', '!=', Auth::user()->id)->get();
-        // $users = User::whereNotNull('fcm_token')
-        //     ->whereExists(function ($query) {
-        //         $query->select(DB::raw(1))
-        //             ->from('sessions')
-        //             ->whereRaw('sessions.user_id = users.id');
-        //     })
-        //     ->get();
+        $timezone = config('app.timezone', 'UTC');
+        $currentDateTime = \Carbon\Carbon::now($timezone);
+        $yesterday = $currentDateTime->copy()->subDay()->toDateString();
+        $today = $currentDateTime->toDateString();
 
-        // Fetch all users who have an FCM token AND an active session (within session lifetime)
-        // $sessionLifetime = config('session.lifetime', 120);
-        // $activeThreshold = now()->subMinutes($sessionLifetime)->getTimestamp();
+        // Get all shifts for yesterday and today
+        $shifts = \App\Models\Shift::with(['schedule.user', 'attendances'])
+            ->whereIn('date', [$yesterday, $today])
+            ->get();
 
-        // $users = User::whereNotNull('fcm_token')
-        //     ->whereExists(function ($query) use ($activeThreshold) {
-        //         $query->select(DB::raw(1))
-        //             ->from('sessions')
-        //             ->whereRaw('sessions.user_id = users.id')
-        //             ->where('last_activity', '>=', $activeThreshold);
-        //     })
-        //     ->get();
+        $activeUserIds = [];
+
+        foreach ($shifts as $shift) {
+            $user = $shift->schedule?->user;
+            if (!$user) continue;
+
+            $startDt = \Carbon\Carbon::parse($shift->date . ' ' . $shift->start_time, $timezone);
+            $endDt = \Carbon\Carbon::parse($shift->date . ' ' . $shift->end_time, $timezone);
+            if ($endDt->lt($startDt)) {
+                $endDt->addDay();
+            }
+
+            if ($currentDateTime->between($startDt, $endDt)) {
+                $attendance = $shift->attendances->where('user_id', $user->id)->first();
+                $isCompleted = $attendance && $attendance->clock_out_at;
+                if (!$isCompleted) {
+                    $activeUserIds[] = $user->id;
+                }
+            }
+        }
+
+        // Fetch all users with active shifts and an FCM token (excluding the sender)
+        $users = User::whereNotNull('fcm_token')
+            ->whereIn('id', array_unique($activeUserIds))
+            ->where('id', '!=', $sender->id)
+            ->get();
 
         Log::info("Panic Alert: Target users fetched", [
             'count' => $users->count(),
