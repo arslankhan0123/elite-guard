@@ -5,12 +5,12 @@
             <div class="col-sm-6">
                 <script>
                     document.write(new Date().getFullYear())
-                </script> &copy; Elite Security.
+                </script> &copy; Elite Guard Inc.
             </div>
             <div class="col-sm-6">
                 <div class="text-sm-end d-none d-sm-block">
                     Developed By <i class="mdi mdi-heart text-danger"></i> <a
-                        href="#" target="_blank" class="text-reset">Elite Security</a>
+                        href="#" target="_blank" class="text-reset">Elite Guard Inc.</a>
                 </div>
             </div>
         </div>

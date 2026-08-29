@@ -61,7 +61,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
     Route::get('/dashboard/live-data', function () {
         $attendances = \App\Models\ShiftAttendance::with(['user', 'shift.site'])
             ->orderByRaw('COALESCE(clock_out_at, clock_in_at) DESC')
-            ->limit(5)
+            ->limit(8)
             ->get()
             ->map(function ($att) {
                 return [

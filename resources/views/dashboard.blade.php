@@ -256,6 +256,7 @@
         </div>
     </div>
 
+    {{-- Commented out Stats Grid
     <!-- Stats Grid -->
     <div class="row g-4 mt-2">
         <div class="col-xl-3 col-md-6">
@@ -310,6 +311,7 @@
             </a>
         </div>
     </div>
+    --}}
 
     <!-- Real-time Activity Logs Section -->
     <div class="row g-4 mt-2">
@@ -388,6 +390,7 @@
         </div>
     </div>
     
+    {{-- Commented out extra widget cards
     <!-- Attendance Section -->
     <div class="row g-4 mt-2">
         <div class="col-12">
@@ -472,10 +475,11 @@
             </a>
         </div>
     </div>
+    --}}
 
     <!-- Secondary Info Grid -->
     <div class="row g-4 mt-4 mb-5">
-        <div class="col-lg-6">
+        <!-- <div class="col-lg-6">
             <div class="info-card p-5 h-100 shadow-sm">
                 <div class="icon-circle bg-soft-primary text-primary">
                     <i data-feather="file-text"></i>
@@ -484,8 +488,8 @@
                 <p class="text-muted fs-5">Get started with our NFC hardware integration guide. Perfect for setting up your Flutter mobile application and writing tags.</p>
                 <a href="{{ asset('docs/NFC_INTEGRATION.md') }}" class="btn btn-primary rounded-pill px-4 fw-bold mt-2">Open Guide</a>
             </div>
-        </div>
-        <div class="col-lg-6">
+        </div> -->
+        <div class="col-lg-12">
             <div class="info-card p-5 h-100 shadow-sm" style="background: linear-gradient(to bottom right, #ffffff, #f8fafc);">
                 <div class="icon-circle bg-soft-success text-success">
                     <i data-feather="activity"></i>
