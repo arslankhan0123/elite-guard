@@ -50,11 +50,13 @@
         color: #065f46 !important;
         border: 1px solid rgba(16, 185, 129, 0.3) !important;
     }
+
     .badge.bg-danger-subtle {
         background-color: rgba(244, 63, 94, 0.12) !important;
         color: #991b1b !important;
         border: 1px solid rgba(244, 63, 94, 0.3) !important;
     }
+
     .badge.bg-warning-subtle {
         background-color: rgba(245, 158, 11, 0.12) !important;
         color: #92400e !important;
@@ -73,7 +75,7 @@
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
         position: relative;
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         min-height: 180px;
         display: flex;
         flex-direction: column;
@@ -82,7 +84,7 @@
 
     .vibrant-card:hover {
         transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
     }
 
     .vibrant-card::before {
@@ -102,10 +104,21 @@
         background: rgba(255, 255, 255, 0.15);
     }
 
-    .card-company { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
-    .card-site { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
-    .card-nfc { background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%); }
-    .card-employee { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
+    .card-company {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    }
+
+    .card-site {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    }
+
+    .card-nfc {
+        background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+    }
+
+    .card-employee {
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    }
 
     .stat-icon {
         font-size: 3rem;
@@ -147,15 +160,23 @@
         color: white;
         margin-bottom: 40px;
         border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         position: relative;
         overflow: hidden;
     }
 
     @keyframes gradientBG {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
     }
 
     /* Floating Logo Animation */
@@ -166,9 +187,17 @@
     }
 
     @keyframes floatLogo {
-        0% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-10px) rotate(1.5deg); }
-        100% { transform: translateY(0px) rotate(0deg); }
+        0% {
+            transform: translateY(0px) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-10px) rotate(1.5deg);
+        }
+
+        100% {
+            transform: translateY(0px) rotate(0deg);
+        }
     }
 
     .hero-title {
@@ -197,10 +226,10 @@
     }
 
     .btn-create-nfc {
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.1);
         color: white;
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .btn-create-nfc:hover {
@@ -230,7 +259,6 @@
         justify-content: center;
         margin-bottom: 20px;
     }
-
 </style>
 
 <div class="p-wrapper container-fluid" style="max-width: 100%;">
@@ -256,9 +284,8 @@
         </div>
     </div>
 
-    {{-- Commented out Stats Grid
     <!-- Stats Grid -->
-    <div class="row g-4 mt-2">
+    <!-- <div class="row g-4 mt-2">
         <div class="col-xl-3 col-md-6">
             <a href="{{ route('companies.index') }}" class="text-decoration-none">
                 <div class="vibrant-card card-company p-4">
@@ -310,13 +337,12 @@
                 </div>
             </a>
         </div>
-    </div>
-    --}}
+    </div> -->
 
     <!-- Real-time Activity Logs Section -->
     <div class="row g-4 mt-2">
         <!-- Live Attendance Tracker Card -->
-        <div class="col-xl-6 col-12">
+        <!-- <div class="col-xl-6 col-12">
             <div class="card shadow-sm border-0 rounded-4 h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
                     <h5 class="fw-bold text-dark mb-0">
@@ -350,10 +376,10 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Live Tours Tracker Card -->
-        <div class="col-xl-6 col-12">
+        <!-- <div class="col-xl-6 col-12">
             <div class="card shadow-sm border-0 rounded-4 h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
                     <h5 class="fw-bold text-dark mb-0">
@@ -387,12 +413,11 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
-    
-    {{-- Commented out extra widget cards
+
     <!-- Attendance Section -->
-    <div class="row g-4 mt-2">
+    <!-- <div class="row g-4 mt-2">
         <div class="col-12">
             <a href="{{ route('attendance.index') }}" class="text-decoration-none">
                 <div class="vibrant-card p-4" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); min-height: 120px;">
@@ -410,10 +435,10 @@
                 </div>
             </a>
         </div>
-    </div>
+    </div> -->
 
     <!-- Open Shift Management Section -->
-    <div class="row g-4 mt-2">
+    <!-- <div class="row g-4 mt-2">
         <div class="col-xl-4 col-md-6">
             <a href="{{ route('open-shifts.claims') }}" class="text-decoration-none">
                 <div class="vibrant-card p-4" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
@@ -453,10 +478,10 @@
                 </div>
             </a>
         </div>
-    </div>
+    </div> -->
 
     <!-- Availability Section -->
-    <div class="row g-4 mt-2">
+    <!-- <div class="row g-4 mt-2">
         <div class="col-12">
             <a href="{{ route('availabilities.index') }}" class="text-decoration-none">
                 <div class="vibrant-card p-4" style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%); min-height: 120px;">
@@ -474,10 +499,9 @@
                 </div>
             </a>
         </div>
-    </div>
-    --}}
+    </div> -->
 
-    <div class="row g-3 mt-3 mb-4">
+    <!-- <div class="row g-3 mt-3 mb-4">
         <div class="col-lg-12">
             <div class="info-card p-4 h-100 shadow-sm" style="background: linear-gradient(to bottom right, #ffffff, #f8fafc);">
                 <h5 class="fw-bold text-dark d-flex align-items-center gap-2 mb-3">
@@ -563,24 +587,23 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </div> -->
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        let isFirstLoad = true;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let isFirstLoad = true;
 
-        function fetchLiveDashboardData() {
-            fetch("{{ route('dashboard.live-data') }}")
-                .then(response => response.json())
-                .then(data => {
-                    // 1. Render Attendances
-                    const attBody = document.querySelector('#live-attendance-table tbody');
-                    if (data.attendances && data.attendances.length > 0) {
-                        let attHtml = '';
-                        data.attendances.forEach(att => {
-                            const badgeClass = att.type === 'Checked Out' ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle';
-                            attHtml += `
+            function fetchLiveDashboardData() {
+                fetch("{{ route('dashboard.live-data') }}")
+                    .then(response => response.json())
+                    .then(data => {
+                        // 1. Render Attendances
+                        const attBody = document.querySelector('#live-attendance-table tbody');
+                        if (data.attendances && data.attendances.length > 0) {
+                            let attHtml = '';
+                            data.attendances.forEach(att => {
+                                const badgeClass = att.type === 'Checked Out' ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle';
+                                attHtml += `
                                 <tr>
                                     <td class="fw-semibold text-dark">${att.user_name}</td>
                                     <td class="text-secondary">${att.site_name}</td>
@@ -589,26 +612,26 @@
                                     <td class="text-muted small">${att.date}</td>
                                 </tr>
                             `;
-                        });
-                        attBody.innerHTML = attHtml;
-                    } else {
-                        attBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No attendance logs found today.</td></tr>`;
-                    }
+                            });
+                            attBody.innerHTML = attHtml;
+                        } else {
+                            attBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No attendance logs found today.</td></tr>`;
+                        }
 
-                    // 2. Render Tours
-                    const tourBody = document.querySelector('#live-tours-table tbody');
-                    if (data.tours && data.tours.length > 0) {
-                        let tourHtml = '';
-                        data.tours.forEach(tour => {
-                            let statusBadge = 'bg-warning-subtle text-warning border border-warning-subtle';
-                            if (tour.status === 'Completed') {
-                                statusBadge = 'bg-success-subtle text-success border border-success-subtle';
-                            } else if (tour.status === 'Missed') {
-                                statusBadge = 'bg-danger-subtle text-danger border border-danger-subtle';
-                            }
+                        // 2. Render Tours
+                        const tourBody = document.querySelector('#live-tours-table tbody');
+                        if (data.tours && data.tours.length > 0) {
+                            let tourHtml = '';
+                            data.tours.forEach(tour => {
+                                let statusBadge = 'bg-warning-subtle text-warning border border-warning-subtle';
+                                if (tour.status === 'Completed') {
+                                    statusBadge = 'bg-success-subtle text-success border border-success-subtle';
+                                } else if (tour.status === 'Missed') {
+                                    statusBadge = 'bg-danger-subtle text-danger border border-danger-subtle';
+                                }
 
-                            const percent = tour.required_count > 0 ? ((tour.scanned_count / tour.required_count) * 100) : 0;
-                            tourHtml += `
+                                const percent = tour.required_count > 0 ? ((tour.scanned_count / tour.required_count) * 100) : 0;
+                                tourHtml += `
                                 <tr>
                                     <td class="fw-semibold text-dark">${tour.tour_name}</td>
                                     <td class="text-secondary">${tour.site_name}</td>
@@ -623,46 +646,46 @@
                                     <td><span class="badge ${statusBadge} rounded-pill px-2 py-1 fw-semibold">${tour.status}</span></td>
                                 </tr>
                             `;
-                        });
-                        tourBody.innerHTML = tourHtml;
-                    } else {
-                        tourBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent site tours found.</td></tr>`;
-                    }
-                    
-                    if (typeof feather !== 'undefined') {
-                        feather.replace();
-                    }
-
-                    // Show temporary toast alerts on data refresh (skip first load)
-                    if (!isFirstLoad) {
-                        const attToast = document.getElementById('attendance-toast');
-                        const toursToast = document.getElementById('tours-toast');
-
-                        attToast.classList.remove('d-none');
-                        attToast.classList.add('d-flex');
-                        toursToast.classList.remove('d-none');
-                        toursToast.classList.add('d-flex');
+                            });
+                            tourBody.innerHTML = tourHtml;
+                        } else {
+                            tourBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent site tours found.</td></tr>`;
+                        }
 
                         if (typeof feather !== 'undefined') {
                             feather.replace();
                         }
 
-                        setTimeout(() => {
-                            attToast.classList.remove('d-flex');
-                            attToast.classList.add('d-none');
-                            toursToast.classList.remove('d-flex');
-                            toursToast.classList.add('d-none');
-                        }, 5000);
-                    }
+                        // Show temporary toast alerts on data refresh (skip first load)
+                        if (!isFirstLoad) {
+                            const attToast = document.getElementById('attendance-toast');
+                            const toursToast = document.getElementById('tours-toast');
 
-                    isFirstLoad = false;
-                })
-                .catch(error => console.error("Error fetching live dashboard data:", error));
-        }
+                            attToast.classList.remove('d-none');
+                            attToast.classList.add('d-flex');
+                            toursToast.classList.remove('d-none');
+                            toursToast.classList.add('d-flex');
 
-        // Fetch immediately and poll every 30 seconds (30000ms)
-        fetchLiveDashboardData();
-        setInterval(fetchLiveDashboardData, 30000);
-    });
-</script>
-@endsection
+                            if (typeof feather !== 'undefined') {
+                                feather.replace();
+                            }
+
+                            setTimeout(() => {
+                                attToast.classList.remove('d-flex');
+                                attToast.classList.add('d-none');
+                                toursToast.classList.remove('d-flex');
+                                toursToast.classList.add('d-none');
+                            }, 5000);
+                        }
+
+                        isFirstLoad = false;
+                    })
+                    .catch(error => console.error("Error fetching live dashboard data:", error));
+            }
+
+            // Fetch immediately and poll every 30 seconds (30000ms)
+            fetchLiveDashboardData();
+            setInterval(fetchLiveDashboardData, 30000);
+        });
+    </script>
+    @endsection
