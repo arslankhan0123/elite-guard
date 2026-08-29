@@ -71,10 +71,14 @@
                     $siteTotalHours[$siteId] += $shiftHours;
 
                     $userName = $user->name;
+                    $employeeId = $user->employee ? $user->employee->id : null;
                     if (!isset($gridData[$siteId]['days'][$dayIndex][$userName])) {
-                        $gridData[$siteId]['days'][$dayIndex][$userName] = 0;
+                        $gridData[$siteId]['days'][$dayIndex][$userName] = [
+                            'hours' => 0,
+                            'employee_id' => $employeeId
+                        ];
                     }
-                    $gridData[$siteId]['days'][$dayIndex][$userName] += $shiftHours;
+                    $gridData[$siteId]['days'][$dayIndex][$userName]['hours'] += $shiftHours;
                 }
             }
         }
@@ -155,9 +159,16 @@
                                         @foreach($siteData['days'] as $dayIndex => $dayUsers)
                                             <td class="align-middle">
                                                 @if(count($dayUsers) > 0)
-                                                    @foreach($dayUsers as $userName => $userHours)
+                                                    @foreach($dayUsers as $userName => $userData)
                                                         <div class="fw-bold text-primary my-1">
-                                                            {{ $userName }} <span class="text-secondary small fw-normal">({{ round($userHours, 1) }}h)</span>
+                                                            @if(!empty($userData['employee_id']))
+                                                                <a href="{{ route('employees.show', $userData['employee_id']) }}" class="text-primary text-decoration-underline fw-bold">
+                                                                    {{ $userName }}
+                                                                </a>
+                                                            @else
+                                                                {{ $userName }}
+                                                            @endif
+                                                            <span class="text-secondary small fw-normal">({{ round($userData['hours'], 1) }}h)</span>
                                                         </div>
                                                     @endforeach
                                                 @else

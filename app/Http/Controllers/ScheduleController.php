@@ -34,7 +34,7 @@ class ScheduleController extends Controller
         $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
 
         // Fetch schedules for this week
-        $schedules = Schedule::with(['user', 'shifts.site.company', 'shifts.weeklyRunSheet'])
+        $schedules = Schedule::with(['user.employee', 'shifts.site.company', 'shifts.weeklyRunSheet'])
             ->where('week_start_date', $weekStart->format('Y-m-d'))
             ->get();
 
