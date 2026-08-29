@@ -342,7 +342,7 @@
                             </a>
                         </li> -->
                         @endif
-                        @if(collect(['policies', 'orientations', 'employees', 'pay-slips', 'tax-docs', 'management-reports', 'shifts-reports', 'numbers', 'notice-board', 'post-esc'])->contains(fn($module) => Auth::user()->hasAdminPermission($module, 'list')))
+                        @if(collect(['sites', 'policies', 'orientations', 'pay-slips', 'tax-docs', 'management-reports', 'numbers', 'notice-board', 'post-esc', 'open-shifts', 'availabilities'])->contains(fn($module) => Auth::user()->hasAdminPermission($module, 'list')))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-components" role="button"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -354,7 +354,7 @@
 
 
                                 @if(Auth::user()->hasAdminPermission('sites', 'list'))
-                                <a href="{{route('policies.index')}}" class="dropdown-item" data-key="t-widgets"> 
+                                <a href="{{route('weekly-run-sheets.index')}}" class="dropdown-item" data-key="t-widgets"> 
                                     <i class="icon nav-icon" data-feather="clipboard" style="width:16px; height:16px;"></i>
                                     Runsheets</a>
                                 @endif
