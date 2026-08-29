@@ -20,6 +20,47 @@
         --dash-cyan: #06b6d4;
     }
 
+    /* Circular Progress Bar */
+    .radial-progress {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: conic-gradient(var(--dash-emerald) calc(var(--progress-percent) * 1%), #e2e8f0 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .radial-progress-inner {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 750;
+        color: #1e293b;
+    }
+
+    /* High-contrast readable badges */
+    .badge.bg-success-subtle {
+        background-color: rgba(16, 185, 129, 0.12) !important;
+        color: #065f46 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    }
+    .badge.bg-danger-subtle {
+        background-color: rgba(244, 63, 94, 0.12) !important;
+        color: #991b1b !important;
+        border: 1px solid rgba(244, 63, 94, 0.3) !important;
+    }
+    .badge.bg-warning-subtle {
+        background-color: rgba(245, 158, 11, 0.12) !important;
+        color: #92400e !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+
     .p-wrapper {
         padding: 5px 0px;
     }
@@ -468,7 +509,7 @@
                     if (data.attendances && data.attendances.length > 0) {
                         let attHtml = '';
                         data.attendances.forEach(att => {
-                            const badgeClass = att.type === 'Checked Out' ? 'bg-soft-danger text-danger' : 'bg-soft-success text-success';
+                            const badgeClass = att.type === 'Checked Out' ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle';
                             attHtml += `
                                 <tr>
                                     <td class="fw-semibold text-dark">${att.user_name}</td>
@@ -489,19 +530,26 @@
                     if (data.tours && data.tours.length > 0) {
                         let tourHtml = '';
                         data.tours.forEach(tour => {
-                            let statusBadge = 'bg-soft-warning text-warning';
+                            let statusBadge = 'bg-warning-subtle text-warning border border-warning-subtle';
                             if (tour.status === 'Completed') {
-                                statusBadge = 'bg-soft-success text-success';
+                                statusBadge = 'bg-success-subtle text-success border border-success-subtle';
                             } else if (tour.status === 'Missed') {
-                                statusBadge = 'bg-soft-danger text-danger';
+                                statusBadge = 'bg-danger-subtle text-danger border border-danger-subtle';
                             }
 
+                            const percent = tour.required_count > 0 ? ((tour.scanned_count / tour.required_count) * 100) : 0;
                             tourHtml += `
                                 <tr>
                                     <td class="fw-semibold text-dark">${tour.tour_name}</td>
                                     <td class="text-secondary">${tour.site_name}</td>
                                     <td class="text-secondary">${tour.user_name}</td>
-                                    <td class="fw-bold text-primary">${tour.progress}</td>
+                                    <td>
+                                        <div class="radial-progress" style="--progress-percent: ${percent};">
+                                            <div class="radial-progress-inner">
+                                                ${tour.progress}
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td><span class="badge ${statusBadge} rounded-pill px-2 py-1 fw-semibold">${tour.status}</span></td>
                                 </tr>
                             `;
