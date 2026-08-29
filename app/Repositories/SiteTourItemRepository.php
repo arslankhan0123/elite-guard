@@ -128,21 +128,31 @@ class SiteTourItemRepository
         // Extract SiteTour info once (open_time & grace_time are same for all items)
         $siteTourInfo = null;
         $firstSiteTour = $items->first()?->siteTour ?? null;
+        
+        $totalItems = $items->count();
+        $scannedItems = $items->filter(function ($item) {
+            return $item->getAttribute('scanned_tags_count') > 0;
+        })->count();
+
         if ($firstSiteTour) {
             $siteTourInfo = [
-                'id'         => $firstSiteTour->id,
-                'name'       => $firstSiteTour->name,
-                'open_time'  => $firstSiteTour->open_time,
-                'grace_time' => $firstSiteTour->grace_time,
+                'id'            => $firstSiteTour->id,
+                'name'          => $firstSiteTour->name,
+                'open_time'     => $firstSiteTour->open_time,
+                'grace_time'    => $firstSiteTour->grace_time,
+                'total_items'   => $totalItems,
+                'scanned_items' => $scannedItems,
             ];
         }
 
         return [
-            'status'          => true,
-            'message'         => 'Assigned site tour items retrieved successfully',
-            'shift'           => $shiftInfo,
-            'site_tour'       => $siteTourInfo,
-            'site_tour_items' => $items,
+            'status'                  => true,
+            'message'                 => 'Assigned site tour items retrieved successfully',
+            'shift'                   => $shiftInfo,
+            'site_tour'               => $siteTourInfo,
+            'total_site_tour_items'   => $totalItems,
+            'scanned_site_tour_items' => $scannedItems,
+            'site_tour_items'         => $items,
         ];
     }
     
@@ -158,12 +168,23 @@ class SiteTourItemRepository
         
         $data['user_id'] = $user->id;
 
+        $uploadedImages = [];
+
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('documents/SiteTourScans', 'public');
             $data['image'] = Storage::disk('public')->url($path);
         }
 
-        $scan = DB::transaction(function () use ($data, $request) {
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                if ($file->isValid()) {
+                    $path = $file->store('documents/SiteTourScans', 'public');
+                    $uploadedImages[] = Storage::disk('public')->url($path);
+                }
+            }
+        }
+
+        $scan = DB::transaction(function () use ($data, $request, $uploadedImages) {
             $siteTourItem = SiteTourItem::findOrFail($data['site_tour_item_id']);
             if ($request->exists('reason')) {
                 $siteTourItem->update([
@@ -171,8 +192,19 @@ class SiteTourItemRepository
                 ]);
             }
 
-            return SiteTourItemScan::create($data);
+            $scanRecord = SiteTourItemScan::create($data);
+
+            foreach ($uploadedImages as $imageUrl) {
+                \App\Models\SiteTourItemImage::create([
+                    'site_tour_item_id' => $data['site_tour_item_id'],
+                    'image_path' => $imageUrl,
+                ]);
+            }
+
+            return $scanRecord;
         });
+
+        $scan->load('siteTourItem.images');
 
         return [
             'status' => true,

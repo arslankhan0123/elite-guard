@@ -20,6 +20,47 @@
         --dash-cyan: #06b6d4;
     }
 
+    /* Circular Progress Bar */
+    .radial-progress {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: conic-gradient(var(--dash-emerald) calc(var(--progress-percent) * 1%), #e2e8f0 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .radial-progress-inner {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 750;
+        color: #1e293b;
+    }
+
+    /* High-contrast readable badges */
+    .badge.bg-success-subtle {
+        background-color: rgba(16, 185, 129, 0.12) !important;
+        color: #065f46 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    }
+    .badge.bg-danger-subtle {
+        background-color: rgba(244, 63, 94, 0.12) !important;
+        color: #991b1b !important;
+        border: 1px solid rgba(244, 63, 94, 0.3) !important;
+    }
+    .badge.bg-warning-subtle {
+        background-color: rgba(245, 158, 11, 0.12) !important;
+        color: #92400e !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+
     .p-wrapper {
         padding: 5px 0px;
     }
@@ -98,15 +139,36 @@
 
     /* Welcome Hero section */
     .hero-section {
-        background: #0f172a;
-        background-image: radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0, transparent 50%), 
-                          radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.1) 0, transparent 50%);
+        background: linear-gradient(-45deg, #0b0f19, #1e1b4b, #2e1065, #0b0f19);
+        background-size: 400% 400%;
+        animation: gradientBG 12s ease infinite;
         border-radius: 30px;
-        padding: 50px;
+        padding: 60px 50px;
         color: white;
         margin-bottom: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        position: relative;
+        overflow: hidden;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Floating Logo Animation */
+    .hero-logo-img {
+        max-height: 180px;
+        filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
+        animation: floatLogo 5s ease-in-out infinite;
+    }
+
+    @keyframes floatLogo {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(1.5deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
     }
 
     .hero-title {
@@ -189,11 +251,12 @@
                 </div>
             </div>
             <div class="col-lg-5 text-center d-none d-lg-block">
-                <i data-feather="shield" style="width: 250px; height: 250px; stroke: #8b5cf6; stroke-width: 1; opacity: 0.5;"></i>
+                <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" class="hero-logo-img img-fluid">
             </div>
         </div>
     </div>
 
+    {{-- Commented out Stats Grid
     <!-- Stats Grid -->
     <div class="row g-4 mt-2">
         <div class="col-xl-3 col-md-6">
@@ -248,7 +311,86 @@
             </a>
         </div>
     </div>
+    --}}
+
+    <!-- Real-time Activity Logs Section -->
+    <div class="row g-4 mt-2">
+        <!-- Live Attendance Tracker Card -->
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="activity" class="text-primary me-2"></i> Live Shift Attendance
+                    </h5>
+                    <span class="badge bg-soft-success text-success rounded-pill px-3 py-1 fw-bold align-items-center gap-1 d-flex" style="font-size: 0.75rem;">
+                        <span class="spinner-grow spinner-grow-sm text-success" role="status" aria-hidden="true"></span> Realtime
+                    </span>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div id="attendance-toast" class="alert alert-success py-2 px-3 mb-3 small d-none align-items-center justify-content-between rounded-3 border-0 shadow-sm" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                        <span><i data-feather="check-circle" class="me-1" style="width: 14px; height: 14px;"></i> Attendance fetched successfully</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="live-attendance-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Guard</th>
+                                    <th>Site</th>
+                                    <th>Action</th>
+                                    <th>Time</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Loading active sessions...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Tours Tracker Card -->
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="navigation" class="text-info me-2"></i> Recent Site Tour Scans
+                    </h5>
+                    <span class="badge bg-soft-success text-success rounded-pill px-3 py-1 fw-bold align-items-center gap-1 d-flex" style="font-size: 0.75rem;">
+                        <span class="spinner-grow spinner-grow-sm text-success" role="status" aria-hidden="true"></span> Realtime
+                    </span>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div id="tours-toast" class="alert alert-success py-2 px-3 mb-3 small d-none align-items-center justify-content-between rounded-3 border-0 shadow-sm" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                        <span><i data-feather="check-circle" class="me-1" style="width: 14px; height: 14px;"></i> Tours fetched successfully</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="live-tours-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tour Name</th>
+                                    <th>Site</th>
+                                    <th>Guard</th>
+                                    <th>Progress</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Loading tour logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
+    {{-- Commented out extra widget cards
     <!-- Attendance Section -->
     <div class="row g-4 mt-2">
         <div class="col-12">
@@ -333,41 +475,87 @@
             </a>
         </div>
     </div>
+    --}}
 
-    <!-- Secondary Info Grid -->
-    <div class="row g-4 mt-4 mb-5">
-        <div class="col-lg-6">
-            <div class="info-card p-5 h-100 shadow-sm">
-                <div class="icon-circle bg-soft-primary text-primary">
-                    <i data-feather="file-text"></i>
-                </div>
-                <h4 class="fw-bold text-dark">Developer documentation</h4>
-                <p class="text-muted fs-5">Get started with our NFC hardware integration guide. Perfect for setting up your Flutter mobile application and writing tags.</p>
-                <a href="{{ asset('docs/NFC_INTEGRATION.md') }}" class="btn btn-primary rounded-pill px-4 fw-bold mt-2">Open Guide</a>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="info-card p-5 h-100 shadow-sm" style="background: linear-gradient(to bottom right, #ffffff, #f8fafc);">
-                <div class="icon-circle bg-soft-success text-success">
-                    <i data-feather="activity"></i>
-                </div>
-                <h4 class="fw-bold text-dark">System Health</h4>
-                <div class="d-flex align-items-center gap-3 mt-4">
-                    <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
-                        <div class="text-muted small fw-bold mb-1">COMPANIES</div>
-                        <div class="h5 fw-bold text-primary mb-0">{{ $companyCount }}</div>
+    <div class="row g-3 mt-3 mb-4">
+        <div class="col-lg-12">
+            <div class="info-card p-4 h-100 shadow-sm" style="background: linear-gradient(to bottom right, #ffffff, #f8fafc);">
+                <h5 class="fw-bold text-dark d-flex align-items-center gap-2 mb-3">
+                    <i data-feather="activity" class="text-success" style="width: 20px; height: 20px;"></i>
+                    System Health
+                </h5>
+                <div class="row g-3 mt-1">
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">COMPANIES</div>
+                            <div class="h5 fw-bold text-primary mb-0">{{ $companyCount }}</div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
-                        <div class="text-muted small fw-bold mb-1">SITES</div>
-                        <div class="h5 fw-bold text-success mb-0">{{ $siteCount }}</div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">SITES</div>
+                            <div class="h5 fw-bold text-success mb-0">{{ $siteCount }}</div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
-                        <div class="text-muted small fw-bold mb-1">CHECKPOINTS</div>
-                        <div class="h5 fw-bold text-info mb-0">{{ $nfcCount }}</div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">CHECKPOINTS</div>
+                            <div class="h5 fw-bold text-info mb-0">{{ $nfcCount }}</div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
-                        <div class="text-muted small fw-bold mb-1">TEAM</div>
-                        <div class="h5 fw-bold text-warning mb-0">{{ $employeeCount }}</div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">EMPLOYEES</div>
+                            <div class="h5 fw-bold text-warning mb-0">{{ $employeeCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">DISPATCH</div>
+                            <div class="h5 fw-bold text-danger mb-0">{{ $dispatchCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">OPEN SHIFTS</div>
+                            <div class="h5 fw-bold text-dark mb-0">{{ $openShiftCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">AVAILABILITY</div>
+                            <div class="h5 fw-bold text-primary mb-0">{{ $availabilityCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">RUNSHEETS</div>
+                            <div class="h5 fw-bold text-success mb-0">{{ $runsheetCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">POLICIES</div>
+                            <div class="h5 fw-bold text-info mb-0">{{ $policyCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">ORIENTATIONS</div>
+                            <div class="h5 fw-bold text-warning mb-0">{{ $orientationCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">NOTICE BOARD</div>
+                            <div class="h5 fw-bold text-danger mb-0">{{ $noticeBoardCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-2 bg-light rounded-3 text-center">
+                            <div class="text-muted small fw-bold mb-1">POST & ESC</div>
+                            <div class="h5 fw-bold text-dark mb-0">{{ $postEscCount }}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="mt-4 p-3 rounded-4 bg-primary-subtle border border-primary-subtle text-primary small d-flex align-items-center gap-2">
@@ -377,4 +565,104 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let isFirstLoad = true;
+
+        function fetchLiveDashboardData() {
+            fetch("{{ route('dashboard.live-data') }}")
+                .then(response => response.json())
+                .then(data => {
+                    // 1. Render Attendances
+                    const attBody = document.querySelector('#live-attendance-table tbody');
+                    if (data.attendances && data.attendances.length > 0) {
+                        let attHtml = '';
+                        data.attendances.forEach(att => {
+                            const badgeClass = att.type === 'Checked Out' ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle';
+                            attHtml += `
+                                <tr>
+                                    <td class="fw-semibold text-dark">${att.user_name}</td>
+                                    <td class="text-secondary">${att.site_name}</td>
+                                    <td><span class="badge ${badgeClass} rounded-pill px-2 py-1 fw-semibold">${att.type}</span></td>
+                                    <td class="fw-bold text-dark">${att.time}</td>
+                                    <td class="text-muted small">${att.date}</td>
+                                </tr>
+                            `;
+                        });
+                        attBody.innerHTML = attHtml;
+                    } else {
+                        attBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No attendance logs found today.</td></tr>`;
+                    }
+
+                    // 2. Render Tours
+                    const tourBody = document.querySelector('#live-tours-table tbody');
+                    if (data.tours && data.tours.length > 0) {
+                        let tourHtml = '';
+                        data.tours.forEach(tour => {
+                            let statusBadge = 'bg-warning-subtle text-warning border border-warning-subtle';
+                            if (tour.status === 'Completed') {
+                                statusBadge = 'bg-success-subtle text-success border border-success-subtle';
+                            } else if (tour.status === 'Missed') {
+                                statusBadge = 'bg-danger-subtle text-danger border border-danger-subtle';
+                            }
+
+                            const percent = tour.required_count > 0 ? ((tour.scanned_count / tour.required_count) * 100) : 0;
+                            tourHtml += `
+                                <tr>
+                                    <td class="fw-semibold text-dark">${tour.tour_name}</td>
+                                    <td class="text-secondary">${tour.site_name}</td>
+                                    <td class="text-secondary">${tour.user_name}</td>
+                                    <td>
+                                        <div class="radial-progress" style="--progress-percent: ${percent};">
+                                            <div class="radial-progress-inner">
+                                                ${tour.progress}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge ${statusBadge} rounded-pill px-2 py-1 fw-semibold">${tour.status}</span></td>
+                                </tr>
+                            `;
+                        });
+                        tourBody.innerHTML = tourHtml;
+                    } else {
+                        tourBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent site tours found.</td></tr>`;
+                    }
+                    
+                    if (typeof feather !== 'undefined') {
+                        feather.replace();
+                    }
+
+                    // Show temporary toast alerts on data refresh (skip first load)
+                    if (!isFirstLoad) {
+                        const attToast = document.getElementById('attendance-toast');
+                        const toursToast = document.getElementById('tours-toast');
+
+                        attToast.classList.remove('d-none');
+                        attToast.classList.add('d-flex');
+                        toursToast.classList.remove('d-none');
+                        toursToast.classList.add('d-flex');
+
+                        if (typeof feather !== 'undefined') {
+                            feather.replace();
+                        }
+
+                        setTimeout(() => {
+                            attToast.classList.remove('d-flex');
+                            attToast.classList.add('d-none');
+                            toursToast.classList.remove('d-flex');
+                            toursToast.classList.add('d-none');
+                        }, 5000);
+                    }
+
+                    isFirstLoad = false;
+                })
+                .catch(error => console.error("Error fetching live dashboard data:", error));
+        }
+
+        // Fetch immediately and poll every 30 seconds (30000ms)
+        fetchLiveDashboardData();
+        setInterval(fetchLiveDashboardData, 30000);
+    });
+</script>
 @endsection

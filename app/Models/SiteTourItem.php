@@ -45,4 +45,9 @@ class SiteTourItem extends Model
     {
         return $this->hasMany(SiteTourItemScan::class, 'site_tour_item_id');
     }
+
+    public function images()
+    {
+        return $this->hasMany(SiteTourItemImage::class, 'site_tour_item_id');
+    }
 }

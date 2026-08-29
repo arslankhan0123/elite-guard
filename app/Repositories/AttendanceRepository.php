@@ -41,12 +41,12 @@ class AttendanceRepository
             $startTime = Carbon::parse($shift->date . ' ' . $shift->start_time, $timezone);
             $earliestAllowed = $startTime->copy()->subMinutes(30);
 
-            if ($now->lt($earliestAllowed)) {
-                return [
-                    'status' => false,
-                    'message' => 'You can only clock in starting from 30 minutes before the shift start time (' . $shift->start_time . ').'
-                ];
-            }
+            // if ($now->lt($earliestAllowed)) {
+            //     return [
+            //         'status' => false,
+            //         'message' => 'You can only clock in starting from 30 minutes before the shift start time (' . $shift->start_time . ').'
+            //     ];
+            // }
         }
 
         // Verify if user is assigned to this shift

@@ -55,8 +55,212 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         $pendingAvailCount = \App\Models\Availability::where('status', 'pending')->count();
         $todayAttendanceCount = \App\Models\ShiftAttendance::whereDate('clock_in_at', \Carbon\Carbon::today())->count();
 
-        return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount', 'pendingOpenShiftClaimsCount', 'pendingAvailCount', 'todayAttendanceCount'));
+        // System Health extra counts
+        $dispatchCount = \App\Models\Dispatch::count();
+        $openShiftCount = \App\Models\OpenShift::count();
+        $availabilityCount = \App\Models\Availability::count();
+        $runsheetCount = \App\Models\WeeklyRunSheet::count();
+        $policyCount = \App\Models\Policy::count();
+        $orientationCount = \App\Models\Orientation::count();
+        $noticeBoardCount = \App\Models\NoticeBoard::count();
+        $postEscCount = \App\Models\PostEsc::count();
+
+        return view('dashboard', compact(
+            'companyCount', 'siteCount', 'nfcCount', 'employeeCount', 
+            'pendingOpenShiftClaimsCount', 'pendingAvailCount', 'todayAttendanceCount',
+            'dispatchCount', 'openShiftCount', 'availabilityCount', 'runsheetCount',
+            'policyCount', 'orientationCount', 'noticeBoardCount', 'postEscCount'
+        ));
     })->name('dashboard');
+
+    Route::get('/dashboard/live-data', function () {
+        $attendances = \App\Models\ShiftAttendance::with(['user', 'shift.site'])
+            ->orderByRaw('COALESCE(clock_out_at, clock_in_at) DESC')
+            ->limit(8)
+            ->get()
+            ->map(function ($att) {
+                return [
+                    'user_name' => $att->user?->name ?? 'N/A',
+                    'site_name' => $att->shift?->site?->name ?? 'N/A',
+                    'type' => $att->clock_out_at ? 'Checked Out' : 'Checked In',
+                    'time' => $att->clock_out_at 
+                        ? \Carbon\Carbon::parse($att->clock_out_at)->format('g:i A') 
+                        : \Carbon\Carbon::parse($att->clock_in_at)->format('g:i A'),
+                    'date' => \Carbon\Carbon::parse($att->clock_in_at)->format('d-M'),
+                ];
+            });
+
+        $startDate = \Carbon\Carbon::now()->subDays(7)->format('Y-m-d');
+        $endDate = \Carbon\Carbon::now()->format('Y-m-d');
+
+        $merged = collect();
+
+        // 1. Site Tour Items
+        $tourItems = \App\Models\SiteTourItem::with(['siteTour', 'scans.nfcTag', 'user', 'site'])
+            ->whereBetween('date', [$startDate, $endDate])
+            ->get();
+
+        foreach ($tourItems as $item) {
+            $siteTags = \App\Models\NfcTag::where('site_id', $item->site_id)->get();
+            $tourTagIds = $item->siteTour?->tags;
+            $requiredTags = !empty($tourTagIds) && is_array($tourTagIds) 
+                ? $siteTags->whereIn('id', $tourTagIds) 
+                : $siteTags;
+
+            $requiredTagIds = $requiredTags->pluck('id')->toArray();
+            
+            $validScans = $item->scans
+                ->whereIn('nfc_tag_id', $requiredTagIds)
+                ->unique('nfc_tag_id')
+                ->sortBy('time');
+
+            $scannedTagIds = $validScans->pluck('nfc_tag_id')->toArray();
+            $requiredCount = count($requiredTagIds);
+            $scannedCount = count($scannedTagIds);
+            
+            $latestScanTime = null;
+            if ($validScans->isNotEmpty()) {
+                $lastScan = $validScans->last();
+                $latestScanTime = $lastScan->date . ' ' . $lastScan->time;
+            }
+
+            $status = $requiredCount > 0 && $scannedCount >= $requiredCount
+                ? 'Completed'
+                : ($scannedCount > 0 ? 'Partial' : 'Missed');
+
+            $merged->push([
+                'tour_name' => $item->siteTour?->name ?? 'Site Tour',
+                'site_name' => $item->site?->name ?? 'N/A',
+                'user_name' => $item->user?->name ?? 'N/A',
+                'progress' => "{$scannedCount}/{$requiredCount}",
+                'scanned_count' => $scannedCount,
+                'required_count' => $requiredCount,
+                'status' => $status,
+                'latest_scan_time' => $latestScanTime,
+                'scheduled_time' => $item->date . ' ' . ($item->start_time ?: '00:00:00'),
+            ]);
+        }
+
+        // 2. Runsheet Tours
+        $runsheetShifts = \App\Models\Shift::with(['schedule.user', 'weeklyRunSheet'])
+            ->where('type', 'runsheet')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->get();
+
+        foreach ($runsheetShifts as $shift) {
+            $user = $shift->schedule?->user;
+            $dateStrForScans = \Carbon\Carbon::parse($shift->date)->format('Y-m-d');
+            $weeklyRunSheet = \App\Models\WeeklyRunSheet::with(['entries.site.nfcTags', 'entries.scans' => function($q) use ($dateStrForScans) {
+                $q->where('date', $dateStrForScans);
+            }])->find($shift->weekly_run_sheet_id);
+
+            if (!$weeklyRunSheet) continue;
+
+            $dayOfWeek = \Carbon\Carbon::parse($shift->date)->dayOfWeekIso;
+            $entries = $weeklyRunSheet->entries->where('day_of_week', $dayOfWeek);
+
+            foreach ($entries as $entry) {
+                $entryStart = $entry->start_time ?: $weeklyRunSheet->getDayStartTime($dayOfWeek);
+                $entryEnd = $entry->end_time ?: $weeklyRunSheet->getDayEndTime($dayOfWeek);
+
+                $requiredTags = $entry->site?->nfcTags ?? collect();
+                $requiredTagIds = $requiredTags->pluck('id')->toArray();
+
+                $scans = $entry->scans;
+                $validScans = $scans
+                    ->whereIn('nfc_tag_id', $requiredTagIds)
+                    ->unique('nfc_tag_id')
+                    ->sortBy('time');
+
+                $scannedTagIds = $validScans->pluck('nfc_tag_id')->toArray();
+                $requiredCount = count($requiredTagIds);
+                $scannedCount = count($scannedTagIds);
+
+                $latestScanTime = null;
+                if ($validScans->isNotEmpty()) {
+                    $lastScan = $validScans->last();
+                    $latestScanTime = $lastScan->date . ' ' . $lastScan->time;
+                }
+
+                $status = $requiredCount > 0 && $scannedCount >= $requiredCount
+                    ? 'Completed'
+                    : ($scannedCount > 0 ? 'Partial' : 'Missed');
+
+                $merged->push([
+                    'tour_name' => $entry->tour_name ?: ($weeklyRunSheet->name ?? 'Runsheet Tour'),
+                    'site_name' => $entry->site?->name ?? 'N/A',
+                    'user_name' => $user?->name ?? 'N/A',
+                    'progress' => "{$scannedCount}/{$requiredCount}",
+                    'scanned_count' => $scannedCount,
+                    'required_count' => $requiredCount,
+                    'status' => $status,
+                    'latest_scan_time' => $latestScanTime,
+                    'scheduled_time' => $shift->date . ' ' . ($entryStart ?: '00:00:00'),
+                ]);
+            }
+        }
+
+        // 3. Site Items Checkpoints
+        $siteItems = \App\Models\SiteItem::with(['site.nfcTags', 'scans.nfcTag', 'user', 'site'])
+            ->whereBetween('date', [$startDate, $endDate])
+            ->get();
+
+        foreach ($siteItems as $sItem) {
+            $requiredTags = $sItem->site?->nfcTags ?? collect();
+            $requiredTagIds = $requiredTags->pluck('id')->toArray();
+
+            $validScans = $sItem->scans
+                ->whereIn('nfc_tag_id', $requiredTagIds)
+                ->unique('nfc_tag_id')
+                ->sortBy('time');
+
+            $scannedTagIds = $validScans->pluck('nfc_tag_id')->toArray();
+            $requiredCount = count($requiredTagIds);
+            $scannedCount = count($scannedTagIds);
+
+            $latestScanTime = null;
+            if ($validScans->isNotEmpty()) {
+                $lastScan = $validScans->last();
+                $latestScanTime = $lastScan->date . ' ' . $lastScan->time;
+            }
+
+            $status = $requiredCount > 0 && $scannedCount >= $requiredCount
+                ? 'Completed'
+                : ($scannedCount > 0 ? 'Partial' : 'Missed');
+
+            $merged->push([
+                'tour_name' => $sItem->type ?? 'Checkpoint Patrol',
+                'site_name' => $sItem->site?->name ?? 'N/A',
+                'user_name' => $sItem->user?->name ?? 'N/A',
+                'progress' => "{$scannedCount}/{$requiredCount}",
+                'scanned_count' => $scannedCount,
+                'required_count' => $requiredCount,
+                'status' => $status,
+                'latest_scan_time' => $latestScanTime,
+                'scheduled_time' => $sItem->date . ' ' . ($sItem->start_time ?: '00:00:00'),
+            ]);
+        }
+
+        $sorted = $merged->sort(function($a, $b) {
+            $aScan = $a['latest_scan_time'];
+            $bScan = $b['latest_scan_time'];
+
+            if ($aScan && $bScan) {
+                return strcmp($bScan, $aScan);
+            }
+            if ($aScan) return -1;
+            if ($bScan) return 1;
+
+            return strcmp($b['scheduled_time'], $a['scheduled_time']);
+        })->values();
+
+        $tours = $sorted->take(5);
+
+        return response()->json([
+            'attendances' => $attendances,
+            'tours' => $tours,
+        ]);
+    })->name('dashboard.live-data');
 
     Route::group(['prefix' => '/company'], function () {
         Route::get('/', [CompanyController::class, 'index'])->name('companies.index');
