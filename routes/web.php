@@ -55,7 +55,22 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         $pendingAvailCount = \App\Models\Availability::where('status', 'pending')->count();
         $todayAttendanceCount = \App\Models\ShiftAttendance::whereDate('clock_in_at', \Carbon\Carbon::today())->count();
 
-        return view('dashboard', compact('companyCount', 'siteCount', 'nfcCount', 'employeeCount', 'pendingOpenShiftClaimsCount', 'pendingAvailCount', 'todayAttendanceCount'));
+        // System Health extra counts
+        $dispatchCount = \App\Models\Dispatch::count();
+        $openShiftCount = \App\Models\OpenShift::count();
+        $availabilityCount = \App\Models\Availability::count();
+        $runsheetCount = \App\Models\WeeklyRunSheet::count();
+        $policyCount = \App\Models\Policy::count();
+        $orientationCount = \App\Models\Orientation::count();
+        $noticeBoardCount = \App\Models\NoticeBoard::count();
+        $postEscCount = \App\Models\PostEsc::count();
+
+        return view('dashboard', compact(
+            'companyCount', 'siteCount', 'nfcCount', 'employeeCount', 
+            'pendingOpenShiftClaimsCount', 'pendingAvailCount', 'todayAttendanceCount',
+            'dispatchCount', 'openShiftCount', 'availabilityCount', 'runsheetCount',
+            'policyCount', 'orientationCount', 'noticeBoardCount', 'postEscCount'
+        ));
     })->name('dashboard');
 
     Route::get('/dashboard/live-data', function () {

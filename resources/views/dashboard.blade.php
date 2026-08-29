@@ -495,22 +495,78 @@
                     <i data-feather="activity"></i>
                 </div>
                 <h4 class="fw-bold text-dark">System Health</h4>
-                <div class="d-flex align-items-center gap-3 mt-4">
-                    <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
-                        <div class="text-muted small fw-bold mb-1">COMPANIES</div>
-                        <div class="h5 fw-bold text-primary mb-0">{{ $companyCount }}</div>
+                <div class="row g-3 mt-3">
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">COMPANIES</div>
+                            <div class="h5 fw-bold text-primary mb-0">{{ $companyCount }}</div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
-                        <div class="text-muted small fw-bold mb-1">SITES</div>
-                        <div class="h5 fw-bold text-success mb-0">{{ $siteCount }}</div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">SITES</div>
+                            <div class="h5 fw-bold text-success mb-0">{{ $siteCount }}</div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
-                        <div class="text-muted small fw-bold mb-1">CHECKPOINTS</div>
-                        <div class="h5 fw-bold text-info mb-0">{{ $nfcCount }}</div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">CHECKPOINTS</div>
+                            <div class="h5 fw-bold text-info mb-0">{{ $nfcCount }}</div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-light rounded-4 text-center flex-grow-1">
-                        <div class="text-muted small fw-bold mb-1">TEAM</div>
-                        <div class="h5 fw-bold text-warning mb-0">{{ $employeeCount }}</div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">EMPLOYEES</div>
+                            <div class="h5 fw-bold text-warning mb-0">{{ $employeeCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">DISPATCH</div>
+                            <div class="h5 fw-bold text-danger mb-0">{{ $dispatchCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">OPEN SHIFTS</div>
+                            <div class="h5 fw-bold text-dark mb-0">{{ $openShiftCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">AVAILABILITY</div>
+                            <div class="h5 fw-bold text-primary mb-0">{{ $availabilityCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">RUNSHEETS</div>
+                            <div class="h5 fw-bold text-success mb-0">{{ $runsheetCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">POLICIES</div>
+                            <div class="h5 fw-bold text-info mb-0">{{ $policyCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">ORIENTATIONS</div>
+                            <div class="h5 fw-bold text-warning mb-0">{{ $orientationCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">NOTICE BOARD</div>
+                            <div class="h5 fw-bold text-danger mb-0">{{ $noticeBoardCount }}</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-6">
+                        <div class="p-3 bg-light rounded-4 text-center">
+                            <div class="text-muted small fw-bold mb-1">POST & ESC</div>
+                            <div class="h5 fw-bold text-dark mb-0">{{ $postEscCount }}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="mt-4 p-3 rounded-4 bg-primary-subtle border border-primary-subtle text-primary small d-flex align-items-center gap-2">
