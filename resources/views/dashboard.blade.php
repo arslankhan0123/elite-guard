@@ -139,15 +139,36 @@
 
     /* Welcome Hero section */
     .hero-section {
-        background: #0f172a;
-        background-image: radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0, transparent 50%), 
-                          radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.1) 0, transparent 50%);
+        background: linear-gradient(-45deg, #0b0f19, #1e1b4b, #2e1065, #0b0f19);
+        background-size: 400% 400%;
+        animation: gradientBG 12s ease infinite;
         border-radius: 30px;
-        padding: 50px;
+        padding: 60px 50px;
         color: white;
         margin-bottom: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        position: relative;
+        overflow: hidden;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Floating Logo Animation */
+    .hero-logo-img {
+        max-height: 180px;
+        filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
+        animation: floatLogo 5s ease-in-out infinite;
+    }
+
+    @keyframes floatLogo {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(1.5deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
     }
 
     .hero-title {
@@ -230,7 +251,7 @@
                 </div>
             </div>
             <div class="col-lg-5 text-center d-none d-lg-block">
-                <i data-feather="shield" style="width: 250px; height: 250px; stroke: #8b5cf6; stroke-width: 1; opacity: 0.5;"></i>
+                <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" class="hero-logo-img img-fluid">
             </div>
         </div>
     </div>
