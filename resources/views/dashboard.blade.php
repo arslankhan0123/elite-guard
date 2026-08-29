@@ -477,27 +477,16 @@
     </div>
     --}}
 
-    <!-- Secondary Info Grid -->
-    <div class="row g-4 mt-4 mb-5">
-        <!-- <div class="col-lg-6">
-            <div class="info-card p-5 h-100 shadow-sm">
-                <div class="icon-circle bg-soft-primary text-primary">
-                    <i data-feather="file-text"></i>
-                </div>
-                <h4 class="fw-bold text-dark">Developer documentation</h4>
-                <p class="text-muted fs-5">Get started with our NFC hardware integration guide. Perfect for setting up your Flutter mobile application and writing tags.</p>
-                <a href="{{ asset('docs/NFC_INTEGRATION.md') }}" class="btn btn-primary rounded-pill px-4 fw-bold mt-2">Open Guide</a>
-            </div>
-        </div> -->
+    <div class="row g-3 mt-3 mb-4">
         <div class="col-lg-12">
-            <div class="info-card p-5 h-100 shadow-sm" style="background: linear-gradient(to bottom right, #ffffff, #f8fafc);">
-                <div class="icon-circle bg-soft-success text-success">
-                    <i data-feather="activity"></i>
-                </div>
-                <h4 class="fw-bold text-dark">System Health</h4>
-                <div class="row g-3 mt-3">
+            <div class="info-card p-4 h-100 shadow-sm" style="background: linear-gradient(to bottom right, #ffffff, #f8fafc);">
+                <h5 class="fw-bold text-dark d-flex align-items-center gap-2 mb-3">
+                    <i data-feather="activity" class="text-success" style="width: 20px; height: 20px;"></i>
+                    System Health
+                </h5>
+                <div class="row g-3 mt-1">
                     <div class="col-xl-2 col-md-4 col-6">
-                        <div class="p-3 bg-light rounded-4 text-center">
+                        <div class="p-2 bg-light rounded-3 text-center">
                             <div class="text-muted small fw-bold mb-1">COMPANIES</div>
                             <div class="h5 fw-bold text-primary mb-0">{{ $companyCount }}</div>
                         </div>
