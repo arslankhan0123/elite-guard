@@ -47,4 +47,19 @@ class PanicNotification extends Notification
             'sender_name' => $this->senderName,
         ]);
     }
+
+    /**
+     * Get the array representation of the notification.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'type' => 'panic_alert',
+            'sender_name' => $this->senderName,
+            'title' => 'Panic Alert!',
+            'body' => "Emergency: {$this->senderName} has triggered a panic alert. Immediate attention required.",
+        ];
+    }
 }
