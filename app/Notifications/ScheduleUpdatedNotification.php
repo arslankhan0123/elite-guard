@@ -54,4 +54,25 @@ class ScheduleUpdatedNotification extends Notification
             'week_dates' => $this->weekDates,
         ]);
     }
+
+    /**
+     * Get the array representation of the notification.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(object $notifiable): array
+    {
+        $title = $this->isUpdate ? 'Schedule Updated' : 'New Schedule Assigned';
+        $body = $this->isUpdate 
+            ? "Your shifts for the week ({$this->weekDates}) have been updated. Please check your app for details."
+            : "Your shifts for the upcoming week ({$this->weekDates}) have been assigned. Please check your app.";
+
+        return [
+            'type' => 'schedule_update',
+            'week_dates' => $this->weekDates,
+            'is_update' => $this->isUpdate,
+            'title' => $title,
+            'body' => $body,
+        ];
+    }
 }
