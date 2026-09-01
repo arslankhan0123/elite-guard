@@ -769,14 +769,13 @@
             const weekInput = form.querySelector('input[name="week_start_date"]');
             if(weekInput) weekInput.value = start.format('YYYY-MM-DD');
 
-            const isPastWeek = moment(activeWeekMonday).isBefore(moment(currentMonday), 'day');
-            document.getElementById('modal_notes_employee').disabled = isPastWeek;
-            document.getElementById('modal_send_email').disabled = isPastWeek;
-            document.getElementById('modal_send_notification').disabled = isPastWeek;
+            document.getElementById('modal_notes_employee').disabled = false;
+            document.getElementById('modal_send_email').disabled = false;
+            document.getElementById('modal_send_notification').disabled = false;
             
             const submitBtn = form.querySelector('button[type="submit"]');
             if(submitBtn) {
-                submitBtn.style.display = isPastWeek ? 'none' : 'block';
+                submitBtn.style.display = 'block';
             }
 
             feather.replace();
@@ -814,7 +813,6 @@
             const container = document.getElementById('days-container');
             container.innerHTML = '';
             
-            const isPastWeek = moment(activeWeekMonday).isBefore(moment(currentMonday), 'day');
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
             
             days.forEach((day, i) => {
@@ -837,7 +835,7 @@
                         <div class="empty-day-placeholder">No shifts assigned for this day</div>
                     </div>
                     <div class="px-3 pb-3">
-                        <button type="button" class="btn add-shift-btn" onclick="addShiftToDay('${date}')" ${isPastWeek ? 'style="display:none;"' : ''}>
+                        <button type="button" class="btn add-shift-btn" onclick="addShiftToDay('${date}')">
                             <i data-feather="plus" style="width: 14px; height: 14px;" class="me-1"></i> Add Shift
                         </button>
                     </div>
@@ -852,8 +850,6 @@
             const container = document.getElementById(`shifts-for-${date}`);
             const placeholder = container.querySelector('.empty-day-placeholder');
             if (placeholder) placeholder.remove();
-            
-            const isPastWeek = moment(activeWeekMonday).isBefore(moment(currentMonday), 'day');
             
             const index = shiftIndex++;
             const shiftItem = document.createElement('div');
@@ -872,7 +868,7 @@
             });
 
             shiftItem.innerHTML = `
-                <button type="button" class="btn-remove-shift" onclick="removeShift(this, '${date}')" ${isPastWeek ? 'style="display:none;"' : ''}>
+                <button type="button" class="btn-remove-shift" onclick="removeShift(this, '${date}')">
                     <i data-feather="x" style="width: 12px; height: 12px;"></i>
                 </button>
                 <input type="hidden" name="shifts[${index}][id]" value="${data ? data.id : ''}">
@@ -881,27 +877,27 @@
                 <div class="row g-2 mb-2">
                     <div class="col-md-4">
                         <label class="small fw-bold text-muted mb-1">Shift Type</label>
-                        <select name="shifts[${index}][type]" class="form-select form-select-sm rounded-3 border-0 bg-light shift-type-select" required onchange="onShiftTypeChange(this, '${date}')" ${isPastWeek ? 'disabled' : ''}>
+                        <select name="shifts[${index}][type]" class="form-select form-select-sm rounded-3 border-0 bg-light shift-type-select" required onchange="onShiftTypeChange(this, '${date}')">
                             <option value="site" ${!isRunsheet ? 'selected' : ''}>Assigned Site</option>
                             <option value="runsheet" ${isRunsheet ? 'selected' : ''}>Runsheet</option>
                         </select>
                     </div>
                     <div class="col-md-4 site-select-container" style="${isRunsheet ? 'display:none;' : ''}">
                         <label class="small fw-bold text-muted mb-1">Assigned Site</label>
-                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light site-select-input" ${!isRunsheet ? 'required' : ''} ${isPastWeek ? 'disabled' : ''} onchange="onSiteSelectChange(this)">
+                        <select name="shifts[${index}][site_id]" class="form-select form-select-sm rounded-3 border-0 bg-light site-select-input" ${!isRunsheet ? 'required' : ''} onchange="onSiteSelectChange(this)">
                             ${sitesHtml}
                         </select>
                     </div>
                     <div class="col-md-4 runsheet-select-container" style="${!isRunsheet ? 'display:none;' : ''}">
                         <label class="small fw-bold text-muted mb-1">Select Runsheet</label>
-                        <select name="shifts[${index}][weekly_run_sheet_id]" class="form-select form-select-sm rounded-3 border-0 bg-light runsheet-select-input" ${isRunsheet ? 'required' : ''} ${isPastWeek ? 'disabled' : ''} onchange="onRunsheetSelectChange(this, '${date}')">
+                        <select name="shifts[${index}][weekly_run_sheet_id]" class="form-select form-select-sm rounded-3 border-0 bg-light runsheet-select-input" ${isRunsheet ? 'required' : ''} onchange="onRunsheetSelectChange(this, '${date}')">
                             ${weeklyRunSheetsHtml}
                         </select>
                     </div>
                     <div class="col-md-4">
                         <label class="small fw-bold text-muted mb-1">Shift Name</label>
                         <input type="text" name="shifts[${index}][shift_name]" class="form-control form-control-sm rounded-3 border-0 bg-light shift-name-input" 
-                               value="${data ? data.shift_name : 'Regular Shift'}" placeholder="e.g. Day Shift" ${isPastWeek ? 'disabled' : ''}>
+                               value="${data ? data.shift_name : 'Regular Shift'}" placeholder="e.g. Day Shift">
                     </div>
                 </div>
 
@@ -909,7 +905,7 @@
                     <div class="col-6">
                         <label class="small fw-bold text-muted mb-1">Start Time</label>
                         <input type="time" name="shifts[${index}][start_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
-                               value="${data ? (data.start_time ? data.start_time.substring(0,5) : '08:00') : '08:00'}" required ${isPastWeek ? 'disabled' : ''}
+                               value="${data ? (data.start_time ? data.start_time.substring(0,5) : '08:00') : '08:00'}" required
                                oninput="updateShiftTotalTime(this)" onchange="updateShiftTotalTime(this)">
                     </div>
                     <div class="col-6">
@@ -918,7 +914,7 @@
                             <span class="shift-total-time small fw-bold text-primary"></span>
                         </div>
                         <input type="time" name="shifts[${index}][end_time]" class="form-control form-control-sm rounded-3 border-0 bg-light" 
-                               value="${data ? (data.end_time ? data.end_time.substring(0,5) : '16:00') : '16:00'}" required ${isPastWeek ? 'disabled' : ''}
+                               value="${data ? (data.end_time ? data.end_time.substring(0,5) : '16:00') : '16:00'}" required
                                oninput="updateShiftTotalTime(this)" onchange="updateShiftTotalTime(this)">
                     </div>
                 </div>

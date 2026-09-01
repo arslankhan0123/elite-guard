@@ -144,8 +144,11 @@ class ScheduleController extends Controller
             // Get all IDs provided in the request
             $providedIds = collect($request->shifts)->pluck('id')->filter()->toArray();
 
-            // Clear existing shifts that were NOT provided in the request
-            $schedule->shifts()->whereNotIn('id', $providedIds)->delete();
+            // Clear existing shifts that were NOT provided in the request (calling delete() on each to trigger boot deleting hook)
+            $removedShifts = $schedule->shifts()->whereNotIn('id', $providedIds)->get();
+            foreach ($removedShifts as $removedShift) {
+                $removedShift->delete();
+            }
 
             if ($request->has('shifts')) {
                 foreach ($request->shifts as $shiftData) {
@@ -240,7 +243,10 @@ class ScheduleController extends Controller
      */
     public function destroy($id)
     {
-        $schedule = Schedule::findOrFail($id);
+        $schedule = Schedule::with('shifts')->findOrFail($id);
+        foreach ($schedule->shifts as $shift) {
+            $shift->delete();
+        }
         $schedule->delete();
 
         return back()->with('success', 'Assignment removed successfully.');
@@ -256,9 +262,17 @@ class ScheduleController extends Controller
             'week_start_date' => 'required|date',
         ]);
 
-        Schedule::where('user_id', $request->user_id)
+        $schedules = Schedule::with('shifts')
+            ->where('user_id', $request->user_id)
             ->where('week_start_date', $request->week_start_date)
-            ->delete();
+            ->get();
+
+        foreach ($schedules as $schedule) {
+            foreach ($schedule->shifts as $shift) {
+                $shift->delete();
+            }
+            $schedule->delete();
+        }
 
         return back()->with('success', 'All assignments for the employee this week have been removed.');
     }

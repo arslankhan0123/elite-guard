@@ -37,6 +37,17 @@ class SiteTour extends Model
         'is_continuous' => 'boolean',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($siteTour) {
+            foreach ($siteTour->items as $item) {
+                $item->delete();
+            }
+        });
+    }
+
     public function site()
     {
         return $this->belongsTo(Site::class);

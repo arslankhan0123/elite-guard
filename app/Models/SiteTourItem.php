@@ -26,6 +26,23 @@ class SiteTourItem extends Model
         'status' => 'boolean',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($item) {
+            foreach ($item->images as $imageRecord) {
+                Shift::deleteStorageFile($imageRecord->image_path);
+                $imageRecord->delete();
+            }
+
+            foreach ($item->scans as $scanRecord) {
+                Shift::deleteStorageFile($scanRecord->image);
+                $scanRecord->delete();
+            }
+        });
+    }
+
     public function siteTour()
     {
         return $this->belongsTo(SiteTour::class);
