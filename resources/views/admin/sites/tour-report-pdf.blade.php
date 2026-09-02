@@ -375,10 +375,12 @@
         <table class="header-table">
             <tr>
                 <td class="brand-cell">
-                    <img class="brand-logo" src="{{ public_path('logo.png') }}" alt="Elite Guard">
+                    <div style="display: inline-block; width: 56px; height: 56px; background-color: #ffffff; border-radius: 50%; text-align: center; vertical-align: middle; margin-right: 12px;">
+                        <img src="{{ public_path('logo.png') }}" alt="Elite Guard" style="width: 45px; height: 45px; margin-top: 5.5px; object-fit: contain; vertical-align: middle;">
+                    </div>
                     <div class="brand-block">
-                        <div class="brand">ELITE GUARD INC.</div>
-                        <div style="font-size: 8px; color: #ffffff; margin-top: 2px; line-height: 1.2;">
+                        <div class="brand" style="font-size: 18px; font-weight: bold; letter-spacing: 0.5px; color: #ffffff; line-height: 1.1;">ELITE GUARD INC.</div>
+                        <div style="font-size: 9.5px; color: #ffffff; margin-top: 3px; line-height: 1.35;">
                             3961 52 Ave NE #2104, Calgary, AB T3J 0J7<br>
                             Phone: +1 (403) 830-7772 &bull; Email: Info@eliteguardinc.ca
                         </div>
