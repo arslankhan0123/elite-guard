@@ -78,9 +78,9 @@ class SiteTourItemApiController extends Controller
             ], 'No active or upcoming shift found.');
         }
 
-        $shift_id  = $activeShift->id;
-        $start_date = $activeShift->date;
-        $end_date   = $activeShift->date;
+        $shift_id   = $activeShift->id;
+        $start_date = $activeShift->start_datetime ? $activeShift->start_datetime->toDateString() : $activeShift->date;
+        $end_date   = $activeShift->end_datetime ? $activeShift->end_datetime->toDateString() : $activeShift->date;
 
         $data = $this->siteTourItemRepo->getUserSiteTourItems($user, $start_date, $end_date, $shift_id);
         $data['shift'] = $activeShift;
