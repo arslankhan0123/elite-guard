@@ -108,7 +108,9 @@ class ReportRepository
      */
     public function getShiftsReport($date_filter = null, $extraFilters = [])
     {
-        $query = \App\Models\Shift::with(['schedule.user', 'site.company'])->orderBy('date', 'desc')->orderBy('start_time', 'desc');
+        $query = \App\Models\Shift::with(['schedule.user', 'site.company', 'weeklyRunSheet.entries.site.company'])
+            ->orderBy('date', 'desc')
+            ->orderBy('start_time', 'desc');
 
         // Apply general date filter if no custom date filters are provided
         if (empty($extraFilters['start_date']) && empty($extraFilters['end_date']) && $date_filter) {
@@ -126,7 +128,12 @@ class ReportRepository
         }
 
         if (!empty($extraFilters['site_ids']) && is_array($extraFilters['site_ids'])) {
-            $query->whereIn('site_id', $extraFilters['site_ids']);
+            $query->where(function ($q) use ($extraFilters) {
+                $q->whereIn('site_id', $extraFilters['site_ids'])
+                  ->orWhereHas('weeklyRunSheet.entries', function ($sq) use ($extraFilters) {
+                      $sq->whereIn('site_id', $extraFilters['site_ids']);
+                  });
+            });
         }
 
         if (!empty($extraFilters['start_date'])) {
