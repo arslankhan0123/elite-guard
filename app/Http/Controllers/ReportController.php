@@ -53,13 +53,18 @@ class ReportController extends Controller
         $grandTotal = 0;
 
         if ($type === 'shifts') {
-            $reportSites = $results->pluck('site')->filter()->unique('id')->sortBy('name');
-            $reportUsers = $results->map(fn($s) => $s->schedule->user ?? null)->filter()->unique('id')->sortBy('name');
+            $matrix = [];
+            $reportSitesMap = collect();
+            $reportUsersMap = collect();
+            $userTotals = [];
+            $siteTotals = [];
+            $grandTotal = 0;
 
             foreach ($results as $shift) {
-                $userId = $shift->schedule->user_id ?? null;
-                $siteId = $shift->site_id;
-                if (!$userId || !$siteId) continue;
+                $user = $shift->schedule->user ?? null;
+                if (!$user) continue;
+                $userId = $user->id;
+                $reportUsersMap->put($userId, $user);
 
                 $start = \Carbon\Carbon::parse($shift->start_time);
                 $end = \Carbon\Carbon::parse($shift->end_time);
@@ -68,23 +73,53 @@ class ReportController extends Controller
                 }
                 $hours = $start->diffInMinutes($end) / 60;
 
-                if (!isset($matrix[$userId][$siteId])) {
-                    $matrix[$userId][$siteId] = 0;
+                // Resolve site(s) for this shift (support assigned sites and runsheets)
+                $shiftSites = collect();
+                if ($shift->site) {
+                    $shiftSites->push($shift->site);
+                } elseif ($shift->type === 'runsheet' || $shift->weeklyRunSheet) {
+                    $rsName = $shift->weeklyRunSheet->name ?? ($shift->shift_name ?: 'Runsheet');
+                    $rsId = 'runsheet_' . ($shift->weekly_run_sheet_id ?? $shift->id);
+                    $virtualSite = (object)[
+                        'id' => $rsId,
+                        'name' => 'Runsheet: ' . $rsName,
+                    ];
+                    $shiftSites->push($virtualSite);
+                } else {
+                    $virtualSite = (object)[
+                        'id' => 'site_other',
+                        'name' => 'Other / Unassigned',
+                    ];
+                    $shiftSites->push($virtualSite);
                 }
-                $matrix[$userId][$siteId] += $hours;
+
+                foreach ($shiftSites as $siteObj) {
+                    $sKey = (string)$siteObj->id;
+                    if (!$reportSitesMap->has($sKey)) {
+                        $reportSitesMap->put($sKey, $siteObj);
+                    }
+
+                    if (!isset($matrix[$userId][$sKey])) {
+                        $matrix[$userId][$sKey] = 0;
+                    }
+                    $matrix[$userId][$sKey] += $hours;
+
+                    if (!isset($siteTotals[$sKey])) {
+                        $siteTotals[$sKey] = 0;
+                    }
+                    $siteTotals[$sKey] += $hours;
+                }
 
                 if (!isset($userTotals[$userId])) {
                     $userTotals[$userId] = 0;
                 }
                 $userTotals[$userId] += $hours;
 
-                if (!isset($siteTotals[$siteId])) {
-                    $siteTotals[$siteId] = 0;
-                }
-                $siteTotals[$siteId] += $hours;
-
                 $grandTotal += $hours;
             }
+
+            $reportSites = $reportSitesMap->values()->sortBy('name');
+            $reportUsers = $reportUsersMap->values()->sortBy('name');
         }
 
         return view('admin.reports.index', compact(

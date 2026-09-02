@@ -27,7 +27,7 @@
             $daysOfWeek[] = $weekStart->copy()->addDays($i); // Monday to Sunday
         }
 
-        $gridData = []; // [site_id => ['name' => 'Site Name', 'days' => [0 => [], 1 => [], ..., 6 => []]]]
+        $gridData = []; // [row_id => ['name' => 'Site / Runsheet Name', 'days' => [0 => [], 1 => [], ..., 6 => []]]]
         $siteTotalHours = [];
         $weeklyTotalHours = 0;
 
@@ -39,47 +39,49 @@
                 $shiftHours = getShiftHours($shift->start_time, $shift->end_time);
                 $weeklyTotalHours += $shiftHours;
 
-                $shiftSites = collect();
-                if ($shift->type === 'runsheet' && $shift->weeklyRunSheet) {
-                    $shiftSites = $shift->weeklyRunSheet->entries->map(fn($e) => $e->site)->filter()->unique('id');
-                } elseif ($shift->site) {
-                    $shiftSites = collect([$shift->site]);
-                }
-
-                if ($shiftSites->isEmpty()) {
-                    continue;
-                }
-
                 $shiftDate = \Carbon\Carbon::parse($shift->date);
                 $dayIndex = $shiftDate->dayOfWeekIso - 1; // 0 = Monday, 6 = Sunday
                 if ($dayIndex < 0 || $dayIndex > 6) {
                     continue;
                 }
 
-                foreach ($shiftSites as $site) {
-                    $siteId = $site->id;
-                    if (!isset($gridData[$siteId])) {
-                        $gridData[$siteId] = [
-                            'name' => $site->name,
-                            'days' => array_fill(0, 7, [])
-                        ];
-                    }
+                $rowId = null;
+                $rowName = null;
 
-                    if (!isset($siteTotalHours[$siteId])) {
-                        $siteTotalHours[$siteId] = 0;
-                    }
-                    $siteTotalHours[$siteId] += $shiftHours;
-
-                    $userName = $user->name;
-                    $employeeId = $user->employee ? $user->employee->id : null;
-                    if (!isset($gridData[$siteId]['days'][$dayIndex][$userName])) {
-                        $gridData[$siteId]['days'][$dayIndex][$userName] = [
-                            'hours' => 0,
-                            'employee_id' => $employeeId
-                        ];
-                    }
-                    $gridData[$siteId]['days'][$dayIndex][$userName]['hours'] += $shiftHours;
+                if ($shift->type === 'runsheet' || $shift->weekly_run_sheet_id) {
+                    $rsId = $shift->weekly_run_sheet_id ?? 'general';
+                    $rowId = 'runsheet_' . $rsId;
+                    $rsName = $shift->weeklyRunSheet->name ?? ($shift->shift_name ?: 'Mobile Patrol');
+                    $rowName = 'Runsheet - ' . $rsName;
+                } elseif ($shift->site) {
+                    $rowId = (string) $shift->site_id;
+                    $rowName = $shift->site->name;
+                } else {
+                    $rowId = 'unassigned_site';
+                    $rowName = 'Unassigned Shift';
                 }
+
+                if (!isset($gridData[$rowId])) {
+                    $gridData[$rowId] = [
+                        'name' => $rowName,
+                        'days' => array_fill(0, 7, [])
+                    ];
+                }
+
+                if (!isset($siteTotalHours[$rowId])) {
+                    $siteTotalHours[$rowId] = 0;
+                }
+                $siteTotalHours[$rowId] += $shiftHours;
+
+                $userName = $user->name;
+                $employeeId = $user->employee ? $user->employee->id : null;
+                if (!isset($gridData[$rowId]['days'][$dayIndex][$userName])) {
+                    $gridData[$rowId]['days'][$dayIndex][$userName] = [
+                        'hours' => 0,
+                        'employee_id' => $employeeId
+                    ];
+                }
+                $gridData[$rowId]['days'][$dayIndex][$userName]['hours'] += $shiftHours;
             }
         }
 
@@ -88,9 +90,18 @@
         });
     @endphp
 
+    @php
+        $queryParams = array_filter([
+            'user_id' => $userId ?? null,
+            'shift_type' => $shiftType ?? null,
+            'site_id' => $siteId ?? null,
+            'runsheet_id' => $runsheetId ?? null,
+        ]);
+    @endphp
+
     <div class="row">
         <div class="col-12">
-            <!-- Week Navigation Header -->
+            <!-- Week Navigation Header & Filters -->
             <div class="card shadow-sm border-0 rounded-4 mb-4">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -115,19 +126,97 @@
                                     Weekly Total: {{ round($weeklyTotalHours, 1) }}h
                                 </span>
                             </div>
-                            <a href="{{ route('schedules.index', ['date' => $weekStart->copy()->subWeek()->format('Y-m-d')]) }}"
+                            <a href="{{ route('schedules.index', array_merge(['date' => $weekStart->copy()->subWeek()->format('Y-m-d')], $queryParams)) }}"
                                 class="btn btn-outline-secondary rounded-pill px-3">
                                 <i data-feather="chevron-left" class="me-1" style="width: 16px;"></i> Previous
                             </a>
-                            <a href="{{ route('schedules.index', ['date' => Carbon\Carbon::now()->startOfWeek()->format('Y-m-d')]) }}"
+                            <a href="{{ route('schedules.index', array_merge(['date' => Carbon\Carbon::now()->startOfWeek()->format('Y-m-d')], $queryParams)) }}"
                                 class="btn btn-light rounded-pill px-3">
                                 Current Week
                             </a>
-                            <a href="{{ route('schedules.index', ['date' => $weekStart->copy()->addWeek()->format('Y-m-d')]) }}"
+                            <a href="{{ route('schedules.index', array_merge(['date' => $weekStart->copy()->addWeek()->format('Y-m-d')], $queryParams)) }}"
                                 class="btn btn-outline-secondary rounded-pill px-3">
                                 Next <i data-feather="chevron-right" class="ms-1" style="width: 16px;"></i>
                             </a>
                         </div>
+                    </div>
+
+                    <!-- Filter Controls Bar -->
+                    <div class="border-top pt-3 mt-3">
+                        <form action="{{ route('schedules.index') }}" method="GET" id="scheduleFilterForm">
+                            <input type="hidden" name="date" value="{{ $weekStart->format('Y-m-d') }}">
+                            
+                            <div class="row g-2 align-items-end">
+                                <!-- Filter by Employee -->
+                                <div class="col-md-3 col-sm-6">
+                                    <label for="user_id_filter" class="form-label small text-muted fw-semibold mb-1">Employee</label>
+                                    <select name="user_id" id="user_id_filter" class="form-select form-select-sm border-0 bg-light rounded-3 fw-medium" style="height: 38px;">
+                                        <option value="">All Employees</option>
+                                        @foreach($employees as $emp)
+                                            <option value="{{ $emp->id }}" {{ ($userId ?? '') == $emp->id ? 'selected' : '' }}>
+                                                {{ $emp->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Filter by Shift Type -->
+                                <div class="col-md-3 col-sm-6">
+                                    <label for="shift_type_filter" class="form-label small text-muted fw-semibold mb-1">Type</label>
+                                    <select name="shift_type" id="shift_type_filter" class="form-select form-select-sm border-0 bg-light rounded-3 fw-medium" onchange="toggleFilterTargetDropdowns()" style="height: 38px;">
+                                        <option value="all" {{ ($shiftType ?? 'all') == 'all' ? 'selected' : '' }}>All Types</option>
+                                        <option value="site" {{ ($shiftType ?? '') == 'site' ? 'selected' : '' }}>Assigned Site</option>
+                                        <option value="runsheet" {{ ($shiftType ?? '') == 'runsheet' ? 'selected' : '' }}>Runsheet</option>
+                                    </select>
+                                </div>
+
+                                <!-- Dynamic Site Filter -->
+                                <div class="col-md-3 col-sm-6" id="site_filter_wrapper" style="{{ ($shiftType ?? '') == 'site' ? 'display: block;' : 'display: none;' }}">
+                                    <label for="site_id_filter" class="form-label small text-muted fw-semibold mb-1">Select Site</label>
+                                    <select name="site_id" id="site_id_filter" class="form-select form-select-sm border-0 bg-light rounded-3 fw-medium" style="height: 38px;">
+                                        <option value="">All Sites</option>
+                                        @foreach($sites as $st)
+                                            <option value="{{ $st->id }}" {{ ($siteId ?? '') == $st->id ? 'selected' : '' }}>
+                                                {{ $st->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Dynamic Runsheet Filter -->
+                                <div class="col-md-3 col-sm-6" id="runsheet_filter_wrapper" style="{{ ($shiftType ?? '') == 'runsheet' ? 'display: block;' : 'display: none;' }}">
+                                    <label for="runsheet_id_filter" class="form-label small text-muted fw-semibold mb-1">Select Runsheet</label>
+                                    <select name="runsheet_id" id="runsheet_id_filter" class="form-select form-select-sm border-0 bg-light rounded-3 fw-medium" style="height: 38px;">
+                                        <option value="">All Runsheets</option>
+                                        @foreach($weeklyRunSheets as $rs)
+                                            <option value="{{ $rs->id }}" {{ ($runsheetId ?? '') == $rs->id ? 'selected' : '' }}>
+                                                {{ $rs->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Placeholder for alignment when "All Types" is selected -->
+                                <div class="col-md-3 col-sm-6" id="default_filter_wrapper" style="{{ (empty($shiftType) || $shiftType == 'all') ? 'display: block;' : 'display: none;' }}">
+                                    <label class="form-label small text-muted fw-semibold mb-1">Selection</label>
+                                    <select class="form-select form-select-sm border-0 bg-light rounded-3 text-muted" disabled style="height: 38px;">
+                                        <option>Select Type First</option>
+                                    </select>
+                                </div>
+
+                                <!-- Filter & Reset Buttons -->
+                                <div class="col-md-3 col-sm-6 d-flex align-items-center gap-2">
+                                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold d-flex align-items-center" style="height: 38px;">
+                                        <i data-feather="filter" class="me-1" style="width: 14px;"></i> Filter
+                                    </button>
+                                    @if(!empty($userId) || (!empty($shiftType) && $shiftType != 'all') || !empty($siteId) || !empty($runsheetId))
+                                        <a href="{{ route('schedules.index', ['date' => $weekStart->format('Y-m-d')]) }}" class="btn btn-light btn-sm rounded-pill px-3 text-muted fw-semibold d-flex align-items-center" style="height: 38px;">
+                                            Reset
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -653,5 +742,36 @@
                 });
             });
         });
+
+        function toggleFilterTargetDropdowns() {
+            const typeSelect = document.getElementById('shift_type_filter');
+            if (!typeSelect) return;
+            const typeVal = typeSelect.value;
+
+            const siteWrapper = document.getElementById('site_filter_wrapper');
+            const runsheetWrapper = document.getElementById('runsheet_filter_wrapper');
+            const defaultWrapper = document.getElementById('default_filter_wrapper');
+
+            const siteSelect = document.getElementById('site_id_filter');
+            const runsheetSelect = document.getElementById('runsheet_id_filter');
+
+            if (typeVal === 'site') {
+                if (siteWrapper) siteWrapper.style.display = 'block';
+                if (runsheetWrapper) runsheetWrapper.style.display = 'none';
+                if (defaultWrapper) defaultWrapper.style.display = 'none';
+                if (runsheetSelect) runsheetSelect.value = '';
+            } else if (typeVal === 'runsheet') {
+                if (siteWrapper) siteWrapper.style.display = 'none';
+                if (runsheetWrapper) runsheetWrapper.style.display = 'block';
+                if (defaultWrapper) defaultWrapper.style.display = 'none';
+                if (siteSelect) siteSelect.value = '';
+            } else {
+                if (siteWrapper) siteWrapper.style.display = 'none';
+                if (runsheetWrapper) runsheetWrapper.style.display = 'none';
+                if (defaultWrapper) defaultWrapper.style.display = 'block';
+                if (siteSelect) siteSelect.value = '';
+                if (runsheetSelect) runsheetSelect.value = '';
+            }
+        }
     </script>
 @endsection

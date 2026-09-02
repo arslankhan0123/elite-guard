@@ -343,11 +343,32 @@
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td class="fw-bold">{{ $item->schedule->user->name ?? 'N/A' }}</td>
-                                        <td>{{ $item->site->name ?? 'N/A' }}</td>
-                                        <td>{{ $item->site->company->name ?? 'N/A' }}</td>
                                         <td>
-                                            <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1">
-                                                {{ $item->shift_name ?: 'Regular Shift' }}
+                                            @if($item->site)
+                                                {{ $item->site->name }}
+                                            @elseif($item->weeklyRunSheet)
+                                                <span class="badge bg-warning-subtle text-dark border">
+                                                    <i class="mdi mdi-clipboard-text-outline me-1"></i>Runsheet: {{ $item->weeklyRunSheet->name }}
+                                                </span>
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($item->site?->company)
+                                                {{ $item->site->company->name }}
+                                            @elseif($item->weeklyRunSheet && $item->weeklyRunSheet->entries->isNotEmpty())
+                                                @php
+                                                    $companies = $item->weeklyRunSheet->entries->map(fn($e) => $e->site?->company?->name)->filter()->unique()->implode(', ');
+                                                @endphp
+                                                {{ $companies ?: 'N/A' }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="badge {{ $item->type === 'runsheet' ? 'bg-warning-subtle text-dark' : 'bg-primary-subtle text-primary' }} fw-semibold px-2 py-1">
+                                                {{ $item->shift_name ?: ($item->weeklyRunSheet->name ?? 'Regular Shift') }}
                                             </span>
                                         </td>
                                         <td>{{ $item->date ? date('M d, Y', strtotime($item->date)) : 'N/A' }}</td>
