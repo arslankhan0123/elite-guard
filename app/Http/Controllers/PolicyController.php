@@ -45,7 +45,17 @@ class PolicyController extends Controller
             'type.unique' => 'This policy type is already saved.',
         ]);
 
-        $this->policyRepo->createPolicy($request);
+        $policy = $this->policyRepo->createPolicy($request);
+
+        // Dispatch FCM Push Notification to all devices
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $policy) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\PolicyNotification($policy, false));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Policy FCM Notification failed: " . $e->getMessage());
+        }
 
         return redirect()->route('policies.index')->with('success', 'Policy created successfully.');
     }
@@ -73,7 +83,17 @@ class PolicyController extends Controller
             'type.unique' => 'This policy type is already saved.',
         ]);
 
-        $this->policyRepo->updatePolicy($request, $id);
+        $policy = $this->policyRepo->updatePolicy($request, $id);
+
+        // Dispatch FCM Push Notification for update
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $policy) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\PolicyNotification($policy, true));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Policy FCM Notification update failed: " . $e->getMessage());
+        }
 
         return redirect()->route('policies.index')->with('success', 'Policy updated successfully.');
     }

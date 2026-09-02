@@ -32,7 +32,17 @@ class NoticeBoardController extends Controller
             'long_description' => 'required|string',
         ]);
 
-        NoticeBoard::create($request->all());
+        $notice = NoticeBoard::create($request->all());
+
+        // Dispatch FCM Push Notification to all devices
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $notice) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\NoticeBoardNotification($notice, false));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("NoticeBoard FCM Notification failed: " . $e->getMessage());
+        }
 
         return redirect()->route('notice-board.index')->with('success', 'Notice created successfully.');
     }
@@ -53,6 +63,16 @@ class NoticeBoardController extends Controller
 
         $notice = NoticeBoard::findOrFail($id);
         $notice->update($request->all());
+
+        // Dispatch FCM Push Notification for update
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $notice) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\NoticeBoardNotification($notice, true));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("NoticeBoard FCM Notification update failed: " . $e->getMessage());
+        }
 
         return redirect()->route('notice-board.index')->with('success', 'Notice updated successfully.');
     }

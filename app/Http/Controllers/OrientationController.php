@@ -51,7 +51,17 @@ class OrientationController extends Controller
             'questions.*.options.min' => 'Each question must have at least 2 options.',
         ]);
 
-        $this->orientationRepo->createOrientation($request);
+        $orientation = $this->orientationRepo->createOrientation($request);
+
+        // Dispatch FCM Push Notification to all devices
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $orientation) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\OrientationNotification($orientation, false));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Orientation FCM Notification failed: " . $e->getMessage());
+        }
 
         return redirect()->route('orientations.index')->with('success', 'Orientation created successfully.');
     }
@@ -85,7 +95,17 @@ class OrientationController extends Controller
             'questions.*.options.min' => 'Each question must have at least 2 options.',
         ]);
 
-        $this->orientationRepo->updateOrientation($request, $id);
+        $orientation = $this->orientationRepo->updateOrientation($request, $id);
+
+        // Dispatch FCM Push Notification for update
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $orientation) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\OrientationNotification($orientation, true));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Orientation FCM Notification update failed: " . $e->getMessage());
+        }
 
         return redirect()->route('orientations.index')->with('success', 'Orientation updated successfully.');
     }

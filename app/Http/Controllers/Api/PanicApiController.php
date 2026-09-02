@@ -36,14 +36,46 @@ class PanicApiController extends Controller
      */
     public function panicNotifications(Request $request)
     {
-        $sender = Auth::user();
+        $sender = $request->user();
         Log::info("Panic Alert Triggered", [
             'sender_id' => $sender->id,
             'sender_name' => $sender->name
         ]);
 
+        $timezone = config('app.timezone', 'UTC');
+        $currentDateTime = \Carbon\Carbon::now($timezone);
+        $yesterday = $currentDateTime->copy()->subDay()->toDateString();
+        $today = $currentDateTime->toDateString();
+
+        // Get all shifts for yesterday and today
+        $shifts = \App\Models\Shift::with(['schedule.user', 'attendances'])
+            ->whereIn('date', [$yesterday, $today])
+            ->get();
+
+        $activeUserIds = [];
+
+        foreach ($shifts as $shift) {
+            $user = $shift->schedule?->user;
+            if (!$user) continue;
+
+            $startDt = \Carbon\Carbon::parse($shift->date . ' ' . $shift->start_time, $timezone);
+            $endDt = \Carbon\Carbon::parse($shift->date . ' ' . $shift->end_time, $timezone);
+            if ($endDt->lt($startDt)) {
+                $endDt->addDay();
+            }
+
+            if ($currentDateTime->between($startDt, $endDt)) {
+                $attendance = $shift->attendances->where('user_id', $user->id)->first();
+                $isCompleted = $attendance && $attendance->clock_out_at;
+                if (!$isCompleted) {
+                    $activeUserIds[] = $user->id;
+                }
+            }
+        }
+
         // Fetch all users with active shifts and an FCM token (excluding the sender)
         $users = User::whereNotNull('fcm_token')
+            ->whereIn('id', array_unique($activeUserIds))
             ->where('id', '!=', $sender->id)
             ->get();
 

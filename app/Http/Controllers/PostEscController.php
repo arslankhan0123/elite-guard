@@ -29,7 +29,17 @@ class PostEscController extends Controller
         }
 
         unset($data['pdf']);
-        PostEsc::create($data);
+        $post = PostEsc::create($data);
+
+        // Dispatch FCM Push Notification to all devices
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $post) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\PostEscNotification($post, false));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("PostEsc FCM Notification failed: " . $e->getMessage());
+        }
 
         return redirect()->route('post-esc.index')->with('success', 'Post & ESC created successfully.');
     }
@@ -58,6 +68,16 @@ class PostEscController extends Controller
 
         unset($data['pdf']);
         $post->update($data);
+
+        // Dispatch FCM Push Notification for update
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $post) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\PostEscNotification($post, true));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("PostEsc FCM Notification update failed: " . $e->getMessage());
+        }
 
         return redirect()->route('post-esc.index')->with('success', 'Post & ESC updated successfully.');
     }
