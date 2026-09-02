@@ -29,5 +29,18 @@ class AppServiceProvider extends ServiceProvider
 
         // Prohibit destructive database commands (migrate:fresh, migrate:reset, db:wipe, etc.) universally in all environments
         DB::prohibitDestructiveCommands(true);
+
+        // Dynamically set system timezone from DB settings with fallback to env
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+                $timezone = \App\Models\Setting::get('timezone');
+                if ($timezone && in_array($timezone, \DateTimeZone::listIdentifiers())) {
+                    config(['app.timezone' => $timezone]);
+                    date_default_timezone_set($timezone);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Graceful fallback if database connection is not established
+        }
     }
 }
