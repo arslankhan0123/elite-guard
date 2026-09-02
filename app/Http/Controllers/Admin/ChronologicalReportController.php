@@ -187,8 +187,49 @@ class ChronologicalReportController extends Controller
             ]);
         }
 
-        // 2. Weekly RunSheets (Structured Patrols via Shifts of type runsheet)
-        $runsheetShiftsQuery = \App\Models\Shift::with(['schedule.user', 'weeklyRunSheet'])
+        // 2. Weekly RunSheets (Structured Patrols)
+        $runsheetTargets = collect();
+
+        // (a) Fetch actual scans from weekly_run_sheet_scans for the date range
+        $scanGroupQuery = \App\Models\WeeklyRunSheetScan::with(['weeklyRunSheetEntry.site.nfcTags', 'weeklyRunSheetEntry.runSheet', 'user', 'nfcTag', 'weeklyRunSheet'])
+            ->whereBetween('date', [$startDate, $actualEndDate]);
+
+        if ($userId) {
+            $scanGroupQuery->where('user_id', $userId);
+        }
+        if ($weeklyRunSheetId) {
+            $scanGroupQuery->where('weekly_run_sheet_id', $weeklyRunSheetId);
+        }
+        if (!empty($siteIds)) {
+            $scanGroupQuery->whereHas('weeklyRunSheetEntry', function ($q) use ($siteIds) {
+                $q->whereIn('site_id', $siteIds);
+            });
+        }
+
+        $scansInRange = $scanGroupQuery->get();
+
+        $scansGrouped = $scansInRange->groupBy(function ($scan) {
+            $d = is_string($scan->date) ? $scan->date : $scan->date->format('Y-m-d');
+            return $d . '_' . $scan->weekly_run_sheet_entry_id . '_' . $scan->user_id;
+        });
+
+        foreach ($scansGrouped as $key => $scansForEntry) {
+            $firstScan = $scansForEntry->first();
+            $entry = $firstScan->weeklyRunSheetEntry;
+            if (!$entry) continue;
+
+            $d = is_string($firstScan->date) ? $firstScan->date : $firstScan->date->format('Y-m-d');
+            $runsheetTargets->put($key, [
+                'date' => $d,
+                'entry' => $entry,
+                'user' => $firstScan->user,
+                'weekly_run_sheet_id' => $firstScan->weekly_run_sheet_id,
+                'scans' => $scansForEntry,
+            ]);
+        }
+
+        // (b) Also include scheduled shifts of type runsheet (for unscanned scheduled entries)
+        $runsheetShiftsQuery = \App\Models\Shift::with(['schedule.user', 'weeklyRunSheet.entries.site.nfcTags'])
             ->where('type', 'runsheet')
             ->whereBetween('date', [$startDate, $actualEndDate]);
 
@@ -207,87 +248,106 @@ class ChronologicalReportController extends Controller
         }
 
         $runsheetShifts = $runsheetShiftsQuery->get();
+
         foreach ($runsheetShifts as $shift) {
             $user = $shift->schedule?->user;
-            $dateStrForScans = \Carbon\Carbon::parse($shift->date)->format('Y-m-d');
-            $weeklyRunSheet = \App\Models\WeeklyRunSheet::with(['entries.site.nfcTags', 'entries.scans' => function($q) use ($dateStrForScans, $userId) {
-                $q->where('date', $dateStrForScans);
-                if ($userId) {
-                    $q->where('user_id', $userId);
-                }
-            }])->find($shift->weekly_run_sheet_id);
+            $shiftDate = is_string($shift->date) ? $shift->date : $shift->date->format('Y-m-d');
+            $weeklyRunSheet = $shift->weeklyRunSheet;
 
-            if (!$weeklyRunSheet) {
-                continue;
-            }
+            if (!$weeklyRunSheet) continue;
 
-            $dayOfWeek = Carbon::parse($shift->date)->dayOfWeekIso;
-
-            // Filter entries for the specific day of the week
+            $dayOfWeek = Carbon::parse($shiftDate)->dayOfWeekIso;
             $entries = $weeklyRunSheet->entries->where('day_of_week', $dayOfWeek);
 
             foreach ($entries as $entry) {
-                // If filter by site is set, filter entries by site_id
                 if (!empty($siteIds) && !in_array($entry->site_id, $siteIds)) {
                     continue;
                 }
 
-                $entryStart = $entry->start_time ?: $weeklyRunSheet->getDayStartTime($dayOfWeek);
-                $entryEnd = $entry->end_time ?: $weeklyRunSheet->getDayEndTime($dayOfWeek);
+                $uId = $user?->id ?? 0;
+                $key = $shiftDate . '_' . $entry->id . '_' . $uId;
 
-                $entryStartFormatted = $entryStart ? \Carbon\Carbon::parse($entryStart)->format('H:i:s') : '00:00:00';
+                if (!$runsheetTargets->has($key)) {
+                    $existingScans = \App\Models\WeeklyRunSheetScan::with(['nfcTag', 'user'])
+                        ->where('weekly_run_sheet_entry_id', $entry->id)
+                        ->where('date', $shiftDate)
+                        ->when($uId, fn($q) => $q->where('user_id', $uId))
+                        ->get();
 
-                // Check using datetime comparison
-                $entryStartDatetime = $shift->date . ' ' . $entryStartFormatted;
+                    $runsheetTargets->put($key, [
+                        'date' => $shiftDate,
+                        'entry' => $entry,
+                        'user' => $user,
+                        'weekly_run_sheet_id' => $shift->weekly_run_sheet_id,
+                        'scans' => $existingScans,
+                    ]);
+                }
+            }
+        }
+
+        foreach ($runsheetTargets as $target) {
+            $entry = $target['entry'];
+            $targetDate = $target['date'];
+            $user = $target['user'];
+            $scansForEntry = $target['scans'];
+
+            $dayOfWeek = Carbon::parse($targetDate)->dayOfWeekIso;
+
+            $entryStart = $entry->start_time ?: ($entry->runSheet?->getDayStartTime($dayOfWeek));
+            $entryEnd = $entry->end_time ?: ($entry->runSheet?->getDayEndTime($dayOfWeek));
+
+            $entryStartFormatted = $entryStart ? \Carbon\Carbon::parse($entryStart)->format('H:i:s') : '00:00:00';
+            $entryStartDatetime = $targetDate . ' ' . $entryStartFormatted;
+
+            if ($startTime || $endTime) {
                 if ($entryStartDatetime < $filterStartDatetime || $entryStartDatetime > $filterEndDatetime) {
                     continue;
                 }
-
-                $requiredTags = $entry->site?->nfcTags ?? collect();
-                $requiredTagIds = $requiredTags->pluck('id')->toArray();
-
-                // Get scans for this entry on this date
-                $scans = $entry->scans;
-                $validScans = $scans
-                    ->whereIn('nfc_tag_id', $requiredTagIds)
-                    ->unique('nfc_tag_id')
-                    ->sortBy('time');
-
-                $scannedTagIds = $validScans->pluck('nfc_tag_id')->toArray();
-                $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds);
-
-                $requiredCount = count($requiredTagIds);
-                $scannedCount = count($scannedTagIds);
-                $status = $requiredCount > 0 && $scannedCount >= $requiredCount
-                    ? 'Completed'
-                    : ($scannedCount > 0 ? 'Partial' : 'Missed');
-
-                $scansList = $validScans->map(function($scan) {
-                    return [
-                        'time' => $scan->time,
-                        'name' => $scan->nfcTag?->name ?? 'N/A',
-                        'uid' => $scan->nfcTag?->uid ?? 'N/A',
-                        'image' => $scan->image, // Runsheet scans have images
-                        'user' => $scan->user?->name ?? 'N/A',
-                    ];
-                })->values()->all();
-
-                $merged->push([
-                    'id' => $entry->id,
-                    'type' => 'Runsheet Tour',
-                    'name' => $entry->tour_name ?: ($weeklyRunSheet->name ?? 'Runsheet Tour'),
-                    'user' => $user?->name ?? 'N/A',
-                    'site' => $entry->site?->name ?? 'N/A',
-                    'date' => $shift->date,
-                    'start_time' => $entryStart ?: '00:00:00',
-                    'end_time' => $entryEnd ?: '23:59:59',
-                    'required_count' => $requiredCount,
-                    'scanned_count' => $scannedCount,
-                    'status' => $status,
-                    'scans' => $scansList,
-                    'missing_tags' => $missingTags->pluck('name')->values()->all(),
-                ]);
             }
+
+            $requiredTags = $entry->site?->nfcTags ?? collect();
+            $requiredTagIds = $requiredTags->pluck('id')->toArray();
+
+            $validScans = $scansForEntry
+                ->whereIn('nfc_tag_id', $requiredTagIds)
+                ->unique('nfc_tag_id')
+                ->sortBy('time');
+
+            $scannedTagIds = $validScans->pluck('nfc_tag_id')->toArray();
+            $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds);
+
+            $requiredCount = count($requiredTagIds);
+            $scannedCount = count($scannedTagIds);
+
+            $status = $requiredCount > 0 && $scannedCount >= $requiredCount
+                ? 'Completed'
+                : ($scannedCount > 0 ? 'Partial' : 'Missed');
+
+            $scansList = $validScans->map(function($scan) {
+                return [
+                    'time' => $scan->time,
+                    'name' => $scan->nfcTag?->name ?? 'N/A',
+                    'uid' => $scan->nfcTag?->uid ?? 'N/A',
+                    'image' => $scan->image,
+                    'user' => $scan->user?->name ?? 'N/A',
+                ];
+            })->values()->all();
+
+            $merged->push([
+                'id' => $entry->id,
+                'type' => 'Runsheet Tour',
+                'name' => $entry->tour_name ?: ($entry->runSheet?->name ?? 'Runsheet Tour'),
+                'user' => $user?->name ?? 'N/A',
+                'site' => $entry->site?->name ?? 'N/A',
+                'date' => $targetDate,
+                'start_time' => $entryStart ?: '00:00:00',
+                'end_time' => $entryEnd ?: '23:59:59',
+                'required_count' => $requiredCount,
+                'scanned_count' => $scannedCount,
+                'status' => $status,
+                'scans' => $scansList,
+                'missing_tags' => $missingTags->pluck('name')->values()->all(),
+            ]);
         }
 
         // 3. SiteItems (Structured Generic Checkpoints)
