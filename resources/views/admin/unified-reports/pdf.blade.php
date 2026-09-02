@@ -192,12 +192,14 @@
     <div class="card-header-sky">
         <table class="header-table">
             <tr>
-                <td style="width: 55px;">
-                    <img src="{{ public_path('logo.png') }}" class="logo-img" alt="Logo">
+                <td style="width: 65px;">
+                    <div style="display: inline-block; width: 56px; height: 56px; background-color: #ffffff; border-radius: 50%; text-align: center; vertical-align: middle; border: 1px solid #bae6fd;">
+                        <img src="{{ public_path('logo.png') }}" alt="Logo" style="width: 45px; height: 45px; margin-top: 5.5px; object-fit: contain; vertical-align: middle;">
+                    </div>
                 </td>
                 <td>
-                    <div class="company-title">ELITE GUARD INC.</div>
-                    <div class="company-info">
+                    <div class="company-title" style="font-size: 18px; font-weight: bold; color: #0369a1; margin-bottom: 2px; line-height: 1.1;">ELITE GUARD INC.</div>
+                    <div class="company-info" style="font-size: 9.5px; color: #334155; line-height: 1.35;">
                         3961 52 Ave NE #2104, Calgary, AB T3J 0J7<br>
                         Phone: +1 (403) 830-7772 &bull; Email: Info@eliteguardinc.ca
                     </div>

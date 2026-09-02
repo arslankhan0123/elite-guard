@@ -24,9 +24,10 @@ class SiteTourItemRepository
 
             // Still respect date bounds if provided, for extra safety
             if ($start_date && $end_date) {
-                // For overnight shifts the item date may be start_date - 1, so widen by 1 day
+                // For overnight shifts the item date may be start_date - 1 or end_date + 1, so widen by 1 day
                 $rangeStart = \Carbon\Carbon::parse($start_date)->subDay()->toDateString();
-                $query->whereBetween('date', [$rangeStart, $end_date]);
+                $rangeEnd   = \Carbon\Carbon::parse($end_date)->addDay()->toDateString();
+                $query->whereBetween('date', [$rangeStart, $rangeEnd]);
             }
         } else {
             // Fallback: date-based filtering with overnight shift support
@@ -57,7 +58,7 @@ class SiteTourItemRepository
             }
         }
 
-        $items = $query->orderBy('date', 'desc')
+        $items = $query->orderBy('date', 'asc')
             ->orderBy('start_time', 'asc')
             ->get();
             

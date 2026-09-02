@@ -17,10 +17,30 @@ class ProfileController extends Controller
      */
     public function edit(Request $request, ProfileCompletionService $profileCompletion): View
     {
+        $timezones = \DateTimeZone::listIdentifiers();
+        $currentTimezone = \App\Models\Setting::get('timezone', config('app.timezone'));
+
         return view('profile.edit', [
             'user' => $request->user(),
             'profileCompletion' => $profileCompletion->calculate($request->user()),
+            'timezones' => $timezones,
+            'currentTimezone' => $currentTimezone,
         ]);
+    }
+
+    /**
+     * Update system timezone setting.
+     */
+    public function updateTimezone(Request $request): RedirectResponse
+    {
+        $timezones = \DateTimeZone::listIdentifiers();
+        $request->validate([
+            'timezone' => ['required', 'string', 'in:' . implode(',', $timezones)],
+        ]);
+
+        \App\Models\Setting::set('timezone', $request->timezone);
+
+        return Redirect::route('profile.edit')->with('status', 'timezone-updated');
     }
 
     /**
