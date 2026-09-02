@@ -50,10 +50,20 @@ class TaxDocumentController extends Controller
         $file->move($dir, $filename);
         $filePath = rtrim(config('app.url'), '/') . '/documents/tax_docs/' . $filename;
 
-        TaxDocument::create([
+        $taxDoc = TaxDocument::create([
             'type'      => $request->type,
             'file_path' => $filePath,
         ]);
+
+        // Dispatch FCM Push Notification
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $taxDoc) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\TaxDocumentNotification($taxDoc, false));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("TaxDocument FCM Notification failed: " . $e->getMessage());
+        }
 
         return redirect()->route('tax-docs.index')->with('success', 'Tax document uploaded successfully!');
     }
@@ -106,6 +116,16 @@ class TaxDocumentController extends Controller
 
         $taxDoc->type = $request->type;
         $taxDoc->save();
+
+        // Dispatch FCM Push Notification for update
+        try {
+            $users = \App\Models\User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $taxDoc) {
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\TaxDocumentNotification($taxDoc, true));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("TaxDocument FCM Notification update failed: " . $e->getMessage());
+        }
 
         return redirect()->route('tax-docs.index')->with('success', 'Tax document updated successfully!');
     }

@@ -54,9 +54,20 @@ class OpenShiftController extends Controller
             'status'     => 'required|in:open,closed',
         ]);
 
-        OpenShift::create($request->only([
+        $openShift = OpenShift::create($request->only([
             'site_id', 'date', 'shift_name', 'start_time', 'end_time', 'slots', 'notes', 'status'
         ]));
+
+        // Dispatch FCM Push Notification to all devices
+        try {
+            $users = User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $openShift) {
+                $openShift->load('site');
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\OpenShiftNotification($openShift, false));
+            }
+        } catch (\Exception $e) {
+            Log::error("OpenShift FCM Notification failed: " . $e->getMessage());
+        }
 
         return redirect()->route('open-shifts.index')
             ->with('success', 'Open shift posted successfully. Employees can now claim it.');
@@ -93,6 +104,17 @@ class OpenShiftController extends Controller
         $openShift->update($request->only([
             'site_id', 'date', 'shift_name', 'start_time', 'end_time', 'slots', 'notes', 'status'
         ]));
+
+        // Dispatch FCM Push Notification for update
+        try {
+            $users = User::whereNotNull('fcm_token')->get();
+            if ($users->isNotEmpty() && $openShift) {
+                $openShift->load('site');
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\OpenShiftNotification($openShift, true));
+            }
+        } catch (\Exception $e) {
+            Log::error("OpenShift FCM Notification update failed: " . $e->getMessage());
+        }
 
         return redirect()->route('open-shifts.index')
             ->with('success', 'Open shift updated successfully.');
