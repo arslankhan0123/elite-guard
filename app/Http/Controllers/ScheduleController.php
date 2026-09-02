@@ -33,12 +33,70 @@ class ScheduleController extends Controller
         $weekStart = $date->copy()->startOfWeek(Carbon::MONDAY);
         $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
 
-        // Fetch schedules for this week
-        $schedules = Schedule::with(['user.employee', 'shifts.site.company', 'shifts.weeklyRunSheet'])
-            ->where('week_start_date', $weekStart->format('Y-m-d'))
-            ->get();
+        $userId = $request->input('user_id');
+        $shiftType = $request->input('shift_type'); // 'all', 'site', 'runsheet'
+        $siteId = $request->input('site_id');
+        $runsheetId = $request->input('runsheet_id');
 
-        // Fetch employees, sites, and weekly runsheets for the creation form
+        // Fetch schedules for this week
+        $query = Schedule::with(['user.employee', 'shifts.site.company', 'shifts.weeklyRunSheet'])
+            ->where('week_start_date', $weekStart->format('Y-m-d'));
+
+        if (!empty($userId)) {
+            $query->where('user_id', $userId);
+        }
+
+        if (!empty($shiftType) && $shiftType !== 'all') {
+            $query->whereHas('shifts', function ($q) use ($shiftType) {
+                if ($shiftType === 'site') {
+                    $q->where(function ($sq) {
+                        $sq->where('type', 'site')->orWhereNull('type');
+                    });
+                } elseif ($shiftType === 'runsheet') {
+                    $q->where('type', 'runsheet');
+                }
+            });
+        }
+
+        if (!empty($siteId)) {
+            $query->whereHas('shifts', function ($q) use ($siteId) {
+                $q->where('site_id', $siteId);
+            });
+        }
+
+        if (!empty($runsheetId)) {
+            $query->whereHas('shifts', function ($q) use ($runsheetId) {
+                $q->where('weekly_run_sheet_id', $runsheetId);
+            });
+        }
+
+        $schedules = $query->get();
+
+        // Filter shifts inside each schedule model to match active filters precisely
+        if ((!empty($shiftType) && $shiftType !== 'all') || !empty($siteId) || !empty($runsheetId)) {
+            foreach ($schedules as $schedule) {
+                $filteredShifts = $schedule->shifts->filter(function ($shift) use ($shiftType, $siteId, $runsheetId) {
+                    if (!empty($shiftType) && $shiftType !== 'all') {
+                        if ($shiftType === 'site' && $shift->type === 'runsheet') {
+                            return false;
+                        }
+                        if ($shiftType === 'runsheet' && $shift->type !== 'runsheet' && empty($shift->weekly_run_sheet_id)) {
+                            return false;
+                        }
+                    }
+                    if (!empty($siteId) && (string)$shift->site_id !== (string)$siteId) {
+                        return false;
+                    }
+                    if (!empty($runsheetId) && (string)$shift->weekly_run_sheet_id !== (string)$runsheetId) {
+                        return false;
+                    }
+                    return true;
+                });
+                $schedule->setRelation('shifts', $filteredShifts);
+            }
+        }
+
+        // Fetch employees, sites, and weekly runsheets for the creation form and filters
         $employees = User::whereHas('employee')->orderBy('name')->get();
         $sites = Site::orderBy('name')->get();
         $weeklyRunSheets = WeeklyRunSheet::with(['entries.site'])->withCount('entries')->orderByDesc('week_start_date')->get();
@@ -49,7 +107,11 @@ class ScheduleController extends Controller
             'sites',
             'weeklyRunSheets',
             'weekStart',
-            'weekEnd'
+            'weekEnd',
+            'userId',
+            'shiftType',
+            'siteId',
+            'runsheetId'
         ));
     }
 
