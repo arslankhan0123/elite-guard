@@ -9,6 +9,7 @@ use App\Models\SiteTourItemScan;
 use App\Models\WeeklyRunSheetScan;
 use App\Models\SiteItemScan;
 use App\Models\SiteScan;
+use App\Models\DeletedWeeklyRunSheetItem;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -191,6 +192,7 @@ class ChronologicalReportController extends Controller
 
         // 2. Weekly RunSheets (Structured Patrols)
         $runsheetTargets = collect();
+        $deletedRunsheetItems = DeletedWeeklyRunSheetItem::whereBetween('date', [$startDate, $actualEndDate])->get();
 
         // (a) Fetch actual scans from weekly_run_sheet_scans for the date range
         $scanGroupQuery = \App\Models\WeeklyRunSheetScan::with(['weeklyRunSheetEntry.site.nfcTags', 'weeklyRunSheetEntry.runSheet', 'user', 'nfcTag', 'weeklyRunSheet'])
@@ -221,6 +223,17 @@ class ChronologicalReportController extends Controller
             if (!$entry) continue;
 
             $d = is_string($firstScan->date) ? $firstScan->date : $firstScan->date->format('Y-m-d');
+            $uId = $firstScan->user_id;
+
+            $isDeleted = $deletedRunsheetItems->contains(function ($del) use ($d, $entry, $uId) {
+                $dStr = is_string($del->date) ? $del->date : $del->date->format('Y-m-d');
+                $dMatch = $dStr === $d;
+                $eMatch = (int)$del->weekly_run_sheet_entry_id === (int)$entry->id;
+                $uMatch = empty($del->user_id) || (int)$del->user_id === (int)$uId;
+                return $dMatch && $eMatch && $uMatch;
+            });
+            if ($isDeleted) continue;
+
             $runsheetTargets->put($key, [
                 'date' => $d,
                 'entry' => $entry,
@@ -268,6 +281,15 @@ class ChronologicalReportController extends Controller
 
                 $uId = $user?->id ?? 0;
                 $key = $shiftDate . '_' . $entry->id . '_' . $uId;
+
+                $isDeleted = $deletedRunsheetItems->contains(function ($del) use ($shiftDate, $entry, $uId) {
+                    $dStr = is_string($del->date) ? $del->date : $del->date->format('Y-m-d');
+                    $dMatch = $dStr === $shiftDate;
+                    $eMatch = (int)$del->weekly_run_sheet_entry_id === (int)$entry->id;
+                    $uMatch = empty($del->user_id) || (int)$del->user_id === (int)$uId;
+                    return $dMatch && $eMatch && $uMatch;
+                });
+                if ($isDeleted) continue;
 
                 if (!$runsheetTargets->has($key)) {
                     $existingScans = \App\Models\WeeklyRunSheetScan::with(['nfcTag', 'user'])
@@ -340,6 +362,7 @@ class ChronologicalReportController extends Controller
                 'type' => 'Runsheet Tour',
                 'name' => $entry->tour_name ?: ($entry->runSheet?->name ?? 'Runsheet Tour'),
                 'user' => $user?->name ?? 'N/A',
+                'user_id' => $user?->id ?? null,
                 'site' => $entry->site?->name ?? 'N/A',
                 'date' => $targetDate,
                 'start_time' => $entryStart ?: '00:00:00',
@@ -434,7 +457,7 @@ class ChronologicalReportController extends Controller
                 $items = is_array($request->items) ? $request->items : json_decode($request->items, true);
                 if (is_array($items) && count($items) > 0) {
                     foreach ($items as $item) {
-                        $this->deleteOneTourItem($item['type'] ?? '', $item['id'] ?? 0, $item['date'] ?? null);
+                        $this->deleteOneTourItem($item['type'] ?? '', $item['id'] ?? 0, $item['date'] ?? null, $item['user_id'] ?? null);
                     }
                     return redirect()->back()->with('success', count($items) . ' tour item(s) deleted successfully.');
                 }
@@ -444,16 +467,17 @@ class ChronologicalReportController extends Controller
                 'type' => 'required|string',
                 'id' => 'required',
                 'date' => 'nullable|date',
+                'user_id' => 'nullable',
             ]);
 
-            $this->deleteOneTourItem($request->get('type'), $request->get('id'), $request->get('date'));
+            $this->deleteOneTourItem($request->get('type'), $request->get('id'), $request->get('date'), $request->get('user_id'));
             return redirect()->back()->with('success', 'Tour data deleted successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to delete tour data: ' . $e->getMessage());
         }
     }
 
-    private function deleteOneTourItem($type, $id, $date)
+    private function deleteOneTourItem($type, $id, $date, $userId = null)
     {
         if ($type === 'Site Tour') {
             $item = \App\Models\SiteTourItem::find($id);
@@ -471,10 +495,20 @@ class ChronologicalReportController extends Controller
         } elseif ($type === 'Runsheet Tour') {
             $scans = \App\Models\WeeklyRunSheetScan::where('weekly_run_sheet_entry_id', $id)
                 ->when($date, fn($q) => $q->whereDate('date', $date))
+                ->when($userId, fn($q) => $q->where('user_id', $userId))
                 ->get();
             foreach ($scans as $scan) {
                 $this->deletePhysicalImage($scan->image);
                 $scan->delete();
+            }
+
+            if ($id && $date) {
+                $formattedDate = Carbon::parse($date)->format('Y-m-d');
+                DeletedWeeklyRunSheetItem::firstOrCreate([
+                    'weekly_run_sheet_entry_id' => $id,
+                    'date' => $formattedDate,
+                    'user_id' => $userId ?: null,
+                ]);
             }
         } elseif ($type === 'Site Checkpoints Tour') {
             $item = \App\Models\SiteItem::find($id);

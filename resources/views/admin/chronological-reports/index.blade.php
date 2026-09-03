@@ -172,7 +172,7 @@
                                 @endphp
                                 <tr>
                                     <td class="text-center">
-                                        <input type="checkbox" class="form-check-input tour-checkbox" data-type="{{ $report['type'] }}" data-id="{{ $report['id'] }}" data-date="{{ $report['date'] }}">
+                                        <input type="checkbox" class="form-check-input tour-checkbox" data-type="{{ $report['type'] }}" data-id="{{ $report['id'] }}" data-date="{{ $report['date'] }}" data-user-id="{{ $report['user_id'] ?? '' }}">
                                     </td>
                                     <td class="text-center">{{ $index + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($report['date'])->format('d M Y') }}</td>
@@ -194,7 +194,7 @@
                                         <span class="badge {{ $statusClass }} px-3 py-1 rounded-pill">{{ $report['status'] }}</span>
                                     </td>
                                     <td class="text-center">
-                                        <button type="button" class="bin-button mx-auto" onclick="confirmDelete('{{ addslashes($report['name']) }}', '{{ $report['type'] }}', '{{ $report['id'] }}', '{{ $report['date'] }}')">
+                                        <button type="button" class="bin-button mx-auto" onclick="confirmDelete('{{ addslashes($report['name']) }}', '{{ $report['type'] }}', '{{ $report['id'] }}', '{{ $report['date'] }}', '{{ $report['user_id'] ?? '' }}')">
                                             <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
                                                 <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
@@ -313,15 +313,17 @@
     <input type="hidden" name="type" id="delete-type">
     <input type="hidden" name="id" id="delete-id">
     <input type="hidden" name="date" id="delete-date">
+    <input type="hidden" name="user_id" id="delete-user-id">
     <input type="hidden" name="items" id="delete-items">
 </form>
 
 <script>
-function confirmDelete(name, type, id, date) {
+function confirmDelete(name, type, id, date, userId) {
     if (confirm("Are you sure you want to delete " + name + "?")) {
         document.getElementById('delete-type').value = type;
         document.getElementById('delete-id').value = id;
         document.getElementById('delete-date').value = date;
+        document.getElementById('delete-user-id').value = userId || '';
         document.getElementById('delete-items').value = '';
         document.getElementById('delete-form').submit();
     }
@@ -349,12 +351,14 @@ function confirmBulkDelete() {
             items.push({
                 type: box.dataset.type,
                 id: box.dataset.id,
-                date: box.dataset.date
+                date: box.dataset.date,
+                user_id: box.dataset.userId
             });
         });
         document.getElementById('delete-type').value = '';
         document.getElementById('delete-id').value = '';
         document.getElementById('delete-date').value = '';
+        document.getElementById('delete-user-id').value = '';
         document.getElementById('delete-items').value = JSON.stringify(items);
         document.getElementById('delete-form').submit();
     }
