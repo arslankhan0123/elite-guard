@@ -22,6 +22,9 @@ use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\NoticeBoardController;
 use App\Http\Controllers\PostEscController;
 use App\Http\Controllers\WeeklyRunSheetController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\TaxController;
+use App\Http\Controllers\ProductController;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\NfcTag;
@@ -467,6 +470,35 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/update/{id}', [PostEscController::class, 'update'])->name('post-esc.update');
         Route::get('/download/{id}', [PostEscController::class, 'download'])->name('post-esc.download');
         Route::get('/delete/{id}', [PostEscController::class, 'destroy'])->name('post-esc.delete');
+    });
+
+    Route::group(['prefix' => '/invoices'], function () {
+        Route::get('/', [InvoiceController::class, 'index'])->name('invoices.index');
+        Route::get('/create', [InvoiceController::class, 'create'])->name('invoices.create');
+        Route::post('/store', [InvoiceController::class, 'store'])->name('invoices.store');
+        Route::get('/show/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
+        Route::get('/edit/{id}', [InvoiceController::class, 'edit'])->name('invoices.edit');
+        Route::post('/update/{id}', [InvoiceController::class, 'update'])->name('invoices.update');
+        Route::get('/delete/{id}', [InvoiceController::class, 'destroy'])->name('invoices.delete');
+        Route::get('/download-pdf/{id}', [InvoiceController::class, 'downloadPdf'])->name('invoices.downloadPdf');
+        Route::get('/sites-by-company/{company_id}', [InvoiceController::class, 'getSitesByCompany'])->name('invoices.sitesByCompany');
+    });
+
+    Route::group(['prefix' => '/taxes'], function () {
+        Route::get('/', [TaxController::class, 'index'])->name('taxes.index');
+        Route::post('/store', [TaxController::class, 'store'])->name('taxes.store');
+        Route::post('/store-ajax', [TaxController::class, 'storeAjax'])->name('taxes.storeAjax');
+        Route::post('/update/{id}', [TaxController::class, 'update'])->name('taxes.update');
+        Route::get('/delete/{id}', [TaxController::class, 'destroy'])->name('taxes.delete');
+    });
+
+    Route::group(['prefix' => '/products'], function () {
+        Route::get('/', [ProductController::class, 'index'])->name('products.index');
+        Route::post('/store', [ProductController::class, 'store'])->name('products.store');
+        Route::post('/store-ajax', [ProductController::class, 'storeAjax'])->name('products.storeAjax');
+        Route::post('/update/{id}', [ProductController::class, 'update'])->name('products.update');
+        Route::get('/delete/{id}', [ProductController::class, 'destroy'])->name('products.delete');
+        Route::get('/get-ajax', [ProductController::class, 'getProductsAjax'])->name('products.getAjax');
     });
 });
 

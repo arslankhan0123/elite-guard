@@ -225,6 +225,33 @@
                             </a>
                         </li>
                         @endif
+                        @if(Auth::user()->hasAdminPermission('invoices', 'list') || Auth::user()->hasAdminPermission('products', 'list') || Auth::user()->hasAdminPermission('taxes', 'list'))
+                        <!-- <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-billing" role="button"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="file-text"></i>
+                                <span data-key="t-billing">Invoices</span>
+                                <div class="arrow-down"></div>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="topnav-billing">
+                                @if(Auth::user()->hasAdminPermission('invoices', 'list'))
+                                <a href="{{ route('invoices.index') }}" class="dropdown-item" data-key="t-invoices-list">
+                                    <i class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i> Invoices
+                                </a>
+                                @endif
+                                @if(Auth::user()->hasAdminPermission('products', 'list'))
+                                <a href="{{ route('products.index') }}" class="dropdown-item" data-key="t-products">
+                                    <i class="icon nav-icon" data-feather="box" style="width:16px; height:16px;"></i> Products
+                                </a>
+                                @endif
+                                @if(Auth::user()->hasAdminPermission('taxes', 'list'))
+                                <a href="{{ route('taxes.index') }}" class="dropdown-item" data-key="t-taxes">
+                                    <i class="icon nav-icon" data-feather="percent" style="width:16px; height:16px;"></i> Tax
+                                </a>
+                                @endif
+                            </div>
+                        </li> -->
+                        @endif
 
 
 
