@@ -348,6 +348,21 @@
                                 <span style="color: #059669; font-weight: bold;">None</span>
                             @endif
                         </div>
+                        @if(!empty($report['images']) && count($report['images']) > 0)
+                        <div style="margin-top: 6px; padding-top: 4px; border-top: 1px solid #e5e7eb;">
+                            <strong style="color: #4b5563;">Tour Images:</strong>
+                            <div style="margin-top: 4px;">
+                                @foreach($report['images'] as $imgUrl)
+                                    @php
+                                        $pdfImg = $resolvePdfImage($imgUrl);
+                                    @endphp
+                                    @if($pdfImg)
+                                        <img src="{{ $pdfImg }}" alt="Tour Image" style="width: 75px; height: 75px; object-fit: cover; border-radius: 3px; border: 1px solid #ddd6fe; margin-right: 6px; margin-bottom: 4px; display: inline-block; vertical-align: top;">
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </td>
             </tr>
