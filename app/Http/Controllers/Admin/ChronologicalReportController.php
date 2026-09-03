@@ -114,7 +114,7 @@ class ChronologicalReportController extends Controller
         $filterEndDatetime = $actualEndDate . ' ' . ($endTime ?: '23:59:59');
 
         // 1. Site Tour Items (Structured Tours)
-        $tourQuery = \App\Models\SiteTourItem::with(['siteTour', 'scans.nfcTag', 'scans.user', 'user', 'site'])
+        $tourQuery = \App\Models\SiteTourItem::with(['siteTour', 'scans.nfcTag', 'scans.user', 'user', 'site', 'images'])
             ->whereBetween('date', [$startDate, $actualEndDate]);
 
         if ($userId) {
@@ -169,6 +169,7 @@ class ChronologicalReportController extends Controller
             })->values()->all();
 
             $dateStr = $item->date ? (is_string($item->date) ? $item->date : $item->date->format('Y-m-d')) : 'N/A';
+            $tourImages = $item->images ? $item->images->pluck('image_path')->filter()->values()->all() : [];
 
             $merged->push([
                 'id' => $item->id,
@@ -184,6 +185,7 @@ class ChronologicalReportController extends Controller
                 'status' => $status,
                 'scans' => $scansList,
                 'missing_tags' => $missingTags->pluck('name')->values()->all(),
+                'images' => $tourImages,
             ]);
         }
 

@@ -252,6 +252,30 @@
                                                     <span class="text-success fw-bold ms-1">None</span>
                                                 @endif
                                             </div>
+                                            @if(!empty($report['images']) && count($report['images']) > 0)
+                                            <div class="mt-2 pt-2 border-top">
+                                                <strong class="text-secondary"><i class="mdi mdi-camera-outline me-1"></i> Tour Images:</strong>
+                                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                                    @foreach($report['images'] as $imgUrl)
+                                                        @php
+                                                            $formattedImg = $imgUrl;
+                                                            if (!str_starts_with($formattedImg, 'http://') && !str_starts_with($formattedImg, 'https://')) {
+                                                                if (str_starts_with($formattedImg, 'storage/')) {
+                                                                    $formattedImg = asset($formattedImg);
+                                                                } elseif (str_starts_with($formattedImg, '/storage/')) {
+                                                                    $formattedImg = asset(ltrim($formattedImg, '/'));
+                                                                } else {
+                                                                    $formattedImg = asset('storage/' . ltrim($formattedImg, '/'));
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        <a href="{{ $formattedImg }}" target="_blank" class="d-inline-block">
+                                                            <img src="{{ $formattedImg }}" alt="Tour Image" class="rounded border shadow-sm" style="width: 85px; height: 85px; object-fit: cover;">
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
