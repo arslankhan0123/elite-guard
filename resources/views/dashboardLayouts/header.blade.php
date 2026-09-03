@@ -226,7 +226,7 @@
                         </li>
                         @endif
                         @if(Auth::user()->hasAdminPermission('invoices', 'list') || Auth::user()->hasAdminPermission('products', 'list') || Auth::user()->hasAdminPermission('taxes', 'list'))
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-billing" role="button"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="icon nav-icon" data-feather="file-text"></i>
@@ -250,7 +250,7 @@
                                 </a>
                                 @endif
                             </div>
-                        </li>
+                        </li> -->
                         @endif
 
 
