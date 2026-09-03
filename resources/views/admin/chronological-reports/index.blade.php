@@ -130,18 +130,26 @@
                     <hr class="my-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-dark mb-0">Chronological Activity Log: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</h5>
-                        @if(count($reports) > 0)
-                            <a href="{{ route('chronological-reports.pdf', request()->query()) }}" class="btn btn-danger rounded-pill px-4">
-                                <i class="mdi mdi-file-pdf-box me-1"></i> Export PDF
-                            </a>
-                        @endif
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-outline-danger rounded-pill px-4" id="bulkDeleteBtn" style="display: none;" onclick="confirmBulkDelete()">
+                                <i class="mdi mdi-trash-can me-1"></i> Delete Selected (<span id="selectedCount">0</span>)
+                            </button>
+                            @if(count($reports) > 0)
+                                <a href="{{ route('chronological-reports.pdf', request()->query()) }}" class="btn btn-danger rounded-pill px-4">
+                                    <i class="mdi mdi-file-pdf-box me-1"></i> Export PDF
+                                </a>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="table-responsive">                   
                         <table id="custom-table" class="table table-bordered align-middle">
                             <thead>
                                 <tr class="table-light">
-                                    <th style="width: 50px;">#</th>
+                                    <th style="width: 40px;" class="text-center">
+                                        <input type="checkbox" id="selectAllTours" class="form-check-input">
+                                    </th>
+                                    <th style="width: 40px;" class="text-center">#</th>
                                     <th>Date</th>
                                     <th>Interval (Time)</th>
                                     <th>User</th>
@@ -163,6 +171,9 @@
                                     };
                                 @endphp
                                 <tr>
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input tour-checkbox" data-type="{{ $report['type'] }}" data-id="{{ $report['id'] }}" data-date="{{ $report['date'] }}">
+                                    </td>
                                     <td class="text-center">{{ $index + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($report['date'])->format('d M Y') }}</td>
                                     <td class="fw-bold text-primary">
@@ -201,7 +212,7 @@
                                 </tr>
                                 <tr class="bg-light-subtle">
                                     <td></td>
-                                    <td colspan="9" class="p-3">
+                                    <td colspan="10" class="p-3">
                                         <div class="ps-2" style="border-left: 3px solid #7c3aed;">
                                             <div class="mb-2">
                                                 <strong class="text-primary"><i class="mdi mdi-check-circle-outline"></i> Scanned Checkpoints:</strong>
@@ -281,7 +292,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center text-muted py-5">
+                                    <td colspan="11" class="text-center text-muted py-5">
                                         <i class="mdi mdi-alert-circle-outline font-size-24 mb-2 d-block text-warning"></i>
                                         No activity logs or scans found for the selected parameters.
                                     </td>
@@ -302,6 +313,7 @@
     <input type="hidden" name="type" id="delete-type">
     <input type="hidden" name="id" id="delete-id">
     <input type="hidden" name="date" id="delete-date">
+    <input type="hidden" name="items" id="delete-items">
 </form>
 
 <script>
@@ -310,6 +322,40 @@ function confirmDelete(name, type, id, date) {
         document.getElementById('delete-type').value = type;
         document.getElementById('delete-id').value = id;
         document.getElementById('delete-date').value = date;
+        document.getElementById('delete-items').value = '';
+        document.getElementById('delete-form').submit();
+    }
+}
+
+function updateSelectedCount() {
+    const checked = document.querySelectorAll('.tour-checkbox:checked');
+    const bulkBtn = document.getElementById('bulkDeleteBtn');
+    const countSpan = document.getElementById('selectedCount');
+    const selectAll = document.getElementById('selectAllTours');
+    const allCheckboxes = document.querySelectorAll('.tour-checkbox');
+
+    if (countSpan) countSpan.textContent = checked.length;
+    if (bulkBtn) bulkBtn.style.display = checked.length > 0 ? 'inline-block' : 'none';
+    if (selectAll) selectAll.checked = allCheckboxes.length > 0 && checked.length === allCheckboxes.length;
+}
+
+function confirmBulkDelete() {
+    const checkedBoxes = document.querySelectorAll('.tour-checkbox:checked');
+    if (checkedBoxes.length === 0) return;
+
+    if (confirm("Are you sure you want to delete " + checkedBoxes.length + " selected tour log(s)?")) {
+        const items = [];
+        checkedBoxes.forEach(box => {
+            items.push({
+                type: box.dataset.type,
+                id: box.dataset.id,
+                date: box.dataset.date
+            });
+        });
+        document.getElementById('delete-type').value = '';
+        document.getElementById('delete-id').value = '';
+        document.getElementById('delete-date').value = '';
+        document.getElementById('delete-items').value = JSON.stringify(items);
         document.getElementById('delete-form').submit();
     }
 }
@@ -318,6 +364,19 @@ $(document).ready(function() {
     $('#site_ids_select').select2({
         placeholder: "Select Sites",
         allowClear: true
+    });
+
+    const selectAll = document.getElementById('selectAllTours');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            const boxes = document.querySelectorAll('.tour-checkbox');
+            boxes.forEach(box => box.checked = this.checked);
+            updateSelectedCount();
+        });
+    }
+
+    $(document).on('change', '.tour-checkbox', function() {
+        updateSelectedCount();
     });
 });
 </script>
