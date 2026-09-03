@@ -54,30 +54,33 @@ class PanicApiController extends Controller
 
         $activeUserIds = [];
 
-        foreach ($shifts as $shift) {
-            $user = $shift->schedule?->user;
-            if (!$user) continue;
+        // foreach ($shifts as $shift) {
+        //     $user = $shift->schedule?->user;
+        //     if (!$user) continue;
 
-            $startDt = \Carbon\Carbon::parse($shift->date . ' ' . $shift->start_time, $timezone);
-            $endDt = \Carbon\Carbon::parse($shift->date . ' ' . $shift->end_time, $timezone);
-            if ($endDt->lt($startDt)) {
-                $endDt->addDay();
-            }
+        //     $startDt = \Carbon\Carbon::parse($shift->date . ' ' . $shift->start_time, $timezone);
+        //     $endDt = \Carbon\Carbon::parse($shift->date . ' ' . $shift->end_time, $timezone);
+        //     if ($endDt->lt($startDt)) {
+        //         $endDt->addDay();
+        //     }
 
-            if ($currentDateTime->between($startDt, $endDt)) {
-                $attendance = $shift->attendances->where('user_id', $user->id)->first();
-                $isCompleted = $attendance && $attendance->clock_out_at;
-                if (!$isCompleted) {
-                    $activeUserIds[] = $user->id;
-                }
-            }
-        }
+        //     if ($currentDateTime->between($startDt, $endDt)) {
+        //         $attendance = $shift->attendances->where('user_id', $user->id)->first();
+        //         $isCompleted = $attendance && $attendance->clock_out_at;
+        //         if (!$isCompleted) {
+        //             $activeUserIds[] = $user->id;
+        //         }
+        //     }
+        // }
 
         // Fetch all users with active shifts and an FCM token (excluding the sender)
         $users = User::whereNotNull('fcm_token')
-            ->whereIn('id', array_unique($activeUserIds))
             ->where('id', '!=', $sender->id)
             ->get();
+        // $users = User::whereNotNull('fcm_token')
+        //     ->whereIn('id', array_unique($activeUserIds))
+        //     ->where('id', '!=', $sender->id)
+        //     ->get();
 
         Log::info("Panic Alert: Target users fetched", [
             'count' => $users->count(),
