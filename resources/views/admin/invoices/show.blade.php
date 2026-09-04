@@ -136,9 +136,9 @@
                 <div class="col-md-5 text-md-end mt-3 mt-md-0">
                     <h4 class="fw-bold text-primary mb-0">{{ strtoupper($invoice->title) }}</h4>
                     <div class="fw-bold text-info fs-5 mt-1">INVOICE #{{ $invoice->invoice_number }}</div>
-                    @php $st = strtolower($invoice->status); @endphp
-                    <span class="badge bg-{{ $st === 'paid' ? 'success' : ($st === 'draft' ? 'secondary' : 'danger') }} fs-6 mt-2 px-3 py-1">
-                        {{ ucfirst($invoice->status) }}
+                    @php $st = strtolower($invoice->calculated_status); @endphp
+                    <span class="badge bg-{{ $st === 'paid' ? 'success' : ($st === 'draft' ? 'secondary' : ($st === 'overdue' ? 'danger' : 'info')) }} fs-6 mt-2 px-3 py-1">
+                        {{ ucfirst($st) }}
                     </span>
                 </div>
             </div>

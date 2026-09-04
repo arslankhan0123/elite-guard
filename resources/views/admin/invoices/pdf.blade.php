@@ -72,6 +72,7 @@
         .status-paid { background-color: #d1fae5; color: #047857; }
         .status-draft { background-color: #f1f5f9; color: #475569; }
         .status-overdue { background-color: #fee2e2; color: #b91c1c; }
+        .status-active { background-color: #e0f2fe; color: #0369a1; }
 
         .card {
             background-color: #ffffff;
@@ -184,9 +185,9 @@
                 <td class="report-title-cell">
                     <div class="report-badge">{{ strtoupper($invoice->title) }}</div>
                     <div class="report-id-text">INVOICE #{{ $invoice->invoice_number }}</div>
-                    @php $st = strtolower($invoice->status); @endphp
-                    <span class="status-pill {{ $st === 'paid' ? 'status-paid' : ($st === 'draft' ? 'status-draft' : 'status-overdue') }}">
-                        {{ ucfirst($invoice->status) }}
+                    @php $st = strtolower($invoice->calculated_status); @endphp
+                    <span class="status-pill {{ $st === 'paid' ? 'status-paid' : ($st === 'draft' ? 'status-draft' : ($st === 'overdue' ? 'status-overdue' : 'status-active')) }}">
+                        {{ ucfirst($st) }}
                     </span>
                 </td>
             </tr>

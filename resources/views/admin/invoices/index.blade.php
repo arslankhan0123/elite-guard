@@ -47,6 +47,14 @@
         margin-bottom: 20px;
     }
 
+    .status-badge-active {
+        background-color: #e0f2fe;
+        color: #0284c7;
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
     .status-badge-overdue {
         background-color: #fee2e2;
         color: #ef4444;
@@ -213,12 +221,15 @@
                                 <td class="fw-semibold text-danger">$ {{ number_format($invoice->amount_due, 2) }}</td>
                                 <td>{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</td>
                                 <td>
-                                    @if(strtolower($invoice->status) === 'paid')
+                                    @php $st = strtolower($invoice->calculated_status); @endphp
+                                    @if($st === 'paid')
                                         <span class="status-badge-paid">Paid</span>
-                                    @elseif(strtolower($invoice->status) === 'draft')
+                                    @elseif($st === 'draft')
                                         <span class="status-badge-draft">Draft</span>
-                                    @else
+                                    @elseif($st === 'overdue')
                                         <span class="status-badge-overdue">Overdue</span>
+                                    @else
+                                        <span class="status-badge-active">Active</span>
                                     @endif
                                 </td>
                                 <td>

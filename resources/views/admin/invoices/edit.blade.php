@@ -178,9 +178,10 @@
             <div class="col-md-4">
                 <label class="field-label">Status *</label>
                 <select name="status" class="form-select form-control-custom" required>
-                    <option value="overdue" {{ old('status', $invoice->status) === 'overdue' || $invoice->status === 'draft' ? 'selected' : '' }}>Overdue / Active</option>
-                    <option value="paid" {{ old('status', $invoice->status) === 'paid' ? 'selected' : '' }}>Paid</option>
-                    <option value="draft" {{ old('status', $invoice->status) === 'draft' ? '' : '' }}>Draft</option>
+                    <option value="active" {{ old('status', $invoice->calculated_status) === 'active' ? 'selected' : '' }}>Active / Pending</option>
+                    <option value="overdue" {{ old('status', $invoice->calculated_status) === 'overdue' ? 'selected' : '' }}>Overdue</option>
+                    <option value="paid" {{ old('status', $invoice->calculated_status) === 'paid' ? 'selected' : '' }}>Paid</option>
+                    <option value="draft" {{ old('status', $invoice->calculated_status) === 'draft' ? 'selected' : '' }}>Draft</option>
                 </select>
             </div>
         </div>

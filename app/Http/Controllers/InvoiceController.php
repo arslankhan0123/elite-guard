@@ -17,6 +17,15 @@ class InvoiceController extends Controller
 {
     public function index(Request $request)
     {
+        // Auto-update status for invoices based on due date & payment
+        $allNonFinalInvoices = Invoice::whereNotIn('status', ['draft', 'paid'])->get();
+        foreach ($allNonFinalInvoices as $inv) {
+            $expected = $inv->calculated_status;
+            if ($inv->status !== $expected) {
+                $inv->update(['status' => $expected]);
+            }
+        }
+
         $query = Invoice::with(['company', 'site'])->orderBy('id', 'desc');
 
         if ($request->filled('status')) {
@@ -125,7 +134,12 @@ class InvoiceController extends Controller
             }
 
             $grandTotal = $subtotal + $taxTotal;
-            $status = $request->input('action_type') === 'draft' ? 'draft' : 'overdue';
+            if ($request->input('action_type') === 'draft') {
+                $status = 'draft';
+            } else {
+                $dueDate = \Carbon\Carbon::parse($request->due_date)->startOfDay();
+                $status = $dueDate->lt(\Carbon\Carbon::today()) ? 'overdue' : 'active';
+            }
             $invoiceNumber = $request->invoice_number ?: Invoice::generateNextInvoiceNumber();
 
             $invoice = Invoice::create([
@@ -247,9 +261,14 @@ class InvoiceController extends Controller
             }
 
             $grandTotal = $subtotal + $taxTotal;
-            $status = $request->input('action_type') === 'draft' 
-                ? 'draft' 
-                : ($request->input('status') ?: ($invoice->status === 'draft' ? 'overdue' : $invoice->status));
+            if ($request->input('action_type') === 'draft') {
+                $status = 'draft';
+            } elseif ($request->filled('status') && $request->status === 'paid') {
+                $status = 'paid';
+            } else {
+                $dueDate = \Carbon\Carbon::parse($request->due_date)->startOfDay();
+                $status = $dueDate->lt(\Carbon\Carbon::today()) ? 'overdue' : 'active';
+            }
 
             $invoice->update([
                 'invoice_number' => $request->invoice_number,
