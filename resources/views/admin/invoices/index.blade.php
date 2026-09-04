@@ -47,6 +47,14 @@
         margin-bottom: 20px;
     }
 
+    .status-badge-active {
+        background-color: #e0f2fe;
+        color: #0284c7;
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
     .status-badge-overdue {
         background-color: #fee2e2;
         color: #ef4444;
@@ -213,12 +221,15 @@
                                 <td class="fw-semibold text-danger">$ {{ number_format($invoice->amount_due, 2) }}</td>
                                 <td>{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</td>
                                 <td>
-                                    @if(strtolower($invoice->status) === 'paid')
+                                    @php $st = strtolower($invoice->calculated_status); @endphp
+                                    @if($st === 'paid')
                                         <span class="status-badge-paid">Paid</span>
-                                    @elseif(strtolower($invoice->status) === 'draft')
+                                    @elseif($st === 'draft')
                                         <span class="status-badge-draft">Draft</span>
-                                    @else
+                                    @elseif($st === 'overdue')
                                         <span class="status-badge-overdue">Overdue</span>
+                                    @else
+                                        <span class="status-badge-active">Active</span>
                                     @endif
                                 </td>
                                 <td>
@@ -229,8 +240,13 @@
                                             </button>
                                         </a>
                                         <a class="text-decoration-none text-dark me-2" href="{{ route('invoices.downloadPdf', $invoice->id) }}" data-bs-toggle="tooltip" title="Download PDF">
-                                            <button class="btn btn-sm btn-danger d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; border-radius: 6px;" type="button">
-                                                <i data-feather="file-text" style="width: 16px; height: 16px;"></i>
+                                            <button class="btn btn-sm btn-danger d-flex align-items-center justify-content-center" style="width: 1.875rem; height: 1.875rem; padding: 0; border-radius: 7px;" type="button">
+                                                <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                        </a>
+                                        <a class="text-decoration-none text-dark me-2" href="{{ route('invoices.sendEmail', $invoice->id) }}" data-bs-toggle="tooltip" title="Send Email to Client" onclick="return confirm('Send invoice email to {{ $invoice->company ? $invoice->company->email : 'client' }}?')">
+                                            <button class="btn btn-sm btn-primary d-flex align-items-center justify-content-center" style="width: 1.875rem; height: 1.875rem; padding: 0; border-radius: 7px; background-color: #2563eb; border-color: #2563eb;" type="button">
+                                                <i data-feather="mail" style="width: 14px; height: 14px;"></i>
                                             </button>
                                         </a>
                                         @endif

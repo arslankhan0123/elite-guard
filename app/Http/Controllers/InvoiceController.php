@@ -8,13 +8,24 @@ use App\Models\InvoiceItem;
 use App\Models\Product;
 use App\Models\Site;
 use App\Models\Tax;
+use App\Mail\InvoiceMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
 {
     public function index(Request $request)
     {
+        // Auto-update status for invoices based on due date & payment
+        $allNonFinalInvoices = Invoice::whereNotIn('status', ['draft', 'paid'])->get();
+        foreach ($allNonFinalInvoices as $inv) {
+            $expected = $inv->calculated_status;
+            if ($inv->status !== $expected) {
+                $inv->update(['status' => $expected]);
+            }
+        }
+
         $query = Invoice::with(['company', 'site'])->orderBy('id', 'desc');
 
         if ($request->filled('status')) {
@@ -123,7 +134,12 @@ class InvoiceController extends Controller
             }
 
             $grandTotal = $subtotal + $taxTotal;
-            $status = $request->input('action_type') === 'draft' ? 'draft' : 'overdue';
+            if ($request->input('action_type') === 'draft') {
+                $status = 'draft';
+            } else {
+                $dueDate = \Carbon\Carbon::parse($request->due_date)->startOfDay();
+                $status = $dueDate->lt(\Carbon\Carbon::today()) ? 'overdue' : 'active';
+            }
             $invoiceNumber = $request->invoice_number ?: Invoice::generateNextInvoiceNumber();
 
             $invoice = Invoice::create([
@@ -149,7 +165,23 @@ class InvoiceController extends Controller
 
             DB::commit();
 
-            return redirect()->route('invoices.index')->with('success', 'Invoice created successfully.');
+            $emailMessage = '';
+            if ($request->has('send_email') && $request->send_email == '1') {
+                $invoice->load(['company', 'site', 'items']);
+                if ($invoice->company && $invoice->company->email) {
+                    try {
+                        Mail::to($invoice->company->email)->send(new InvoiceMail($invoice));
+                        $emailMessage = ' and emailed to ' . $invoice->company->email;
+                    } catch (\Exception $e) {
+                        logger()->error('Failed to send invoice email on create: ' . $e->getMessage());
+                        $emailMessage = ' (Note: Failed to send email to client)';
+                    }
+                } else {
+                    $emailMessage = ' (Note: Client has no email address configured)';
+                }
+            }
+
+            return redirect()->route('invoices.index')->with('success', 'Invoice created successfully' . $emailMessage . '.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Error creating invoice: ' . $e->getMessage());
@@ -229,9 +261,14 @@ class InvoiceController extends Controller
             }
 
             $grandTotal = $subtotal + $taxTotal;
-            $status = $request->input('action_type') === 'draft' 
-                ? 'draft' 
-                : ($request->input('status') ?: ($invoice->status === 'draft' ? 'overdue' : $invoice->status));
+            if ($request->input('action_type') === 'draft') {
+                $status = 'draft';
+            } elseif ($request->filled('status') && $request->status === 'paid') {
+                $status = 'paid';
+            } else {
+                $dueDate = \Carbon\Carbon::parse($request->due_date)->startOfDay();
+                $status = $dueDate->lt(\Carbon\Carbon::today()) ? 'overdue' : 'active';
+            }
 
             $invoice->update([
                 'invoice_number' => $request->invoice_number,
@@ -257,10 +294,43 @@ class InvoiceController extends Controller
 
             DB::commit();
 
-            return redirect()->route('invoices.index')->with('success', 'Invoice updated successfully.');
+            $emailMessage = '';
+            if ($request->has('send_email') && $request->send_email == '1') {
+                $invoice->load(['company', 'site', 'items']);
+                if ($invoice->company && $invoice->company->email) {
+                    try {
+                        Mail::to($invoice->company->email)->send(new InvoiceMail($invoice));
+                        $emailMessage = ' and emailed to ' . $invoice->company->email;
+                    } catch (\Exception $e) {
+                        logger()->error('Failed to send invoice email on update: ' . $e->getMessage());
+                        $emailMessage = ' (Note: Failed to send email to client)';
+                    }
+                } else {
+                    $emailMessage = ' (Note: Client has no email address configured)';
+                }
+            }
+
+            return redirect()->route('invoices.index')->with('success', 'Invoice updated successfully' . $emailMessage . '.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Error updating invoice: ' . $e->getMessage());
+        }
+    }
+
+    public function sendEmail($id)
+    {
+        $invoice = Invoice::with(['company', 'site', 'items'])->findOrFail($id);
+
+        if (!$invoice->company || !$invoice->company->email) {
+            return redirect()->back()->with('error', 'Unable to send email. Selected client does not have an email address configured.');
+        }
+
+        try {
+            Mail::to($invoice->company->email)->send(new InvoiceMail($invoice));
+            return redirect()->back()->with('success', 'Invoice #' . $invoice->invoice_number . ' successfully emailed to ' . $invoice->company->email . '.');
+        } catch (\Exception $e) {
+            logger()->error('Failed to send invoice email: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to send email to ' . $invoice->company->email . ': ' . $e->getMessage());
         }
     }
 

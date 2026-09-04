@@ -35,6 +35,24 @@ class Invoice extends Model
         'amount_due' => 'decimal:2',
     ];
 
+    public function getCalculatedStatusAttribute(): string
+    {
+        $statusStr = strtolower($this->status ?? '');
+        if ($statusStr === 'draft') {
+            return 'draft';
+        }
+        if ($statusStr === 'paid' || (float) $this->amount_due <= 0) {
+            return 'paid';
+        }
+        if ($this->due_date) {
+            $dueDate = \Carbon\Carbon::parse($this->due_date)->startOfDay();
+            if ($dueDate->lt(\Carbon\Carbon::today())) {
+                return 'overdue';
+            }
+        }
+        return 'active';
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class);
