@@ -481,6 +481,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/update/{id}', [InvoiceController::class, 'update'])->name('invoices.update');
         Route::get('/delete/{id}', [InvoiceController::class, 'destroy'])->name('invoices.delete');
         Route::get('/download-pdf/{id}', [InvoiceController::class, 'downloadPdf'])->name('invoices.downloadPdf');
+        Route::get('/send-email/{id}', [InvoiceController::class, 'sendEmail'])->name('invoices.sendEmail');
         Route::get('/sites-by-company/{company_id}', [InvoiceController::class, 'getSitesByCompany'])->name('invoices.sitesByCompany');
     });
 

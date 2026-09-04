@@ -8,8 +8,10 @@ use App\Models\InvoiceItem;
 use App\Models\Product;
 use App\Models\Site;
 use App\Models\Tax;
+use App\Mail\InvoiceMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
 {
@@ -149,7 +151,23 @@ class InvoiceController extends Controller
 
             DB::commit();
 
-            return redirect()->route('invoices.index')->with('success', 'Invoice created successfully.');
+            $emailMessage = '';
+            if ($request->has('send_email') && $request->send_email == '1') {
+                $invoice->load(['company', 'site', 'items']);
+                if ($invoice->company && $invoice->company->email) {
+                    try {
+                        Mail::to($invoice->company->email)->send(new InvoiceMail($invoice));
+                        $emailMessage = ' and emailed to ' . $invoice->company->email;
+                    } catch (\Exception $e) {
+                        logger()->error('Failed to send invoice email on create: ' . $e->getMessage());
+                        $emailMessage = ' (Note: Failed to send email to client)';
+                    }
+                } else {
+                    $emailMessage = ' (Note: Client has no email address configured)';
+                }
+            }
+
+            return redirect()->route('invoices.index')->with('success', 'Invoice created successfully' . $emailMessage . '.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Error creating invoice: ' . $e->getMessage());
@@ -257,10 +275,43 @@ class InvoiceController extends Controller
 
             DB::commit();
 
-            return redirect()->route('invoices.index')->with('success', 'Invoice updated successfully.');
+            $emailMessage = '';
+            if ($request->has('send_email') && $request->send_email == '1') {
+                $invoice->load(['company', 'site', 'items']);
+                if ($invoice->company && $invoice->company->email) {
+                    try {
+                        Mail::to($invoice->company->email)->send(new InvoiceMail($invoice));
+                        $emailMessage = ' and emailed to ' . $invoice->company->email;
+                    } catch (\Exception $e) {
+                        logger()->error('Failed to send invoice email on update: ' . $e->getMessage());
+                        $emailMessage = ' (Note: Failed to send email to client)';
+                    }
+                } else {
+                    $emailMessage = ' (Note: Client has no email address configured)';
+                }
+            }
+
+            return redirect()->route('invoices.index')->with('success', 'Invoice updated successfully' . $emailMessage . '.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Error updating invoice: ' . $e->getMessage());
+        }
+    }
+
+    public function sendEmail($id)
+    {
+        $invoice = Invoice::with(['company', 'site', 'items'])->findOrFail($id);
+
+        if (!$invoice->company || !$invoice->company->email) {
+            return redirect()->back()->with('error', 'Unable to send email. Selected client does not have an email address configured.');
+        }
+
+        try {
+            Mail::to($invoice->company->email)->send(new InvoiceMail($invoice));
+            return redirect()->back()->with('success', 'Invoice #' . $invoice->invoice_number . ' successfully emailed to ' . $invoice->company->email . '.');
+        } catch (\Exception $e) {
+            logger()->error('Failed to send invoice email: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to send email to ' . $invoice->company->email . ': ' . $e->getMessage());
         }
     }
 

@@ -268,6 +268,12 @@
 
     <!-- Bottom Actions Bar -->
     <div class="bottom-actions-bar mb-5">
+        <div class="form-check form-switch me-3 d-inline-flex align-items-center">
+            <input class="form-check-input me-2" type="checkbox" name="send_email" value="1" id="sendEmail" checked style="width: 2.2em; height: 1.2em; cursor: pointer;">
+            <label class="form-check-label fw-semibold text-dark" for="sendEmail" style="cursor: pointer;">
+                <i class="fa fa-envelope text-primary me-1"></i> Send email to client
+            </label>
+        </div>
         <button type="button" class="btn btn-light rounded-pill px-4" id="previewBtn">Preview</button>
         <button type="submit" name="action_type" value="draft" class="btn btn-outline-secondary rounded-pill px-4">Save As Draft</button>
         <button type="submit" name="action_type" value="save" class="btn btn-primary rounded-pill px-4" style="background-color: #2563eb; border-color: #2563eb;">Save and Continue</button>

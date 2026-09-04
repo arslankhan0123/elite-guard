@@ -76,8 +76,13 @@
         <div class="btn-group" role="group" aria-label="Invoice Actions">
             @if(Auth::user()->hasAdminPermission('invoices', 'view'))
             <a class="text-decoration-none text-dark me-2" href="{{ route('invoices.downloadPdf', $invoice->id) }}" data-bs-toggle="tooltip" title="Download PDF">
-                <button class="btn btn-sm btn-danger d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; padding: 0; border-radius: 6px;" type="button">
-                    <i data-feather="file-text" style="width: 18px; height: 18px;"></i>
+                <button class="btn btn-sm btn-danger d-flex align-items-center justify-content-center" style="width: 1.875rem; height: 1.875rem; padding: 0; border-radius: 7px;" type="button">
+                    <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
+                </button>
+            </a>
+            <a class="text-decoration-none text-dark me-2" href="{{ route('invoices.sendEmail', $invoice->id) }}" data-bs-toggle="tooltip" title="Send Email to Client" onclick="return confirm('Send invoice email to {{ $invoice->company ? $invoice->company->email : 'client' }}?')">
+                <button class="btn btn-sm btn-primary d-flex align-items-center justify-content-center" style="width: 1.875rem; height: 1.875rem; padding: 0; border-radius: 7px; background-color: #2563eb; border-color: #2563eb;" type="button">
+                    <i data-feather="mail" style="width: 14px; height: 14px;"></i>
                 </button>
             </a>
             @endif
