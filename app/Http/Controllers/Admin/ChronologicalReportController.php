@@ -357,6 +357,27 @@ class ChronologicalReportController extends Controller
                 ];
             })->values()->all();
 
+            $runsheetStartTime = $entryStart ?: '00:00:00';
+            $runsheetEndTime = $entryEnd ?: '23:59:59';
+
+            $allScansForTime = $validScans->isNotEmpty() ? $validScans : $scansForEntry;
+            if ($allScansForTime->isNotEmpty()) {
+                $sortedScans = $allScansForTime->sortBy(function ($scan) {
+                    $d = is_string($scan->date) ? $scan->date : ($scan->date ? $scan->date->format('Y-m-d') : '');
+                    return $d . ' ' . $scan->time;
+                })->values();
+
+                $firstScanTime = $sortedScans->first()->time ?? null;
+                $lastScanTime = $sortedScans->last()->time ?? null;
+
+                if (!empty($firstScanTime)) {
+                    $runsheetStartTime = $firstScanTime;
+                }
+                if (!empty($lastScanTime)) {
+                    $runsheetEndTime = $lastScanTime;
+                }
+            }
+
             $merged->push([
                 'id' => $entry->id,
                 'type' => 'Runsheet Tour',
@@ -365,8 +386,8 @@ class ChronologicalReportController extends Controller
                 'user_id' => $user?->id ?? null,
                 'site' => $entry->site?->name ?? 'N/A',
                 'date' => $targetDate,
-                'start_time' => $entryStart ?: '00:00:00',
-                'end_time' => $entryEnd ?: '23:59:59',
+                'start_time' => $runsheetStartTime,
+                'end_time' => $runsheetEndTime,
                 'required_count' => $requiredCount,
                 'scanned_count' => $scannedCount,
                 'status' => $status,
