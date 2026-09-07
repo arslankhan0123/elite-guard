@@ -97,4 +97,9 @@ class WeeklyRunSheet extends Model
     {
         return $this->hasMany(WeeklyRunSheetScan::class);
     }
+
+    public function shifts()
+    {
+        return $this->hasMany(Shift::class, 'weekly_run_sheet_id');
+    }
 }
