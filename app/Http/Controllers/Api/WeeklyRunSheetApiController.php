@@ -224,6 +224,7 @@ class WeeklyRunSheetApiController extends Controller
             return $this->errorResponse('This NFC tag has already been scanned for this weekly run sheet entry today.', null, 422);
         }
 
+        Log::info("Before Image WeeklyRunSheetApiController: storeScan", $data);
         // Image upload handling
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('documents/WeeklyRunSheetScans', 'public');
