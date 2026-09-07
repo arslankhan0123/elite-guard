@@ -64,6 +64,7 @@ class WeeklyRunSheetRepository
                     'site.company', 
                     'site.nfcTags',
                     'scans' => fn ($q) => $q->whereIn('date', [$prevDateStr, $dateStr, $nextDateStr])
+                                           ->where('user_id', $user->id)
                 ])
                 ->orderBy('sequence')
                 ->orderBy('start_time')])
