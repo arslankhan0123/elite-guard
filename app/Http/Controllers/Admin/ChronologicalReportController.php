@@ -198,6 +198,9 @@ class ChronologicalReportController extends Controller
         $scanGroupQuery = \App\Models\WeeklyRunSheetScan::with(['weeklyRunSheetEntry.site.nfcTags', 'weeklyRunSheetEntry.runSheet', 'user', 'nfcTag', 'weeklyRunSheet'])
             ->whereBetween('date', [$startDate, $actualEndDate]);
 
+        if ($userId) {
+            $scanGroupQuery->where('user_id', $userId);
+        }
         if ($weeklyRunSheetId) {
             $scanGroupQuery->where('weekly_run_sheet_id', $weeklyRunSheetId);
         }
@@ -206,20 +209,12 @@ class ChronologicalReportController extends Controller
                 $q->whereIn('site_id', $siteIds);
             });
         }
-        if ($userId) {
-            $scanGroupQuery->where(function ($q) use ($userId) {
-                $q->where('user_id', $userId)
-                  ->orWhereHas('weeklyRunSheetEntry.runSheet.shifts', function ($sq) use ($userId) {
-                      $sq->whereHas('schedule', fn($s) => $s->where('user_id', $userId));
-                  });
-            });
-        }
 
         $scansInRange = $scanGroupQuery->get();
 
         $scansGrouped = $scansInRange->groupBy(function ($scan) {
             $d = is_string($scan->date) ? $scan->date : $scan->date->format('Y-m-d');
-            return $d . '_' . $scan->weekly_run_sheet_entry_id;
+            return $d . '_' . $scan->weekly_run_sheet_entry_id . '_' . $scan->user_id;
         });
 
         foreach ($scansGrouped as $key => $scansForEntry) {
@@ -285,7 +280,7 @@ class ChronologicalReportController extends Controller
                 }
 
                 $uId = $user?->id ?? 0;
-                $key = $shiftDate . '_' . $entry->id;
+                $key = $shiftDate . '_' . $entry->id . '_' . $uId;
 
                 $isDeleted = $deletedRunsheetItems->contains(function ($del) use ($shiftDate, $entry, $uId) {
                     $dStr = is_string($del->date) ? $del->date : $del->date->format('Y-m-d');
@@ -300,6 +295,7 @@ class ChronologicalReportController extends Controller
                     $existingScans = \App\Models\WeeklyRunSheetScan::with(['nfcTag', 'user'])
                         ->where('weekly_run_sheet_entry_id', $entry->id)
                         ->where('date', $shiftDate)
+                        ->when($uId, fn($q) => $q->where('user_id', $uId))
                         ->get();
 
                     $runsheetTargets->put($key, [
@@ -309,12 +305,6 @@ class ChronologicalReportController extends Controller
                         'weekly_run_sheet_id' => $shift->weekly_run_sheet_id,
                         'scans' => $existingScans,
                     ]);
-                } else {
-                    $existingTarget = $runsheetTargets->get($key);
-                    if ($user && (!$existingTarget['user'] || $existingTarget['user']->name === 'N/A')) {
-                        $existingTarget['user'] = $user;
-                        $runsheetTargets->put($key, $existingTarget);
-                    }
                 }
             }
         }
@@ -342,30 +332,22 @@ class ChronologicalReportController extends Controller
             $requiredTags = $entry->site?->nfcTags ?? collect();
             $requiredTagIds = $requiredTags->pluck('id')->toArray();
 
-            if ($requiredTags->isNotEmpty()) {
-                $validScans = $scansForEntry
-                    ->whereIn('nfc_tag_id', $requiredTagIds)
-                    ->unique('nfc_tag_id');
+            $validScans = $scansForEntry
+                ->whereIn('nfc_tag_id', $requiredTagIds)
+                ->unique('nfc_tag_id')
+                ->sortBy('time');
 
-                $scannedTagIds = $validScans->pluck('nfc_tag_id')->toArray();
-                $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds);
+            $scannedTagIds = $validScans->pluck('nfc_tag_id')->toArray();
+            $missingTags = $requiredTags->whereNotIn('id', $scannedTagIds);
 
-                $requiredCount = count($requiredTagIds);
-                $scannedCount = count($scannedTagIds);
-            } else {
-                $uniqueScans = $scansForEntry->unique('nfc_tag_id');
-                $requiredCount = $scansForEntry->isNotEmpty() ? $uniqueScans->count() : 0;
-                $scannedCount = $uniqueScans->count();
-                $missingTags = collect();
-            }
+            $requiredCount = count($requiredTagIds);
+            $scannedCount = count($scannedTagIds);
 
             $status = $requiredCount > 0 && $scannedCount >= $requiredCount
                 ? 'Completed'
                 : ($scannedCount > 0 ? 'Partial' : 'Missed');
 
-            $allDisplayScans = $scansForEntry->unique('nfc_tag_id')->sortBy('time');
-
-            $scansList = $allDisplayScans->map(function($scan) {
+            $scansList = $validScans->map(function($scan) {
                 return [
                     'time' => $scan->time,
                     'name' => $scan->nfcTag?->name ?? 'N/A',
@@ -378,8 +360,9 @@ class ChronologicalReportController extends Controller
             $runsheetStartTime = $entryStart ?: '00:00:00';
             $runsheetEndTime = $entryEnd ?: '23:59:59';
 
-            if ($allDisplayScans->isNotEmpty()) {
-                $sortedScans = $allDisplayScans->sortBy(function ($scan) {
+            $allScansForTime = $validScans->isNotEmpty() ? $validScans : $scansForEntry;
+            if ($allScansForTime->isNotEmpty()) {
+                $sortedScans = $allScansForTime->sortBy(function ($scan) {
                     $d = is_string($scan->date) ? $scan->date : ($scan->date ? $scan->date->format('Y-m-d') : '');
                     return $d . ' ' . $scan->time;
                 })->values();
@@ -399,8 +382,8 @@ class ChronologicalReportController extends Controller
                 'id' => $entry->id,
                 'type' => 'Runsheet Tour',
                 'name' => $entry->tour_name ?: ($entry->runSheet?->name ?? 'Runsheet Tour'),
-                'user' => $user?->name ?? ($scansForEntry->first()?->user?->name ?? 'N/A'),
-                'user_id' => $user?->id ?? ($scansForEntry->first()?->user_id ?? null),
+                'user' => $user?->name ?? 'N/A',
+                'user_id' => $user?->id ?? null,
                 'site' => $entry->site?->name ?? 'N/A',
                 'date' => $targetDate,
                 'start_time' => $runsheetStartTime,
