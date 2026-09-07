@@ -48,6 +48,8 @@ class WeeklyRunSheetRepository
         $today = $date ? Carbon::parse($date) : Carbon::now(config('app.timezone', 'UTC'));
         $dayOfWeek = $today->dayOfWeekIso;
         $dateStr = $today->toDateString();
+        $nextDateStr = $today->copy()->addDay()->toDateString();
+        $prevDateStr = $today->copy()->subDay()->toDateString();
 
         $query = $user->weeklyRunSheets();
         if ($weeklyRunSheetId !== null) {
@@ -61,7 +63,7 @@ class WeeklyRunSheetRepository
                 ->with([
                     'site.company', 
                     'site.nfcTags',
-                    'scans' => fn ($q) => $q->where('date', $dateStr)
+                    'scans' => fn ($q) => $q->whereIn('date', [$prevDateStr, $dateStr, $nextDateStr])
                 ])
                 ->orderBy('sequence')
                 ->orderBy('start_time')])
@@ -83,6 +85,8 @@ class WeeklyRunSheetRepository
                     $scannedTagIds = collect($entry['scans'] ?? [])
                         ->pluck('nfc_tag_id')
                         ->map(fn($id) => (int)$id)
+                        ->unique()
+                        ->values()
                         ->toArray();
                     
                     if (isset($entry['site']['nfc_tags'])) {
@@ -143,10 +147,17 @@ class WeeklyRunSheetRepository
 
     public function isAlreadyScanned(array $data)
     {
+        $scanDate = Carbon::parse($data['date']);
+        $dates = [
+            $scanDate->toDateString(),
+            $scanDate->copy()->subDay()->toDateString(),
+            $scanDate->copy()->addDay()->toDateString(),
+        ];
+
         return \App\Models\WeeklyRunSheetScan::where('user_id', $data['user_id'])
             ->where('weekly_run_sheet_entry_id', $data['weekly_run_sheet_entry_id'])
             ->where('nfc_tag_id', $data['nfc_tag_id'])
-            ->where('date', $data['date'])
+            ->whereIn('date', $dates)
             ->exists();
     }
 }
