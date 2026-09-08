@@ -7,21 +7,25 @@ use App\Models\RunSheet;
 use App\Models\Site;
 use App\Models\WeeklyRunSheetEntry;
 use App\Repositories\RunSheetRepository;
+use App\Repositories\ShiftRepository;
 use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Traits\CommonTrait;
+use Carbon\Carbon;
 
 class RunSheetApiController extends Controller
 {
     use ApiResponser, CommonTrait;
 
     protected $runSheetRepo;
+    protected $shiftRepo;
 
-    public function __construct(RunSheetRepository $runSheetRepo)
+    public function __construct(RunSheetRepository $runSheetRepo, ShiftRepository $shiftRepo)
     {
         $this->runSheetRepo = $runSheetRepo;
+        $this->shiftRepo = $shiftRepo;
     }
 
     /**
@@ -33,7 +37,7 @@ class RunSheetApiController extends Controller
      *     @OA\Parameter(
      *         name="date",
      *         in="query",
-     *         description="Filter by date (YYYY-MM-DD). Defaults to today if not provided.",
+     *         description="Filter by date (YYYY-MM-DD). Defaults to active shift date if not provided.",
      *         required=false,
      *         @OA\Schema(type="string", format="date")
      *     ),
@@ -75,9 +79,27 @@ class RunSheetApiController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $date = $request->query('date'); // Optional date filter
 
-        $data = $this->runSheetRepo->getUserRunSheets($user, $date);
+        // Automatically resolve the active (or next upcoming) shift.
+        $activeShift = $this->shiftRepo->getActiveShift();
+
+        if (!$activeShift || Carbon::now(config('app.timezone', 'UTC'))->gt($activeShift->end_datetime)) {
+            return $this->successResponse([
+                'status'             => true,
+                'message'            => 'No active or upcoming shift found.',
+                'shift'              => null,
+                'total_run_sheets'   => 0,
+                'total_tags'         => 0,
+                'total_scanned_tags' => 0,
+                'run_sheets'         => [],
+            ], 'No active or upcoming shift found.');
+        }
+
+        $date = $request->query('date') ?: $activeShift->date;
+
+        $data = $this->runSheetRepo->getUserRunSheets($user, $date, $activeShift->id);
+
+        $data['shift'] = $activeShift;
 
         return $this->successResponse($data, 'Run sheets fetched successfully.');
     }
@@ -130,17 +152,18 @@ class RunSheetApiController extends Controller
     public function storeScan(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'run_sheet_id' => 'required|exists:weekly_run_sheet_entries,id',
-            'nfc_tag_id' => 'required|exists:nfc_tags,id',
-            'latitude' => 'nullable|string',
-            'longitude' => 'nullable|string',
+            'run_sheet_id' => 'required|exists:run_sheets,id',
+            'nfc_tag_id'   => 'required|exists:nfc_tags,id',
+            'latitude'     => 'nullable|string',
+            'longitude'    => 'nullable|string',
+            'date'         => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
             return $this->errorResponse($validator->errors()->first(), null, 422);
         }
 
-        $runsheet = WeeklyRunSheetEntry::where('id', $request->run_sheet_id)->first();
+        $runsheet = RunSheet::where('id', $request->run_sheet_id)->first();
         if (!$runsheet) {
             return $this->errorResponse('Run sheet not found.', null, 404);
         }
@@ -161,34 +184,26 @@ class RunSheetApiController extends Controller
             }
         }
 
-        $shiftRepo = app(\App\Repositories\ShiftRepository::class);
-        $activeShift = $shiftRepo->getActiveShift();
-        $scanDate = $request->input('date') ?: ($activeShift ? $activeShift->date : \Carbon\Carbon::now()->format('Y-m-d'));
+        $activeShift = $this->shiftRepo->getActiveShift();
+        $scanDate = $request->input('date') ?: ($runsheet->date ?: ($activeShift ? $activeShift->date : Carbon::now(config('app.timezone', 'UTC'))->format('Y-m-d')));
 
         $scanData = [
-            'weekly_run_sheet_id' => $runsheet->weekly_run_sheet_id,
-            'weekly_run_sheet_entry_id' => $runsheet->id,
-            'nfc_tag_id' => (int)$request->nfc_tag_id,
-            'user_id' => Auth::id(),
-            'date' => $scanDate,
-            'time' => \Carbon\Carbon::now()->format('H:i:s'),
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
+            'run_sheet_id' => (int) $runsheet->id,
+            'nfc_tag_id'   => (int) $request->nfc_tag_id,
+            'user_id'      => Auth::id(),
+            'date'         => $scanDate,
+            'time'         => Carbon::now(config('app.timezone', 'UTC'))->format('H:i:s'),
+            'latitude'     => $request->latitude,
+            'longitude'    => $request->longitude,
         ];
 
-        // Check if already scanned today
-        $alreadyScanned = \App\Models\WeeklyRunSheetScan::where('user_id', $scanData['user_id'])
-            ->where('weekly_run_sheet_entry_id', $scanData['weekly_run_sheet_entry_id'])
-            ->where('nfc_tag_id', $scanData['nfc_tag_id'])
-            ->where('date', $scanData['date'])
-            ->exists();
-
-        if ($alreadyScanned) {
+        // Check if already scanned
+        if ($this->runSheetRepo->isAlreadyScanned($scanData)) {
             return $this->errorResponse('This NFC tag has already been scanned for this run sheet today.', null, 422);
         }
 
-        $scan = \App\Models\WeeklyRunSheetScan::create($scanData);
+        $result = $this->runSheetRepo->storeScan($scanData);
 
-        return $this->successResponse($scan, 'Scan recorded successfully.');
+        return $this->successResponse($result['runsheet'], 'Scan recorded successfully.');
     }
 }

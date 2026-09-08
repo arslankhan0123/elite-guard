@@ -12,12 +12,21 @@ class RunSheetRepository
      * Get run sheets assigned to a specific user.
      * Optionally filter by date.
      */
-    public function getUserRunSheets($user, $date = null)
+    public function getUserRunSheets($user, $date = null, $shiftId = null)
     {
         $query = RunSheet::with('site.nfcTags', 'site.company', 'scans')
             ->where('user_id', $user->id);
 
-        if ($date) {
+        if ($shiftId) {
+            $query->where(function ($q) use ($shiftId, $date) {
+                $q->where('shift_id', $shiftId);
+                if ($date) {
+                    $q->orWhere(function ($sq) use ($date) {
+                        $sq->whereNull('shift_id')->where('date', $date);
+                    });
+                }
+            });
+        } elseif ($date) {
             $query->where('date', $date);
         } else {
             // Default to today's date if not provided
@@ -29,15 +38,15 @@ class RunSheetRepository
         $runSheets = $query->get();
 
         $totalTags = $runSheets->sum(function ($runSheet) {
-            return $runSheet->site->nfcTags->count();
+            return $runSheet->site?->nfcTags?->count() ?? 0;
         });
 
         $totalScannedTags = $runSheets->sum(function ($runSheet) {
-            return $runSheet->scans->count();
+            return $runSheet->scans?->count() ?? 0;
         });
 
         $runSheetsData = $runSheets->map(function ($runSheet) {
-            $scannedTagIds = $runSheet->scans->pluck('nfc_tag_id')->map(fn($id) => (int)$id)->toArray();
+            $scannedTagIds = $runSheet->scans ? $runSheet->scans->pluck('nfc_tag_id')->map(fn($id) => (int)$id)->toArray() : [];
             $sheetArray = $runSheet->toArray();
 
             if (isset($sheetArray['site']['nfc_tags'])) {
@@ -51,6 +60,11 @@ class RunSheetRepository
                     $tag['scanned'] = in_array((int)$tag['id'], $scannedTagIds);
                 }
             }
+
+            $tags = $sheetArray['site']['nfc_tags'] ?? $sheetArray['site']['nfcTags'] ?? [];
+            $sheetArray['is_scanned'] = count($scannedTagIds) > 0;
+            $sheetArray['total_tags'] = count($tags);
+            $sheetArray['scanned_tags_count'] = count($scannedTagIds);
 
             return $sheetArray;
         });
@@ -78,14 +92,17 @@ class RunSheetRepository
      */
     public function storeScan($data)
     {
+        $scanDate = $data['date'] ?? Carbon::now()->format('Y-m-d');
+        $scanTime = $data['time'] ?? Carbon::now()->format('H:i:s');
+
         $runsheet = RunSheetScan::create([
             'run_sheet_id' => $data['run_sheet_id'],
-            'nfc_tag_id' => $data['nfc_tag_id'],
-            'user_id' => $data['user_id'],
-            'date' => Carbon::now()->format('Y-m-d'),
-            'time' => Carbon::now()->format('H:i:s'),
-            'latitude' => $data['latitude'] ?? null,
-            'longitude' => $data['longitude'] ?? null,
+            'nfc_tag_id'   => $data['nfc_tag_id'],
+            'user_id'      => $data['user_id'],
+            'date'         => $scanDate,
+            'time'         => $scanTime,
+            'latitude'     => $data['latitude'] ?? null,
+            'longitude'    => $data['longitude'] ?? null,
         ]);
 
         return [
@@ -100,10 +117,17 @@ class RunSheetRepository
      */
     public function isAlreadyScanned($data)
     {
+        $scanDate = isset($data['date']) ? Carbon::parse($data['date']) : Carbon::today();
+        $dates = [
+            $scanDate->toDateString(),
+            $scanDate->copy()->subDay()->toDateString(),
+            $scanDate->copy()->addDay()->toDateString(),
+        ];
+
         return RunSheetScan::where('user_id', $data['user_id'])
             ->where('run_sheet_id', $data['run_sheet_id'])
             ->where('nfc_tag_id', $data['nfc_tag_id'])
-            ->where('date', Carbon::now()->format('Y-m-d'))
+            ->whereIn('date', $dates)
             ->exists();
     }
 }

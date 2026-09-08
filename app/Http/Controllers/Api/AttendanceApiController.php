@@ -80,8 +80,13 @@ class AttendanceApiController extends Controller
                 return $this->errorResponse($result['message'], $result, 422);
             }
 
-            $shift = Shift::with('site.nfcTags')->findOrFail($request->shift_id);
-            $this->syncSiteTourForShift($shift, (int) Auth::id());
+            $shift = Shift::with(['site.nfcTags', 'weeklyRunSheet.entries'])->findOrFail($request->shift_id);
+            if ($shift->weekly_run_sheet_id || $shift->type === 'runsheet') {
+                $this->syncRunSheetForShift($shift, (int) Auth::id());
+            }
+            if ($shift->site_id) {
+                $this->syncSiteTourForShift($shift, (int) Auth::id());
+            }
 
             DB::commit();
         } catch (\Throwable $exception) {
