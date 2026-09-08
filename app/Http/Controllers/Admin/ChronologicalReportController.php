@@ -241,7 +241,7 @@ class ChronologicalReportController extends Controller
                     'time' => $scan->time,
                     'name' => $scan->nfcTag?->name ?? 'N/A',
                     'uid'  => $scan->nfcTag?->uid ?? 'N/A',
-                    'image' => null,
+                    'image' => $scan->image,
                     'user' => $scan->user?->name ?? 'N/A',
                 ];
             })->values()->all();

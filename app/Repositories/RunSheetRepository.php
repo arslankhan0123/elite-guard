@@ -103,6 +103,7 @@ class RunSheetRepository
             'time'         => $scanTime,
             'latitude'     => $data['latitude'] ?? null,
             'longitude'    => $data['longitude'] ?? null,
+            'image'        => $data['image'] ?? null,
         ]);
 
         return [

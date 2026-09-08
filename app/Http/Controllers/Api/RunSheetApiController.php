@@ -11,6 +11,7 @@ use App\Repositories\ShiftRepository;
 use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Traits\CommonTrait;
 use Carbon\Carbon;
@@ -157,6 +158,7 @@ class RunSheetApiController extends Controller
             'latitude'     => 'nullable|string',
             'longitude'    => 'nullable|string',
             'date'         => 'nullable|date',
+            'image'        => 'nullable|image',
         ]);
 
         if ($validator->fails()) {
@@ -172,17 +174,17 @@ class RunSheetApiController extends Controller
             return $this->errorResponse('Associated site not found.', null, 404);
         }
 
-        if ($request->latitude && $request->longitude) {
-            $distance = $this->calculateDistance($request->latitude, $request->longitude, $site->latitude, $site->longitude);
+        // if ($request->latitude && $request->longitude) {
+        //     $distance = $this->calculateDistance($request->latitude, $request->longitude, $site->latitude, $site->longitude);
 
-            if ($distance > 100) { // 100 meters
-                return $this->errorResponse(
-                    'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
-                    ['distance' => round($distance, 2)],
-                    422
-                );
-            }
-        }
+        //     if ($distance > 100) { // 100 meters
+        //         return $this->errorResponse(
+        //             'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
+        //             ['distance' => round($distance, 2)],
+        //             422
+        //         );
+        //     }
+        // }
 
         $activeShift = $this->shiftRepo->getActiveShift();
         $scanDate = $request->input('date') ?: ($runsheet->date ?: ($activeShift ? $activeShift->date : Carbon::now(config('app.timezone', 'UTC'))->format('Y-m-d')));
@@ -200,6 +202,12 @@ class RunSheetApiController extends Controller
         // Check if already scanned
         if ($this->runSheetRepo->isAlreadyScanned($scanData)) {
             return $this->errorResponse('This NFC tag has already been scanned for this run sheet today.', null, 422);
+        }
+
+        // Image upload handling
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('documents/RunSheetScans', 'public');
+            $scanData['image'] = Storage::disk('public')->url($path);
         }
 
         $result = $this->runSheetRepo->storeScan($scanData);

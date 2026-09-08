@@ -17,6 +17,7 @@ class RunSheetScan extends Model
         'time',
         'latitude',
         'longitude',
+        'image',
     ];
 
     /**
