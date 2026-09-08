@@ -32,7 +32,8 @@ class RunSheetApiController extends Controller
     /**
      * @OA\Get(
      *     path="/api/run-sheets",
-     *     summary="Get run sheets for the authenticated user",
+     *     summary="Get run sheets for the authenticated user based on active shift",
+     *     description="Resolves active or upcoming shift for the authenticated user and returns assigned daily run sheets for that shift.",
      *     tags={"Run Sheets"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
@@ -54,17 +55,22 @@ class RunSheetApiController extends Controller
      *                 @OA\Property(property="total_run_sheets", type="integer", example=2),
      *                 @OA\Property(property="total_tags", type="integer", example=6),
      *                 @OA\Property(property="total_scanned_tags", type="integer", example=2),
+     *                 @OA\Property(property="shift", type="object", nullable=true, description="Active or upcoming shift object"),
      *                 @OA\Property(property="run_sheets", type="array", @OA\Items(type="object",
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="user_id", type="integer", example=1),
      *                     @OA\Property(property="site_id", type="integer", example=1),
-     *                     @OA\Property(property="date", type="string", format="date", example="2026-05-07"),
+     *                     @OA\Property(property="shift_id", type="integer", nullable=true, example=1),
+     *                     @OA\Property(property="date", type="string", format="date", example="2026-09-08"),
      *                     @OA\Property(property="run_sheet_name", type="string", example="Mobile Patrol Check"),
      *                     @OA\Property(property="start_time", type="string", example="10:00:00"),
      *                     @OA\Property(property="end_time", type="string", example="15:00:00"),
      *                     @OA\Property(property="duration", type="string", example="15 Min."),
      *                     @OA\Property(property="job_type", type="string", example="Mobile Patrol"),
      *                     @OA\Property(property="sequence", type="string", example="1 of 1"),
+     *                     @OA\Property(property="is_scanned", type="boolean", example=false),
+     *                     @OA\Property(property="total_tags", type="integer", example=2),
+     *                     @OA\Property(property="scanned_tags_count", type="integer", example=0),
      *                     @OA\Property(property="site", type="object",
      *                         @OA\Property(property="id", type="integer", example=1),
      *                         @OA\Property(property="name", type="string", example="Elite Plaza"),
@@ -108,18 +114,23 @@ class RunSheetApiController extends Controller
     /**
      * @OA\Post(
      *     path="/api/run-sheets/scan",
-     *     summary="Record an NFC tag scan for a run sheet",
-     *     description="Validates scan location and prevents duplicate scans for the same day.",
+     *     summary="Record an NFC tag scan for a daily run sheet",
+     *     description="Validates scan location, prevents duplicate scans for the same day, and stores scan record with optional image upload into run_sheet_scans table.",
      *     tags={"Run Sheets"},
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"run_sheet_id", "nfc_tag_id"},
-     *             @OA\Property(property="run_sheet_id", type="integer", example=46),
-     *             @OA\Property(property="nfc_tag_id", type="integer", example=2),
-     *             @OA\Property(property="latitude", type="string", example="31.5038682"),
-     *             @OA\Property(property="longitude", type="string", example="74.3480792")
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"run_sheet_id", "nfc_tag_id"},
+     *                 @OA\Property(property="run_sheet_id", type="integer", example=8, description="ID of the daily run sheet from run_sheets table"),
+     *                 @OA\Property(property="nfc_tag_id", type="integer", example=3, description="ID of the scanned NFC tag"),
+     *                 @OA\Property(property="date", type="string", format="date", nullable=true, example="2026-09-08"),
+     *                 @OA\Property(property="latitude", type="string", nullable=true, example="31.5038682"),
+     *                 @OA\Property(property="longitude", type="string", nullable=true, example="74.3480792"),
+     *                 @OA\Property(property="image", type="string", format="binary", nullable=true, description="Optional photo taken during scanning")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
