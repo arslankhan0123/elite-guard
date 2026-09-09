@@ -179,11 +179,28 @@
         }
     }
 
-    /* Floating Logo Animation */
-    .hero-logo-img {
-        max-height: 180px;
-        filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
+    /* Floating Logo Animation & White Glass Circle Container */
+    .hero-logo-container {
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2);
+        padding: 18px;
         animation: floatLogo 5s ease-in-out infinite;
+    }
+
+    .hero-logo-img {
+        max-height: 135px;
+        max-width: 135px;
+        object-fit: contain;
+        filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
     }
 
     @keyframes floatLogo {
@@ -279,7 +296,9 @@
                 </div>
             </div>
             <div class="col-lg-5 text-center d-none d-lg-block">
-                <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" class="hero-logo-img img-fluid">
+                <div class="hero-logo-container">
+                    <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" class="hero-logo-img img-fluid">
+                </div>
             </div>
         </div>
     </div>
@@ -630,10 +649,20 @@
                                     statusBadge = 'bg-danger-subtle text-danger border border-danger-subtle';
                                 }
 
+                                let typeBadge = 'bg-primary-subtle text-primary border border-primary-subtle';
+                                if (tour.tour_type === 'Runsheet Tour') {
+                                    typeBadge = 'bg-info-subtle text-info border border-info-subtle';
+                                } else if (tour.tour_type === 'Site Checkpoint Tour') {
+                                    typeBadge = 'bg-secondary-subtle text-dark border border-secondary-subtle';
+                                }
+
                                 const percent = tour.required_count > 0 ? ((tour.scanned_count / tour.required_count) * 100) : 0;
                                 tourHtml += `
                                 <tr>
-                                    <td class="fw-semibold text-dark">${tour.tour_name}</td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">${tour.tour_name}</div>
+                                        <span class="badge ${typeBadge} rounded-pill px-2 py-0 mt-1" style="font-size: 0.68rem;">${tour.tour_type || 'Site Tour'}</span>
+                                    </td>
                                     <td class="text-secondary">${tour.site_name}</td>
                                     <td class="text-secondary">${tour.user_name}</td>
                                     <td>
