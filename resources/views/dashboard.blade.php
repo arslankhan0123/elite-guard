@@ -152,37 +152,45 @@
 
     /* Welcome Hero section */
     .hero-section {
-        background: linear-gradient(-45deg, #0b0f19, #1e1b4b, #2e1065, #0b0f19);
-        background-size: 400% 400%;
-        animation: gradientBG 12s ease infinite;
-        border-radius: 30px;
-        padding: 60px 50px;
+        background: linear-gradient(135deg, #0b0f19 0%, #1e1b4b 50%, #0b0f19 100%);
+        border-radius: 20px;
+        padding: 22px 30px;
         color: white;
-        margin-bottom: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        margin-bottom: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px -15px rgba(11, 15, 25, 0.6);
         position: relative;
         overflow: hidden;
     }
 
-    @keyframes gradientBG {
-        0% {
-            background-position: 0% 50%;
-        }
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -80px;
+        right: -80px;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
 
-        50% {
-            background-position: 100% 50%;
-        }
-
-        100% {
-            background-position: 0% 50%;
-        }
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        bottom: -80px;
+        left: 25%;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
     }
 
     /* Floating Logo Animation & White Glass Circle Container */
     .hero-logo-container {
-        width: 180px;
-        height: 180px;
+        width: 110px;
+        height: 110px;
         background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
@@ -191,16 +199,17 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2);
-        padding: 18px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.2);
+        padding: 10px;
         animation: floatLogo 5s ease-in-out infinite;
+        flex-shrink: 0;
     }
 
     .hero-logo-img {
-        max-height: 135px;
-        max-width: 135px;
+        max-height: 80px;
+        max-width: 80px;
         object-fit: contain;
-        filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
     }
 
     @keyframes floatLogo {
@@ -209,7 +218,7 @@
         }
 
         50% {
-            transform: translateY(-10px) rotate(1.5deg);
+            transform: translateY(-6px) rotate(1.5deg);
         }
 
         100% {
@@ -218,40 +227,49 @@
     }
 
     .hero-title {
-        font-size: 3.5rem;
+        font-size: 2.1rem;
         font-weight: 850;
-        letter-spacing: -2px;
-        background: linear-gradient(to right, #fff, #94a3b8);
+        letter-spacing: -1px;
+        background: linear-gradient(to right, #fff, #cbd5e1);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        margin-bottom: 0.2rem;
     }
 
     .action-btn {
-        padding: 12px 30px;
-        border-radius: 15px;
+        padding: 8px 20px;
+        border-radius: 12px;
         font-weight: 700;
+        font-size: 0.88rem;
         transition: all 0.3s;
         border: none;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
 
     .btn-create-company {
-        background: var(--dash-purple);
+        background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
         color: white;
+    }
+
+    .btn-create-company:hover {
+        background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+        color: white;
+        transform: translateY(-1px);
     }
 
     .btn-create-nfc {
         background: rgba(255, 255, 255, 0.1);
         color: white;
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     .btn-create-nfc:hover {
         background: white;
         color: #0f172a;
+        transform: translateY(-1px);
     }
 
     /* Info Cards */
@@ -282,22 +300,48 @@
     <!-- Hero Section -->
     <div class="hero-section animate__animated animate__fadeIn">
         <div class="row align-items-center">
-            <div class="col-lg-7">
-                <span class="badge bg-soft-info text-info rounded-pill px-3 py-2 mb-3 fw-bold">ELITE GUARD OS</span>
-                <h1 class="hero-title">Elite <span style="background: linear-gradient(to right, #8b5cf6, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Security</span> Dashboard</h1>
-                <p class="text-white-50 fs-5 mb-4 mt-2">Manage your global security network, patrol sites, and NFC infrastructure with real-time precision.</p>
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="{{ route('companies.create') }}" class="action-btn btn-create-company shadow-lg">
-                        <i data-feather="plus-circle"></i> Add New Company
+            <div class="col-xl-7 col-lg-6">
+                <span class="badge bg-soft-info text-info rounded-pill px-2 py-1 mb-2 fw-bold" style="font-size: 0.7rem;">ELITE GUARD OS</span>
+                <h1 class="hero-title">Elite <span style="background: linear-gradient(to right, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Security</span> Dashboard</h1>
+                <p class="text-white-50 small mb-3 mt-1">Manage your global security network, patrol sites, and NFC infrastructure with real-time precision.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('companies.create') }}" class="action-btn btn-create-company shadow">
+                        <i data-feather="plus-circle" style="width: 16px; height: 16px;"></i> Add New Company
                     </a>
                     <a href="{{ route('nfc.create') }}" class="action-btn btn-create-nfc">
-                        <i data-feather="rss"></i> Generate NFC Tag
+                        <i data-feather="rss" style="width: 16px; height: 16px;"></i> Generate NFC Tag
                     </a>
                 </div>
             </div>
-            <div class="col-lg-5 text-center d-none d-lg-block">
-                <div class="hero-logo-container">
-                    <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" class="hero-logo-img img-fluid">
+            <div class="col-xl-5 col-lg-6 text-end d-none d-lg-block">
+                <div class="d-flex align-items-center justify-content-end gap-3 position-relative" style="z-index: 2;">
+                    <!-- Quick Stat Pills Glass Container -->
+                    <div class="d-flex flex-column gap-2 text-start">
+                        <div class="p-2 px-3 rounded-4 d-flex align-items-center gap-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px);">
+                            <div class="p-2 rounded-circle bg-primary bg-opacity-20 text-info d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                <i data-feather="map-pin" style="width: 16px; height: 16px;"></i>
+                            </div>
+                            <div>
+                                <div class="text-white-50 text-uppercase fw-bold" style="font-size: 0.62rem; letter-spacing: 0.5px;">Tactical Sites</div>
+                                <div class="fw-bold text-white small mb-0">{{ $siteCount }} Managed</div>
+                            </div>
+                        </div>
+
+                        <div class="p-2 px-3 rounded-4 d-flex align-items-center gap-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px);">
+                            <div class="p-2 rounded-circle bg-success bg-opacity-20 text-success d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                <i data-feather="rss" style="width: 16px; height: 16px;"></i>
+                            </div>
+                            <div>
+                                <div class="text-white-50 text-uppercase fw-bold" style="font-size: 0.62rem; letter-spacing: 0.5px;">NFC Checkpoints</div>
+                                <div class="fw-bold text-white small mb-0">{{ $nfcCount }} Deployed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Glowing Glass Logo Circle Container -->
+                    <div class="hero-logo-container">
+                        <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" class="hero-logo-img img-fluid">
+                    </div>
                 </div>
             </div>
         </div>
