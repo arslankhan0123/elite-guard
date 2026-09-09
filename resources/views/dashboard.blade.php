@@ -435,6 +435,107 @@
         </div>
     </div>
 
+    <!-- Shift Patrol & Tour Progress Overview Section (col-12) -->
+    <div class="row g-4 mt-2">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+                        <div>
+                            <span class="badge rounded-pill px-3 py-1 fw-bold mb-2" style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); color: #60a5fa;">SHIFT METRICS OVERVIEW</span>
+                            <h4 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                                <i data-feather="shield" class="text-primary"></i> Active Shift Tour & Patrol Progress
+                            </h4>
+                        </div>
+
+                        <!-- AJAX Date Navigation Controls -->
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <div class="d-flex align-items-center gap-1 p-1 rounded-pill" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);">
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="prev-date-btn" title="Previous Day" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-feather="chevron-left" style="width: 18px; height: 18px;"></i>
+                                </button>
+
+                                <div class="d-flex align-items-center px-2 position-relative">
+                                    <i data-feather="calendar" class="text-info me-2" style="width: 16px; height: 16px;"></i>
+                                    <span id="metrics-date-display" class="fw-bold text-white small" style="min-width: 110px; text-align: center; cursor: pointer;">Today</span>
+                                    <input type="date" id="metrics-date-picker" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;">
+                                </div>
+
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="next-date-btn" title="Next Day" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-feather="chevron-right" style="width: 18px; height: 18px;"></i>
+                                </button>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-info rounded-pill px-3 py-1 fw-bold small text-dark d-none shadow-sm" id="today-date-btn" style="font-size: 0.75rem;">
+                                <i data-feather="rotate-ccw" style="width: 12px; height: 12px;" class="me-1"></i> Back to Today
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Site Tours Progress Card -->
+                        <div class="col-lg-6 col-12">
+                            <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="p-3 rounded-circle" style="background: rgba(139, 92, 246, 0.25); color: #c084fc;">
+                                            <i data-feather="compass" style="width: 28px; height: 28px;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-1">Site Tours Progress</h5>
+                                            <p class="text-white-50 small mb-0">Patrol items & checkpoint tours</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="h3 fw-bold mb-0 text-white" id="site-tours-count-display">0 / 0</div>
+                                        <span class="badge rounded-pill px-2 py-1 mt-1 small" style="background: rgba(192, 132, 252, 0.2); color: #e9d5ff;" id="site-tours-percent-badge">0% Scanned</span>
+                                    </div>
+                                </div>
+                                <!-- Progress Bar -->
+                                <div class="progress rounded-pill mb-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
+                                    <div id="site-tours-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #8b5cf6, #c084fc);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between text-white-50 small">
+                                    <span>Scanned Tours: <strong class="text-white" id="site-tours-scanned-txt">0</strong></span>
+                                    <span>Total Scheduled: <strong class="text-white" id="site-tours-total-txt">0</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Runsheet Tours Progress Card -->
+                        <div class="col-lg-6 col-12">
+                            <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="p-3 rounded-circle" style="background: rgba(59, 130, 246, 0.25); color: #60a5fa;">
+                                            <i data-feather="map" style="width: 28px; height: 28px;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-1">Runsheet Tours Progress</h5>
+                                            <p class="text-white-50 small mb-0">Multi-site runsheet entries</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="h3 fw-bold mb-0 text-white" id="runsheets-count-display">0 / 0</div>
+                                        <span class="badge rounded-pill px-2 py-1 mt-1 small" style="background: rgba(96, 165, 250, 0.2); color: #bfdbfe;" id="runsheets-percent-badge">0% Scanned</span>
+                                    </div>
+                                </div>
+                                <!-- Progress Bar -->
+                                <div class="progress rounded-pill mb-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
+                                    <div id="runsheets-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #38bdf8);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between text-white-50 small">
+                                    <span>Scanned Entries: <strong class="text-white" id="runsheets-scanned-txt">0</strong></span>
+                                    <span>Total Scheduled: <strong class="text-white" id="runsheets-total-txt">0</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Reports & Forms Section -->
     <div class="row g-4 mt-2">
         <!-- Recent Security Reports Card -->
@@ -683,8 +784,23 @@
         document.addEventListener('DOMContentLoaded', function() {
             let isFirstLoad = true;
 
-            function fetchLiveDashboardData() {
-                fetch("{{ route('dashboard.live-data') }}")
+            function formatYmd(d) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            let currentSelectedDate = formatYmd(new Date());
+
+            function fetchLiveDashboardData(targetDate = null) {
+                if (targetDate) {
+                    currentSelectedDate = targetDate;
+                }
+
+                const fetchUrl = "{{ route('dashboard.live-data') }}?date=" + encodeURIComponent(currentSelectedDate);
+
+                fetch(fetchUrl)
                     .then(response => response.json())
                     .then(data => {
                         // 1. Render Attendances
@@ -810,6 +926,70 @@
                             }
                         }
 
+                        // 5. Update Shift Stats & Date Controls
+                        if (data.stats) {
+                            const stScanned = data.stats.site_tours_scanned || 0;
+                            const stTotal = data.stats.site_tours_total || 0;
+                            const stPercent = stTotal > 0 ? Math.round((stScanned / stTotal) * 100) : 0;
+
+                            const rsScanned = data.stats.runsheets_scanned || 0;
+                            const rsTotal = data.stats.runsheets_total || 0;
+                            const rsPercent = rsTotal > 0 ? Math.round((rsScanned / rsTotal) * 100) : 0;
+
+                            // Site Tours Elements
+                            const stDisplay = document.getElementById('site-tours-count-display');
+                            const stBadge = document.getElementById('site-tours-percent-badge');
+                            const stBar = document.getElementById('site-tours-progress-bar');
+                            const stScannedTxt = document.getElementById('site-tours-scanned-txt');
+                            const stTotalTxt = document.getElementById('site-tours-total-txt');
+
+                            if (stDisplay) stDisplay.textContent = `${stScanned} / ${stTotal}`;
+                            if (stBadge) stBadge.textContent = `${stPercent}% Scanned`;
+                            if (stBar) {
+                                stBar.style.width = `${stPercent}%`;
+                                stBar.setAttribute('aria-valuenow', stPercent);
+                            }
+                            if (stScannedTxt) stScannedTxt.textContent = stScanned;
+                            if (stTotalTxt) stTotalTxt.textContent = stTotal;
+
+                            // Runsheet Elements
+                            const rsDisplay = document.getElementById('runsheets-count-display');
+                            const rsBadge = document.getElementById('runsheets-percent-badge');
+                            const rsBar = document.getElementById('runsheets-progress-bar');
+                            const rsScannedTxt = document.getElementById('runsheets-scanned-txt');
+                            const rsTotalTxt = document.getElementById('runsheets-total-txt');
+
+                            if (rsDisplay) rsDisplay.textContent = `${rsScanned} / ${rsTotal}`;
+                            if (rsBadge) rsBadge.textContent = `${rsPercent}% Scanned`;
+                            if (rsBar) {
+                                rsBar.style.width = `${rsPercent}%`;
+                                rsBar.setAttribute('aria-valuenow', rsPercent);
+                            }
+                            if (rsScannedTxt) rsScannedTxt.textContent = rsScanned;
+                            if (rsTotalTxt) rsTotalTxt.textContent = rsTotal;
+
+                            // Date Navigation UI Updates
+                            const dateDisplay = document.getElementById('metrics-date-display');
+                            const datePicker = document.getElementById('metrics-date-picker');
+                            const todayBtn = document.getElementById('today-date-btn');
+
+                            if (dateDisplay) {
+                                dateDisplay.textContent = data.stats.is_today 
+                                    ? `Today (${data.stats.selected_date_label})` 
+                                    : data.stats.selected_date_label;
+                            }
+                            if (datePicker) {
+                                datePicker.value = data.stats.selected_date;
+                            }
+                            if (todayBtn) {
+                                if (data.stats.is_today) {
+                                    todayBtn.classList.add('d-none');
+                                } else {
+                                    todayBtn.classList.remove('d-none');
+                                }
+                            }
+                        }
+
                         if (typeof feather !== 'undefined') {
                             feather.replace();
                         }
@@ -819,20 +999,28 @@
                             const attToast = document.getElementById('attendance-toast');
                             const toursToast = document.getElementById('tours-toast');
 
-                            attToast.classList.remove('d-none');
-                            attToast.classList.add('d-flex');
-                            toursToast.classList.remove('d-none');
-                            toursToast.classList.add('d-flex');
+                            if (attToast) {
+                                attToast.classList.remove('d-none');
+                                attToast.classList.add('d-flex');
+                            }
+                            if (toursToast) {
+                                toursToast.classList.remove('d-none');
+                                toursToast.classList.add('d-flex');
+                            }
 
                             if (typeof feather !== 'undefined') {
                                 feather.replace();
                             }
 
                             setTimeout(() => {
-                                attToast.classList.remove('d-flex');
-                                attToast.classList.add('d-none');
-                                toursToast.classList.remove('d-flex');
-                                toursToast.classList.add('d-none');
+                                if (attToast) {
+                                    attToast.classList.remove('d-flex');
+                                    attToast.classList.add('d-none');
+                                }
+                                if (toursToast) {
+                                    toursToast.classList.remove('d-flex');
+                                    toursToast.classList.add('d-none');
+                                }
                             }, 5000);
                         }
 
@@ -841,9 +1029,45 @@
                     .catch(error => console.error("Error fetching live dashboard data:", error));
             }
 
+            // Event Listeners for AJAX Date Navigation
+            const prevBtn = document.getElementById('prev-date-btn');
+            const nextBtn = document.getElementById('next-date-btn');
+            const datePicker = document.getElementById('metrics-date-picker');
+            const todayBtn = document.getElementById('today-date-btn');
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function() {
+                    const dt = new Date(currentSelectedDate + 'T00:00:00');
+                    dt.setDate(dt.getDate() - 1);
+                    fetchLiveDashboardData(formatYmd(dt));
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    const dt = new Date(currentSelectedDate + 'T00:00:00');
+                    dt.setDate(dt.getDate() + 1);
+                    fetchLiveDashboardData(formatYmd(dt));
+                });
+            }
+
+            if (datePicker) {
+                datePicker.addEventListener('change', function() {
+                    if (this.value) {
+                        fetchLiveDashboardData(this.value);
+                    }
+                });
+            }
+
+            if (todayBtn) {
+                todayBtn.addEventListener('click', function() {
+                    fetchLiveDashboardData(formatYmd(new Date()));
+                });
+            }
+
             // Fetch immediately and poll every 30 seconds (30000ms)
             fetchLiveDashboardData();
-            setInterval(fetchLiveDashboardData, 30000);
+            setInterval(() => fetchLiveDashboardData(), 30000);
         });
     </script>
     @endsection

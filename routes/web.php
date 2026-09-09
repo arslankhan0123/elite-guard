@@ -441,11 +441,92 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
 
         $forms = $recentForms->sortByDesc('created_at')->take(5)->values();
 
+        // Compute Shift-based Tour Progress Stats (Site Tours & Runsheet Tours)
+        $todayStr = \Carbon\Carbon::now()->format('Y-m-d');
+        $targetDate = request('date') ? \Carbon\Carbon::parse(request('date'))->format('Y-m-d') : $todayStr;
+        $isToday = ($targetDate === $todayStr);
+
+        $totalSiteTourItems = 0;
+        $scannedSiteTourItems = 0;
+        $totalRunsheetEntries = 0;
+        $scannedRunsheetEntries = 0;
+
+        $stRepo = new \App\Repositories\SiteTourItemRepository();
+        $rsRepo = new \App\Repositories\RunSheetRepository();
+
+        if ($isToday) {
+            // Check currently active checked-in shifts across guards
+            $activeAttendances = \App\Models\ShiftAttendance::whereNull('clock_out_at')->with(['shift', 'user'])->get();
+
+            if ($activeAttendances->isNotEmpty()) {
+                foreach ($activeAttendances as $att) {
+                    if ($att->user && $att->shift) {
+                        $stRes = $stRepo->getUserSiteTourItems($att->user, $att->shift->date, $att->shift->date, $att->shift->id);
+                        if (isset($stRes['total_site_tour_items'])) {
+                            $totalSiteTourItems += $stRes['total_site_tour_items'];
+                            $scannedSiteTourItems += $stRes['scanned_site_tour_items'];
+                        }
+
+                        $rsRes = $rsRepo->getUserRunSheets($att->user, $att->shift->date, $att->shift->id);
+                        if (isset($rsRes['total_entries'])) {
+                            $totalRunsheetEntries += $rsRes['total_entries'];
+                            $scannedRunsheetEntries += $rsRes['scanned_entries'];
+                        }
+                    }
+                }
+            }
+        } else {
+            // For specified date, fetch shifts scheduled on that date
+            $shiftsOnDate = \App\Models\Shift::where('date', $targetDate)->with(['schedule.user'])->get();
+            foreach ($shiftsOnDate as $s) {
+                $user = $s->schedule?->user;
+                if ($user) {
+                    $stRes = $stRepo->getUserSiteTourItems($user, $s->date, $s->date, $s->id);
+                    if (isset($stRes['total_site_tour_items'])) {
+                        $totalSiteTourItems += $stRes['total_site_tour_items'];
+                        $scannedSiteTourItems += $stRes['scanned_site_tour_items'];
+                    }
+
+                    $rsRes = $rsRepo->getUserRunSheets($user, $s->date, $s->id);
+                    if (isset($rsRes['total_entries'])) {
+                        $totalRunsheetEntries += $rsRes['total_entries'];
+                        $scannedRunsheetEntries += $rsRes['scanned_entries'];
+                    }
+                }
+            }
+        }
+
+        // Fallback to direct SiteTourItem and RunSheet records on targetDate if count is 0
+        if ($totalSiteTourItems === 0) {
+            $siteTourItemsToday = \App\Models\SiteTourItem::with('scans')
+                ->where('date', $targetDate)
+                ->get();
+            $totalSiteTourItems = $siteTourItemsToday->count();
+            $scannedSiteTourItems = $siteTourItemsToday->filter(fn($item) => $item->scans->count() > 0)->count();
+        }
+
+        if ($totalRunsheetEntries === 0) {
+            $dailyRunSheetsToday = \App\Models\RunSheet::with('scans')
+                ->where('date', $targetDate)
+                ->get();
+            $totalRunsheetEntries = $dailyRunSheetsToday->count();
+            $scannedRunsheetEntries = $dailyRunSheetsToday->filter(fn($rs) => $rs->scans->count() > 0)->count();
+        }
+
         return response()->json([
             'attendances' => $attendances,
             'tours'       => $tours,
             'reports'     => $reports,
             'forms'       => $forms,
+            'stats'       => [
+                'selected_date'       => $targetDate,
+                'selected_date_label' => \Carbon\Carbon::parse($targetDate)->format('D, d M Y'),
+                'is_today'            => $isToday,
+                'site_tours_total'    => $totalSiteTourItems,
+                'site_tours_scanned'  => $scannedSiteTourItems,
+                'runsheets_total'     => $totalRunsheetEntries,
+                'runsheets_scanned'  => $scannedRunsheetEntries,
+            ],
         ]);
     })->name('dashboard.live-data');
 
