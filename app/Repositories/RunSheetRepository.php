@@ -45,7 +45,10 @@ class RunSheetRepository
             return $runSheet->scans?->count() ?? 0;
         });
 
-        $runSheetsData = $runSheets->map(function ($runSheet) {
+        $totalEntries = $runSheets->count();
+        $scannedEntries = 0;
+
+        $runSheetsData = $runSheets->map(function ($runSheet) use (&$scannedEntries) {
             $scannedTagIds = $runSheet->scans ? $runSheet->scans->pluck('nfc_tag_id')->map(fn($id) => (int)$id)->toArray() : [];
             $sheetArray = $runSheet->toArray();
 
@@ -62,7 +65,11 @@ class RunSheetRepository
             }
 
             $tags = $sheetArray['site']['nfc_tags'] ?? $sheetArray['site']['nfcTags'] ?? [];
-            $sheetArray['is_scanned'] = count($scannedTagIds) > 0;
+            $isScanned = count($scannedTagIds) > 0;
+            if ($isScanned) {
+                $scannedEntries++;
+            }
+            $sheetArray['is_scanned'] = $isScanned;
             $sheetArray['total_tags'] = count($tags);
             $sheetArray['scanned_tags_count'] = count($scannedTagIds);
 
@@ -77,6 +84,8 @@ class RunSheetRepository
             'status' => true,
             'message' => 'Run sheets retrieved successfully',
             'total_run_sheets' => $runSheets->count(),
+            'total_entries' => $totalEntries,
+            'scanned_entries' => $scannedEntries,
             'total_tags' => $totalTags,
             'total_scanned_tags' => $totalScannedTags,
             'run_sheets' => $runSheetsData
