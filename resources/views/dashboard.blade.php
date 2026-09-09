@@ -342,7 +342,7 @@
     <!-- Real-time Activity Logs Section -->
     <div class="row g-4 mt-2">
         <!-- Live Attendance Tracker Card -->
-        <!-- <div class="col-xl-6 col-12">
+        <div class="col-xl-6 col-12">
             <div class="card shadow-sm border-0 rounded-4 h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
                     <h5 class="fw-bold text-dark mb-0">
@@ -376,10 +376,10 @@
                     </div>
                 </div>
             </div>
-        </div> -->
+        </div>
 
         <!-- Live Tours Tracker Card -->
-        <!-- <div class="col-xl-6 col-12">
+        <div class="col-xl-6 col-12">
             <div class="card shadow-sm border-0 rounded-4 h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
                     <h5 class="fw-bold text-dark mb-0">
@@ -413,7 +413,7 @@
                     </div>
                 </div>
             </div>
-        </div> -->
+        </div>
     </div>
 
     <!-- Attendance Section -->
@@ -501,7 +501,7 @@
         </div>
     </div> -->
 
-    <!-- <div class="row g-3 mt-3 mb-4">
+    <div class="row g-3 mt-3 mb-4">
         <div class="col-lg-12">
             <div class="info-card p-4 h-100 shadow-sm" style="background: linear-gradient(to bottom right, #ffffff, #f8fafc);">
                 <h5 class="fw-bold text-dark d-flex align-items-center gap-2 mb-3">
@@ -587,7 +587,7 @@
                 </div>
             </div>
         </div>
-    </div> -->
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
