@@ -130,16 +130,17 @@ class AttendanceRepository
         // Geofencing Check for Clock-Out (Optional but good practice)
         $shift = Shift::with('site')->find($shiftId);
         $site = $shift->site;
+        if ($site) {
+            $distance = $this->calculateDistance($lat, $long, $site->latitude, $site->longitude);
 
-        $distance = $this->calculateDistance($lat, $long, $site->latitude, $site->longitude);
-
-        // if ($distance > 100) {
-        //     return [
-        //         'status' => false,
-        //         'message' => 'You are too far from the site to clock out. Distance: ' . round($distance, 2) . 'm',
-        //         'distance' => $distance
-        //     ];
-        // }
+            if ($distance > 100) {
+                return [
+                    'status' => false,
+                    'message' => 'You are too far from the site to clock out. Distance: ' . round($distance, 2) . 'm',
+                    'distance' => $distance
+                ];
+            }
+        }
 
         $attendance->update([
             'clock_out_at' => Carbon::now($this->getUserTimezone()),
