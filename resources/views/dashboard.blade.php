@@ -435,6 +435,77 @@
         </div>
     </div>
 
+    <!-- Recent Reports & Forms Section -->
+    <div class="row g-4 mt-2">
+        <!-- Recent Security Reports Card -->
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="file-text" class="text-primary me-2"></i> Recent Security Reports
+                    </h5>
+                    <a href="{{ route('reports.all') }}" class="btn btn-sm btn-light-primary rounded-pill px-3 py-1 fw-bold align-items-center gap-1 d-flex" style="font-size: 0.75rem;">
+                        View All <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+                    </a>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="live-reports-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Report Type</th>
+                                    <th>Guard</th>
+                                    <th>Site</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Loading recent reports...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Forms Card -->
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="clipboard" class="text-warning me-2"></i> Recent Forms Submitted
+                    </h5>
+                    <a href="{{ route('reports.all') }}" class="btn btn-sm btn-light-warning rounded-pill px-3 py-1 fw-bold align-items-center gap-1 d-flex" style="font-size: 0.75rem;">
+                        View All <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+                    </a>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="live-forms-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Form Type</th>
+                                    <th>Guard</th>
+                                    <th>Site</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Loading recent forms...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Attendance Section -->
     <!-- <div class="row g-4 mt-2">
         <div class="col-12">
@@ -679,6 +750,64 @@
                             tourBody.innerHTML = tourHtml;
                         } else {
                             tourBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent site tours found.</td></tr>`;
+                        }
+
+                        // 3. Render Reports
+                        const reportBody = document.querySelector('#live-reports-table tbody');
+                        if (reportBody) {
+                            if (data.reports && data.reports.length > 0) {
+                                let rHtml = '';
+                                data.reports.forEach(r => {
+                                    const viewUrl = `{{ url('/security-reports/show') }}/${r.type_key}/${r.id}`;
+                                    rHtml += `
+                                    <tr>
+                                        <td>
+                                            <span class="badge ${r.badge_class} rounded-pill px-2 py-1 fw-semibold">${r.type_name}</span>
+                                        </td>
+                                        <td class="fw-semibold text-dark">${r.user_name}</td>
+                                        <td class="text-secondary">${r.site_name}</td>
+                                        <td class="text-muted small">${r.date}</td>
+                                        <td>
+                                            <a href="${viewUrl}" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                                <i data-feather="eye" style="width: 12px; height: 12px;"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                `;
+                                });
+                                reportBody.innerHTML = rHtml;
+                            } else {
+                                reportBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent security reports found.</td></tr>`;
+                            }
+                        }
+
+                        // 4. Render Forms
+                        const formBody = document.querySelector('#live-forms-table tbody');
+                        if (formBody) {
+                            if (data.forms && data.forms.length > 0) {
+                                let fHtml = '';
+                                data.forms.forEach(f => {
+                                    const viewUrl = `{{ url('/security-reports/show') }}/${f.type_key}/${f.id}`;
+                                    fHtml += `
+                                    <tr>
+                                        <td>
+                                            <span class="badge ${f.badge_class} rounded-pill px-2 py-1 fw-semibold">${f.type_name}</span>
+                                        </td>
+                                        <td class="fw-semibold text-dark">${f.user_name}</td>
+                                        <td class="text-secondary">${f.site_name}</td>
+                                        <td class="text-muted small">${f.date}</td>
+                                        <td>
+                                            <a href="${viewUrl}" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                                <i data-feather="eye" style="width: 12px; height: 12px;"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                `;
+                                });
+                                formBody.innerHTML = fHtml;
+                            } else {
+                                formBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent forms found.</td></tr>`;
+                            }
                         }
 
                         if (typeof feather !== 'undefined') {
