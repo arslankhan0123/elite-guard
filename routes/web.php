@@ -327,9 +327,206 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
 
         $tours = $sorted->take(5);
 
+        // Fetch Recent Reports (5 recent)
+        $recentReports = collect();
+
+        foreach (\App\Models\ReportIncidentForm::with('user', 'site')->latest()->take(5)->get() as $inc) {
+            $recentReports->push([
+                'id' => $inc->id,
+                'type_key' => 'incident',
+                'type_name' => 'Incident Report',
+                'badge_class' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                'user_name' => $inc->user?->name ?? 'N/A',
+                'site_name' => $inc->site?->name ?? 'N/A',
+                'date' => $inc->created_at ? $inc->created_at->format('d-M g:i A') : 'N/A',
+                'created_at' => $inc->created_at,
+            ]);
+        }
+
+        foreach (\App\Models\ReportSecurityGuardDisciplinaryForm::with('user', 'site')->latest()->take(5)->get() as $disc) {
+            $recentReports->push([
+                'id' => $disc->id,
+                'type_key' => 'disciplinary',
+                'type_name' => 'Disciplinary Report',
+                'badge_class' => 'bg-warning-subtle text-warning border border-warning-subtle',
+                'user_name' => $disc->user?->name ?? 'N/A',
+                'site_name' => $disc->site?->name ?? 'N/A',
+                'date' => $disc->created_at ? $disc->created_at->format('d-M g:i A') : 'N/A',
+                'created_at' => $disc->created_at,
+            ]);
+        }
+
+        foreach (\App\Models\ReportGeneralForm::with('user', 'site')->latest()->take(5)->get() as $gen) {
+            $recentReports->push([
+                'id' => $gen->id,
+                'type_key' => 'general',
+                'type_name' => 'General Report',
+                'badge_class' => 'bg-primary-subtle text-primary border border-primary-subtle',
+                'user_name' => $gen->user?->name ?? 'N/A',
+                'site_name' => $gen->site?->name ?? 'N/A',
+                'date' => $gen->created_at ? $gen->created_at->format('d-M g:i A') : 'N/A',
+                'created_at' => $gen->created_at,
+            ]);
+        }
+
+        foreach (\App\Models\ReportDailyShiftForm::with(['user', 'shift.site'])->latest()->take(5)->get() as $ds) {
+            $recentReports->push([
+                'id' => $ds->id,
+                'type_key' => 'daily-shift',
+                'type_name' => 'Daily Shift Report',
+                'badge_class' => 'bg-info-subtle text-info border border-info-subtle',
+                'user_name' => $ds->user?->name ?? 'N/A',
+                'site_name' => $ds->shift?->site?->name ?? 'N/A',
+                'date' => $ds->created_at ? $ds->created_at->format('d-M g:i A') : 'N/A',
+                'created_at' => $ds->created_at,
+            ]);
+        }
+
+        foreach (\App\Models\FireWatchReport::with('user', 'site')->latest()->take(5)->get() as $fw) {
+            $recentReports->push([
+                'id' => $fw->id,
+                'type_key' => 'fire-watch',
+                'type_name' => 'Fire Watch Report',
+                'badge_class' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                'user_name' => $fw->user?->name ?? 'N/A',
+                'site_name' => $fw->site?->name ?? 'N/A',
+                'date' => $fw->created_at ? $fw->created_at->format('d-M g:i A') : 'N/A',
+                'created_at' => $fw->created_at,
+            ]);
+        }
+
+        $reports = $recentReports->sortByDesc('created_at')->take(5)->values();
+
+        // Fetch Recent Forms (5 recent)
+        $recentForms = collect();
+
+        foreach (\App\Models\DailyVehicleChecklist::with('user', 'site')->latest()->take(5)->get() as $chk) {
+            $recentForms->push([
+                'id' => $chk->id,
+                'type_key' => 'vehicle-checklist',
+                'type_name' => 'Vehicle Checklist',
+                'badge_class' => 'bg-success-subtle text-success border border-success-subtle',
+                'user_name' => $chk->user?->name ?? 'N/A',
+                'site_name' => $chk->site?->name ?? 'N/A',
+                'date' => $chk->created_at ? $chk->created_at->format('d-M g:i A') : 'N/A',
+                'created_at' => $chk->created_at,
+            ]);
+        }
+
+        foreach (\App\Models\Assessment::with('user')->latest()->take(5)->get() as $ass) {
+            $recentForms->push([
+                'id' => $ass->id,
+                'type_key' => 'assessments',
+                'type_name' => 'Guard Assessment',
+                'badge_class' => 'bg-primary-subtle text-primary border border-primary-subtle',
+                'user_name' => $ass->user?->name ?? 'N/A',
+                'site_name' => 'N/A',
+                'date' => $ass->created_at ? $ass->created_at->format('d-M g:i A') : 'N/A',
+                'created_at' => $ass->created_at,
+            ]);
+        }
+
+        foreach (\App\Models\ShiftAdjustmentForm::with('user')->latest()->take(5)->get() as $adj) {
+            $recentForms->push([
+                'id' => $adj->id,
+                'type_key' => 'shift-adjustment',
+                'type_name' => 'Shift Adjustment',
+                'badge_class' => 'bg-warning-subtle text-warning border border-warning-subtle',
+                'user_name' => $adj->user?->name ?? 'N/A',
+                'site_name' => 'N/A',
+                'date' => $adj->created_at ? $adj->created_at->format('d-M g:i A') : 'N/A',
+                'created_at' => $adj->created_at,
+            ]);
+        }
+
+        $forms = $recentForms->sortByDesc('created_at')->take(5)->values();
+
+        // Compute Shift-based Tour Progress Stats (Site Tours & Runsheet Tours)
+        $todayStr = \Carbon\Carbon::now()->format('Y-m-d');
+        $targetDate = request('date') ? \Carbon\Carbon::parse(request('date'))->format('Y-m-d') : $todayStr;
+        $isToday = ($targetDate === $todayStr);
+
+        $totalSiteTourItems = 0;
+        $scannedSiteTourItems = 0;
+        $totalRunsheetEntries = 0;
+        $scannedRunsheetEntries = 0;
+
+        $stRepo = new \App\Repositories\SiteTourItemRepository();
+        $rsRepo = new \App\Repositories\RunSheetRepository();
+
+        if ($isToday) {
+            // Check currently active checked-in shifts across guards
+            $activeAttendances = \App\Models\ShiftAttendance::whereNull('clock_out_at')->with(['shift', 'user'])->get();
+
+            if ($activeAttendances->isNotEmpty()) {
+                foreach ($activeAttendances as $att) {
+                    if ($att->user && $att->shift) {
+                        $stRes = $stRepo->getUserSiteTourItems($att->user, $att->shift->date, $att->shift->date, $att->shift->id);
+                        if (isset($stRes['total_site_tour_items'])) {
+                            $totalSiteTourItems += $stRes['total_site_tour_items'];
+                            $scannedSiteTourItems += $stRes['scanned_site_tour_items'];
+                        }
+
+                        $rsRes = $rsRepo->getUserRunSheets($att->user, $att->shift->date, $att->shift->id);
+                        if (isset($rsRes['total_entries'])) {
+                            $totalRunsheetEntries += $rsRes['total_entries'];
+                            $scannedRunsheetEntries += $rsRes['scanned_entries'];
+                        }
+                    }
+                }
+            }
+        } else {
+            // For specified date, fetch shifts scheduled on that date
+            $shiftsOnDate = \App\Models\Shift::where('date', $targetDate)->with(['schedule.user'])->get();
+            foreach ($shiftsOnDate as $s) {
+                $user = $s->schedule?->user;
+                if ($user) {
+                    $stRes = $stRepo->getUserSiteTourItems($user, $s->date, $s->date, $s->id);
+                    if (isset($stRes['total_site_tour_items'])) {
+                        $totalSiteTourItems += $stRes['total_site_tour_items'];
+                        $scannedSiteTourItems += $stRes['scanned_site_tour_items'];
+                    }
+
+                    $rsRes = $rsRepo->getUserRunSheets($user, $s->date, $s->id);
+                    if (isset($rsRes['total_entries'])) {
+                        $totalRunsheetEntries += $rsRes['total_entries'];
+                        $scannedRunsheetEntries += $rsRes['scanned_entries'];
+                    }
+                }
+            }
+        }
+
+        // Fallback to direct SiteTourItem and RunSheet records on targetDate if count is 0
+        if ($totalSiteTourItems === 0) {
+            $siteTourItemsToday = \App\Models\SiteTourItem::with('scans')
+                ->where('date', $targetDate)
+                ->get();
+            $totalSiteTourItems = $siteTourItemsToday->count();
+            $scannedSiteTourItems = $siteTourItemsToday->filter(fn($item) => $item->scans->count() > 0)->count();
+        }
+
+        if ($totalRunsheetEntries === 0) {
+            $dailyRunSheetsToday = \App\Models\RunSheet::with('scans')
+                ->where('date', $targetDate)
+                ->get();
+            $totalRunsheetEntries = $dailyRunSheetsToday->count();
+            $scannedRunsheetEntries = $dailyRunSheetsToday->filter(fn($rs) => $rs->scans->count() > 0)->count();
+        }
+
         return response()->json([
             'attendances' => $attendances,
-            'tours' => $tours,
+            'tours'       => $tours,
+            'reports'     => $reports,
+            'forms'       => $forms,
+            'stats'       => [
+                'selected_date'       => $targetDate,
+                'selected_date_label' => \Carbon\Carbon::parse($targetDate)->format('D, d M Y'),
+                'is_today'            => $isToday,
+                'site_tours_total'    => $totalSiteTourItems,
+                'site_tours_scanned'  => $scannedSiteTourItems,
+                'runsheets_total'     => $totalRunsheetEntries,
+                'runsheets_scanned'  => $scannedRunsheetEntries,
+            ],
         ]);
     })->name('dashboard.live-data');
 

@@ -152,37 +152,45 @@
 
     /* Welcome Hero section */
     .hero-section {
-        background: linear-gradient(-45deg, #0b0f19, #1e1b4b, #2e1065, #0b0f19);
-        background-size: 400% 400%;
-        animation: gradientBG 12s ease infinite;
-        border-radius: 30px;
-        padding: 60px 50px;
+        background: linear-gradient(135deg, #0b0f19 0%, #1e1b4b 50%, #0b0f19 100%);
+        border-radius: 20px;
+        padding: 22px 30px;
         color: white;
-        margin-bottom: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        margin-bottom: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px -15px rgba(11, 15, 25, 0.6);
         position: relative;
         overflow: hidden;
     }
 
-    @keyframes gradientBG {
-        0% {
-            background-position: 0% 50%;
-        }
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -80px;
+        right: -80px;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
 
-        50% {
-            background-position: 100% 50%;
-        }
-
-        100% {
-            background-position: 0% 50%;
-        }
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        bottom: -80px;
+        left: 25%;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
     }
 
     /* Floating Logo Animation & White Glass Circle Container */
     .hero-logo-container {
-        width: 180px;
-        height: 180px;
+        width: 110px;
+        height: 110px;
         background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
@@ -191,16 +199,17 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2);
-        padding: 18px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.2);
+        padding: 10px;
         animation: floatLogo 5s ease-in-out infinite;
+        flex-shrink: 0;
     }
 
     .hero-logo-img {
-        max-height: 135px;
-        max-width: 135px;
+        max-height: 80px;
+        max-width: 80px;
         object-fit: contain;
-        filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.4));
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
     }
 
     @keyframes floatLogo {
@@ -209,7 +218,7 @@
         }
 
         50% {
-            transform: translateY(-10px) rotate(1.5deg);
+            transform: translateY(-6px) rotate(1.5deg);
         }
 
         100% {
@@ -218,40 +227,49 @@
     }
 
     .hero-title {
-        font-size: 3.5rem;
+        font-size: 2.1rem;
         font-weight: 850;
-        letter-spacing: -2px;
-        background: linear-gradient(to right, #fff, #94a3b8);
+        letter-spacing: -1px;
+        background: linear-gradient(to right, #fff, #cbd5e1);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        margin-bottom: 0.2rem;
     }
 
     .action-btn {
-        padding: 12px 30px;
-        border-radius: 15px;
+        padding: 8px 20px;
+        border-radius: 12px;
         font-weight: 700;
+        font-size: 0.88rem;
         transition: all 0.3s;
         border: none;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
 
     .btn-create-company {
-        background: var(--dash-purple);
+        background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
         color: white;
+    }
+
+    .btn-create-company:hover {
+        background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+        color: white;
+        transform: translateY(-1px);
     }
 
     .btn-create-nfc {
         background: rgba(255, 255, 255, 0.1);
         color: white;
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     .btn-create-nfc:hover {
         background: white;
         color: #0f172a;
+        transform: translateY(-1px);
     }
 
     /* Info Cards */
@@ -282,22 +300,48 @@
     <!-- Hero Section -->
     <div class="hero-section animate__animated animate__fadeIn">
         <div class="row align-items-center">
-            <div class="col-lg-7">
-                <span class="badge bg-soft-info text-info rounded-pill px-3 py-2 mb-3 fw-bold">ELITE GUARD OS</span>
-                <h1 class="hero-title">Elite <span style="background: linear-gradient(to right, #8b5cf6, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Security</span> Dashboard</h1>
-                <p class="text-white-50 fs-5 mb-4 mt-2">Manage your global security network, patrol sites, and NFC infrastructure with real-time precision.</p>
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="{{ route('companies.create') }}" class="action-btn btn-create-company shadow-lg">
-                        <i data-feather="plus-circle"></i> Add New Company
+            <div class="col-xl-7 col-lg-6">
+                <span class="badge bg-soft-info text-info rounded-pill px-2 py-1 mb-2 fw-bold" style="font-size: 0.7rem;">ELITE GUARD OS</span>
+                <h1 class="hero-title">Elite <span style="background: linear-gradient(to right, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Security</span> Dashboard</h1>
+                <p class="text-white-50 small mb-3 mt-1">Manage your global security network, patrol sites, and NFC infrastructure with real-time precision.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('companies.create') }}" class="action-btn btn-create-company shadow">
+                        <i data-feather="plus-circle" style="width: 16px; height: 16px;"></i> Add New Company
                     </a>
                     <a href="{{ route('nfc.create') }}" class="action-btn btn-create-nfc">
-                        <i data-feather="rss"></i> Generate NFC Tag
+                        <i data-feather="rss" style="width: 16px; height: 16px;"></i> Generate NFC Tag
                     </a>
                 </div>
             </div>
-            <div class="col-lg-5 text-center d-none d-lg-block">
-                <div class="hero-logo-container">
-                    <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" class="hero-logo-img img-fluid">
+            <div class="col-xl-5 col-lg-6 text-end d-none d-lg-block">
+                <div class="d-flex align-items-center justify-content-end gap-3 position-relative" style="z-index: 2;">
+                    <!-- Quick Stat Pills Glass Container -->
+                    <div class="d-flex flex-column gap-2 text-start">
+                        <div class="p-2 px-3 rounded-4 d-flex align-items-center gap-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px);">
+                            <div class="p-2 rounded-circle bg-primary bg-opacity-20 text-info d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                <i data-feather="map-pin" style="width: 16px; height: 16px;"></i>
+                            </div>
+                            <div>
+                                <div class="text-white-50 text-uppercase fw-bold" style="font-size: 0.62rem; letter-spacing: 0.5px;">Tactical Sites</div>
+                                <div class="fw-bold text-white small mb-0">{{ $siteCount }} Managed</div>
+                            </div>
+                        </div>
+
+                        <div class="p-2 px-3 rounded-4 d-flex align-items-center gap-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px);">
+                            <div class="p-2 rounded-circle bg-success bg-opacity-20 text-success d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                                <i data-feather="rss" style="width: 16px; height: 16px;"></i>
+                            </div>
+                            <div>
+                                <div class="text-white-50 text-uppercase fw-bold" style="font-size: 0.62rem; letter-spacing: 0.5px;">NFC Checkpoints</div>
+                                <div class="fw-bold text-white small mb-0">{{ $nfcCount }} Deployed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Glowing Glass Logo Circle Container -->
+                    <div class="hero-logo-container">
+                        <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" class="hero-logo-img img-fluid">
+                    </div>
                 </div>
             </div>
         </div>
@@ -426,6 +470,178 @@
                             <tbody>
                                 <tr>
                                     <td colspan="5" class="text-center text-muted py-4">Loading tour logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shift Patrol & Tour Progress Overview Section (col-12) -->
+    <div class="row g-4 mt-2">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+                        <div>
+                            <span class="badge rounded-pill px-3 py-1 fw-bold mb-2" style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); color: #60a5fa;">SHIFT METRICS OVERVIEW</span>
+                            <h4 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                                <i data-feather="shield" class="text-primary"></i> Active Shift Tour & Patrol Progress
+                            </h4>
+                        </div>
+
+                        <!-- AJAX Date Navigation Controls -->
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <div class="d-flex align-items-center gap-1 p-1 rounded-pill" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);">
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="prev-date-btn" title="Previous Day" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-feather="chevron-left" style="width: 18px; height: 18px;"></i>
+                                </button>
+
+                                <div class="d-flex align-items-center px-2 position-relative">
+                                    <i data-feather="calendar" class="text-info me-2" style="width: 16px; height: 16px;"></i>
+                                    <span id="metrics-date-display" class="fw-bold text-white small" style="min-width: 110px; text-align: center; cursor: pointer;">Today</span>
+                                    <input type="date" id="metrics-date-picker" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;">
+                                </div>
+
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="next-date-btn" title="Next Day" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i data-feather="chevron-right" style="width: 18px; height: 18px;"></i>
+                                </button>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-info rounded-pill px-3 py-1 fw-bold small text-dark d-none shadow-sm" id="today-date-btn" style="font-size: 0.75rem;">
+                                <i data-feather="rotate-ccw" style="width: 12px; height: 12px;" class="me-1"></i> Back to Today
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Site Tours Progress Card -->
+                        <div class="col-lg-6 col-12">
+                            <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="p-3 rounded-circle" style="background: rgba(139, 92, 246, 0.25); color: #c084fc;">
+                                            <i data-feather="compass" style="width: 28px; height: 28px;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-1">Site Tours Progress</h5>
+                                            <p class="text-white-50 small mb-0">Patrol items & checkpoint tours</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="h3 fw-bold mb-0 text-white" id="site-tours-count-display">0 / 0</div>
+                                        <span class="badge rounded-pill px-2 py-1 mt-1 small" style="background: rgba(192, 132, 252, 0.2); color: #e9d5ff;" id="site-tours-percent-badge">0% Scanned</span>
+                                    </div>
+                                </div>
+                                <!-- Progress Bar -->
+                                <div class="progress rounded-pill mb-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
+                                    <div id="site-tours-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #8b5cf6, #c084fc);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between text-white-50 small">
+                                    <span>Total Scanned Tours: <strong class="text-white" id="site-tours-scanned-txt">0</strong></span>
+                                    <span>Total Site Tours: <strong class="text-white" id="site-tours-total-txt">0</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Runsheet Tours Progress Card -->
+                        <div class="col-lg-6 col-12">
+                            <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="p-3 rounded-circle" style="background: rgba(59, 130, 246, 0.25); color: #60a5fa;">
+                                            <i data-feather="map" style="width: 28px; height: 28px;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-1">Runsheet Tours Progress</h5>
+                                            <p class="text-white-50 small mb-0">Multi-site runsheet entries</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="h3 fw-bold mb-0 text-white" id="runsheets-count-display">0 / 0</div>
+                                        <span class="badge rounded-pill px-2 py-1 mt-1 small" style="background: rgba(96, 165, 250, 0.2); color: #bfdbfe;" id="runsheets-percent-badge">0% Scanned</span>
+                                    </div>
+                                </div>
+                                <!-- Progress Bar -->
+                                <div class="progress rounded-pill mb-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
+                                    <div id="runsheets-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #38bdf8);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between text-white-50 small">
+                                    <span>Total Scanned Tours: <strong class="text-white" id="runsheets-scanned-txt">0</strong></span>
+                                    <span>Total Runsheet Tours: <strong class="text-white" id="runsheets-total-txt">0</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports & Forms Section -->
+    <div class="row g-4 mt-2">
+        <!-- Recent Security Reports Card -->
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="file-text" class="text-primary me-2"></i> Recent Security Reports
+                    </h5>
+                    <a href="{{ route('reports.all') }}" class="btn btn-sm btn-light-primary rounded-pill px-3 py-1 fw-bold align-items-center gap-1 d-flex" style="font-size: 0.75rem;">
+                        View All <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+                    </a>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="live-reports-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Report Type</th>
+                                    <th>Guard</th>
+                                    <th>Site</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Loading recent reports...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Forms Card -->
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="clipboard" class="text-warning me-2"></i> Recent Forms Submitted
+                    </h5>
+                    <a href="{{ route('reports.all') }}" class="btn btn-sm btn-light-warning rounded-pill px-3 py-1 fw-bold align-items-center gap-1 d-flex" style="font-size: 0.75rem;">
+                        View All <i data-feather="arrow-right" style="width: 14px; height: 14px;"></i>
+                    </a>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="live-forms-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Form Type</th>
+                                    <th>Guard</th>
+                                    <th>Site</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Loading recent forms...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -612,8 +828,23 @@
         document.addEventListener('DOMContentLoaded', function() {
             let isFirstLoad = true;
 
-            function fetchLiveDashboardData() {
-                fetch("{{ route('dashboard.live-data') }}")
+            function formatYmd(d) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            let currentSelectedDate = formatYmd(new Date());
+
+            function fetchLiveDashboardData(targetDate = null) {
+                if (targetDate) {
+                    currentSelectedDate = targetDate;
+                }
+
+                const fetchUrl = "{{ route('dashboard.live-data') }}?date=" + encodeURIComponent(currentSelectedDate);
+
+                fetch(fetchUrl)
                     .then(response => response.json())
                     .then(data => {
                         // 1. Render Attendances
@@ -681,6 +912,128 @@
                             tourBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent site tours found.</td></tr>`;
                         }
 
+                        // 3. Render Reports
+                        const reportBody = document.querySelector('#live-reports-table tbody');
+                        if (reportBody) {
+                            if (data.reports && data.reports.length > 0) {
+                                let rHtml = '';
+                                data.reports.forEach(r => {
+                                    const viewUrl = `{{ url('/security-reports/show') }}/${r.type_key}/${r.id}`;
+                                    rHtml += `
+                                    <tr>
+                                        <td>
+                                            <span class="badge ${r.badge_class} rounded-pill px-2 py-1 fw-semibold">${r.type_name}</span>
+                                        </td>
+                                        <td class="fw-semibold text-dark">${r.user_name}</td>
+                                        <td class="text-secondary">${r.site_name}</td>
+                                        <td class="text-muted small">${r.date}</td>
+                                        <td>
+                                            <a href="${viewUrl}" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                                <i data-feather="eye" style="width: 12px; height: 12px;"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                `;
+                                });
+                                reportBody.innerHTML = rHtml;
+                            } else {
+                                reportBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent security reports found.</td></tr>`;
+                            }
+                        }
+
+                        // 4. Render Forms
+                        const formBody = document.querySelector('#live-forms-table tbody');
+                        if (formBody) {
+                            if (data.forms && data.forms.length > 0) {
+                                let fHtml = '';
+                                data.forms.forEach(f => {
+                                    const viewUrl = `{{ url('/security-reports/show') }}/${f.type_key}/${f.id}`;
+                                    fHtml += `
+                                    <tr>
+                                        <td>
+                                            <span class="badge ${f.badge_class} rounded-pill px-2 py-1 fw-semibold">${f.type_name}</span>
+                                        </td>
+                                        <td class="fw-semibold text-dark">${f.user_name}</td>
+                                        <td class="text-secondary">${f.site_name}</td>
+                                        <td class="text-muted small">${f.date}</td>
+                                        <td>
+                                            <a href="${viewUrl}" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                                <i data-feather="eye" style="width: 12px; height: 12px;"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                `;
+                                });
+                                formBody.innerHTML = fHtml;
+                            } else {
+                                formBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No recent forms found.</td></tr>`;
+                            }
+                        }
+
+                        // 5. Update Shift Stats & Date Controls
+                        if (data.stats) {
+                            const stScanned = data.stats.site_tours_scanned || 0;
+                            const stTotal = data.stats.site_tours_total || 0;
+                            const stPercent = stTotal > 0 ? Math.round((stScanned / stTotal) * 100) : 0;
+
+                            const rsScanned = data.stats.runsheets_scanned || 0;
+                            const rsTotal = data.stats.runsheets_total || 0;
+                            const rsPercent = rsTotal > 0 ? Math.round((rsScanned / rsTotal) * 100) : 0;
+
+                            // Site Tours Elements
+                            const stDisplay = document.getElementById('site-tours-count-display');
+                            const stBadge = document.getElementById('site-tours-percent-badge');
+                            const stBar = document.getElementById('site-tours-progress-bar');
+                            const stScannedTxt = document.getElementById('site-tours-scanned-txt');
+                            const stTotalTxt = document.getElementById('site-tours-total-txt');
+
+                            if (stDisplay) stDisplay.textContent = `${stScanned} / ${stTotal}`;
+                            if (stBadge) stBadge.textContent = `${stPercent}% Scanned`;
+                            if (stBar) {
+                                stBar.style.width = `${stPercent}%`;
+                                stBar.setAttribute('aria-valuenow', stPercent);
+                            }
+                            if (stScannedTxt) stScannedTxt.textContent = stScanned;
+                            if (stTotalTxt) stTotalTxt.textContent = stTotal;
+
+                            // Runsheet Elements
+                            const rsDisplay = document.getElementById('runsheets-count-display');
+                            const rsBadge = document.getElementById('runsheets-percent-badge');
+                            const rsBar = document.getElementById('runsheets-progress-bar');
+                            const rsScannedTxt = document.getElementById('runsheets-scanned-txt');
+                            const rsTotalTxt = document.getElementById('runsheets-total-txt');
+
+                            if (rsDisplay) rsDisplay.textContent = `${rsScanned} / ${rsTotal}`;
+                            if (rsBadge) rsBadge.textContent = `${rsPercent}% Scanned`;
+                            if (rsBar) {
+                                rsBar.style.width = `${rsPercent}%`;
+                                rsBar.setAttribute('aria-valuenow', rsPercent);
+                            }
+                            if (rsScannedTxt) rsScannedTxt.textContent = rsScanned;
+                            if (rsTotalTxt) rsTotalTxt.textContent = rsTotal;
+
+                            // Date Navigation UI Updates
+                            const dateDisplay = document.getElementById('metrics-date-display');
+                            const datePicker = document.getElementById('metrics-date-picker');
+                            const todayBtn = document.getElementById('today-date-btn');
+
+                            if (dateDisplay) {
+                                dateDisplay.textContent = data.stats.is_today 
+                                    ? `Today (${data.stats.selected_date_label})` 
+                                    : data.stats.selected_date_label;
+                            }
+                            if (datePicker) {
+                                datePicker.value = data.stats.selected_date;
+                            }
+                            if (todayBtn) {
+                                if (data.stats.is_today) {
+                                    todayBtn.classList.add('d-none');
+                                } else {
+                                    todayBtn.classList.remove('d-none');
+                                }
+                            }
+                        }
+
                         if (typeof feather !== 'undefined') {
                             feather.replace();
                         }
@@ -690,20 +1043,28 @@
                             const attToast = document.getElementById('attendance-toast');
                             const toursToast = document.getElementById('tours-toast');
 
-                            attToast.classList.remove('d-none');
-                            attToast.classList.add('d-flex');
-                            toursToast.classList.remove('d-none');
-                            toursToast.classList.add('d-flex');
+                            if (attToast) {
+                                attToast.classList.remove('d-none');
+                                attToast.classList.add('d-flex');
+                            }
+                            if (toursToast) {
+                                toursToast.classList.remove('d-none');
+                                toursToast.classList.add('d-flex');
+                            }
 
                             if (typeof feather !== 'undefined') {
                                 feather.replace();
                             }
 
                             setTimeout(() => {
-                                attToast.classList.remove('d-flex');
-                                attToast.classList.add('d-none');
-                                toursToast.classList.remove('d-flex');
-                                toursToast.classList.add('d-none');
+                                if (attToast) {
+                                    attToast.classList.remove('d-flex');
+                                    attToast.classList.add('d-none');
+                                }
+                                if (toursToast) {
+                                    toursToast.classList.remove('d-flex');
+                                    toursToast.classList.add('d-none');
+                                }
                             }, 5000);
                         }
 
@@ -712,9 +1073,45 @@
                     .catch(error => console.error("Error fetching live dashboard data:", error));
             }
 
+            // Event Listeners for AJAX Date Navigation
+            const prevBtn = document.getElementById('prev-date-btn');
+            const nextBtn = document.getElementById('next-date-btn');
+            const datePicker = document.getElementById('metrics-date-picker');
+            const todayBtn = document.getElementById('today-date-btn');
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function() {
+                    const dt = new Date(currentSelectedDate + 'T00:00:00');
+                    dt.setDate(dt.getDate() - 1);
+                    fetchLiveDashboardData(formatYmd(dt));
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    const dt = new Date(currentSelectedDate + 'T00:00:00');
+                    dt.setDate(dt.getDate() + 1);
+                    fetchLiveDashboardData(formatYmd(dt));
+                });
+            }
+
+            if (datePicker) {
+                datePicker.addEventListener('change', function() {
+                    if (this.value) {
+                        fetchLiveDashboardData(this.value);
+                    }
+                });
+            }
+
+            if (todayBtn) {
+                todayBtn.addEventListener('click', function() {
+                    fetchLiveDashboardData(formatYmd(new Date()));
+                });
+            }
+
             // Fetch immediately and poll every 30 seconds (30000ms)
             fetchLiveDashboardData();
-            setInterval(fetchLiveDashboardData, 30000);
+            setInterval(() => fetchLiveDashboardData(), 30000);
         });
     </script>
     @endsection
