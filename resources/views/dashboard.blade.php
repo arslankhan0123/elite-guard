@@ -496,8 +496,8 @@
                                     <div id="site-tours-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #8b5cf6, #c084fc);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                                 <div class="d-flex justify-content-between text-white-50 small">
-                                    <span>Scanned Tours: <strong class="text-white" id="site-tours-scanned-txt">0</strong></span>
-                                    <span>Total Scheduled: <strong class="text-white" id="site-tours-total-txt">0</strong></span>
+                                    <span>Total Scanned Tours: <strong class="text-white" id="site-tours-scanned-txt">0</strong></span>
+                                    <span>Total Site Tours: <strong class="text-white" id="site-tours-total-txt">0</strong></span>
                                 </div>
                             </div>
                         </div>
@@ -525,8 +525,8 @@
                                     <div id="runsheets-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #38bdf8);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                                 <div class="d-flex justify-content-between text-white-50 small">
-                                    <span>Scanned Entries: <strong class="text-white" id="runsheets-scanned-txt">0</strong></span>
-                                    <span>Total Scheduled: <strong class="text-white" id="runsheets-total-txt">0</strong></span>
+                                    <span>Total Scanned Tours: <strong class="text-white" id="runsheets-scanned-txt">0</strong></span>
+                                    <span>Total Runsheet Tours: <strong class="text-white" id="runsheets-total-txt">0</strong></span>
                                 </div>
                             </div>
                         </div>
