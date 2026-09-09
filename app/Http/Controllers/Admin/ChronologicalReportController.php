@@ -190,149 +190,38 @@ class ChronologicalReportController extends Controller
             ]);
         }
 
-        // 2. Weekly RunSheets (Structured Patrols)
-        $runsheetTargets = collect();
-        $deletedRunsheetItems = DeletedWeeklyRunSheetItem::whereBetween('date', [$startDate, $actualEndDate])->get();
-
-        // (a) Fetch actual scans from weekly_run_sheet_scans for the date range
-        $scanGroupQuery = \App\Models\WeeklyRunSheetScan::with(['weeklyRunSheetEntry.site.nfcTags', 'weeklyRunSheetEntry.runSheet', 'user', 'nfcTag', 'weeklyRunSheet'])
+        // 2. Daily RunSheets (from run_sheets & run_sheet_scans)
+        $runSheetQuery = \App\Models\RunSheet::with(['site.nfcTags', 'scans.nfcTag', 'scans.user', 'user', 'shift'])
             ->whereBetween('date', [$startDate, $actualEndDate]);
 
         if ($userId) {
-            $scanGroupQuery->where('user_id', $userId);
-        }
-        if ($weeklyRunSheetId) {
-            $scanGroupQuery->where('weekly_run_sheet_id', $weeklyRunSheetId);
+            $runSheetQuery->where('user_id', $userId);
         }
         if (!empty($siteIds)) {
-            $scanGroupQuery->whereHas('weeklyRunSheetEntry', function ($q) use ($siteIds) {
-                $q->whereIn('site_id', $siteIds);
-            });
-        }
-
-        $scansInRange = $scanGroupQuery->get();
-
-        $scansGrouped = $scansInRange->groupBy(function ($scan) {
-            $d = is_string($scan->date) ? $scan->date : $scan->date->format('Y-m-d');
-            return $d . '_' . $scan->weekly_run_sheet_entry_id . '_' . $scan->user_id;
-        });
-
-        foreach ($scansGrouped as $key => $scansForEntry) {
-            $firstScan = $scansForEntry->first();
-            $entry = $firstScan->weeklyRunSheetEntry;
-            if (!$entry) continue;
-
-            $d = is_string($firstScan->date) ? $firstScan->date : $firstScan->date->format('Y-m-d');
-            $uId = $firstScan->user_id;
-
-            $isDeleted = $deletedRunsheetItems->contains(function ($del) use ($d, $entry, $uId) {
-                $dStr = is_string($del->date) ? $del->date : $del->date->format('Y-m-d');
-                $dMatch = $dStr === $d;
-                $eMatch = (int)$del->weekly_run_sheet_entry_id === (int)$entry->id;
-                $uMatch = empty($del->user_id) || (int)$del->user_id === (int)$uId;
-                return $dMatch && $eMatch && $uMatch;
-            });
-            if ($isDeleted) continue;
-
-            $runsheetTargets->put($key, [
-                'date' => $d,
-                'entry' => $entry,
-                'user' => $firstScan->user,
-                'weekly_run_sheet_id' => $firstScan->weekly_run_sheet_id,
-                'scans' => $scansForEntry,
-            ]);
-        }
-
-        // (b) Also include scheduled shifts of type runsheet (for unscanned scheduled entries)
-        $runsheetShiftsQuery = \App\Models\Shift::with(['schedule.user', 'weeklyRunSheet.entries.site.nfcTags'])
-            ->where('type', 'runsheet')
-            ->whereBetween('date', [$startDate, $actualEndDate]);
-
-        if ($userId) {
-            $runsheetShiftsQuery->whereHas('schedule', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            });
-        }
-        if (!empty($siteIds)) {
-            $runsheetShiftsQuery->whereHas('weeklyRunSheet.entries', function ($q) use ($siteIds) {
-                $q->whereIn('site_id', $siteIds);
-            });
+            $runSheetQuery->whereIn('site_id', $siteIds);
         }
         if ($weeklyRunSheetId) {
-            $runsheetShiftsQuery->where('weekly_run_sheet_id', $weeklyRunSheetId);
+            $runSheetQuery->whereHas('shift', function ($q) use ($weeklyRunSheetId) {
+                $q->where('weekly_run_sheet_id', $weeklyRunSheetId);
+            });
         }
 
-        $runsheetShifts = $runsheetShiftsQuery->get();
+        $runSheets = $runSheetQuery->get();
 
-        foreach ($runsheetShifts as $shift) {
-            $user = $shift->schedule?->user;
-            $shiftDate = is_string($shift->date) ? $shift->date : $shift->date->format('Y-m-d');
-            $weeklyRunSheet = $shift->weeklyRunSheet;
-
-            if (!$weeklyRunSheet) continue;
-
-            $dayOfWeek = Carbon::parse($shiftDate)->dayOfWeekIso;
-            $entries = $weeklyRunSheet->entries->where('day_of_week', $dayOfWeek);
-
-            foreach ($entries as $entry) {
-                if (!empty($siteIds) && !in_array($entry->site_id, $siteIds)) {
-                    continue;
-                }
-
-                $uId = $user?->id ?? 0;
-                $key = $shiftDate . '_' . $entry->id . '_' . $uId;
-
-                $isDeleted = $deletedRunsheetItems->contains(function ($del) use ($shiftDate, $entry, $uId) {
-                    $dStr = is_string($del->date) ? $del->date : $del->date->format('Y-m-d');
-                    $dMatch = $dStr === $shiftDate;
-                    $eMatch = (int)$del->weekly_run_sheet_entry_id === (int)$entry->id;
-                    $uMatch = empty($del->user_id) || (int)$del->user_id === (int)$uId;
-                    return $dMatch && $eMatch && $uMatch;
-                });
-                if ($isDeleted) continue;
-
-                if (!$runsheetTargets->has($key)) {
-                    $existingScans = \App\Models\WeeklyRunSheetScan::with(['nfcTag', 'user'])
-                        ->where('weekly_run_sheet_entry_id', $entry->id)
-                        ->where('date', $shiftDate)
-                        ->when($uId, fn($q) => $q->where('user_id', $uId))
-                        ->get();
-
-                    $runsheetTargets->put($key, [
-                        'date' => $shiftDate,
-                        'entry' => $entry,
-                        'user' => $user,
-                        'weekly_run_sheet_id' => $shift->weekly_run_sheet_id,
-                        'scans' => $existingScans,
-                    ]);
-                }
-            }
+        if ($startTime || $endTime) {
+            $runSheets = $runSheets->filter(function ($item) use ($filterStartDatetime, $filterEndDatetime) {
+                $itemStart = $item->date ? (is_string($item->date) ? $item->date : $item->date->format('Y-m-d')) : 'N/A';
+                $itemTime = $item->start_time ?: '00:00:00';
+                $itemStartDatetime = $itemStart . ' ' . $itemTime;
+                return $itemStartDatetime >= $filterStartDatetime && $itemStartDatetime <= $filterEndDatetime;
+            });
         }
 
-        foreach ($runsheetTargets as $target) {
-            $entry = $target['entry'];
-            $targetDate = $target['date'];
-            $user = $target['user'];
-            $scansForEntry = $target['scans'];
-
-            $dayOfWeek = Carbon::parse($targetDate)->dayOfWeekIso;
-
-            $entryStart = $entry->start_time ?: ($entry->runSheet?->getDayStartTime($dayOfWeek));
-            $entryEnd = $entry->end_time ?: ($entry->runSheet?->getDayEndTime($dayOfWeek));
-
-            $entryStartFormatted = $entryStart ? \Carbon\Carbon::parse($entryStart)->format('H:i:s') : '00:00:00';
-            $entryStartDatetime = $targetDate . ' ' . $entryStartFormatted;
-
-            if ($startTime || $endTime) {
-                if ($entryStartDatetime < $filterStartDatetime || $entryStartDatetime > $filterEndDatetime) {
-                    continue;
-                }
-            }
-
-            $requiredTags = $entry->site?->nfcTags ?? collect();
+        foreach ($runSheets as $item) {
+            $requiredTags = $item->site?->nfcTags ?? collect();
             $requiredTagIds = $requiredTags->pluck('id')->toArray();
 
-            $validScans = $scansForEntry
+            $validScans = $item->scans
                 ->whereIn('nfc_tag_id', $requiredTagIds)
                 ->unique('nfc_tag_id')
                 ->sortBy('time');
@@ -347,52 +236,33 @@ class ChronologicalReportController extends Controller
                 ? 'Completed'
                 : ($scannedCount > 0 ? 'Partial' : 'Missed');
 
-            $scansList = $validScans->map(function($scan) {
+            $scansList = $validScans->map(function ($scan) {
                 return [
                     'time' => $scan->time,
                     'name' => $scan->nfcTag?->name ?? 'N/A',
-                    'uid' => $scan->nfcTag?->uid ?? 'N/A',
+                    'uid'  => $scan->nfcTag?->uid ?? 'N/A',
                     'image' => $scan->image,
                     'user' => $scan->user?->name ?? 'N/A',
                 ];
             })->values()->all();
 
-            $runsheetStartTime = $entryStart ?: '00:00:00';
-            $runsheetEndTime = $entryEnd ?: '23:59:59';
-
-            $allScansForTime = $validScans->isNotEmpty() ? $validScans : $scansForEntry;
-            if ($allScansForTime->isNotEmpty()) {
-                $sortedScans = $allScansForTime->sortBy(function ($scan) {
-                    $d = is_string($scan->date) ? $scan->date : ($scan->date ? $scan->date->format('Y-m-d') : '');
-                    return $d . ' ' . $scan->time;
-                })->values();
-
-                $firstScanTime = $sortedScans->first()->time ?? null;
-                $lastScanTime = $sortedScans->last()->time ?? null;
-
-                if (!empty($firstScanTime)) {
-                    $runsheetStartTime = $firstScanTime;
-                }
-                if (!empty($lastScanTime)) {
-                    $runsheetEndTime = $lastScanTime;
-                }
-            }
+            $dateStr = $item->date ? (is_string($item->date) ? $item->date : $item->date->format('Y-m-d')) : 'N/A';
 
             $merged->push([
-                'id' => $entry->id,
-                'type' => 'Runsheet Tour',
-                'name' => $entry->tour_name ?: ($entry->runSheet?->name ?? 'Runsheet Tour'),
-                'user' => $user?->name ?? 'N/A',
-                'user_id' => $user?->id ?? null,
-                'site' => $entry->site?->name ?? 'N/A',
-                'date' => $targetDate,
-                'start_time' => $runsheetStartTime,
-                'end_time' => $runsheetEndTime,
+                'id'             => $item->id,
+                'type'           => 'Runsheet Tour',
+                'name'           => $item->run_sheet_name ?: 'Runsheet Tour',
+                'user'           => $item->user?->name ?? 'N/A',
+                'user_id'        => $item->user_id,
+                'site'           => $item->site?->name ?? 'N/A',
+                'date'           => $dateStr,
+                'start_time'     => $item->start_time ?: '00:00:00',
+                'end_time'       => $item->end_time ?: '23:59:59',
                 'required_count' => $requiredCount,
-                'scanned_count' => $scannedCount,
-                'status' => $status,
-                'scans' => $scansList,
-                'missing_tags' => $missingTags->pluck('name')->values()->all(),
+                'scanned_count'  => $scannedCount,
+                'status'         => $status,
+                'scans'          => $scansList,
+                'missing_tags'   => $missingTags->pluck('name')->values()->all(),
             ]);
         }
 
@@ -514,22 +384,13 @@ class ChronologicalReportController extends Controller
                 $item->delete();
             }
         } elseif ($type === 'Runsheet Tour') {
-            $scans = \App\Models\WeeklyRunSheetScan::where('weekly_run_sheet_entry_id', $id)
-                ->when($date, fn($q) => $q->whereDate('date', $date))
-                ->when($userId, fn($q) => $q->where('user_id', $userId))
-                ->get();
-            foreach ($scans as $scan) {
-                $this->deletePhysicalImage($scan->image);
-                $scan->delete();
-            }
-
-            if ($id && $date) {
-                $formattedDate = Carbon::parse($date)->format('Y-m-d');
-                DeletedWeeklyRunSheetItem::firstOrCreate([
-                    'weekly_run_sheet_entry_id' => $id,
-                    'date' => $formattedDate,
-                    'user_id' => $userId ?: null,
-                ]);
+            $item = \App\Models\RunSheet::find($id);
+            if ($item) {
+                foreach ($item->scans as $scan) {
+                    $this->deletePhysicalImage($scan->image ?? null);
+                    $scan->delete();
+                }
+                $item->delete();
             }
         } elseif ($type === 'Site Checkpoints Tour') {
             $item = \App\Models\SiteItem::find($id);

@@ -12,6 +12,7 @@ class RunSheet extends Model
     protected $fillable = [
         'user_id',
         'site_id',
+        'shift_id',
         'date',
         'run_sheet_name',
         'start_time',
@@ -35,6 +36,14 @@ class RunSheet extends Model
     public function site()
     {
         return $this->belongsTo(Site::class);
+    }
+
+    /**
+     * Get the shift assigned in this run sheet.
+     */
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
     }
 
     /**

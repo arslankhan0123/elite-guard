@@ -9,6 +9,9 @@ use App\Models\Site;
 use App\Models\SiteTour;
 use App\Models\SiteTourItem;
 use App\Models\User;
+use App\Models\WeeklyRunSheet;
+use App\Models\WeeklyRunSheetEntry;
+use App\Models\RunSheet;
 use Carbon\Carbon;
 
 trait CommonTrait
@@ -211,6 +214,69 @@ trait CommonTrait
 
         if ($intendedItems) {
             SiteTourItem::insert(array_values($intendedItems));
+        }
+    }
+
+    private function syncRunSheetForShift(Shift $shift, int $userId): void
+    {
+        if (!$shift->weekly_run_sheet_id) {
+            return;
+        }
+
+        $user = User::find($userId);
+        if ($user) {
+            $user->weeklyRunSheets()->syncWithoutDetaching([
+                $shift->weekly_run_sheet_id => ['assigned_at' => now()]
+            ]);
+        }
+
+        $shiftDateStr = $shift->date ?: Carbon::now(config('app.timezone', 'UTC'))->toDateString();
+        $carbonDate = Carbon::parse($shiftDateStr);
+        $dayOfWeek = $carbonDate->dayOfWeekIso; // 1 = Mon ... 7 = Sun
+
+        $weeklyRunSheet = $shift->relationLoaded('weeklyRunSheet')
+            ? $shift->weeklyRunSheet
+            : WeeklyRunSheet::with('entries')->find($shift->weekly_run_sheet_id);
+
+        if (!$weeklyRunSheet) {
+            return;
+        }
+
+        $entries = $weeklyRunSheet->entries->where('day_of_week', $dayOfWeek);
+
+        foreach ($entries as $entry) {
+            $startTime = $entry->start_time ?: $shift->start_time;
+            $endTime = $entry->end_time ?: $shift->end_time;
+            $durationStr = null;
+
+            if ($startTime && $endTime) {
+                $start = Carbon::parse($startTime);
+                $end = Carbon::parse($endTime);
+                if ($end->lt($start)) {
+                    $end->addDay();
+                }
+                $diffMinutes = $start->diffInMinutes($end);
+                $hours = floor($diffMinutes / 60);
+                $mins = $diffMinutes % 60;
+                $durationStr = $mins > 0 ? "{$hours}h {$mins}m" : "{$hours}h";
+            }
+
+            RunSheet::updateOrCreate(
+                [
+                    'user_id'    => $userId,
+                    'site_id'    => $entry->site_id,
+                    'date'       => $shiftDateStr,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                ],
+                [
+                    'shift_id'       => $shift->id,
+                    'run_sheet_name' => $entry->tour_name ?: $weeklyRunSheet->name,
+                    'duration'       => $durationStr,
+                    'job_type'       => 'Mobile Patrol',
+                    'sequence'       => (string) $entry->sequence,
+                ]
+            );
         }
     }
 }

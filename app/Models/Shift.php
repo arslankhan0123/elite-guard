@@ -74,12 +74,15 @@ class Shift extends Model
             }
         }
 
-        // 4. Delete RunSheet & RunSheetScan records matching user_id, site_id, and date
-        if ($userId && $this->site_id && $this->date) {
-            $runSheets = RunSheet::where('user_id', $userId)
-                ->where('site_id', $this->site_id)
-                ->where('date', $this->date)
-                ->get();
+        // 4. Delete RunSheet & RunSheetScan records matching shift_id or user_id/site_id/date
+        if ($this->id) {
+            $runSheets = RunSheet::where('shift_id', $this->id)->get();
+            if ($runSheets->isEmpty() && $userId && $this->site_id && $this->date) {
+                $runSheets = RunSheet::where('user_id', $userId)
+                    ->where('site_id', $this->site_id)
+                    ->where('date', $this->date)
+                    ->get();
+            }
 
             foreach ($runSheets as $rs) {
                 foreach ($rs->scans as $scan) {
