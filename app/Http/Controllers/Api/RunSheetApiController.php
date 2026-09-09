@@ -56,6 +56,8 @@ class RunSheetApiController extends Controller
      *                 @OA\Property(property="total_tags", type="integer", example=6),
      *                 @OA\Property(property="total_scanned_tags", type="integer", example=2),
      *                 @OA\Property(property="shift", type="object", nullable=true, description="Active or upcoming shift object"),
+     *                 @OA\Property(property="weekly_run_sheet", type="object", nullable=true, description="Parent weekly runsheet / main route template object"),
+     *                 @OA\Property(property="main_route", type="object", nullable=true, description="Alias for parent weekly runsheet / main route template object"),
      *                 @OA\Property(property="run_sheets", type="array", @OA\Items(type="object",
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="user_id", type="integer", example=1),
@@ -71,6 +73,8 @@ class RunSheetApiController extends Controller
      *                     @OA\Property(property="is_scanned", type="boolean", example=false),
      *                     @OA\Property(property="total_tags", type="integer", example=2),
      *                     @OA\Property(property="scanned_tags_count", type="integer", example=0),
+     *                     @OA\Property(property="weekly_run_sheet", type="object", nullable=true, description="Main route template object"),
+     *                     @OA\Property(property="main_route", type="object", nullable=true, description="Main route template object"),
      *                     @OA\Property(property="site", type="object",
      *                         @OA\Property(property="id", type="integer", example=1),
      *                         @OA\Property(property="name", type="string", example="Elite Plaza"),
@@ -95,6 +99,8 @@ class RunSheetApiController extends Controller
                 'status'             => true,
                 'message'            => 'No active or upcoming shift found.',
                 'shift'              => null,
+                'weekly_run_sheet'   => null,
+                'main_route'         => null,
                 'total_run_sheets'   => 0,
                 'total_tags'         => 0,
                 'total_scanned_tags' => 0,
@@ -107,6 +113,8 @@ class RunSheetApiController extends Controller
         $data = $this->runSheetRepo->getUserRunSheets($user, $date, $activeShift->id);
 
         $data['shift'] = $activeShift;
+        $data['weekly_run_sheet'] = $activeShift->weeklyRunSheet;
+        $data['main_route'] = $activeShift->weeklyRunSheet;
 
         return $this->successResponse($data, 'Run sheets fetched successfully.');
     }

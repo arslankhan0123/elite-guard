@@ -114,6 +114,7 @@ class ShiftRepository
         $shifts = Shift::with([
             'schedule.user',
             'site.company',
+            'weeklyRunSheet',
             'attendances' => function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             }

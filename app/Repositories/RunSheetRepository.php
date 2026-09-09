@@ -14,7 +14,7 @@ class RunSheetRepository
      */
     public function getUserRunSheets($user, $date = null, $shiftId = null)
     {
-        $query = RunSheet::with('site.nfcTags', 'site.company', 'scans')
+        $query = RunSheet::with('site.nfcTags', 'site.company', 'scans', 'shift.weeklyRunSheet')
             ->where('user_id', $user->id);
 
         if ($shiftId) {
@@ -65,6 +65,10 @@ class RunSheetRepository
             $sheetArray['is_scanned'] = count($scannedTagIds) > 0;
             $sheetArray['total_tags'] = count($tags);
             $sheetArray['scanned_tags_count'] = count($scannedTagIds);
+
+            $mainRoute = $runSheet->shift?->weeklyRunSheet;
+            $sheetArray['weekly_run_sheet'] = $mainRoute;
+            $sheetArray['main_route'] = $mainRoute;
 
             return $sheetArray;
         });
