@@ -14,7 +14,7 @@ class RunSheetRepository
      */
     public function getUserRunSheets($user, $date = null, $shiftId = null)
     {
-        $query = RunSheet::with('site.nfcTags', 'site.company', 'scans', 'shift.weeklyRunSheet')
+        $query = RunSheet::with('site.nfcTags', 'site.company', 'scans', 'shift.weeklyRunSheet', 'weeklyRunSheetEntry')
             ->where('user_id', $user->id);
 
         if ($shiftId) {
@@ -33,7 +33,7 @@ class RunSheetRepository
             $query->where('date', Carbon::today()->format('Y-m-d'));
         }
 
-        $query->orderBy('start_time', 'asc');
+        $query->orderByRaw('CAST(sequence AS UNSIGNED) ASC')->orderBy('start_time', 'asc');
 
         $runSheets = $query->get();
 

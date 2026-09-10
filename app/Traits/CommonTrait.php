@@ -242,7 +242,7 @@ trait CommonTrait
             return;
         }
 
-        $entries = $weeklyRunSheet->entries->where('day_of_week', $dayOfWeek);
+        $entries = $weeklyRunSheet->entries->where('day_of_week', $dayOfWeek)->sortBy('sequence');
 
         foreach ($entries as $entry) {
             $startTime = $entry->start_time ?: $shift->start_time;
@@ -263,14 +263,15 @@ trait CommonTrait
 
             RunSheet::updateOrCreate(
                 [
-                    'user_id'    => $userId,
-                    'site_id'    => $entry->site_id,
-                    'date'       => $shiftDateStr,
-                    'start_time' => $startTime,
-                    'end_time'   => $endTime,
+                    'user_id'                   => $userId,
+                    'shift_id'                  => $shift->id,
+                    'weekly_run_sheet_entry_id' => $entry->id,
                 ],
                 [
-                    'shift_id'       => $shift->id,
+                    'site_id'        => $entry->site_id,
+                    'date'           => $shiftDateStr,
+                    'start_time'     => $startTime,
+                    'end_time'       => $endTime,
                     'run_sheet_name' => $entry->tour_name ?: $weeklyRunSheet->name,
                     'duration'       => $durationStr,
                     'job_type'       => 'Mobile Patrol',
