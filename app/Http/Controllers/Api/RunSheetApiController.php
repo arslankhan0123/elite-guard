@@ -237,4 +237,70 @@ class RunSheetApiController extends Controller
 
         return $this->successResponse($result['runsheet'], 'Scan recorded successfully.');
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/run-sheets/finish",
+     *     summary="Finish run sheets by shift IDs",
+     *     description="Takes an array of shift IDs and updates the runsheet_status of matching run sheets to completed.",
+     *     tags={"Run Sheets"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"shift_ids"},
+     *             @OA\Property(
+     *                 property="shift_ids",
+     *                 type="array",
+     *                 description="Array of shift IDs to mark run sheets as completed",
+     *                 @OA\Items(type="integer", example=806)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Run sheets finished successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Success"),
+     *             @OA\Property(property="message", type="string", example="Run sheets finished successfully."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="updated_count", type="integer", example=5),
+     *                 @OA\Property(property="shift_ids", type="array", @OA\Items(type="integer"))
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Error"),
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function finishRunSheets(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'shift_ids'   => 'required|array',
+            'shift_ids.*' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), null, 422);
+        }
+
+        $shiftIds = $request->input('shift_ids', []);
+        $updatedCount = 0;
+
+        foreach ($shiftIds as $shiftId) {
+            $updatedCount += RunSheet::where('shift_id', $shiftId)
+                ->update(['runsheet_status' => 'completed']);
+        }
+
+        return $this->successResponse([
+            'updated_count' => $updatedCount,
+            'shift_ids'     => $shiftIds,
+        ], 'Run sheets finished successfully.');
+    }
 }

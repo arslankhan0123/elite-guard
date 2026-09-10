@@ -4220,13 +4220,14 @@
                 "tags": [
                     "Run Sheets"
                 ],
-                "summary": "Get run sheets for the authenticated user",
+                "summary": "Get run sheets for the authenticated user based on active shift",
+                "description": "Resolves active or upcoming shift for the authenticated user and returns assigned daily run sheets for that shift.",
                 "operationId": "d62c05af23f906bdf9c705723c701e93",
                 "parameters": [
                     {
                         "name": "date",
                         "in": "query",
-                        "description": "Filter by date (YYYY-MM-DD). Defaults to today if not provided.",
+                        "description": "Filter by date (YYYY-MM-DD). Defaults to active shift date if not provided.",
                         "required": false,
                         "schema": {
                             "type": "string",
@@ -4263,6 +4264,14 @@
                                                     "type": "integer",
                                                     "example": 2
                                                 },
+                                                "total_entries": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                },
+                                                "scanned_entries": {
+                                                    "type": "integer",
+                                                    "example": 0
+                                                },
                                                 "total_tags": {
                                                     "type": "integer",
                                                     "example": 6
@@ -4270,6 +4279,21 @@
                                                 "total_scanned_tags": {
                                                     "type": "integer",
                                                     "example": 2
+                                                },
+                                                "shift": {
+                                                    "description": "Active or upcoming shift object",
+                                                    "type": "object",
+                                                    "nullable": true
+                                                },
+                                                "weekly_run_sheet": {
+                                                    "description": "Parent weekly runsheet / main route template object",
+                                                    "type": "object",
+                                                    "nullable": true
+                                                },
+                                                "main_route": {
+                                                    "description": "Alias for parent weekly runsheet / main route template object",
+                                                    "type": "object",
+                                                    "nullable": true
                                                 },
                                                 "run_sheets": {
                                                     "type": "array",
@@ -4287,10 +4311,15 @@
                                                                 "type": "integer",
                                                                 "example": 1
                                                             },
+                                                            "shift_id": {
+                                                                "type": "integer",
+                                                                "example": 1,
+                                                                "nullable": true
+                                                            },
                                                             "date": {
                                                                 "type": "string",
                                                                 "format": "date",
-                                                                "example": "2026-05-07"
+                                                                "example": "2026-09-08"
                                                             },
                                                             "run_sheet_name": {
                                                                 "type": "string",
@@ -4315,6 +4344,28 @@
                                                             "sequence": {
                                                                 "type": "string",
                                                                 "example": "1 of 1"
+                                                            },
+                                                            "is_scanned": {
+                                                                "type": "boolean",
+                                                                "example": false
+                                                            },
+                                                            "total_tags": {
+                                                                "type": "integer",
+                                                                "example": 2
+                                                            },
+                                                            "scanned_tags_count": {
+                                                                "type": "integer",
+                                                                "example": 0
+                                                            },
+                                                            "weekly_run_sheet": {
+                                                                "description": "Main route template object",
+                                                                "type": "object",
+                                                                "nullable": true
+                                                            },
+                                                            "main_route": {
+                                                                "description": "Main route template object",
+                                                                "type": "object",
+                                                                "nullable": true
                                                             },
                                                             "site": {
                                                                 "properties": {
@@ -4364,13 +4415,13 @@
                 "tags": [
                     "Run Sheets"
                 ],
-                "summary": "Record an NFC tag scan for a run sheet",
-                "description": "Validates scan location and prevents duplicate scans for the same day.",
+                "summary": "Record an NFC tag scan for a daily run sheet",
+                "description": "Validates scan location, prevents duplicate scans for the same day, and stores scan record with optional image upload into run_sheet_scans table.",
                 "operationId": "e6cf6a88422aca9bb1d8321e0ec00e4f",
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "run_sheet_id",
@@ -4378,20 +4429,36 @@
                                 ],
                                 "properties": {
                                     "run_sheet_id": {
+                                        "description": "ID of the daily run sheet from run_sheets table",
                                         "type": "integer",
-                                        "example": 46
+                                        "example": 8
                                     },
                                     "nfc_tag_id": {
+                                        "description": "ID of the scanned NFC tag",
                                         "type": "integer",
-                                        "example": 2
+                                        "example": 3
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-08",
+                                        "nullable": true
                                     },
                                     "latitude": {
                                         "type": "string",
-                                        "example": "31.5038682"
+                                        "example": "31.5038682",
+                                        "nullable": true
                                     },
                                     "longitude": {
                                         "type": "string",
-                                        "example": "74.3480792"
+                                        "example": "74.3480792",
+                                        "nullable": true
+                                    },
+                                    "image": {
+                                        "description": "Optional photo taken during scanning",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -4460,6 +4527,100 @@
                                         "data": {
                                             "type": "object",
                                             "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/run-sheets/finish": {
+            "post": {
+                "tags": [
+                    "Run Sheets"
+                ],
+                "summary": "Finish run sheets by shift IDs",
+                "description": "Takes an array of shift IDs and updates the runsheet_status of matching run sheets to completed.",
+                "operationId": "c37713119bcf84af9ebfcfbd1c0e64cf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "shift_ids"
+                                ],
+                                "properties": {
+                                    "shift_ids": {
+                                        "description": "Array of shift IDs to mark run sheets as completed",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 806
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Run sheets finished successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Run sheets finished successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "updated_count": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "shift_ids": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "message": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
