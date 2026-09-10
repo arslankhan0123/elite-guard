@@ -13,6 +13,7 @@ class RunSheet extends Model
         'user_id',
         'site_id',
         'shift_id',
+        'weekly_run_sheet_entry_id',
         'date',
         'run_sheet_name',
         'start_time',
@@ -44,6 +45,14 @@ class RunSheet extends Model
     public function shift()
     {
         return $this->belongsTo(Shift::class);
+    }
+
+    /**
+     * Get the weekly run sheet entry associated with this run sheet.
+     */
+    public function weeklyRunSheetEntry()
+    {
+        return $this->belongsTo(WeeklyRunSheetEntry::class, 'weekly_run_sheet_entry_id');
     }
 
     /**
