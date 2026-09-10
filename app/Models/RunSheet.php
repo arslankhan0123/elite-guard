@@ -21,6 +21,7 @@ class RunSheet extends Model
         'duration',
         'job_type',
         'sequence',
+        'runsheet_status',
     ];
 
     /**

@@ -70,6 +70,7 @@ Route::middleware('auth:api')->group(function () {
     Route::group(['prefix' => '/run-sheets'], function () {
         Route::get('/', [RunSheetApiController::class, 'index']);
         Route::post('/scan', [RunSheetApiController::class, 'storeScan']);
+        Route::post('/finish', [RunSheetApiController::class, 'finishRunSheets']);
         Route::get('/weekly', [WeeklyRunSheetApiController::class, 'index']);
         Route::get('/user', [WeeklyRunSheetApiController::class, 'userRunSheets']);
         Route::post('/weekly/scan', [WeeklyRunSheetApiController::class, 'storeScan']);
