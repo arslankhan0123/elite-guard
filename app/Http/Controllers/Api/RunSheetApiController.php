@@ -139,8 +139,10 @@ class RunSheetApiController extends Controller
      *                 @OA\Property(property="run_sheet_id", type="integer", example=8, description="ID of the daily run sheet from run_sheets table"),
      *                 @OA\Property(property="nfc_tag_id", type="integer", example=3, description="ID of the scanned NFC tag"),
      *                 @OA\Property(property="date", type="string", format="date", nullable=true, example="2026-09-08"),
+     *                 @OA\Property(property="time", type="string", nullable=true, example="14:30:00"),
      *                 @OA\Property(property="latitude", type="string", nullable=true, example="31.5038682"),
      *                 @OA\Property(property="longitude", type="string", nullable=true, example="74.3480792"),
+     *                 @OA\Property(property="reason", type="string", nullable=true, example="NFC tag was inaccessible"),
      *                 @OA\Property(property="image", type="string", format="binary", nullable=true, description="Optional photo taken during scanning")
      *             )
      *         )
@@ -181,6 +183,8 @@ class RunSheetApiController extends Controller
             'latitude'     => 'nullable|string',
             'longitude'    => 'nullable|string',
             'date'         => 'nullable|date',
+            'time'         => 'nullable',
+            'reason'       => 'nullable|string',
             'image'        => 'nullable|image',
         ]);
 
@@ -199,7 +203,7 @@ class RunSheetApiController extends Controller
 
         // if ($request->latitude && $request->longitude) {
         //     $distance = $this->calculateDistance($request->latitude, $request->longitude, $site->latitude, $site->longitude);
-
+        //
         //     if ($distance > 100) { // 100 meters
         //         return $this->errorResponse(
         //             'You are too far from the site. Distance: ' . round($distance, 2) . 'm',
@@ -211,15 +215,17 @@ class RunSheetApiController extends Controller
 
         $activeShift = $this->shiftRepo->getActiveShift();
         $scanDate = $request->input('date') ?: ($runsheet->date ?: ($activeShift ? $activeShift->date : Carbon::now(config('app.timezone', 'UTC'))->format('Y-m-d')));
+        $scanTime = $request->input('time') ?: Carbon::now(config('app.timezone', 'UTC'))->toTimeString();
 
         $scanData = [
             'run_sheet_id' => (int) $runsheet->id,
             'nfc_tag_id'   => (int) $request->nfc_tag_id,
             'user_id'      => Auth::id(),
             'date'         => $scanDate,
-            'time'         => Carbon::now(config('app.timezone', 'UTC'))->format('H:i:s'),
+            'time'         => $scanTime,
             'latitude'     => $request->latitude,
             'longitude'    => $request->longitude,
+            'reason'       => $request->reason,
         ];
 
         // Check if already scanned
