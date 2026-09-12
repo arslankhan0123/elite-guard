@@ -248,6 +248,15 @@ class ChronologicalReportController extends Controller
 
             $dateStr = $item->date ? (is_string($item->date) ? $item->date : $item->date->format('Y-m-d')) : 'N/A';
 
+            $allScansSorted = $item->scans->sortBy('time');
+            if ($allScansSorted->count() > 0) {
+                $startTime = $allScansSorted->first()->time ?: ($item->start_time ?: '00:00:00');
+                $endTime   = $allScansSorted->last()->time ?: ($item->end_time ?: '23:59:59');
+            } else {
+                $startTime = $item->start_time ?: '00:00:00';
+                $endTime   = $item->end_time ?: '23:59:59';
+            }
+
             $merged->push([
                 'id'             => $item->id,
                 'type'           => 'Runsheet Tour',
@@ -256,8 +265,8 @@ class ChronologicalReportController extends Controller
                 'user_id'        => $item->user_id,
                 'site'           => $item->site?->name ?? 'N/A',
                 'date'           => $dateStr,
-                'start_time'     => $item->start_time ?: '00:00:00',
-                'end_time'       => $item->end_time ?: '23:59:59',
+                'start_time'     => $startTime,
+                'end_time'       => $endTime,
                 'required_count' => $requiredCount,
                 'scanned_count'  => $scannedCount,
                 'status'         => $status,

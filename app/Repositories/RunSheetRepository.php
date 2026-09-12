@@ -117,6 +117,7 @@ class RunSheetRepository
             'latitude'     => $data['latitude'] ?? null,
             'longitude'    => $data['longitude'] ?? null,
             'image'        => $data['image'] ?? null,
+            'reason'       => $data['reason'] ?? null,
         ]);
 
         return [
