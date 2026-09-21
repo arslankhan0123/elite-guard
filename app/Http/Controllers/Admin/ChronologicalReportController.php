@@ -191,7 +191,7 @@ class ChronologicalReportController extends Controller
         }
 
         // 2. Daily RunSheets (from run_sheets & run_sheet_scans)
-        $runSheetQuery = \App\Models\RunSheet::with(['site.nfcTags', 'scans.nfcTag', 'scans.user', 'user', 'shift'])
+        $runSheetQuery = \App\Models\RunSheet::with(['site.nfcTags', 'scans.nfcTag', 'scans.user', 'user', 'shift', 'images'])
             ->whereBetween('date', [$startDate, $actualEndDate]);
 
         if ($userId) {
@@ -257,6 +257,8 @@ class ChronologicalReportController extends Controller
                 $endTime   = $item->end_time ?: '23:59:59';
             }
 
+            $runSheetImages = $item->images ? $item->images->pluck('image_path')->filter()->values()->all() : [];
+
             $merged->push([
                 'id'             => $item->id,
                 'type'           => 'Runsheet Tour',
@@ -272,6 +274,7 @@ class ChronologicalReportController extends Controller
                 'status'         => $status,
                 'scans'          => $scansList,
                 'missing_tags'   => $missingTags->pluck('name')->values()->all(),
+                'images'         => $runSheetImages,
             ]);
         }
 
@@ -398,6 +401,10 @@ class ChronologicalReportController extends Controller
                 foreach ($item->scans as $scan) {
                     $this->deletePhysicalImage($scan->image ?? null);
                     $scan->delete();
+                }
+                foreach ($item->images as $tourImg) {
+                    $this->deletePhysicalImage($tourImg->image_path);
+                    $tourImg->delete();
                 }
                 $item->delete();
             }

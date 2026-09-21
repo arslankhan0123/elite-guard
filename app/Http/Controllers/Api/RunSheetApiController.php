@@ -186,6 +186,8 @@ class RunSheetApiController extends Controller
             'time'         => 'nullable',
             'reason'       => 'nullable|string',
             'image'        => 'nullable|image',
+            'images'       => 'nullable|array',
+            'images.*'     => 'nullable|image',
         ]);
 
         if ($validator->fails()) {
@@ -238,6 +240,17 @@ class RunSheetApiController extends Controller
             $path = $request->file('image')->store('documents/RunSheetScans', 'public');
             $scanData['image'] = Storage::disk('public')->url($path);
         }
+
+        $uploadedImages = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                if ($file->isValid()) {
+                    $path = $file->store('documents/RunSheetScans', 'public');
+                    $uploadedImages[] = Storage::disk('public')->url($path);
+                }
+            }
+        }
+        $scanData['uploaded_images'] = $uploadedImages;
 
         $result = $this->runSheetRepo->storeScan($scanData);
 
