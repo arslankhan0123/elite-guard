@@ -75,6 +75,10 @@ class UnifiedReportController extends Controller
                 break;
         }
 
+        if ($request->ajax()) {
+            return view('admin.unified-reports.partials.table', compact('type', 'data'));
+        }
+
         return view('admin.unified-reports.index', compact('users', 'sites', 'type', 'data'));
     }
 
