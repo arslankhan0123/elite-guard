@@ -63,4 +63,12 @@ class RunSheet extends Model
     {
         return $this->hasMany(RunSheetScan::class);
     }
+
+    /**
+     * Get the images recorded for this run sheet.
+     */
+    public function images()
+    {
+        return $this->hasMany(RunSheetImage::class);
+    }
 }

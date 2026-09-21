@@ -108,17 +108,32 @@ class RunSheetRepository
         $scanDate = $data['date'] ?? Carbon::now()->format('Y-m-d');
         $scanTime = $data['time'] ?? Carbon::now()->format('H:i:s');
 
-        $runsheet = RunSheetScan::create([
-            'run_sheet_id' => $data['run_sheet_id'],
-            'nfc_tag_id'   => $data['nfc_tag_id'],
-            'user_id'      => $data['user_id'],
-            'date'         => $scanDate,
-            'time'         => $scanTime,
-            'latitude'     => $data['latitude'] ?? null,
-            'longitude'    => $data['longitude'] ?? null,
-            'image'        => $data['image'] ?? null,
-            'reason'       => $data['reason'] ?? null,
-        ]);
+        $runsheet = \Illuminate\Support\Facades\DB::transaction(function () use ($data, $scanDate, $scanTime) {
+            $scan = RunSheetScan::create([
+                'run_sheet_id' => $data['run_sheet_id'],
+                'nfc_tag_id'   => $data['nfc_tag_id'],
+                'user_id'      => $data['user_id'],
+                'date'         => $scanDate,
+                'time'         => $scanTime,
+                'latitude'     => $data['latitude'] ?? null,
+                'longitude'    => $data['longitude'] ?? null,
+                'image'        => $data['image'] ?? null,
+                'reason'       => $data['reason'] ?? null,
+            ]);
+
+            if (isset($data['uploaded_images']) && is_array($data['uploaded_images'])) {
+                foreach ($data['uploaded_images'] as $imageUrl) {
+                    \App\Models\RunSheetImage::create([
+                        'run_sheet_id' => $data['run_sheet_id'],
+                        'image_path' => $imageUrl,
+                    ]);
+                }
+            }
+            
+            return $scan;
+        });
+
+        $runsheet->load('runSheet.images');
 
         return [
             'status' => true,
