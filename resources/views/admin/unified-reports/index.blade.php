@@ -122,28 +122,62 @@
                         <h4 class="card-title">{{ ucwords(str_replace('-', ' ', $type)) }} Data</h4>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            @if($type == 'general')
-                                @include('admin.unified-reports.tables.general')
-                            @elseif($type == 'incident')
-                                @include('admin.unified-reports.tables.incident')
-                            @elseif($type == 'disciplinary')
-                                @include('admin.unified-reports.tables.disciplinary')
-                            @elseif($type == 'daily-shift')
-                                @include('admin.unified-reports.tables.daily-shift')
-                            @elseif($type == 'assessments')
-                                @include('admin.unified-reports.tables.assessments')
-                            @elseif($type == 'vehicle-checklist')
-                                @include('admin.unified-reports.tables.vehicle-checklist')
-                            @elseif($type == 'fire-watch')
-                                @include('admin.unified-reports.tables.fire-watch')
-                            @elseif($type == 'shift-adjustment')
-                                @include('admin.unified-reports.tables.shift-adjustment')
-                            @endif
+                        <div id="report-data" class="table-responsive" aria-live="polite">
+                            @include('admin.unified-reports.partials.table')
                         </div>
                     </div>
                 </div>
             @endif
         </div>
     </div>
+@endsection
+
+@section('scripts')
+<script>
+    $(function () {
+        const reportData = $('#report-data');
+        const filterForm = $('#filterForm');
+
+        function loadReportPage(url, updateHistory = true) {
+            reportData.addClass('opacity-50 pe-none').attr('aria-busy', 'true');
+
+            $.ajax({
+                url: url,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).done(function (html) {
+                reportData.html(html);
+
+                if (updateHistory) {
+                    window.history.pushState({}, '', url);
+                }
+            }).fail(function () {
+                // Keep the listing usable if an AJAX request is interrupted or fails.
+                window.location.assign(url);
+            }).always(function () {
+                reportData.removeClass('opacity-50 pe-none').removeAttr('aria-busy');
+            });
+        }
+
+        // Every pagination link is generated with the active type and filters by
+        // Laravel's withQueryString(), so the next page always matches this listing.
+        $(document).on('click', '#report-data .server-pagination a', function (event) {
+            event.preventDefault();
+            loadReportPage(this.href);
+        });
+
+        // Filters also refresh only the records area and always start from page 1.
+        filterForm.on('submit', function (event) {
+            event.preventDefault();
+            const url = new URL(this.action, window.location.origin);
+            const params = new URLSearchParams($(this).serialize());
+            params.delete('page');
+            url.search = params.toString();
+            loadReportPage(url.toString());
+        });
+
+        window.addEventListener('popstate', function () {
+            loadReportPage(window.location.href, false);
+        });
+    });
+</script>
 @endsection
