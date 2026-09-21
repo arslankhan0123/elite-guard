@@ -130,6 +130,28 @@
             color: #0f172a;
             width: 60%;
         }
+        .narrative-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+        .narrative-table td {
+            padding: 5px;
+            border: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        .narrative-label {
+            width: 18%;
+            font-weight: bold;
+            color: #64748b;
+            font-size: 8px;
+            text-transform: uppercase;
+            background-color: #f8fafc;
+        }
+        .narrative-value {
+            color: #0f172a;
+            line-height: 1.4;
+        }
         .patrol-table {
             width: 100%;
             border-collapse: collapse;
@@ -238,9 +260,14 @@
         <div class="card-title">Record Details</div>
         @php
             $attributes = $attributes->except(['documents', 'signature', 'employee_signature', 'supervisor_signature']);
-            $halfCount = ceil($attributes->count() / 2);
-            $leftSide = $attributes->take($halfCount);
-            $rightSide = $attributes->slice($halfCount);
+            // Keep long narrative fields on their own full-width rows so their text
+            // runs naturally from left to right in the generated PDF.
+            $narrativeKeys = ['observation_situation', 'observations', 'action_taken'];
+            $narratives = $attributes->only($narrativeKeys);
+            $detailAttributes = $attributes->except($narrativeKeys);
+            $halfCount = ceil($detailAttributes->count() / 2);
+            $leftSide = $detailAttributes->take($halfCount);
+            $rightSide = $detailAttributes->slice($halfCount);
         @endphp
         <table class="split-layout">
             <tr>
@@ -288,6 +315,16 @@
                 </td>
             </tr>
         </table>
+        @if($narratives->isNotEmpty())
+            <table class="narrative-table">
+                @foreach($narratives as $key => $value)
+                    <tr>
+                        <td class="narrative-label">{{ ucwords(str_replace('_', ' ', $key)) }}</td>
+                        <td class="narrative-value">{{ $value ?? 'N/A' }}</td>
+                    </tr>
+                @endforeach
+            </table>
+        @endif
     </div>
 
     <!-- Patrol Logs Card -->
