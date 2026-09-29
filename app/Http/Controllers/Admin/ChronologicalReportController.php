@@ -17,9 +17,40 @@ class ChronologicalReportController extends Controller
 {
     public function index(Request $request)
     {
-        $users = User::orderBy('name')->get();
-        $sites = Site::orderBy('name')->get();
-        $weeklyRunSheets = \App\Models\WeeklyRunSheet::orderBy('name')->get();
+        $authUser = auth()->user();
+
+        // Scope users by tenant
+        $usersQuery = User::orderBy('name');
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $usersQuery->where('tenant_id', $authUser->tenant_id);
+            } else {
+                $usersQuery->where('id', $authUser->id);
+            }
+        }
+        $users = $usersQuery->get();
+
+        // Scope sites by tenant company
+        $sitesQuery = Site::orderBy('name');
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $sitesQuery->whereHas('company', fn ($q) => $q->where('tenant_id', $authUser->tenant_id));
+            } else {
+                $sitesQuery->whereHas('company', fn ($q) => $q->where('user_id', $authUser->id));
+            }
+        }
+        $sites = $sitesQuery->get();
+
+        // Scope weekly runsheets by tenant
+        $weeklyRunSheetsQuery = \App\Models\WeeklyRunSheet::orderBy('name');
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $weeklyRunSheetsQuery->whereHas('entries.site.company', fn ($q) => $q->where('tenant_id', $authUser->tenant_id));
+            } else {
+                $weeklyRunSheetsQuery->whereHas('entries.site.company', fn ($q) => $q->where('user_id', $authUser->id));
+            }
+        }
+        $weeklyRunSheets = $weeklyRunSheetsQuery->get();
 
         $selectedUser = $request->get('user_id');
         $selectedSites = $request->get('site_ids') ?: [];
@@ -104,6 +135,25 @@ class ChronologicalReportController extends Controller
             $siteIds = $siteIds ? [$siteIds] : [];
         }
 
+        $authUser = auth()->user();
+
+        // Determine allowed site IDs for logged-in user / tenant
+        $allowedSitesQuery = Site::query();
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $allowedSitesQuery->whereHas('company', fn ($q) => $q->where('tenant_id', $authUser->tenant_id));
+            } else {
+                $allowedSitesQuery->whereHas('company', fn ($q) => $q->where('user_id', $authUser->id));
+            }
+        }
+        $allowedSiteIds = $allowedSitesQuery->pluck('id')->toArray();
+
+        if (!empty($siteIds)) {
+            $effectiveSiteIds = array_values(array_intersect($siteIds, $allowedSiteIds));
+        } else {
+            $effectiveSiteIds = $allowedSiteIds;
+        }
+
         // Determine actual end date (handle same-day wrap around)
         $actualEndDate = $endDate;
         if ($startTime && $endTime && $startDate === $endDate && $startTime > $endTime) {
@@ -116,13 +166,11 @@ class ChronologicalReportController extends Controller
 
         // 1. Site Tour Items (Structured Tours)
         $tourQuery = \App\Models\SiteTourItem::with(['siteTour', 'scans.nfcTag', 'scans.user', 'user', 'site', 'images'])
-            ->whereBetween('date', [$startDate, $actualEndDate]);
+            ->whereBetween('date', [$startDate, $actualEndDate])
+            ->whereIn('site_id', $effectiveSiteIds);
 
         if ($userId) {
             $tourQuery->where('user_id', $userId);
-        }
-        if (!empty($siteIds)) {
-            $tourQuery->whereIn('site_id', $siteIds);
         }
 
         $tourItems = $weeklyRunSheetId ? collect() : $tourQuery->get();
@@ -192,13 +240,11 @@ class ChronologicalReportController extends Controller
 
         // 2. Daily RunSheets (from run_sheets & run_sheet_scans)
         $runSheetQuery = \App\Models\RunSheet::with(['site.nfcTags', 'scans.nfcTag', 'scans.user', 'user', 'shift', 'images'])
-            ->whereBetween('date', [$startDate, $actualEndDate]);
+            ->whereBetween('date', [$startDate, $actualEndDate])
+            ->whereIn('site_id', $effectiveSiteIds);
 
         if ($userId) {
             $runSheetQuery->where('user_id', $userId);
-        }
-        if (!empty($siteIds)) {
-            $runSheetQuery->whereIn('site_id', $siteIds);
         }
         if ($weeklyRunSheetId) {
             $runSheetQuery->whereHas('shift', function ($q) use ($weeklyRunSheetId) {
@@ -280,13 +326,11 @@ class ChronologicalReportController extends Controller
 
         // 3. SiteItems (Structured Generic Checkpoints)
         $siteItemQuery = \App\Models\SiteItem::with(['site.nfcTags', 'scans.nfcTag', 'scans.user', 'user', 'site'])
-            ->whereBetween('date', [$startDate, $actualEndDate]);
+            ->whereBetween('date', [$startDate, $actualEndDate])
+            ->whereIn('site_id', $effectiveSiteIds);
 
         if ($userId) {
             $siteItemQuery->where('user_id', $userId);
-        }
-        if (!empty($siteIds)) {
-            $siteItemQuery->whereIn('site_id', $siteIds);
         }
 
         $siteItems = $weeklyRunSheetId ? collect() : $siteItemQuery->get();
