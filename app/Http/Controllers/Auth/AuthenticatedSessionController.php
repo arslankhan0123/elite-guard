@@ -26,11 +26,11 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        if (! in_array(Auth::user()->role, ['SuperAdmin', 'Admin'], true)) {
+        if (! in_array(Auth::user()->role, ['SuperAdmin', 'Admin', 'MasterAdmin'], true)) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            
+
             return redirect('/')->with('error', 'Unauthorized access! Only admin users can log into this portal.');
         }
 

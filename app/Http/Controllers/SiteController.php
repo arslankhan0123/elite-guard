@@ -20,6 +20,22 @@ class SiteController extends Controller
         $this->siteRepo = $siteRepo;
     }
 
+    private function getScopedCompanies()
+    {
+        $user = auth()->user();
+        $query = Company::where('status', true);
+
+        if ($user && $user->role !== 'MasterAdmin') {
+            if ($user->tenant_id) {
+                $query->where('tenant_id', $user->tenant_id);
+            } else {
+                $query->where('user_id', $user->id);
+            }
+        }
+
+        return $query->orderBy('name')->get();
+    }
+
     public function index()
     {
         // Use the repository to get all sites
@@ -30,7 +46,7 @@ class SiteController extends Controller
 
     public function create()
     {
-        $companies = Company::where('status', true)->get();
+        $companies = $this->getScopedCompanies();
         return view('admin.sites.create', compact('companies'));
     }
 
@@ -54,6 +70,11 @@ class SiteController extends Controller
             'status'     => 'required|boolean',
         ]);
 
+        $allowedCompanyIds = $this->getScopedCompanies()->pluck('id')->toArray();
+        if (! in_array((int) $request->company_id, $allowedCompanyIds, true)) {
+            return redirect()->back()->withErrors(['company_id' => 'Unauthorized company selected.'])->withInput();
+        }
+
         $this->siteRepo->createSite($request);
 
         return redirect()->route('sites.index')->with('success', 'Site created successfully.');
@@ -62,12 +83,21 @@ class SiteController extends Controller
     public function edit($site_id)
     {
         $site = $this->siteRepo->findSiteById($site_id);
-        $companies = Company::where('status', true)->get();
+        if (! $site) {
+            return redirect()->route('sites.index')->with('error', 'Unauthorized access! You do not have permission to view or edit this site.');
+        }
+
+        $companies = $this->getScopedCompanies();
         return view('admin.sites.edit', compact('site', 'companies'));
     }
 
     public function update(Request $request, $site_id)
     {
+        $site = $this->siteRepo->findSiteById($site_id);
+        if (! $site) {
+            return redirect()->route('sites.index')->with('error', 'Unauthorized access! You do not have permission to edit this site.');
+        }
+
         $request->validate([
             'company_id' => 'required|exists:companies,id',
             'name'       => 'required|string|max:255',
@@ -86,6 +116,11 @@ class SiteController extends Controller
             'status'     => 'required|boolean',
         ]);
 
+        $allowedCompanyIds = $this->getScopedCompanies()->pluck('id')->toArray();
+        if (! in_array((int) $request->company_id, $allowedCompanyIds, true)) {
+            return redirect()->back()->withErrors(['company_id' => 'Unauthorized company selected.'])->withInput();
+        }
+
         $this->siteRepo->updateSite($request, $site_id);
 
         return redirect()->route('sites.index')->with('success', 'Site updated successfully.');
@@ -93,6 +128,11 @@ class SiteController extends Controller
 
     public function delete($site_id)
     {
+        $site = $this->siteRepo->findSiteById($site_id);
+        if (! $site) {
+            return redirect()->route('sites.index')->with('error', 'Unauthorized access! You do not have permission to delete this site.');
+        }
+
         $this->siteRepo->deleteSite($site_id);
 
         return redirect()->route('sites.index')->with('success', 'Site deleted successfully.');
@@ -100,17 +140,27 @@ class SiteController extends Controller
 
     public function nfcTags($site_id)
     {
-        $site = Site::with(['nfcTags' => function($q) {
+        $site = $this->siteRepo->findSiteById($site_id);
+        if (! $site) {
+            return redirect()->route('sites.index')->with('error', 'Unauthorized access! Site not found.');
+        }
+
+        $site->load(['nfcTags' => function($q) {
             $q->orderBy('id', 'desc');
-        }])->findOrFail($site_id);
+        }]);
 
         return view('admin.sites.nfc-tags', compact('site'));
     }
 
     public function scanReport($site_id, Request $request)
     {
+        $site = $this->siteRepo->findSiteById($site_id);
+        if (! $site) {
+            return redirect()->route('sites.index')->with('error', 'Unauthorized access! Site not found.');
+        }
+
         $filters = $this->validatedScanReportFilters($request);
-        $site = Site::with(['company', 'nfcTags'])->findOrFail($site_id);
+        $site->load(['company', 'nfcTags']);
         $scans = $this->siteScanReportQuery($site, $filters)->paginate(25)->withQueryString();
         $users = User::whereHas('siteItemScans', fn ($query) => $query->where('site_id', $site->id))
             ->orderBy('name')
@@ -121,8 +171,13 @@ class SiteController extends Controller
 
     public function exportScanReport($site_id, string $format, Request $request)
     {
+        $site = $this->siteRepo->findSiteById($site_id);
+        if (! $site) {
+            return redirect()->route('sites.index')->with('error', 'Unauthorized access! Site not found.');
+        }
+
         $filters = $this->validatedScanReportFilters($request);
-        $site = Site::with(['company', 'nfcTags'])->findOrFail($site_id);
+        $site->load(['company', 'nfcTags']);
         $scans = $this->siteScanReportQuery($site, $filters)->get();
         $fileName = 'site-scan-report-' . $site->id . '-' . now()->format('Ymd-His');
 
@@ -299,7 +354,10 @@ class SiteController extends Controller
         $weekStart = $startDate->copy();
         $weekEnd = $endDate->copy();
 
-        $site = Site::findOrFail($site_id);
+        $site = $this->siteRepo->findSiteById($site_id);
+        if (! $site) {
+            return redirect()->route('sites.index')->with('error', 'Unauthorized access! Site not found.');
+        }
 
         $siteTours = \App\Models\SiteTour::where('site_id', $site_id)
         ->where(function ($query) use ($weekStart, $weekEnd, $site_id) {

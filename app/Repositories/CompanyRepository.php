@@ -7,28 +7,56 @@ use Illuminate\Support\Facades\Storage;
 
 class CompanyRepository
 {
-    // Get all companies
+    // Get all companies (Scoped by logged-in tenant/user)
     public function getAllCompanies()
     {
-        $companies = Company::orderBy('id', 'desc')->get();
-        $data = [
-            'status' => true,
-            'message' => 'Companies retrieved successfully',
+        $user = auth()->user();
+        $query = Company::query();
+
+        if ($user && $user->role !== 'MasterAdmin') {
+            if ($user->tenant_id) {
+                $query->where('tenant_id', $user->tenant_id);
+            } else {
+                $query->where('user_id', $user->id);
+            }
+        }
+
+        $companies = $query->orderBy('id', 'desc')->get();
+
+        return [
+            'status'    => true,
+            'message'   => 'Companies retrieved successfully',
             'companies' => $companies
         ];
-        return $data;
     }
 
     // Find a company by ID
     public function findCompanyById($id)
     {
-        return Company::find($id);
+        $user = auth()->user();
+        $query = Company::where('id', $id);
+
+        if ($user && $user->role !== 'MasterAdmin') {
+            if ($user->tenant_id) {
+                $query->where('tenant_id', $user->tenant_id);
+            } else {
+                $query->where('user_id', $user->id);
+            }
+        }
+
+        return $query->first();
     }
 
     // Create a new company
     public function createCompany($request)
     {
-        $data = $request->all(); // get all input as array
+        $data = $request->all();
+        $user = auth()->user();
+
+        if ($user) {
+            $data['user_id']   = $user->id;
+            $data['tenant_id'] = $user->tenant_id;
+        }
 
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('companies/logos', 'public');
@@ -41,7 +69,7 @@ class CompanyRepository
     // Update an existing company
     public function updateCompany($request, $company_id)
     {
-        $company = Company::find($company_id);
+        $company = $this->findCompanyById($company_id);
         if ($company) {
             $data = $request->all();
             if ($request->hasFile('logo')) {
@@ -61,7 +89,7 @@ class CompanyRepository
     // Delete a company
     public function deleteCompany($id)
     {
-        $company = Company::find($id);
+        $company = $this->findCompanyById($id);
         if ($company) {
             if ($company->logo) {
                 Storage::disk('public')->delete($company->logo);

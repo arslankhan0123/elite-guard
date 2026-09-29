@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'superadmin' => \App\Http\Middleware\IsSuperAdmin::class,
+            'superadmin'  => \App\Http\Middleware\IsSuperAdmin::class,
+            'masteradmin' => \App\Http\Middleware\IsMasterAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

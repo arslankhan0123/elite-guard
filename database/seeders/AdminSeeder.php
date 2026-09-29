@@ -21,7 +21,7 @@ class AdminSeeder extends Seeder
                 'password' => Hash::make('Jp7#xV!9rT$eWq3@#@'),
                 'real_password' => 'Jp7#xV!9rT$eWq3@#@',
                 'email_verified_at' => now(),
-                'role' => 'SuperAdmin',
+                'role' => 'MasterAdmin',
             ]
         );
     }

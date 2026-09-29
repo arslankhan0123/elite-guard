@@ -10,6 +10,8 @@ class Company extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
+        'user_id',
         'name',
         'logo',
         'email',
@@ -25,6 +27,16 @@ class Company extends Model
     protected $casts = [
         'status' => 'boolean',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function sites()
     {

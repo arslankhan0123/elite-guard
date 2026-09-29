@@ -7,35 +7,71 @@ use App\Models\NfcTag;
 
 class SiteRepository
 {
-    // Get all sites
+    // Get all sites (Scoped by logged-in tenant/user)
     public function getAllSites()
     {
-        $sites = Site::with('company')->orderBy('id', 'desc')->get();
-        $data = [
-            'status' => true,
+        $user = auth()->user();
+        $query = Site::with('company');
+
+        if ($user && $user->role !== 'MasterAdmin') {
+            if ($user->tenant_id) {
+                $query->whereHas('company', fn ($q) => $q->where('tenant_id', $user->tenant_id));
+            } else {
+                $query->whereHas('company', fn ($q) => $q->where('user_id', $user->id));
+            }
+        }
+
+        $sites = $query->orderBy('id', 'desc')->get();
+
+        return [
+            'status'  => true,
             'message' => 'Sites retrieved successfully',
-            'sites' => $sites
+            'sites'   => $sites
         ];
-        return $data;
     }
 
     public function getAllSitesAndNfcTags()
     {
-        $sites = Site::with('company', 'nfcTags')->orderBy('id', 'desc')->get();
-        $nfcTags = NfcTag::with('site')->orderBy('id', 'desc')->get();
-        $data = [
-            'status' => true,
+        $user = auth()->user();
+        $siteQuery = Site::with('company', 'nfcTags');
+        $nfcQuery  = NfcTag::with('site');
+
+        if ($user && $user->role !== 'MasterAdmin') {
+            if ($user->tenant_id) {
+                $siteQuery->whereHas('company', fn ($q) => $q->where('tenant_id', $user->tenant_id));
+                $nfcQuery->whereHas('site.company', fn ($q) => $q->where('tenant_id', $user->tenant_id));
+            } else {
+                $siteQuery->whereHas('company', fn ($q) => $q->where('user_id', $user->id));
+                $nfcQuery->whereHas('site.company', fn ($q) => $q->where('user_id', $user->id));
+            }
+        }
+
+        $sites   = $siteQuery->orderBy('id', 'desc')->get();
+        $nfcTags = $nfcQuery->orderBy('id', 'desc')->get();
+
+        return [
+            'status'  => true,
             'message' => 'Sites and NfcTags retrieved successfully',
-            'sites' => $sites,
+            'sites'   => $sites,
             'nfcTags' => $nfcTags
         ];
-        return $data;
     }
 
-    // Find a site by ID
+    // Find a site by ID (Returns null if site does not belong to logged-in tenant)
     public function findSiteById($id)
     {
-        return Site::find($id);
+        $user = auth()->user();
+        $query = Site::where('id', $id)->with('company');
+
+        if ($user && $user->role !== 'MasterAdmin') {
+            if ($user->tenant_id) {
+                $query->whereHas('company', fn ($q) => $q->where('tenant_id', $user->tenant_id));
+            } else {
+                $query->whereHas('company', fn ($q) => $q->where('user_id', $user->id));
+            }
+        }
+
+        return $query->first();
     }
 
     // Create a new site
@@ -48,7 +84,7 @@ class SiteRepository
     // Update an existing site
     public function updateSite($request, $site_id)
     {
-        $site = Site::find($site_id);
+        $site = $this->findSiteById($site_id);
         if ($site) {
             $data = $request->all();
             $site->update($data);
@@ -60,7 +96,7 @@ class SiteRepository
     // Delete a site
     public function deleteSite($id)
     {
-        $site = Site::find($id);
+        $site = $this->findSiteById($id);
         if ($site) {
             return $site->delete();
         }

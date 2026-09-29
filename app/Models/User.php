@@ -19,6 +19,7 @@ class User extends Authenticatable implements JWTSubject
      * @var list<string>
      */
     protected $fillable = [
+        'tenant_id',
         'name',
         'email',
         'email_verified_at',
@@ -57,7 +58,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function hasAdminPermission(string $module, string $action = 'list'): bool
     {
-        if ($this->role === 'SuperAdmin') {
+        if (in_array($this->role, ['SuperAdmin', 'MasterAdmin'], true)) {
             return true;
         }
 
@@ -67,7 +68,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function canAccessAdminModule(string $module): bool
     {
-        if ($this->role === 'SuperAdmin') {
+        if (in_array($this->role, ['SuperAdmin', 'MasterAdmin'], true)) {
             return true;
         }
 
@@ -76,6 +77,11 @@ class User extends Authenticatable implements JWTSubject
 
     public function adminLandingRoute(): string
     {
+        // MasterAdmin always lands on the Tenant management page
+        if ($this->role === 'MasterAdmin') {
+            return 'tenants.index';
+        }
+
         $routes = [
             'dashboard' => 'dashboard', 'companies' => 'companies.index', 'sites' => 'sites.index',
             'site-tours' => 'sites.tours.all', 'nfc' => 'nfc.index', 'schedules' => 'schedules.index',
@@ -92,6 +98,16 @@ class User extends Authenticatable implements JWTSubject
         ];
 
         return collect($routes)->first(fn ($route, $module) => $this->hasAdminPermission($module, 'list')) ?? 'profile.edit';
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function companies()
+    {
+        return $this->hasMany(Company::class);
     }
 
     public function employee()

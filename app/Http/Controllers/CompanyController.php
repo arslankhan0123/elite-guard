@@ -49,13 +49,20 @@ class CompanyController extends Controller
 
     public function edit($company_id)
     {
-        $company = Company::findOrFail($company_id);
+        $company = $this->companyRepo->findCompanyById($company_id);
+        if (! $company) {
+            return redirect()->route('companies.index')->with('error', 'Unauthorized access! You do not have permission to view or edit this company.');
+        }
+
         return view('admin.companies.edit', compact('company'));
     }
 
     public function update(Request $request, $company_id)
     {
-        $company = Company::findOrFail($company_id);
+        $company = $this->companyRepo->findCompanyById($company_id);
+        if (! $company) {
+            return redirect()->route('companies.index')->with('error', 'Unauthorized access! You do not have permission to update this company.');
+        }
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -68,13 +75,18 @@ class CompanyController extends Controller
             'status' => 'required|boolean',
         ]);
 
-        $companies = $this->companyRepo->updateCompany($request, $company_id);
+        $this->companyRepo->updateCompany($request, $company_id);
         return redirect()->route('companies.index')->with('success', 'Company updated successfully.');
     }
 
     public function delete($company_id)
     {
-        $companies = $this->companyRepo->deleteCompany($company_id);
+        $company = $this->companyRepo->findCompanyById($company_id);
+        if (! $company) {
+            return redirect()->route('companies.index')->with('error', 'Unauthorized access! You do not have permission to delete this company.');
+        }
+
+        $this->companyRepo->deleteCompany($company_id);
         return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
     }
 }

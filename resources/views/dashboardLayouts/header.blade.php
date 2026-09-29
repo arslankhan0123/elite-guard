@@ -121,6 +121,16 @@
                 <div class="collapse navbar-collapse" id="topnav-menu-content">
                     <ul class="navbar-nav">
                         @if(Auth::user()->status)
+                        {{-- ── MasterAdmin Tenant Module ── --}}
+                        @if(Auth::user()->role === 'MasterAdmin')
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none {{ request()->routeIs('tenants.*') ? 'active' : '' }}"
+                               href="{{ route('tenants.index') }}" id="topnav-tenants" role="button">
+                                <i class="icon nav-icon" data-feather="server"></i>
+                                <span data-key="t-tenants">Tenants</span>
+                            </a>
+                        </li>
+                        @endif
                         @if(Auth::user()->hasAdminPermission('dashboard', 'list'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{route('dashboard')}}"
@@ -151,7 +161,7 @@
                             </a>
                         </li>
                         @endif
-                        @if(Auth::user()->role === 'SuperAdmin' || Auth::user()->role === 'Admin')
+                        @if(in_array(Auth::user()->role, ['SuperAdmin', 'Admin', 'MasterAdmin'], true))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{ route('chronological-reports.index') }}">
                                 <i class="icon nav-icon" data-feather="bar-chart-2"></i>

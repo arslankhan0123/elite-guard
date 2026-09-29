@@ -17,11 +17,12 @@ class IsSuperAdmin
     {
         $user = auth()->user();
 
-        if (! $user || ! in_array($user->role, ['SuperAdmin', 'Admin'], true)) {
+        if (! $user || ! in_array($user->role, ['SuperAdmin', 'Admin', 'MasterAdmin'], true)) {
             return redirect('/')->with('error', 'Unauthorized access! Admin privileges required.');
         }
 
-        if ($user->role === 'SuperAdmin') {
+        // SuperAdmin and MasterAdmin have unrestricted access to all modules
+        if (in_array($user->role, ['SuperAdmin', 'MasterAdmin'], true)) {
             return $next($request);
         }
 

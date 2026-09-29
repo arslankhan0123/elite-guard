@@ -81,6 +81,7 @@ class EmployeeController extends Controller
 
         DB::transaction(function () use ($request, $plainPassword, $role, &$isEmailSent) {
             $user = User::create([
+                'tenant_id' => auth()->user()->tenant_id,
                 'name' => $request->first_name . ' ' . $request->last_name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),

@@ -775,4 +775,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// ──────────────────────────────────────────────────────────────
+// Tenant Module – MasterAdmin access ONLY
+// ──────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'verified', 'masteradmin'])->group(function () {
+    Route::resource('/tenants', \App\Http\Controllers\TenantController::class)
+        ->names('tenants')
+        ->parameters(['tenants' => 'tenant']);
+});
+
 require __DIR__ . '/auth.php';
