@@ -44,6 +44,11 @@ return [
             'driver' => 'jwt',
             'provider' => 'users',
         ],
+
+        'master' => [
+            'driver' => 'session',
+            'provider' => 'master_admins',
+        ],
     ],
 
     /*
@@ -73,6 +78,11 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+
+        'master_admins' => [
+            'driver' => 'eloquent',
+            'model' => \App\Models\Master\MasterAdmin::class,
+        ],
     ],
 
     /*

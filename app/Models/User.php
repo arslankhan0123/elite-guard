@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Services\TenantService;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -181,7 +182,10 @@ class User extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims()
     {
-        return [];
+        $tenant = TenantService::getTenant();
+        return [
+            'tenant_id' => $tenant?->id,
+        ];
     }
 
     public function runSheets()
