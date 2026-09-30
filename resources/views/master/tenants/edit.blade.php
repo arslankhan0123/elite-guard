@@ -38,6 +38,14 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label text-muted">Phone Number</label>
+                        <input type="text" name="phone" class="form-control"
+                               value="{{ old('phone', $tenant->phone) }}"
+                               placeholder="+1 (555) 000-0000">
+                        <div class="form-text text-muted">Company contact number.</div>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label text-muted">Reset Admin Password <span class="text-muted small">(leave blank to keep current)</span></label>
                         <input type="text" name="admin_password" class="form-control" placeholder="New password (min 8 chars)" minlength="8">
                     </div>

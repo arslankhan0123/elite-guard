@@ -30,6 +30,7 @@ class TenantController extends Controller
             'name'           => 'required|string|max:255',
             'admin_email'    => 'required|email|max:255',
             'admin_password' => 'required|string|min:8',
+            'phone'          => 'nullable|string|max:50',
             'notes'          => 'nullable|string|max:1000',
         ]);
 
@@ -54,6 +55,7 @@ class TenantController extends Controller
             'slug'        => $slug,
             'db_name'     => $dbName,
             'admin_email' => $validated['admin_email'],
+            'phone'       => $validated['phone'] ?? null,
             'is_active'   => true,
             'notes'       => $validated['notes'] ?? null,
         ]);
@@ -110,6 +112,7 @@ class TenantController extends Controller
             'name'           => 'required|string|max:255',
             'admin_email'    => 'required|email|max:255',
             'admin_password' => 'nullable|string|min:8',
+            'phone'          => 'nullable|string|max:50',
             'notes'          => 'nullable|string|max:1000',
             'is_active'      => 'nullable|boolean',
         ]);
@@ -128,6 +131,7 @@ class TenantController extends Controller
         $tenant->update([
             'name'        => $validated['name'],
             'admin_email' => $validated['admin_email'],
+            'phone'       => $validated['phone'] ?? null,
             'notes'       => $validated['notes'] ?? null,
             'is_active'   => $request->boolean('is_active'),
         ]);

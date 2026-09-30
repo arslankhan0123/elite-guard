@@ -37,6 +37,13 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label text-muted">Phone Number</label>
+                        <input type="text" name="phone" class="form-control" value="{{ old('phone') }}"
+                               placeholder="+1 (555) 000-0000">
+                        <div class="form-text text-muted">Company contact number (shown in tenant profile).</div>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label text-muted">Admin Password <span class="text-danger">*</span></label>
                         <input type="text" name="admin_password" class="form-control"
                                placeholder="Minimum 8 characters" required minlength="8">
