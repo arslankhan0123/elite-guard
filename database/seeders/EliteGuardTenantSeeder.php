@@ -32,7 +32,7 @@ class EliteGuardTenantSeeder extends Seeder
             ['slug' => $slug],
             [
                 'name' => 'Elite Guard Inc.',
-                'db_name' => $dbName,
+                'db_name' => 'u227527917_eg_tenant',
                 'admin_email' => 'admin@eliteguardinc.ca',
                 'is_active' => true,
                 'notes' => 'Migrated from existing elite-guard_3 database.',
