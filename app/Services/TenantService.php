@@ -15,11 +15,28 @@ class TenantService
     {
         static::$currentTenant = $tenant;
 
-        $base = config('database.connections.mysql');
-
-        Config::set('database.connections.tenant', array_merge($base, [
-            'database' => $tenant->db_name,
-        ]));
+        // Build the tenant connection explicitly instead of array_merge-ing from
+        // the mysql config.  array_merge can carry over a stale unix_socket or
+        // PDO options array that causes "Connection refused" when Artisan runs
+        // migrations in the same process as a previous connection.
+        Config::set('database.connections.tenant', [
+            'driver'         => 'mysql',
+            'host'           => config('database.connections.mysql.host', '127.0.0.1'),
+            'port'           => config('database.connections.mysql.port', 3306),
+            'database'       => $tenant->db_name,
+            'username'       => config('database.connections.mysql.username'),
+            'password'       => config('database.connections.mysql.password'),
+            'unix_socket'    => '',
+            'charset'        => 'utf8mb4',
+            'collation'      => 'utf8mb4_unicode_ci',
+            'prefix'         => '',
+            'prefix_indexes' => true,
+            'strict'         => true,
+            'engine'         => null,
+            'options'        => extension_loaded('pdo_mysql') ? array_filter([
+                \PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ]);
 
         DB::purge('tenant');
         DB::setDefaultConnection('tenant');
@@ -44,6 +61,7 @@ class TenantService
     {
         $charset   = config('database.connections.mysql.charset',   'utf8mb4');
         $collation = config('database.connections.mysql.collation', 'utf8mb4_unicode_ci');
+        $username  = config('database.connections.mysql.username');
 
         try {
             // On shared hosting this may fail — database must be created via cPanel.
@@ -51,6 +69,14 @@ class TenantService
             DB::connection('mysql')->statement(
                 "CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET {$charset} COLLATE {$collation}"
             );
+
+            // Grant the app DB user full access to the new tenant DB so that
+            // subsequent migrations and queries don't get "Access denied".
+            DB::connection('mysql')->statement(
+                "GRANT ALL PRIVILEGES ON `{$dbName}`.* TO '{$username}'@'localhost'"
+            );
+            DB::connection('mysql')->statement('FLUSH PRIVILEGES');
+
         } catch (\Throwable $e) {
             // Shared hosting: CREATE DATABASE requires root privilege.
             // If the database was pre-created via cPanel, we can safely continue.

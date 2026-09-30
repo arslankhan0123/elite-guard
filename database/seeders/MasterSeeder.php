@@ -12,10 +12,9 @@ class MasterSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->command->info('Creating master database if not exists...');
-
-        // On standard servers (AWS, VPS) this runs fine.
-        // On shared hosting (Hostinger/cPanel), create the DB manually first.
+        // Try to auto-create the master database.
+        // On AWS/VPS this works fine. On shared hosting, create the DB via cPanel first
+        // and this step will be silently skipped.
         try {
             $charset   = config('database.connections.mysql.charset',   'utf8mb4');
             $collation = config('database.connections.mysql.collation', 'utf8mb4_unicode_ci');
@@ -24,9 +23,9 @@ class MasterSeeder extends Seeder
             DB::connection('mysql')->statement(
                 "CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET {$charset} COLLATE {$collation}"
             );
+
             $this->command->info("✔ Master database `{$dbName}` ready.");
         } catch (\Throwable $e) {
-            // Shared hosting: DB must be pre-created via cPanel/hPanel.
             $this->command->warn('Could not auto-create master DB (shared hosting?): ' . $e->getMessage());
             $this->command->warn('Continuing — assuming the database was pre-created manually.');
         }
