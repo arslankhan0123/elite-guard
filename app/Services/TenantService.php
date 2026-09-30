@@ -45,11 +45,17 @@ class TenantService
         $charset   = config('database.connections.mysql.charset',   'utf8mb4');
         $collation = config('database.connections.mysql.collation', 'utf8mb4_unicode_ci');
 
-        // Use the default 'mysql' connection for DDL — it doesn't require the
-        // target database to already exist the way a per-DB connection does.
-        DB::connection('mysql')->statement(
-            "CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET {$charset} COLLATE {$collation}"
-        );
+        try {
+            // On shared hosting this may fail — database must be created via cPanel.
+            // The try/catch allows the seeder to continue if the DB already exists.
+            DB::connection('mysql')->statement(
+                "CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET {$charset} COLLATE {$collation}"
+            );
+        } catch (\Throwable $e) {
+            // Shared hosting: CREATE DATABASE requires root privilege.
+            // If the database was pre-created via cPanel, we can safely continue.
+            logger()->warning("TenantService::createDatabase — could not auto-create `{$dbName}`: " . $e->getMessage());
+        }
     }
 
     /**
