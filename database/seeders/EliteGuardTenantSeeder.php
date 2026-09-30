@@ -24,18 +24,18 @@ class EliteGuardTenantSeeder extends Seeder
      */
     public function run(): void
     {
-        $slug   = 'elite-guard-inc';
+        $slug = 'elite-guard-inc';
         $dbName = Tenant::dbNameFromSlug($slug);
 
         // 1. Create or retrieve the tenant record in the master DB
         $tenant = Tenant::on('master')->firstOrCreate(
             ['slug' => $slug],
             [
-                'name'        => 'Elite Guard Inc.',
-                'db_name'     => $dbName,
-                'admin_email' => 'admin@eliteguardinc.com',
-                'is_active'   => true,
-                'notes'       => 'Migrated from existing elite-guard_3 database.',
+                'name' => 'Elite Guard Inc.',
+                'db_name' => $dbName,
+                'admin_email' => 'admin@eliteguardinc.ca',
+                'is_active' => true,
+                'notes' => 'Migrated from existing elite-guard_3 database.',
             ]
         );
 
@@ -62,14 +62,14 @@ class EliteGuardTenantSeeder extends Seeder
 
         if (!$existingUser) {
             $userId = DB::connection('tenant')->table('users')->insertGetId([
-                'name'          => 'Elite Guard Admin',
-                'email'         => $adminEmail,
-                'password'      => Hash::make('Admin@1234'),
+                'name' => 'Elite Guard Admin',
+                'email' => $adminEmail,
+                'password' => Hash::make('Admin@1234'),
                 'real_password' => 'Admin@1234',
-                'role'          => 'SuperAdmin',
-                'status'        => 1,
-                'created_at'    => now(),
-                'updated_at'    => now(),
+                'role' => 'SuperAdmin',
+                'status' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         } else {
             $userId = $existingUser->id;
@@ -82,7 +82,7 @@ class EliteGuardTenantSeeder extends Seeder
         foreach ($users as $user) {
             TenantUserLookup::on('master')->updateOrCreate(
                 ['tenant_id' => $tenant->id, 'email' => $user->email],
-                ['user_id'   => $user->id]
+                ['user_id' => $user->id]
             );
         }
 
