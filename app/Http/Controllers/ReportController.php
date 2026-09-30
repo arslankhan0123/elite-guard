@@ -23,8 +23,22 @@ class ReportController extends Controller
         $users = [];
         $sites = [];
         if ($type === 'shifts') {
-            $users = \App\Models\User::whereHas('employee')->orderBy('name')->get();
-            $sites = \App\Models\Site::orderBy('name')->get();
+            $authUser = auth()->user();
+            $usersQuery = \App\Models\User::whereHas('employee')->orderBy('name');
+            $sitesQuery = \App\Models\Site::orderBy('name');
+
+            if ($authUser && $authUser->role !== 'MasterAdmin') {
+                if ($authUser->tenant_id) {
+                    $usersQuery->where('tenant_id', $authUser->tenant_id);
+                    $sitesQuery->whereHas('company', fn ($cq) => $cq->where('tenant_id', $authUser->tenant_id));
+                } else {
+                    $usersQuery->where('id', $authUser->id);
+                    $sitesQuery->whereHas('company', fn ($cq) => $cq->where('user_id', $authUser->id));
+                }
+            }
+
+            $users = $usersQuery->get();
+            $sites = $sitesQuery->get();
         }
 
         $defaultStartDate = null;

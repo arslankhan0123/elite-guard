@@ -41,6 +41,14 @@ class ReportRepository
     public function getCompaniesReport($date_filter = null)
     {
         $query = Company::orderBy('id', 'desc');
+        $authUser = auth()->user();
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $query->where('tenant_id', $authUser->tenant_id);
+            } else {
+                $query->where('user_id', $authUser->id);
+            }
+        }
 
         if ($date_filter) {
             [$from, $to] = $this->getDateRange($date_filter);
@@ -58,6 +66,14 @@ class ReportRepository
     public function getSitesReport($date_filter = null)
     {
         $query = Site::with('company')->orderBy('id', 'desc');
+        $authUser = auth()->user();
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $query->whereHas('company', fn ($cq) => $cq->where('tenant_id', $authUser->tenant_id));
+            } else {
+                $query->whereHas('company', fn ($cq) => $cq->where('user_id', $authUser->id));
+            }
+        }
 
         if ($date_filter) {
             [$from, $to] = $this->getDateRange($date_filter);
@@ -75,6 +91,14 @@ class ReportRepository
     public function getNfcTagsReport($date_filter = null)
     {
         $query = NfcTag::with('site.company')->orderBy('id', 'desc');
+        $authUser = auth()->user();
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $query->whereHas('site', fn ($sq) => $sq->where('tenant_id', $authUser->tenant_id));
+            } else {
+                $query->whereHas('site.company', fn ($cq) => $cq->where('user_id', $authUser->id));
+            }
+        }
 
         if ($date_filter) {
             [$from, $to] = $this->getDateRange($date_filter);
@@ -92,6 +116,14 @@ class ReportRepository
     public function getEmployeesReport($date_filter = null)
     {
         $query = Employee::with('user')->orderBy('id', 'desc');
+        $authUser = auth()->user();
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $query->whereHas('user', fn ($uq) => $uq->where('tenant_id', $authUser->tenant_id));
+            } else {
+                $query->where('user_id', $authUser->id);
+            }
+        }
 
         if ($date_filter) {
             [$from, $to] = $this->getDateRange($date_filter);
@@ -111,6 +143,19 @@ class ReportRepository
         $query = \App\Models\Shift::with(['schedule.user', 'site.company', 'weeklyRunSheet.entries.site.company'])
             ->orderBy('date', 'desc')
             ->orderBy('start_time', 'desc');
+
+        // --- Tenant Isolation (Backend first filter) ---
+        $authUser = auth()->user();
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $query->where(function ($q) use ($authUser) {
+                    $q->whereHas('schedule.user', fn ($sq) => $sq->where('tenant_id', $authUser->tenant_id))
+                      ->orWhereHas('site.company', fn ($sq) => $sq->where('tenant_id', $authUser->tenant_id));
+                });
+            } else {
+                $query->whereHas('schedule', fn ($sq) => $sq->where('user_id', $authUser->id));
+            }
+        }
 
         // Apply general date filter if no custom date filters are provided
         if (empty($extraFilters['start_date']) && empty($extraFilters['end_date']) && $date_filter) {

@@ -1,6 +1,6 @@
 # Tenant Implementation Architecture & Security Specification
 
-This document details the technical implementation of the **Multi-Tenant System** in Elite Guard. It covers tenant isolation across modules (Companies, Sites, Unified Reports & Forms), direct URL authorization protection, flash message error redirects, API data storage, and batch SQL script.
+This document details the technical implementation of the **Multi-Tenant System** in Elite Guard. It covers tenant isolation across modules (Companies, Sites, Unified Reports & Forms, Shifts Reports), direct URL authorization protection, flash message error redirects, API data storage, and batch SQL script.
 
 ---
 
@@ -9,9 +9,10 @@ This document details the technical implementation of the **Multi-Tenant System*
 2. [2. Companies Module & Tenant Isolation](#2-companies-module--tenant-isolation)
 3. [3. Sites Module & Unauthorized URL Guard](#3-sites-module--unauthorized-url-guard)
 4. [4. System Reports & Unified Reports Filtering](#4-system-reports--unified-reports-filtering)
-5. [5. Direct URL Security & Unauthorized Redirect Guard](#5-direct-url-security--unauthorized-redirect-guard)
-6. [6. Forms & Reports API Data Flow](#6-forms--reports-api-data-flow)
-7. [7. SQL Batch Assignment Script](#7-sql-batch-assignment-script)
+5. [5. Shifts Reports & Matrix Tenant Isolation](#5-shifts-reports--matrix-tenant-isolation)
+6. [6. Direct URL Security & Unauthorized Redirect Guard](#6-direct-url-security--unauthorized-redirect-guard)
+7. [7. Forms & Reports API Data Flow](#7-forms--reports-api-data-flow)
+8. [8. SQL Batch Assignment Script](#8-sql-batch-assignment-script)
 
 ---
 
@@ -98,7 +99,32 @@ All report and form models are integrated into the multi-tenant architecture.
 
 ---
 
-## 5. Direct URL Security & Unauthorized Redirect Guard
+## 5. Shifts Reports & Matrix Tenant Isolation
+
+Shifts reports (`/profile/reports?type=shifts`) generate the **Guard Hours Summary Matrix** across employees and sites.
+
+### Backend Isolation & Scoping:
+1. **Query Filter (`ReportRepository::getShiftsReport`):**
+   - Primary backend filter restricts shifts query to current tenant's employees or sites:
+     ```php
+     $authUser = auth()->user();
+     if ($authUser && $authUser->role !== 'MasterAdmin') {
+         if ($authUser->tenant_id) {
+             $query->where(function ($q) use ($authUser) {
+                 $q->whereHas('schedule.user', fn ($sq) => $sq->where('tenant_id', $authUser->tenant_id))
+                   ->orWhereHas('site', fn ($sq) => $sq->where('tenant_id', $authUser->tenant_id));
+             });
+         } else {
+             $query->whereHas('schedule', fn ($sq) => $sq->where('user_id', $authUser->id));
+         }
+     }
+     ```
+2. **Dropdown Scoping (`ReportController::index`):**
+   - Employee and Site filter dropdowns display only users and sites belonging to the logged-in user's tenant.
+
+---
+
+## 6. Direct URL Security & Unauthorized Redirect Guard
 
 To mirror the Sites module behavior in Unified Reports and Forms:
 
@@ -130,7 +156,7 @@ To mirror the Sites module behavior in Unified Reports and Forms:
 
 ---
 
-## 6. Forms & Reports API Data Flow
+## 7. Forms & Reports API Data Flow
 
 All REST API submit endpoints automatically extract `$user->tenant_id` from the authenticated JWT/Sanctum bearer token and persist it.
 
@@ -157,7 +183,7 @@ $record = Model::create([
 
 ---
 
-## 7. SQL Batch Assignment Script
+## 8. SQL Batch Assignment Script
 
 Execute this SQL query to update existing database records with default tenant assignment:
 
