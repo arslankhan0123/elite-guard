@@ -33,21 +33,27 @@
         <div class="d-flex">
             <!-- LOGO -->
             <div class="navbar-brand-box">
+                @php
+                    $__companyLogoPath = \App\Models\Setting::get('company_logo_path', '');
+                    $__logoUrl = $__companyLogoPath
+                        ? \Illuminate\Support\Facades\Storage::url($__companyLogoPath)
+                        : asset('logo.png');
+                @endphp
                 <a href="{{route('dashboard')}}" class="logo logo-dark">
                     <span class="logo-sm">
-                        <img src="{{asset('logo.png')}}" alt="" height="22">
+                        <img src="{{ $__logoUrl }}" alt="" height="22">
                     </span>
                     <span class="logo-lg">
-                        <img src="{{asset('logo.png')}}" alt="" height="42">
+                        <img src="{{ $__logoUrl }}" alt="" height="42">
                     </span>
                 </a>
 
                 <a href="{{route('dashboard')}}" class="logo logo-light">
                     <span class="logo-sm">
-                        <img src="{{asset('logo.png')}}" alt="" height="22">
+                        <img src="{{ $__logoUrl }}" alt="" height="22">
                     </span>
                     <span class="logo-lg">
-                        <img src="{{asset('logo.png')}}" alt="" height="22">
+                        <img src="{{ $__logoUrl }}" alt="" height="22">
                     </span>
                 </a>
             </div>

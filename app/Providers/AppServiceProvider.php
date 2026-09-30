@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Observers\UserObserver;
 use Illuminate\Support\ServiceProvider;
-
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\App;
 use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,12 +23,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // The admin dashboard uses Bootstrap, so render pagination controls with
-        // Bootstrap markup instead of Laravel's Tailwind/SVG-based default.
+        // Bootstrap pagination
         Paginator::useBootstrapFive();
 
-        // Prohibit destructive database commands (migrate:fresh, migrate:reset, db:wipe, etc.) universally in all environments
+        // Prohibit destructive DB commands in all environments
         DB::prohibitDestructiveCommands(true);
+
+        // Register UserObserver to keep tenant_user_lookup in sync
+        User::observe(UserObserver::class);
 
         // Dynamically set system timezone from DB settings with fallback to env
         try {

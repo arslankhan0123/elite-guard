@@ -2,22 +2,25 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     *
+     * Run ALL:
+     *   php artisan db:seed
+     *
+     * Run individually:
+     *   php artisan db:seed --class=MasterSeeder
+     *   php artisan db:seed --class=EliteGuardTenantSeeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            MasterSeeder::class,
+            EliteGuardTenantSeeder::class,
         ]);
     }
 }

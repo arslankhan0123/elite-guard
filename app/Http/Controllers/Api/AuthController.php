@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Master\TenantUserLookup;
+use App\Services\TenantService;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -50,32 +54,32 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
+            'name'     => 'required',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:6',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
-                'message' => $validator->errors()
+                'status'  => false,
+                'message' => $validator->errors(),
             ], 401);
         }
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => 'Employee',
-            'password' => Hash::make($request->password)
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'role'     => 'Employee',
+            'password' => Hash::make($request->password),
         ]);
 
         $token = JWTAuth::fromUser($user);
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'User registered successfully',
-            'token' => $token,
-            'data' => $user
+            'token'   => $token,
+            'data'    => $user,
         ]);
     }
 
@@ -83,7 +87,7 @@ class AuthController extends Controller
     /**
      * @OA\Post(
      *     path="/api/login",
-     *     summary="Login user",
+     *     summary="Login user (guard/employee)",
      *     tags={"Authentication"},
      *     @OA\RequestBody(
      *         required=true,
@@ -116,40 +120,71 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        $email = $request->input('email');
+
+        // ─── Step 1: Identify which tenant this email belongs to ───────────
+        $lookup = TenantUserLookup::on('master')
+            ->where('email', $email)
+            ->first();
+
+        if (!$lookup) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Invalid credentials',
+            ], 401);
+        }
+
+        $tenant = \App\Models\Master\Tenant::on('master')
+            ->where('id', $lookup->tenant_id)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$tenant) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Account is inactive. Please contact the administrator.',
+            ], 401);
+        }
+
+        // ─── Step 2: Switch to that tenant's database ──────────────────────
+        TenantService::setTenant($tenant);
+
+        // ─── Step 3: Attempt authentication against the tenant DB ─────────
         $credentials = $request->only('email', 'password');
 
         if (!$token = JWTAuth::attempt($credentials)) {
             return response()->json([
-                'status' => false,
-                'message' => 'Invalid credentials'
+                'status'  => false,
+                'message' => 'Invalid credentials',
             ], 401);
         }
 
         /** @var User $user */
         $user = Auth::user();
+
         if ($request->has('fcm_token')) {
             $user->update(['fcm_token' => $request->fcm_token]);
         }
 
         if (!$user->employee) {
             return response()->json([
-                'status' => false,
-                'message' => 'User is not an employee. Please contact the administrator.'
+                'status'  => false,
+                'message' => 'User is not an employee. Please contact the administrator.',
             ], 401);
         }
 
         if ($user->employee->status == 0) {
             return response()->json([
-                'status' => false,
-                'message' => 'Your account is not active. Please contact the administrator.'
+                'status'  => false,
+                'message' => 'Your account is not active. Please contact the administrator.',
             ], 401);
         }
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Login successful',
-            'token' => $token,
-            'user' => $user
+            'token'   => $token,
+            'user'    => $user,
         ]);
     }
 }
