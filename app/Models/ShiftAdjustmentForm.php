@@ -10,6 +10,7 @@ class ShiftAdjustmentForm extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'site_id',
         'current_supervisor_id',
@@ -68,6 +69,11 @@ class ShiftAdjustmentForm extends Model
         'requested_date'   => 'date',
         'approval_date'    => 'date',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function user()
     {

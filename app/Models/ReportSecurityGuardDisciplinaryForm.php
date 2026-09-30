@@ -10,6 +10,7 @@ class ReportSecurityGuardDisciplinaryForm extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'site_id',
         'supervisor_id',
@@ -38,6 +39,11 @@ class ReportSecurityGuardDisciplinaryForm extends Model
         'employee_signature',
         'signature_date',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function user()
     {

@@ -10,6 +10,7 @@ class ReportIncidentForm extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'site_id',
         'date_of_report',
@@ -47,6 +48,11 @@ class ReportIncidentForm extends Model
         return [
             'subjects' => 'array',
         ];
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
     }
 
     public function user()

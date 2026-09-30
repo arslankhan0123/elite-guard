@@ -20,8 +20,30 @@ class UnifiedReportController extends Controller
     public function index(Request $request)
     {
         $type = $request->get('type', 'general'); // Default to general report
-        $users = User::all();
-        $sites = \App\Models\Site::orderBy('name')->get();
+        $authUser = auth()->user();
+
+        // Scope users dropdown by tenant (same pattern as CompanyRepository / ChronologicalReportController)
+        $usersQuery = User::orderBy('name');
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $usersQuery->where('tenant_id', $authUser->tenant_id);
+            } else {
+                $usersQuery->where('id', $authUser->id);
+            }
+        }
+        $users = $usersQuery->get();
+
+        // Scope sites dropdown by tenant company
+        $sitesQuery = \App\Models\Site::orderBy('name');
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $sitesQuery->whereHas('company', fn ($q) => $q->where('tenant_id', $authUser->tenant_id));
+            } else {
+                $sitesQuery->whereHas('company', fn ($q) => $q->where('user_id', $authUser->id));
+            }
+        }
+        $sites = $sitesQuery->get();
+
         $data = [];
         $view = 'admin.unified-reports.partials.' . $type;
 
@@ -84,6 +106,20 @@ class UnifiedReportController extends Controller
 
     private function applyFilters($query, $request)
     {
+        // --- Tenant isolation (backend-only, no frontend input required) ---
+        // Follows the same pattern as CompanyRepository & ChronologicalReportController.
+        $authUser = auth()->user();
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $query->where(function ($q) use ($authUser) {
+                    $q->where('tenant_id', $authUser->tenant_id)
+                      ->orWhereHas('user', fn ($uq) => $uq->where('tenant_id', $authUser->tenant_id));
+                });
+            } else {
+                $query->where('user_id', $authUser->id);
+            }
+        }
+
         if ($request->user_id) {
             $query->where('user_id', $request->user_id);
         }

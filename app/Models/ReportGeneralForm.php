@@ -10,6 +10,7 @@ class ReportGeneralForm extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'site_id',
         'report_date',
@@ -30,6 +31,11 @@ class ReportGeneralForm extends Model
         'action_taken',
         'signature',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function user()
     {

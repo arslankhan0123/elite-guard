@@ -10,6 +10,7 @@ class Assessment extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'supervisor_id',
         'first_name',
@@ -48,6 +49,11 @@ class Assessment extends Model
         'safety_concerns' => 'boolean',
         'hazards_identified' => 'boolean',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function user()
     {

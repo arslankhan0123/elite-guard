@@ -10,6 +10,7 @@ class FireWatchReport extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'site_id',
         'supervisor_id',
@@ -25,6 +26,11 @@ class FireWatchReport extends Model
         'supervisor',
         'patrol_interval',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function user()
     {

@@ -2,6 +2,7 @@
     <thead>
         <tr class="table-dark">
             <th>ID</th>
+            <th>Tenant ID</th>
             <th>User</th>
             <th>Client</th>
             <th>Supervisor</th>
@@ -17,6 +18,7 @@
         @forelse($data['assessments'] as $assessment)
             <tr>
                 <td>{{ $assessment->id }}</td>
+                <td>{{ $assessment->user->tenant_id ?? 'N/A' }}</td>
                 <td>
                     <strong>{{ $assessment->user->name ?? 'N/A' }}</strong><br>
                     <small class="text-muted">{{ $assessment->user->email ?? '' }}</small>
@@ -63,7 +65,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="10" class="text-center">No assessments found.</td>
+                <td colspan="11" class="text-center">No assessments found.</td>
             </tr>
         @endforelse
     </tbody>

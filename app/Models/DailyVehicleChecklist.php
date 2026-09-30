@@ -10,6 +10,7 @@ class DailyVehicleChecklist extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'site_id',
         'date',
@@ -32,6 +33,11 @@ class DailyVehicleChecklist extends Model
         'bwc_used_for_inspection',
         'issues_found',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function user()
     {

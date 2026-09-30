@@ -2,6 +2,7 @@
     <thead>
         <tr class="table-dark">
             <th>ID</th>
+            <th>Tenant ID</th>
             <th>Report Type</th>
             <th>Property</th>
             <th>Location</th>
@@ -17,6 +18,7 @@
         @forelse($data['reports'] as $report)
         <tr>
             <td>{{ $report->id }}</td>
+            <td>{{ $report->user->tenant_id ?? 'N/A' }}</td>
             <td>{{ $report->report_type }}</td>
             <td>{{ $report->property_name }}</td>
             <td>{{ $report->property_location }}</td>
@@ -67,7 +69,7 @@
             </tr>
         @empty
         <tr>
-            <td colspan="10" class="text-center">No reports found.</td>
+            <td colspan="11" class="text-center">No reports found.</td>
         </tr>
         @endforelse
     </tbody>

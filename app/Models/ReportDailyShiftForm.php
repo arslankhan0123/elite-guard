@@ -10,6 +10,7 @@ class ReportDailyShiftForm extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'shift_id',
         'security_company',
@@ -20,6 +21,11 @@ class ReportDailyShiftForm extends Model
         'client',
         'weather_conditions',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function user()
     {

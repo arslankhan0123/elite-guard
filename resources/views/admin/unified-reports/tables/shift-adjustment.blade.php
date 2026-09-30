@@ -2,6 +2,7 @@
     <thead>
         <tr class="table-dark">
             <th>ID</th>
+            <th>Tenant ID</th>
             <th>Employee</th>
             <th>Position/Site</th>
             <th>Current Shift</th>
@@ -16,6 +17,7 @@
         @forelse($data['adjustments'] as $adjustment)
             <tr>
                 <td>{{ $adjustment->id }}</td>
+                <td>{{ $adjustment->user->tenant_id ?? 'N/A' }}</td>
                 <td>
                     <strong>{{ $adjustment->employee_name }}</strong><br>
                     @if($adjustment->employee_id)
@@ -102,7 +104,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="9" class="text-center">No shift adjustment requests found.</td>
+                <td colspan="10" class="text-center">No shift adjustment requests found.</td>
             </tr>
         @endforelse
     </tbody>

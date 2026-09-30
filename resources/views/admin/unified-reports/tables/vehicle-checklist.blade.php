@@ -2,6 +2,7 @@
     <thead>
         <tr class="table-dark">
             <th>ID</th>
+            <th>Tenant ID</th>
             <th>User</th>
             <th>Date</th>
             <th>Time</th>
@@ -19,6 +20,7 @@
         @forelse($data['checklists'] as $checklist)
             <tr>
                 <td>{{ $checklist->id }}</td>
+                <td>{{ $checklist->user->tenant_id ?? 'N/A' }}</td>
                 <td>
                     <strong>{{ $checklist->user->name ?? 'N/A' }}</strong><br>
                     <small class="text-muted">{{ $checklist->user->email ?? '' }}</small>
@@ -61,7 +63,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="12" class="text-center">No checklists found.</td>
+                <td colspan="13" class="text-center">No checklists found.</td>
             </tr>
         @endforelse
     </tbody>
