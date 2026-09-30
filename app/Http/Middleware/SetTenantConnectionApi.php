@@ -11,24 +11,34 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class SetTenantConnectionApi
 {
-    /**
-     * Runs BEFORE auth:api — reads the tenant_id custom claim from the JWT
-     * payload (without fully authenticating the user) and switches the DB
-     * connection so that auth:api finds the user in the right tenant DB.
-     */
     public function handle(Request $request, Closure $next): Response
     {
         try {
             $token = JWTAuth::getToken();
+
             if ($token) {
                 $payload  = JWTAuth::decode($token);
                 $tenantId = $payload->get('tenant_id');
 
                 if ($tenantId) {
                     $tenant = Tenant::on('master')->find($tenantId);
-                    if ($tenant && $tenant->is_active) {
-                        TenantService::setTenant($tenant);
+
+                    // Tenant not found or deactivated → reject immediately
+                    if (!$tenant) {
+                        return response()->json([
+                            'status'  => false,
+                            'message' => 'Account not found. Please contact the administrator.',
+                        ], 403);
                     }
+
+                    if (!$tenant->is_active) {
+                        return response()->json([
+                            'status'  => false,
+                            'message' => 'Your account has been deactivated. Please contact the administrator.',
+                        ], 403);
+                    }
+
+                    TenantService::setTenant($tenant);
                 }
             }
         } catch (\Throwable $e) {
