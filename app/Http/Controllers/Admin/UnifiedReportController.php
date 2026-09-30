@@ -173,6 +173,11 @@ class UnifiedReportController extends Controller
     public function show($type, $id)
     {
         $report = $this->getReportInstance($type, $id);
+        if (!$report) {
+            return redirect()->route('reports.all', ['type' => $type])
+                ->with('error', 'Unauthorized access! You do not have permission to view this report.');
+        }
+
         $title = ucwords(str_replace('-', ' ', $type)) . ' Details';
         $attributes = $this->displayAttributes($report);
 
@@ -182,8 +187,12 @@ class UnifiedReportController extends Controller
     public function edit($type, $id)
     {
         $report = $this->getReportInstance($type, $id);
-        $title = 'Edit ' . ucwords(str_replace('-', ' ', $type)) . ' #' . $id;
+        if (!$report) {
+            return redirect()->route('reports.all', ['type' => $type])
+                ->with('error', 'Unauthorized access! You do not have permission to edit this report.');
+        }
 
+        $title = 'Edit ' . ucwords(str_replace('-', ' ', $type)) . ' #' . $id;
         $attributes = $this->displayAttributes($report)->except($this->mediaFields());
 
         return view('admin.unified-reports.edit', compact('report', 'type', 'title', 'attributes'));
@@ -192,6 +201,11 @@ class UnifiedReportController extends Controller
     public function update(Request $request, $type, $id)
     {
         $report = $this->getReportInstance($type, $id);
+        if (!$report) {
+            return redirect()->route('reports.all', ['type' => $type])
+                ->with('error', 'Unauthorized access! You do not have permission to update this report.');
+        }
+
         $attributes = $this->displayAttributes($report)->except($this->mediaFields());
 
         $rules = [];
@@ -245,6 +259,11 @@ class UnifiedReportController extends Controller
     public function downloadPdf($type, $id)
     {
         $report = $this->getReportInstance($type, $id);
+        if (!$report) {
+            return redirect()->route('reports.all', ['type' => $type])
+                ->with('error', 'Unauthorized access! You do not have permission to download this report.');
+        }
+
         $title = ucwords(str_replace('-', ' ', $type)) . ' Report';
         $attributes = $this->displayAttributes($report);
 
@@ -255,6 +274,11 @@ class UnifiedReportController extends Controller
     public function destroy($type, $id)
     {
         $report = $this->getReportInstance($type, $id);
+        if (!$report) {
+            return redirect()->route('reports.all', ['type' => $type])
+                ->with('error', 'Unauthorized access! You do not have permission to delete this report.');
+        }
+
         $files = $this->reportFiles($report);
 
         DB::transaction(function () use ($report) {
@@ -288,11 +312,28 @@ class UnifiedReportController extends Controller
             'shift-adjustment' => [\App\Models\ShiftAdjustmentForm::class, ['user']],
         ];
 
-        abort_unless(isset($config[$type]), 404);
+        if (!isset($config[$type])) {
+            return null;
+        }
 
         [$model, $relations] = $config[$type];
 
-        return $model::with($relations)->findOrFail($id);
+        $authUser = auth()->user();
+        $query = $model::with($relations);
+
+        // Security / Tenant Isolation check
+        if ($authUser && $authUser->role !== 'MasterAdmin') {
+            if ($authUser->tenant_id) {
+                $query->where(function ($q) use ($authUser) {
+                    $q->where('tenant_id', $authUser->tenant_id)
+                      ->orWhereHas('user', fn ($uq) => $uq->where('tenant_id', $authUser->tenant_id));
+                });
+            } else {
+                $query->where('user_id', $authUser->id);
+            }
+        }
+
+        return $query->find($id);
     }
 
     private function displayAttributes($report)
