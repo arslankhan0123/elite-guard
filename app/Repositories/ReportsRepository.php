@@ -30,6 +30,7 @@ class ReportsRepository
         );
 
         $form = ReportSecurityGuardDisciplinaryForm::create([
+            'tenant_id' => $user->tenant_id ?? null,
             'user_id' => $user->id ?? null,
             'site_id' => $request->site_id,
             'supervisor_id' => $request->supervisor_id,
@@ -71,6 +72,7 @@ class ReportsRepository
         $user = Auth::user();
 
         $form = ReportIncidentForm::create([
+            'tenant_id' => $user->tenant_id ?? null,
             'user_id' => $user->id ?? null,
             'site_id' => $request->property_id,
             'date_of_report' => $request->date_of_report,
@@ -140,6 +142,7 @@ class ReportsRepository
         );
 
         $form = ReportGeneralForm::create([
+            'tenant_id' => $user->tenant_id ?? null,
             'user_id' => $user->id ?? null,
             'site_id' => $request->site_id,
             'report_date' => $request->report_date,
@@ -220,8 +223,7 @@ class ReportsRepository
         string $relativeDirectory,
         int|string $userId,
         string $name
-    ): ?string
-    {
+    ): ?string {
         if (!$image) {
             return null;
         }
@@ -242,14 +244,15 @@ class ReportsRepository
         $user = Auth::user();
 
         $form = ReportDailyShiftForm::create([
-            'user_id'          => $user->id ?? null,
-            'shift_id'         => $request->shift_id,
+            'tenant_id' => $user->tenant_id ?? null,
+            'user_id' => $user->id ?? null,
+            'shift_id' => $request->shift_id,
             'security_company' => $request->security_company,
-            'security_guard'   => $request->security_guard,
-            'date'             => $request->date,
-            'shift_time'       => $request->shift_time,
-            'location'         => $request->location,
-            'client'           => $request->client,
+            'security_guard' => $request->security_guard,
+            'date' => $request->date,
+            'shift_time' => $request->shift_time,
+            'location' => $request->location,
+            'client' => $request->client,
             'weather_conditions' => $request->weather_conditions,
         ]);
 
@@ -257,8 +260,8 @@ class ReportsRepository
             foreach ($request->patrol_entries as $entry) {
                 ReportDailyShiftFormPatrolEntry::create([
                     'report_daily_shift_form_id' => $form->id,
-                    'time_range'                => $entry['time_range'] ?? null,
-                    'summary'                   => $entry['summary'] ?? null,
+                    'time_range' => $entry['time_range'] ?? null,
+                    'summary' => $entry['summary'] ?? null,
                 ]);
             }
         }
@@ -270,46 +273,47 @@ class ReportsRepository
         ];
     }
 
-        public function storeFireWatchReport(Request $request)
+    public function storeFireWatchReport(Request $request)
     {
         $user = Auth::user();
 
         return DB::transaction(function () use ($request, $user) {
             $report = FireWatchReport::create([
-                'user_id'               => $user->id,
-                'site_id'               => $request->site_id,
-                'supervisor_id'         => $request->supervisor_id,
-                'client_site_name'      => $request->client_site_name,
-                'address_location'      => $request->address_location,
+                'tenant_id' => $user->tenant_id ?? null,
+                'user_id' => $user->id,
+                'site_id' => $request->site_id,
+                'supervisor_id' => $request->supervisor_id,
+                'client_site_name' => $request->client_site_name,
+                'address_location' => $request->address_location,
                 'reason_for_fire_watch' => $request->reason_for_fire_watch,
-                'fire_watch_areas'      => $request->fire_watch_areas,
-                'commenced_date'        => $request->commenced_date,
-                'commenced_time'        => $request->commenced_time,
-                'terminated_date'       => $request->terminated_date,
-                'terminated_time'       => $request->terminated_time,
-                'guards'                => $request->guards,
-                'supervisor'            => $request->supervisor,
-                'patrol_interval'       => $request->patrol_interval,
+                'fire_watch_areas' => $request->fire_watch_areas,
+                'commenced_date' => $request->commenced_date,
+                'commenced_time' => $request->commenced_time,
+                'terminated_date' => $request->terminated_date,
+                'terminated_time' => $request->terminated_time,
+                'guards' => $request->guards,
+                'supervisor' => $request->supervisor,
+                'patrol_interval' => $request->patrol_interval,
             ]);
 
             if ($request->has('patrol_logs') && is_array($request->patrol_logs)) {
                 foreach ($request->patrol_logs as $log) {
                     FireWatchPatrolLog::create([
-                        'fire_watch_report_id'    => $report->id,
-                        'round'                   => $log['round'] ?? null,
-                        'date'                    => $log['date'] ?? null,
-                        'start_time'              => $log['start_time'] ?? null,
-                        'end_time'                => $log['end_time'] ?? null,
+                        'fire_watch_report_id' => $report->id,
+                        'round' => $log['round'] ?? null,
+                        'date' => $log['date'] ?? null,
+                        'start_time' => $log['start_time'] ?? null,
+                        'end_time' => $log['end_time'] ?? null,
                         'area_patrolled_findings' => $log['area_patrolled_findings'] ?? null,
-                        'initials'                => $log['initials'] ?? null,
+                        'initials' => $log['initials'] ?? null,
                     ]);
                 }
             }
 
             return [
-                'status'  => true,
+                'status' => true,
                 'message' => 'Fire Watch Report stored successfully.',
-                'report'  => $report->load(['patrolLogs', 'site', 'supervisorUser']),
+                'report' => $report->load(['patrolLogs', 'site', 'supervisorUser']),
             ];
         });
     }

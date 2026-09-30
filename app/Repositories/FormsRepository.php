@@ -31,6 +31,7 @@ class FormsRepository
         $signature = url('storage/' . $signatureDirectory . '/' . $signatureFileName);
 
         $assessment = Assessment::create([
+            'tenant_id' => $user->tenant_id ?? null,
             'user_id' => $user->id,
             'supervisor_id' => $request->supervisor_id,
             'first_name' => $request->first_name,
@@ -120,6 +121,7 @@ class FormsRepository
         }
 
         $checklist = DailyVehicleChecklist::create([
+            'tenant_id' => $user->tenant_id ?? null,
             'user_id' => $user->id,
             'site_id' => $request->site_id,
             'date' => $request->date,
@@ -183,57 +185,58 @@ class FormsRepository
         );
 
         $form = ShiftAdjustmentForm::create([
-            'user_id'              => $user->id,
-            'site_id'              => $request->site_id,
+            'tenant_id' => $user->tenant_id ?? null,
+            'user_id' => $user->id,
+            'site_id' => $request->site_id,
             'current_supervisor_id' => $request->current_supervisor_id,
-            'supervisor_id'        => $request->supervisor_id,
+            'supervisor_id' => $request->supervisor_id,
             'approving_supervisor_id' => $request->approving_supervisor_id,
 
             // Employee Information
-            'employee_name'        => $request->employee_name,
-            'employee_id'          => $request->employee_id,
-            'position_site'        => $request->position_site,
-            'department'           => $request->department,
+            'employee_name' => $request->employee_name,
+            'employee_id' => $request->employee_id,
+            'position_site' => $request->position_site,
+            'department' => $request->department,
 
             // Current Shift
-            'current_date'         => $request->current_date,
-            'current_start_time'   => $request->current_start_time,
-            'current_end_time'     => $request->current_end_time,
-            'current_supervisor'   => $request->current_supervisor,
-            'current_shift_type'   => $request->current_shift_type,
+            'current_date' => $request->current_date,
+            'current_start_time' => $request->current_start_time,
+            'current_end_time' => $request->current_end_time,
+            'current_supervisor' => $request->current_supervisor,
+            'current_shift_type' => $request->current_shift_type,
 
             // Requested Adjustment - Checkboxes
-            'shift_swap'           => $request->shift_swap ?? false,
-            'late_start'           => $request->late_start ?? false,
-            'coverage_request'     => $request->coverage_request ?? false,
-            'early_release'        => $request->early_release ?? false,
-            'time_off_request'     => $request->time_off_request ?? false,
-            'overtime_approval'    => $request->overtime_approval ?? false,
+            'shift_swap' => $request->shift_swap ?? false,
+            'late_start' => $request->late_start ?? false,
+            'coverage_request' => $request->coverage_request ?? false,
+            'early_release' => $request->early_release ?? false,
+            'time_off_request' => $request->time_off_request ?? false,
+            'overtime_approval' => $request->overtime_approval ?? false,
 
             // Requested Adjustment - Details
-            'requested_date'       => $request->requested_date,
+            'requested_date' => $request->requested_date,
             'requested_start_time' => $request->requested_start_time,
-            'requested_end_time'   => $request->requested_end_time,
+            'requested_end_time' => $request->requested_end_time,
             'replacement_employee' => $request->replacement_employee,
-            'adjustment_reason'    => $request->adjustment_reason,
-            'additional_details'   => $request->additional_details,
+            'adjustment_reason' => $request->adjustment_reason,
+            'additional_details' => $request->additional_details,
 
             // Approval Section
-            'supervisor_name'      => $request->supervisor_name,
-            'approval_date'        => $request->approval_date,
-            'decision'             => $request->decision,
-            'approved_hours'       => $request->approved_hours,
-            'supervisor_notes'     => $request->supervisor_notes,
+            'supervisor_name' => $request->supervisor_name,
+            'approval_date' => $request->approval_date,
+            'decision' => $request->decision,
+            'approved_hours' => $request->approved_hours,
+            'supervisor_notes' => $request->supervisor_notes,
 
             // Signatures
-            'employee_signature'   => $employeeSignature,
+            'employee_signature' => $employeeSignature,
             'supervisor_signature' => $supervisorSignature,
         ]);
 
         return [
-            'status'  => true,
+            'status' => true,
             'message' => 'Shift Adjustment Form stored successfully.',
-            'form'    => $form->load([
+            'form' => $form->load([
                 'site',
                 'currentSupervisor',
                 'supervisor',
