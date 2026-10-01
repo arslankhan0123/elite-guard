@@ -98,17 +98,17 @@ class RunSheetApiController extends Controller
 
         if (!$activeShift || Carbon::now(config('app.timezone', 'UTC'))->gt($activeShift->end_datetime)) {
             return $this->successResponse([
-                'status'             => true,
-                'message'            => 'No active or upcoming shift found.',
-                'shift'              => null,
-                'weekly_run_sheet'   => null,
-                'main_route'         => null,
-                'total_run_sheets'   => 0,
-                'total_entries'      => 0,
-                'scanned_entries'    => 0,
-                'total_tags'         => 0,
+                'status' => true,
+                'message' => 'No active or upcoming shift found.',
+                'shift' => null,
+                'weekly_run_sheet' => null,
+                'main_route' => null,
+                'total_run_sheets' => 0,
+                'total_entries' => 0,
+                'scanned_entries' => 0,
+                'total_tags' => 0,
                 'total_scanned_tags' => 0,
-                'run_sheets'         => [],
+                'run_sheets' => [],
             ], 'No active or upcoming shift found.');
         }
 
@@ -179,15 +179,15 @@ class RunSheetApiController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'run_sheet_id' => 'required|exists:run_sheets,id',
-            'nfc_tag_id'   => 'required|exists:nfc_tags,id',
-            'latitude'     => 'nullable|string',
-            'longitude'    => 'nullable|string',
-            'date'         => 'nullable|date',
-            'time'         => 'nullable',
-            'reason'       => 'nullable|string',
-            'image'        => 'nullable|image',
-            'images'       => 'nullable|array',
-            'images.*'     => 'nullable|image',
+            'nfc_tag_id' => 'required|exists:nfc_tags,id',
+            'latitude' => 'nullable|string',
+            'longitude' => 'nullable|string',
+            'date' => 'nullable|date',
+            'time' => 'nullable',
+            'reason' => 'nullable|string',
+            'image' => 'nullable|image',
+            'images' => 'nullable|array',
+            'images.*' => 'nullable|image',
         ]);
 
         if ($validator->fails()) {
@@ -216,18 +216,19 @@ class RunSheetApiController extends Controller
         // }
 
         $activeShift = $this->shiftRepo->getActiveShift();
-        $scanDate = $request->input('date') ?: ($runsheet->date ?: ($activeShift ? $activeShift->date : Carbon::now(config('app.timezone', 'UTC'))->format('Y-m-d')));
+        // $scanDate = $request->input('date') ?: ($runsheet->date ?: ($activeShift ? $activeShift->date : Carbon::now(config('app.timezone', 'UTC'))->format('Y-m-d')));
+        $scanDate = Carbon::now(config('app.timezone', 'UTC'))->format('Y-m-d');
         $scanTime = $request->input('time') ?: Carbon::now(config('app.timezone', 'UTC'))->toTimeString();
 
         $scanData = [
             'run_sheet_id' => (int) $runsheet->id,
-            'nfc_tag_id'   => (int) $request->nfc_tag_id,
-            'user_id'      => Auth::id(),
-            'date'         => $scanDate,
-            'time'         => $scanTime,
-            'latitude'     => $request->latitude,
-            'longitude'    => $request->longitude,
-            'reason'       => $request->reason,
+            'nfc_tag_id' => (int) $request->nfc_tag_id,
+            'user_id' => Auth::id(),
+            'date' => $scanDate,
+            'time' => $scanTime,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'reason' => $request->reason,
         ];
 
         // Check if already scanned
@@ -301,7 +302,7 @@ class RunSheetApiController extends Controller
     public function finishRunSheets(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'shift_ids'   => 'required|array',
+            'shift_ids' => 'required|array',
             'shift_ids.*' => 'required|integer',
         ]);
 
@@ -319,7 +320,7 @@ class RunSheetApiController extends Controller
 
         return $this->successResponse([
             'updated_count' => $updatedCount,
-            'shift_ids'     => $shiftIds,
+            'shift_ids' => $shiftIds,
         ], 'Run sheets finished successfully.');
     }
 }

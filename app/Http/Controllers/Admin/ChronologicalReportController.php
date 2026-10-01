@@ -172,6 +172,14 @@ class ChronologicalReportController extends Controller
             $dateStr = $item->date ? (is_string($item->date) ? $item->date : $item->date->format('Y-m-d')) : 'N/A';
             $tourImages = $item->images ? $item->images->pluck('image_path')->filter()->values()->all() : [];
 
+            $allScansSorted = $item->scans->sortBy('time');
+            $scannedStart = null;
+            $scannedEnd = null;
+            if ($allScansSorted->count() > 0) {
+                $scannedStart = $allScansSorted->first()->time;
+                $scannedEnd   = $allScansSorted->last()->time;
+            }
+
             $merged->push([
                 'id' => $item->id,
                 'type' => 'Site Tour',
@@ -181,6 +189,8 @@ class ChronologicalReportController extends Controller
                 'date' => $dateStr,
                 'start_time' => $item->start_time,
                 'end_time' => $item->end_time,
+                'scanned_start_time' => $scannedStart,
+                'scanned_end_time' => $scannedEnd,
                 'required_count' => $requiredCount,
                 'scanned_count' => $scannedCount,
                 'status' => $status,

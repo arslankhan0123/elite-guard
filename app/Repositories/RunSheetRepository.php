@@ -147,7 +147,7 @@ class RunSheetRepository
      */
     public function isAlreadyScanned($data)
     {
-        $scanDate = isset($data['date']) ? Carbon::parse($data['date']) : Carbon::today();
+        $scanDate = isset($data['date']) ? Carbon::parse($data['date']) : Carbon::now(config('app.timezone', 'UTC'));
         $dates = [
             $scanDate->toDateString(),
             $scanDate->copy()->subDay()->toDateString(),
