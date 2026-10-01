@@ -179,6 +179,12 @@
                                     <td class="fw-bold text-primary">
                                         {{ \Carbon\Carbon::parse($report['start_time'])->format('h:i A') }} - 
                                         {{ \Carbon\Carbon::parse($report['end_time'])->format('h:i A') }}
+                                        @if(!empty($report['scanned_start_time']) && !empty($report['scanned_end_time']))
+                                            <br>
+                                            <small class="text-muted fw-normal">
+                                                ({{ \Carbon\Carbon::parse($report['scanned_start_time'])->format('h:i A') }} - {{ \Carbon\Carbon::parse($report['scanned_end_time'])->format('h:i A') }})
+                                            </small>
+                                        @endif
                                     </td>
                                     <td>{{ $report['user'] }}</td>
                                     <td>{{ $report['site'] }}</td>
