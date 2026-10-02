@@ -240,17 +240,16 @@
                                                                      }
                                                                  }
                                                              @endphp
-                                                             <div class="card p-2 border rounded shadow-sm d-flex flex-row align-items-center justify-content-between bg-white m-0" style="width: 280px; min-width: 280px; flex: 0 0 280px; min-height: 96px;">
-                                                                 <div style="flex: 1; min-width: 0; padding-right: 8px;">
-                                                                     <div class="fw-bold text-dark text-truncate" style="font-size: 11.5px;" title="{{ $scan['name'] }}">{{ $scan['name'] }}</div>
-                                                                     <div class="text-muted text-truncate" style="font-size: 9.5px;"><strong>UID:</strong> {{ $scan['uid'] }}</div>
-                                                                     <div class="text-muted" style="font-size: 9.5px;"><strong>Time:</strong> {{ \Carbon\Carbon::parse($scan['time'])->format('h:i:s A') }}</div>
-                                                                     <div class="text-muted text-truncate" style="font-size: 9.5px;"><strong>By:</strong> {{ $scan['user'] }}</div>
-                                                                 </div>
+                                                             <div class="card p-2 border rounded shadow-sm d-flex flex-column align-items-center justify-content-start bg-white m-0" style="width: 200px; min-width: 200px; flex: 0 0 200px;">
+                                                                 <div class="fw-bold text-dark text-truncate text-center w-100 mb-2" style="font-size: 13px;" title="{{ $scan['name'] }}">{{ $scan['name'] }}</div>
                                                                  @if($scanImg)
-                                                                     <div style="flex-shrink: 0;">
-                                                                         <img src="{{ $scanImg }}" alt="scan" class="rounded border" style="width: 75px; height: 75px; object-fit: cover;">
+                                                                     <div class="w-100 text-center">
+                                                                         <a href="{{ $scanImg }}" target="_blank" class="d-block w-100">
+                                                                             <img src="{{ $scanImg }}" alt="scan" class="rounded border w-100 shadow-sm" style="height: 160px; object-fit: cover;">
+                                                                         </a>
                                                                      </div>
+                                                                 @else
+                                                                     <div class="w-100 text-center bg-light rounded py-4 text-muted" style="font-size: 11px;">No Image</div>
                                                                  @endif
                                                              </div>
                                                          @endforeach
