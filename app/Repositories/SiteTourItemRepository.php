@@ -163,10 +163,10 @@ class SiteTourItemRepository
             'site_tour_item_id',
             'nfc_tag_id',
             'site_id',
-            'date',
-            'time',
         ]);
         
+        $data['date'] = \Carbon\Carbon::now(config('app.timezone', 'UTC'))->format('Y-m-d');
+        $data['time'] = \Carbon\Carbon::now(config('app.timezone', 'UTC'))->toTimeString();
         $data['user_id'] = $user->id;
 
         $uploadedImages = [];
