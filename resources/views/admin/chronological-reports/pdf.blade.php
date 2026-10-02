@@ -317,19 +317,14 @@
                                                     $imageSource = !empty($scan['image']) ? $resolvePdfImage($scan['image']) : null;
                                                 @endphp
                                                 <td class="scan-grid-cell" style="border: 0; background: transparent; padding: 2px;">
-                                                    <table class="scan-evidence-card">
+                                                    <table class="scan-evidence-card" style="height: auto; text-align: center;">
                                                         <tr>
-                                                            <td class="scan-data-cell{{ !$imageSource ? ' scan-data-only-cell' : '' }}" @if(!$imageSource) colspan="2" @endif>
-                                                                <div class="scan-tag">{{ $scan['name'] ?? 'Unknown Tag' }}</div>
-                                                                <div><strong>UID:</strong> {{ $scan['uid'] ?? 'N/A' }}</div>
-                                                                <div><strong>Time:</strong> {{ $scan['time'] ? \Carbon\Carbon::parse($scan['time'])->format('h:i:s A') : 'N/A' }}</div>
-                                                                <div><strong>By:</strong> {{ $scan['user'] ?? 'N/A' }}</div>
+                                                            <td style="padding: 4px; background: #fff; vertical-align: top;">
+                                                                <div class="scan-tag" style="text-align: center; margin-bottom: 4px;">{{ $scan['name'] ?? 'Unknown Tag' }}</div>
+                                                                @if($imageSource)
+                                                                    <img class="evidence-image" src="{{ $imageSource }}" alt="Evidence" style="height: 75px; width: 100%; object-fit: cover; border-radius: 3px;">
+                                                                @endif
                                                             </td>
-                                                            @if($imageSource)
-                                                                <td class="scan-photo-cell">
-                                                                    <img class="evidence-image" src="{{ $imageSource }}" alt="Evidence">
-                                                                </td>
-                                                            @endif
                                                         </tr>
                                                     </table>
                                                 </td>
