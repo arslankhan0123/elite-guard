@@ -260,7 +260,11 @@ class ChronologicalReportController extends Controller
 
             $allScansSorted = $item->scans->sortBy('time');
             if ($allScansSorted->count() > 0) {
-                $startTime = $allScansSorted->first()->time ?: ($item->start_time ?: '00:00:00');
+                $firstScan = $allScansSorted->first();
+                if ($firstScan->date) {
+                    $dateStr = is_string($firstScan->date) ? $firstScan->date : $firstScan->date->format('Y-m-d');
+                }
+                $startTime = $firstScan->time ?: ($item->start_time ?: '00:00:00');
                 $endTime   = $allScansSorted->last()->time ?: ($item->end_time ?: '23:59:59');
             } else {
                 $startTime = $item->start_time ?: '00:00:00';
