@@ -54,32 +54,32 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'     => 'required',
-            'email'    => 'required|email|unique:users',
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => $validator->errors(),
             ], 401);
         }
 
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'role'     => 'Employee',
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => 'Employee',
             'password' => Hash::make($request->password),
         ]);
 
         $token = JWTAuth::fromUser($user);
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'User registered successfully',
-            'token'   => $token,
-            'data'    => $user,
+            'token' => $token,
+            'data' => $user,
         ]);
     }
 
@@ -129,7 +129,7 @@ class AuthController extends Controller
 
         if (!$lookup) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Invalid credentials',
             ], 401);
         }
@@ -141,7 +141,7 @@ class AuthController extends Controller
 
         if (!$tenant) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Account is inactive. Please contact the administrator.',
             ], 401);
         }
@@ -152,9 +152,10 @@ class AuthController extends Controller
         // ─── Step 3: Attempt authentication against the tenant DB ─────────
         $credentials = $request->only('email', 'password');
 
-        if (!$token = JWTAuth::attempt($credentials)) {
+        // ↓ embed tenant_id in JWT so SetTenantConnectionApi can read it
+        if (!$token = JWTAuth::claims(['tenant_id' => $tenant->id])->attempt($credentials)) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Invalid credentials',
             ], 401);
         }
@@ -168,23 +169,23 @@ class AuthController extends Controller
 
         if (!$user->employee) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'User is not an employee. Please contact the administrator.',
             ], 401);
         }
 
         if ($user->employee->status == 0) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Your account is not active. Please contact the administrator.',
             ], 401);
         }
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Login successful',
-            'token'   => $token,
-            'user'    => $user,
+            'token' => $token,
+            'user' => $user,
         ]);
     }
 }
