@@ -178,6 +178,31 @@
         window.addEventListener('popstate', function () {
             loadReportPage(window.location.href, false);
         });
+
+        // Select All Checkbox Handler
+        $(document).on('change', '#selectAll', function () {
+            const isChecked = $(this).is(':checked');
+            $('.record-checkbox').prop('checked', isChecked);
+            toggleBulkDeleteBtn();
+        });
+
+        // Individual Record Checkbox Handler
+        $(document).on('change', '.record-checkbox', function () {
+            const total = $('.record-checkbox').length;
+            const checked = $('.record-checkbox:checked').length;
+            $('#selectAll').prop('checked', total > 0 && total === checked);
+            toggleBulkDeleteBtn();
+        });
+
+        function toggleBulkDeleteBtn() {
+            const count = $('.record-checkbox:checked').length;
+            const btn = $('#bulkDeleteBtn');
+            if (count > 0) {
+                btn.prop('disabled', false).html(`<i class="mdi mdi-trash-can-outline me-1"></i> Delete Selected (${count})`);
+            } else {
+                btn.prop('disabled', true).html('<i class="mdi mdi-trash-can-outline me-1"></i> Delete Selected');
+            }
+        }
     });
 </script>
 @endsection
