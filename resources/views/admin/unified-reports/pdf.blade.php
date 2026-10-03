@@ -262,7 +262,24 @@
             $attributes = $attributes->except(['documents', 'signature', 'employee_signature', 'supervisor_signature']);
             // Keep long narrative fields on their own full-width rows so their text
             // runs naturally from left to right in the generated PDF.
-            $narrativeKeys = ['observation_situation', 'observations', 'action_taken'];
+            $narrativeKeys = [
+                'incident_report', 
+                'action_taken', 
+                'evidence_observed', 
+                'subjects', 
+                'subject_description', 
+                'outcome', 
+                'observation_situation', 
+                'observations', 
+                'incident_summary', 
+                'summary', 
+                'reason_for_fire_watch', 
+                'description', 
+                'comments', 
+                'details',
+                'corrective_action',
+                'action_taken_by_guard'
+            ];
             $narratives = $attributes->only($narrativeKeys);
             $detailAttributes = $attributes->except($narrativeKeys);
             $halfCount = ceil($detailAttributes->count() / 2);
@@ -318,9 +335,16 @@
         @if($narratives->isNotEmpty())
             <table class="narrative-table">
                 @foreach($narratives as $key => $value)
+                    @php $isJson = is_array($value) || is_object($value); @endphp
                     <tr>
                         <td class="narrative-label">{{ ucwords(str_replace('_', ' ', $key)) }}</td>
-                        <td class="narrative-value">{{ $value ?? 'N/A' }}</td>
+                        <td class="narrative-value">
+                            @if($isJson)
+                                {{ json_encode($value) }}
+                            @else
+                                {{ $value ?? 'N/A' }}
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </table>
