@@ -239,6 +239,45 @@ class UnifiedReportController extends Controller
             ->with('success', ucwords(str_replace('-', ' ', $type)) . ' deleted successfully!');
     }
 
+    public function bulkDestroy(Request $request, $type)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids) || !is_array($ids)) {
+            return redirect()->route('reports.all', ['type' => $type])
+                ->with('error', 'No records selected for deletion.');
+        }
+
+        $deletedCount = 0;
+
+        foreach ($ids as $id) {
+            try {
+                $report = $this->getReportInstance($type, $id);
+                $files = $this->reportFiles($report);
+
+                DB::transaction(function () use ($report) {
+                    foreach (['images', 'issueImages', 'patrolLogs', 'patrolEntries'] as $relation) {
+                        if ($report->relationLoaded($relation)) {
+                            $report->getRelation($relation)->each->delete();
+                        }
+                    }
+
+                    $report->delete();
+                });
+
+                foreach ($files as $file) {
+                    File::delete($file);
+                }
+
+                $deletedCount++;
+            } catch (\Exception $e) {
+                // Continue deleting other records if one fails
+            }
+        }
+
+        return redirect()->route('reports.all', ['type' => $type])
+            ->with('success', "$deletedCount " . ucwords(str_replace('-', ' ', $type)) . '(s) deleted successfully!');
+    }
+
     private function getReportInstance($type, $id)
     {
         $config = [

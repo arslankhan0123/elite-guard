@@ -1,6 +1,22 @@
+@if(Auth::user()->hasAdminPermission('reports-forms', 'delete'))
+<form id="bulkDeleteForm" action="{{ route('reports.bulk-destroy', ['type' => $type]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete selected records? All attached images, signatures and documents will also be deleted.');">
+    @csrf
+    @method('DELETE')
+    <div class="mb-3 d-flex justify-content-start">
+        <button type="submit" id="bulkDeleteBtn" class="btn btn-danger btn-sm" disabled>
+            <i class="mdi mdi-trash-can-outline me-1"></i> Delete Selected
+        </button>
+    </div>
+@endif
+
 <table id="custom-table" data-server-paginated class="table table-striped table-bordered">
     <thead>
         <tr class="table-dark">
+            @if(Auth::user()->hasAdminPermission('reports-forms', 'delete'))
+                <th style="width: 30px;" class="text-center">
+                    <input type="checkbox" id="selectAll" class="form-check-input">
+                </th>
+            @endif
             <th>ID</th>
             <th>Employee</th>
             <th>Position/Site</th>
@@ -15,6 +31,11 @@
     <tbody>
         @forelse($data['adjustments'] as $adjustment)
             <tr>
+                @if(Auth::user()->hasAdminPermission('reports-forms', 'delete'))
+                    <td class="text-center">
+                        <input type="checkbox" name="ids[]" value="{{ $adjustment->id }}" class="form-check-input record-checkbox">
+                    </td>
+                @endif
                 <td>{{ $adjustment->id }}</td>
                 <td>
                     <strong>{{ $adjustment->employee_name }}</strong><br>
@@ -82,17 +103,17 @@
             <td>
                 <div class="d-flex align-items-center">
                     <a class="text-decoration-none text-dark me-2" href="{{ route('reports.show', ['type' => $type, 'id' => $adjustment->id]) }}" data-bs-toggle="tooltip" title="View Details">
-                        <button class="view_btn"></button>
+                        <button type="button" class="view_btn"></button>
                     </a>
                     <a class="text-decoration-none text-dark me-2" href="{{ route('reports.edit', ['type' => $type, 'id' => $adjustment->id]) }}" data-bs-toggle="tooltip" title="Edit">
-                        <button class="editBtn">
+                        <button type="button" class="editBtn">
                             <svg height="1em" viewBox="0 0 512 512">
                                 <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
                             </svg>
                         </button>
                     </a>
                     <a class="text-decoration-none text-dark" href="{{ route('reports.download', ['type' => $type, 'id' => $adjustment->id]) }}" data-bs-toggle="tooltip" title="Download PDF">
-                        <button class="btn btn-sm btn-danger px-2 d-flex align-items-center justify-content-center" style="height: 1.875rem; width: 1.875rem; border-radius: 6px;">
+                        <button type="button" class="btn btn-sm btn-danger px-2 d-flex align-items-center justify-content-center" style="height: 1.875rem; width: 1.875rem; border-radius: 6px;">
                             <i class="fa-solid fa-file-arrow-down" style="font-size: 18px; color: white;"></i>
                         </button>
                     </a>
@@ -102,11 +123,14 @@
             </tr>
         @empty
             <tr>
-                <td colspan="9" class="text-center">No shift adjustment requests found.</td>
+                <td colspan="10" class="text-center">No shift adjustment requests found.</td>
             </tr>
         @endforelse
     </tbody>
 </table>
+@if(Auth::user()->hasAdminPermission('reports-forms', 'delete'))
+</form>
+@endif
 <div class="mt-3">
     {{ $data['adjustments']->links() }}
 </div>
