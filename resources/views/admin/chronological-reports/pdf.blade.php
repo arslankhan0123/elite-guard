@@ -164,7 +164,7 @@
         }
 
         .scan-grid { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 2px; }
-        .scan-grid-cell { width: 33.333%; max-width: 33.333%; padding: 1px; vertical-align: top; }
+        .scan-grid-cell { width: 25%; max-width: 25%; padding: 1px; vertical-align: top; }
         .scan-evidence-card { width: 100%; height: 85px; border-collapse: collapse; table-layout: fixed; border: 1px solid #ddd6fe; background: #fff; page-break-inside: avoid; }
         .scan-photo-cell { width: 55%; height: 85px; padding: 2px; background: #fff; vertical-align: middle; }
         .scan-data-cell { width: 45%; height: 85px; padding: 4px 6px; background: #fff; color: #374151; font-size: 8.5px; line-height: 1.35; word-wrap: break-word; vertical-align: middle; }
@@ -310,7 +310,7 @@
                             <strong style="color: #312e81;">Evidence (Scanned Checkpoints):</strong>
                             @if(count($report['scans']) > 0)
                                 <table class="scan-grid">
-                                    @foreach(collect($report['scans'])->chunk(3) as $scanRow)
+                                    @foreach(collect($report['scans'])->chunk(4) as $scanRow)
                                         <tr>
                                             @foreach($scanRow as $scan)
                                                 @php
@@ -322,14 +322,14 @@
                                                             <td style="padding: 4px; background: #fff; vertical-align: top;">
                                                                 <div class="scan-tag" style="text-align: center; margin-bottom: 4px;">{{ $scan['name'] ?? 'Unknown Tag' }}</div>
                                                                 @if($imageSource)
-                                                                    <img class="evidence-image" src="{{ $imageSource }}" alt="Evidence" style="height: 120px; width: 100%; object-fit: cover; border-radius: 3px;">
+                                                                    <img class="evidence-image" src="{{ $imageSource }}" alt="Evidence" style="height: 160px; width: 100%; object-fit: cover; border-radius: 3px;">
                                                                 @endif
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
                                             @endforeach
-                                            @for($emptyCell = $scanRow->count(); $emptyCell < 3; $emptyCell++)
+                                            @for($emptyCell = $scanRow->count(); $emptyCell < 4; $emptyCell++)
                                                 <td class="scan-grid-cell scan-grid-empty" style="border: 0; background: transparent; padding: 2px;"></td>
                                             @endfor
                                         </tr>
