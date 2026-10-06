@@ -91,7 +91,7 @@ class ChronologicalReportController extends Controller
             'endDate',
             'startTime',
             'endTime'
-        ))->setPaper('a4', 'landscape');
+        ))->setPaper('a4', 'portrait');
 
         $filename = 'chronological-report-' . Carbon::parse($startDate)->format('Ymd') . '-' . Carbon::parse($endDate)->format('Ymd') . '.pdf';
         return $pdf->download($filename);
