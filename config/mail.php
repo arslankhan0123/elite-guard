@@ -49,6 +49,18 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        // Dedicated SMTP for Master Admin system emails (subscription notices, alerts)
+        'master_smtp' => [
+            'transport' => 'smtp',
+            'scheme'    => env('MASTER_MAIL_SCHEME', 'ssl'),
+            'host'      => env('MASTER_MAIL_HOST', '127.0.0.1'),
+            'port'      => env('MASTER_MAIL_PORT', 465),
+            'username'  => env('MASTER_MAIL_USERNAME'),
+            'password'  => env('MASTER_MAIL_PASSWORD'),
+            'timeout'   => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
