@@ -6,7 +6,7 @@
     <title>Chronological System Activity Report</title>
     <style>
         @page {
-            size: A4 landscape;
+            size: A4 portrait;
             margin: 12px 16px 24px
         }
 
@@ -322,7 +322,7 @@
                                                             <td style="padding: 4px; background: #fff; vertical-align: top;">
                                                                 <div class="scan-tag" style="text-align: center; margin-bottom: 4px;">{{ $scan['name'] ?? 'Unknown Tag' }}</div>
                                                                 @if($imageSource)
-                                                                    <img class="evidence-image" src="{{ $imageSource }}" alt="Evidence" style="height: 160px; width: 100%; object-fit: cover; border-radius: 3px;">
+                                                                    <img class="evidence-image" src="{{ $imageSource }}" alt="Evidence" style="height: 95px; width: 100%; object-fit: cover; border-radius: 3px;">
                                                                 @endif
                                                             </td>
                                                         </tr>
