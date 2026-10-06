@@ -13,6 +13,9 @@ use Illuminate\Support\Str;
 
 class TenantController extends Controller
 {
+    // Monthly rate in CAD
+    const MONTHLY_RATE = 350.00;
+
     public function index()
     {
         $tenants = Tenant::on('master')->latest()->paginate(15);
@@ -27,11 +30,13 @@ class TenantController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'admin_email'    => 'required|email|max:255',
-            'admin_password' => 'required|string|min:8',
-            'phone'          => 'nullable|string|max:50',
-            'notes'          => 'nullable|string|max:1000',
+            'name'                => 'required|string|max:255',
+            'admin_email'         => 'required|email|max:255',
+            'admin_password'      => 'required|string|min:8',
+            'phone'               => 'nullable|string|max:50',
+            'notes'               => 'nullable|string|max:1000',
+            'subscription_type'   => 'required|in:trial,monthly,yearly',
+            'subscription_period' => 'required_if:subscription_type,trial|nullable|in:1day,2days,3days,1week,2weeks,3weeks,1month',
         ]);
 
         // Generate unique slug
@@ -49,15 +54,32 @@ class TenantController extends Controller
             return back()->withErrors(['admin_email' => 'This email is already assigned to another tenant.'])->withInput();
         }
 
+        // Compute subscription fields
+        $subType   = $validated['subscription_type'];
+        $subPeriod = $subType === 'trial' ? $validated['subscription_period'] : null;
+        $startsAt  = now();
+        $endsAt    = Tenant::computeEndsAt($subType, $subPeriod, $startsAt);
+        $amount    = match ($subType) {
+            'monthly' => self::MONTHLY_RATE,
+            'yearly'  => round(self::MONTHLY_RATE * 12 * 0.95, 2),
+            default   => 0.00,
+        };
+
         // 1. Create the tenant record
         $tenant = Tenant::on('master')->create([
-            'name'        => $validated['name'],
-            'slug'        => $slug,
-            'db_name'     => $dbName,
-            'admin_email' => $validated['admin_email'],
-            'phone'       => $validated['phone'] ?? null,
-            'is_active'   => true,
-            'notes'       => $validated['notes'] ?? null,
+            'name'                   => $validated['name'],
+            'slug'                   => $slug,
+            'db_name'                => $dbName,
+            'admin_email'            => $validated['admin_email'],
+            'phone'                  => $validated['phone'] ?? null,
+            'is_active'              => true,
+            'notes'                  => $validated['notes'] ?? null,
+            'subscription_type'      => $subType,
+            'subscription_period'    => $subPeriod,
+            'subscription_amount'    => $amount,
+            'subscription_starts_at' => $startsAt,
+            'subscription_ends_at'   => $endsAt,
+            'expiry_notified'        => false,
         ]);
 
         // 2. Create the tenant database
@@ -68,14 +90,14 @@ class TenantController extends Controller
 
         // 4. Create the SuperAdmin user inside the tenant DB
         $userId = DB::connection('tenant')->table('users')->insertGetId([
-            'name'       => $validated['name'] . ' Admin',
-            'email'      => $validated['admin_email'],
-            'password'   => Hash::make($validated['admin_password']),
+            'name'          => $validated['name'] . ' Admin',
+            'email'         => $validated['admin_email'],
+            'password'      => Hash::make($validated['admin_password']),
             'real_password' => $validated['admin_password'],
-            'role'       => 'SuperAdmin',
-            'status'     => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'role'          => 'SuperAdmin',
+            'status'        => 1,
+            'created_at'    => now(),
+            'updated_at'    => now(),
         ]);
 
         // 5. Sync to lookup table
@@ -109,12 +131,14 @@ class TenantController extends Controller
     public function update(Request $request, Tenant $tenant)
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'admin_email'    => 'required|email|max:255',
-            'admin_password' => 'nullable|string|min:8',
-            'phone'          => 'nullable|string|max:50',
-            'notes'          => 'nullable|string|max:1000',
-            'is_active'      => 'nullable|boolean',
+            'name'                => 'required|string|max:255',
+            'admin_email'         => 'required|email|max:255',
+            'admin_password'      => 'nullable|string|min:8',
+            'phone'               => 'nullable|string|max:50',
+            'notes'               => 'nullable|string|max:1000',
+            'is_active'           => 'nullable|boolean',
+            'subscription_type'   => 'required|in:trial,monthly,yearly',
+            'subscription_period' => 'required_if:subscription_type,trial|nullable|in:1day,2days,3days,1week,2weeks,3weeks,1month',
         ]);
 
         // Check email uniqueness against other tenants
@@ -128,12 +152,34 @@ class TenantController extends Controller
 
         $oldEmail = $tenant->admin_email;
 
+        // Recompute subscription only if plan changed
+        $newSubType   = $validated['subscription_type'];
+        $newSubPeriod = $newSubType === 'trial' ? $validated['subscription_period'] : null;
+        $subChanged   = $newSubType   !== $tenant->subscription_type
+                     || $newSubPeriod !== $tenant->subscription_period;
+
+        $startsAt = $subChanged ? now() : ($tenant->subscription_starts_at ?? now());
+        $endsAt   = $subChanged
+            ? Tenant::computeEndsAt($newSubType, $newSubPeriod, $startsAt)
+            : $tenant->subscription_ends_at;
+        $amount = match ($newSubType) {
+            'monthly' => self::MONTHLY_RATE,
+            'yearly'  => round(self::MONTHLY_RATE * 12 * 0.95, 2),
+            default   => 0.00,
+        };
+
         $tenant->update([
-            'name'        => $validated['name'],
-            'admin_email' => $validated['admin_email'],
-            'phone'       => $validated['phone'] ?? null,
-            'notes'       => $validated['notes'] ?? null,
-            'is_active'   => $request->boolean('is_active'),
+            'name'                   => $validated['name'],
+            'admin_email'            => $validated['admin_email'],
+            'phone'                  => $validated['phone'] ?? null,
+            'notes'                  => $validated['notes'] ?? null,
+            'is_active'              => $request->boolean('is_active'),
+            'subscription_type'      => $newSubType,
+            'subscription_period'    => $newSubPeriod,
+            'subscription_amount'    => $amount,
+            'subscription_starts_at' => $startsAt,
+            'subscription_ends_at'   => $endsAt,
+            'expiry_notified'        => $subChanged ? false : $tenant->expiry_notified,
         ]);
 
         // If admin email changed, update lookup table
