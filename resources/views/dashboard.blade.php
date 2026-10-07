@@ -64,19 +64,46 @@
     }
 
     .p-wrapper {
-        padding: 5px 0px;
+        padding: 2px 0px;
+    }
+
+    /* Keep dashboard sections and widgets compact at every screen size. */
+    .p-wrapper .row {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 0.75rem;
+    }
+
+    .p-wrapper .card,
+    .p-wrapper .info-card {
+        border-radius: 16px;
+    }
+
+    .p-wrapper .card-body {
+        padding: 1rem !important;
+    }
+
+    .p-wrapper .card-header {
+        padding: 0.75rem 1rem !important;
+    }
+
+    .p-wrapper .p-4 {
+        padding: 1rem !important;
+    }
+
+    .p-wrapper .p-3 {
+        padding: 0.75rem !important;
     }
 
     /* Vibrant Gradient Cards */
     .vibrant-card {
         border: none;
-        border-radius: 24px;
+        border-radius: 18px;
         color: white;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
         position: relative;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        min-height: 180px;
+        min-height: 150px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -154,7 +181,7 @@
     .hero-section {
         background: linear-gradient(135deg, #0b0f19 0%, #1e1b4b 50%, #0b0f19 100%);
         border-radius: 20px;
-        padding: 22px 30px;
+        padding: 16px 22px;
         color: white;
         margin-bottom: 12px;
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -189,8 +216,8 @@
 
     /* Floating Logo Animation & White Glass Circle Container */
     .hero-logo-container {
-        width: 110px;
-        height: 110px;
+        width: 84px;
+        height: 84px;
         background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
@@ -200,14 +227,14 @@
         align-items: center;
         justify-content: center;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.2);
-        padding: 10px;
+        padding: 7px;
         animation: floatLogo 5s ease-in-out infinite;
         flex-shrink: 0;
     }
 
     .hero-logo-img {
-        max-height: 80px;
-        max-width: 80px;
+        max-height: 62px;
+        max-width: 62px;
         object-fit: contain;
         filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
     }
@@ -227,7 +254,7 @@
     }
 
     .hero-title {
-        font-size: 2.1rem;
+        font-size: 1.75rem;
         font-weight: 850;
         letter-spacing: -1px;
         background: linear-gradient(to right, #fff, #cbd5e1);
@@ -237,10 +264,10 @@
     }
 
     .action-btn {
-        padding: 8px 20px;
-        border-radius: 12px;
+        padding: 6px 14px;
+        border-radius: 9px;
         font-weight: 700;
-        font-size: 0.88rem;
+        font-size: 0.8rem;
         transition: all 0.3s;
         border: none;
         display: inline-flex;
@@ -275,7 +302,7 @@
     /* Info Cards */
     .info-card {
         background: white;
-        border-radius: 24px;
+        border-radius: 18px;
         border: 1px solid #f1f5f9;
         transition: all 0.3s;
     }
@@ -292,7 +319,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
+        margin-bottom: 12px;
     }
 </style>
 

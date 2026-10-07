@@ -809,7 +809,7 @@
         }
         /* Keep shared admin pages compact while preserving readable controls. */
         .page-content {
-            padding-top: 16px;
+            padding-top: 12px;
         }
 
         .page-content > .container-fluid {
@@ -819,18 +819,49 @@
 
         .page-title-box h4,
         .page-title-box .shine {
-            font-size: 1.05rem !important;
+            font-size: 0.95rem !important;
             font-weight: 700 !important;
         }
 
         .page-content .card-title {
-            font-size: 1rem !important;
+            font-size: 0.92rem !important;
             margin-bottom: 0;
+        }
+
+        /* Compact shared section spacing and typography across admin pages. */
+        .page-content > .container-fluid > .row {
+            --bs-gutter-x: 1.25rem;
+            --bs-gutter-y: 0.75rem;
+        }
+
+        .page-content .card {
+            border-radius: 0.65rem;
+        }
+
+        .page-content .card-header {
+            padding: 0.5rem 0.75rem;
+        }
+
+        .page-content .card-body {
+            padding: 0.75rem;
+            font-size: 0.92rem;
+        }
+
+        .page-content h1 { font-size: 1.55rem; }
+        .page-content h2 { font-size: 1.35rem; }
+        .page-content h3 { font-size: 1.2rem; }
+        .page-content h4 { font-size: 1.05rem; }
+        .page-content h5 { font-size: 0.95rem; }
+        .page-content h6 { font-size: 0.85rem; }
+
+        .page-content .table th,
+        .page-content .table td {
+            font-size: 0.82rem;
         }
 
         .footer,
         .footer a {
-            font-size: 0.75rem !important;
+            font-size: 0.7rem !important;
         }
 
         @media (max-width: 767.98px) {
