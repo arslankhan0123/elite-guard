@@ -569,10 +569,10 @@
         /* --- Flagship Admin Tables --- */
         #custom-table {
             border-collapse: separate !important;
-            border-spacing: 0 8px !important;
+            border-spacing: 0 2px !important;
             width: 100% !important;
             border: none !important;
-            margin-top: 15px !important;
+            margin-top: 4px !important;
         }
 
         #custom-table thead th {
@@ -581,9 +581,10 @@
             color: #ffffff !important;
             font-weight: 700 !important;
             text-transform: uppercase !important;
-            font-size: 0.8rem !important;
+            font-size: 0.75rem !important;
             letter-spacing: 0.05em !important;
-            padding: 16px 20px !important;
+            padding: 5px 7px !important;
+            font-size: 0.66rem !important;
             border: none !important;
         }
 
@@ -603,10 +604,10 @@
         }
 
         #custom-table tbody td {
-            padding: 18px 20px !important;
+            padding: 5px 7px !important;
             border: none !important;
             color: #475569 !important;
-            font-size: 0.95rem !important;
+            font-size: 0.75rem !important;
             font-weight: 500 !important;
             vertical-align: middle !important;
         }
@@ -637,15 +638,15 @@
 
         /* --- Premium Pagination Refinement --- */
         .dataTables_paginate {
-            margin-top: 30px !important;
-            padding-top: 20px !important;
+            margin-top: 16px !important;
+            padding-top: 12px !important;
             border-top: 1px solid #e2e8f0 !important;
         }
 
         .dataTables_paginate .paginate_button {
             border-radius: 10px !important;
             margin: 0 4px !important;
-            padding: 10px 18px !important;
+            padding: 4px 8px !important;
             font-size: 0.9rem !important;
             font-weight: 600 !important;
             color: #64748b !important;
@@ -804,6 +805,28 @@
         .btn .badge {
             top: -10px !important;
             right: 12px !important;
+        }
+        /* Keep shared admin pages compact while preserving readable controls. */
+        .page-content {
+            padding-top: 16px;
+        }
+
+        .page-content > .container-fluid {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        @media (max-width: 767.98px) {
+            .page-content > .container-fluid {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            #custom-table thead th,
+            #custom-table tbody td {
+                padding: 6px !important;
+                font-size: 0.75rem !important;
+            }
         }
     </style>
 </head>

@@ -1,4 +1,61 @@
 <style>
+    /* Keep the full desktop navigation compact enough to fit on one line. */
+    #page-topbar .topnav-menu {
+        min-width: 0;
+    }
+
+    #page-topbar .topnav-menu .navbar-collapse {
+        flex-basis: 100%;
+    }
+
+    #page-topbar .topnav-menu .navbar-nav {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        width: 100%;
+        gap: 0;
+    }
+
+    #page-topbar .topnav-menu .nav-item {
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+
+    #page-topbar .topnav-menu .nav-link {
+        white-space: normal;
+        padding: 0.4rem 0.25rem;
+        font-size: 0.68rem;
+    }
+
+    #page-topbar .topnav-menu .nav-link .nav-icon {
+        margin-right: 0.2rem;
+    }
+
+    @media (max-width: 991.98px) {
+        #page-topbar .topnav-menu .navbar-collapse {
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        #page-topbar .topnav-menu .navbar-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        #page-topbar .topnav-menu .nav-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+    }
+
+    @media (min-width: 992px) and (max-width: 1250px) {
+        #page-topbar .topnav-menu .nav-link {
+            padding-left: 0.15rem;
+            padding-right: 0.15rem;
+            font-size: 0.64rem;
+        }
+    }
+
     #notificationList {
         max-height: 230px;
         overflow-y: auto;
