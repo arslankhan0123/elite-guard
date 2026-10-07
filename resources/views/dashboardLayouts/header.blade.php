@@ -56,6 +56,75 @@
         }
     }
 
+    /* Refined top navigation dropdowns (Profile and grouped navigation items). */
+    #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu {
+        display: none;
+        min-width: 210px;
+        max-height: min(62vh, 460px);
+        overflow-y: auto;
+        padding: 5px;
+        margin-top: 2px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.14);
+    }
+
+    #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu.show {
+        display: block;
+    }
+
+    #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 32px;
+        padding: 6px 9px;
+        border-radius: 5px;
+        color: #475569;
+        font-size: 0.76rem;
+        line-height: 1.2;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu .dropdown-item svg {
+        flex: 0 0 16px;
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        color: #64748b;
+    }
+
+    #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu .dropdown-item:hover,
+    #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu .dropdown-item:focus {
+        color: #312e81;
+        background: #f3f4ff;
+    }
+
+    #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu .dropdown-item:hover svg,
+    #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu .dropdown-item:focus svg {
+        color: #4f46e5;
+    }
+
+    #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu .dropdown-item.active {
+        color: #312e81;
+        background: #eef2ff;
+        font-weight: 600;
+    }
+
+    @media (min-width: 992px) {
+        #page-topbar .topnav .navbar-nav > .nav-item.dropdown:hover > .dropdown-menu:not(.show) {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        #page-topbar .topnav .navbar-nav > .nav-item > .dropdown-menu {
+            max-height: 45vh;
+            min-width: 0;
+        }
+    }
+
     #notificationList {
         max-height: 230px;
         overflow-y: auto;
