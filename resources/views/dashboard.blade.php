@@ -495,17 +495,17 @@
                         <!-- AJAX Date Navigation Controls -->
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <div class="d-flex align-items-center gap-1 p-1 rounded-pill" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);">
-                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="prev-date-btn" title="Previous Day" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="prev-date-btn" title="Previous Week" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
                                     <i data-feather="chevron-left" style="width: 18px; height: 18px;"></i>
                                 </button>
 
                                 <div class="d-flex align-items-center px-2 position-relative">
                                     <i data-feather="calendar" class="text-info me-2" style="width: 16px; height: 16px;"></i>
-                                    <span id="metrics-date-display" class="fw-bold text-white small" style="min-width: 110px; text-align: center; cursor: pointer;">Today</span>
+                                    <span id="metrics-date-display" class="fw-bold text-white small" style="min-width: 180px; text-align: center; cursor: pointer;">This Week</span>
                                     <input type="date" id="metrics-date-picker" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;">
                                 </div>
 
-                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="next-date-btn" title="Next Day" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="next-date-btn" title="Next Week" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
                                     <i data-feather="chevron-right" style="width: 18px; height: 18px;"></i>
                                 </button>
                             </div>
@@ -517,8 +517,8 @@
                     </div>
 
                     <div class="row g-4">
-                        <!-- Site Tours Progress Card -->
-                        <div class="col-lg-6 col-12">
+                        <!-- Weekly Site Tours Summary -->
+                        <div class="col-12">
                             <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                     <div class="d-flex align-items-center gap-3">
@@ -526,18 +526,13 @@
                                             <i data-feather="compass" style="width: 28px; height: 28px;"></i>
                                         </div>
                                         <div>
-                                            <h5 class="fw-bold text-white mb-1">Site Tours Progress</h5>
-                                            <p class="text-white-50 small mb-0">Patrol items & checkpoint tours</p>
+                                            <h5 class="fw-bold text-white mb-1">Weekly Site Tours</h5>
+                                            <p class="text-white-50 small mb-0">Tours scheduled and scanned this week</p>
                                         </div>
                                     </div>
                                     <div class="text-end">
                                         <div class="h3 fw-bold mb-0 text-white" id="site-tours-count-display">0 / 0</div>
-                                        <span class="badge rounded-pill px-2 py-1 mt-1 small" style="background: rgba(192, 132, 252, 0.2); color: #e9d5ff;" id="site-tours-percent-badge">0% Scanned</span>
                                     </div>
-                                </div>
-                                <!-- Progress Bar -->
-                                <div class="progress rounded-pill mb-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
-                                    <div id="site-tours-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #8b5cf6, #c084fc);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                                 <div class="d-flex justify-content-between text-white-50 small">
                                     <span>Total Scanned Tours: <strong class="text-white" id="site-tours-scanned-txt">0</strong></span>
@@ -546,34 +541,6 @@
                             </div>
                         </div>
 
-                        <!-- Runsheet Tours Progress Card -->
-                        <div class="col-lg-6 col-12">
-                            <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="p-3 rounded-circle" style="background: rgba(59, 130, 246, 0.25); color: #60a5fa;">
-                                            <i data-feather="map" style="width: 28px; height: 28px;"></i>
-                                        </div>
-                                        <div>
-                                            <h5 class="fw-bold text-white mb-1">Runsheet Tours Progress</h5>
-                                            <p class="text-white-50 small mb-0">Multi-site runsheet entries</p>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="h3 fw-bold mb-0 text-white" id="runsheets-count-display">0 / 0</div>
-                                        <span class="badge rounded-pill px-2 py-1 mt-1 small" style="background: rgba(96, 165, 250, 0.2); color: #bfdbfe;" id="runsheets-percent-badge">0% Scanned</span>
-                                    </div>
-                                </div>
-                                <!-- Progress Bar -->
-                                <div class="progress rounded-pill mb-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
-                                    <div id="runsheets-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #38bdf8);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <div class="d-flex justify-content-between text-white-50 small">
-                                    <span>Total Scanned Tours: <strong class="text-white" id="runsheets-scanned-txt">0</strong></span>
-                                    <span>Total Runsheet Tours: <strong class="text-white" id="runsheets-total-txt">0</strong></span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -974,43 +941,15 @@
                         if (data.stats) {
                             const stScanned = data.stats.site_tours_scanned || 0;
                             const stTotal = data.stats.site_tours_total || 0;
-                            const stPercent = stTotal > 0 ? Math.round((stScanned / stTotal) * 100) : 0;
-
-                            const rsScanned = data.stats.runsheets_scanned || 0;
-                            const rsTotal = data.stats.runsheets_total || 0;
-                            const rsPercent = rsTotal > 0 ? Math.round((rsScanned / rsTotal) * 100) : 0;
 
                             // Site Tours Elements
                             const stDisplay = document.getElementById('site-tours-count-display');
-                            const stBadge = document.getElementById('site-tours-percent-badge');
-                            const stBar = document.getElementById('site-tours-progress-bar');
                             const stScannedTxt = document.getElementById('site-tours-scanned-txt');
                             const stTotalTxt = document.getElementById('site-tours-total-txt');
 
                             if (stDisplay) stDisplay.textContent = `${stScanned} / ${stTotal}`;
-                            if (stBadge) stBadge.textContent = `${stPercent}% Scanned`;
-                            if (stBar) {
-                                stBar.style.width = `${stPercent}%`;
-                                stBar.setAttribute('aria-valuenow', stPercent);
-                            }
                             if (stScannedTxt) stScannedTxt.textContent = stScanned;
                             if (stTotalTxt) stTotalTxt.textContent = stTotal;
-
-                            // Runsheet Elements
-                            const rsDisplay = document.getElementById('runsheets-count-display');
-                            const rsBadge = document.getElementById('runsheets-percent-badge');
-                            const rsBar = document.getElementById('runsheets-progress-bar');
-                            const rsScannedTxt = document.getElementById('runsheets-scanned-txt');
-                            const rsTotalTxt = document.getElementById('runsheets-total-txt');
-
-                            if (rsDisplay) rsDisplay.textContent = `${rsScanned} / ${rsTotal}`;
-                            if (rsBadge) rsBadge.textContent = `${rsPercent}% Scanned`;
-                            if (rsBar) {
-                                rsBar.style.width = `${rsPercent}%`;
-                                rsBar.setAttribute('aria-valuenow', rsPercent);
-                            }
-                            if (rsScannedTxt) rsScannedTxt.textContent = rsScanned;
-                            if (rsTotalTxt) rsTotalTxt.textContent = rsTotal;
 
                             // Date Navigation UI Updates
                             const dateDisplay = document.getElementById('metrics-date-display');
@@ -1018,15 +957,15 @@
                             const todayBtn = document.getElementById('today-date-btn');
 
                             if (dateDisplay) {
-                                dateDisplay.textContent = data.stats.is_today 
-                                    ? `Today (${data.stats.selected_date_label})` 
-                                    : data.stats.selected_date_label;
+                                dateDisplay.textContent = data.stats.is_current_week
+                                    ? `This Week (${data.stats.selected_week_label})`
+                                    : data.stats.selected_week_label;
                             }
                             if (datePicker) {
                                 datePicker.value = data.stats.selected_date;
                             }
                             if (todayBtn) {
-                                if (data.stats.is_today) {
+                                if (data.stats.is_current_week) {
                                     todayBtn.classList.add('d-none');
                                 } else {
                                     todayBtn.classList.remove('d-none');
@@ -1082,7 +1021,7 @@
             if (prevBtn) {
                 prevBtn.addEventListener('click', function() {
                     const dt = new Date(currentSelectedDate + 'T00:00:00');
-                    dt.setDate(dt.getDate() - 1);
+                    dt.setDate(dt.getDate() - 7);
                     fetchLiveDashboardData(formatYmd(dt));
                 });
             }
@@ -1090,7 +1029,7 @@
             if (nextBtn) {
                 nextBtn.addEventListener('click', function() {
                     const dt = new Date(currentSelectedDate + 'T00:00:00');
-                    dt.setDate(dt.getDate() + 1);
+                    dt.setDate(dt.getDate() + 7);
                     fetchLiveDashboardData(formatYmd(dt));
                 });
             }
@@ -1105,7 +1044,9 @@
 
             if (todayBtn) {
                 todayBtn.addEventListener('click', function() {
-                    fetchLiveDashboardData(formatYmd(new Date()));
+                    const today = new Date();
+                    today.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+                    fetchLiveDashboardData(formatYmd(today));
                 });
             }
 
