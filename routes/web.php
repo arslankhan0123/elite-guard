@@ -453,6 +453,22 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
             ->get();
         $totalSiteTourItems = $siteTourItems->count();
         $scannedSiteTourItems = $siteTourItems->filter(fn($item) => $item->scans->isNotEmpty())->count();
+
+        $runSheets = \App\Models\RunSheet::with('scans')
+            ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
+            ->get();
+        $totalRunsheetEntries = $runSheets->count();
+        $scannedRunsheetEntries = $runSheets->filter(fn($runSheet) => $runSheet->scans->isNotEmpty())->count();
+
+        // Include weekly runsheet entries that are tracked directly by entry scans.
+        $weeklyRunSheetScans = \App\Models\WeeklyRunSheetScan::whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])->get();
+        $weeklyEntriesByDate = $weeklyRunSheetScans->groupBy(fn($scan) => $scan->date->format('Y-m-d'));
+        for ($day = $weekStart->copy(); $day->lte($weekEnd); $day->addDay()) {
+            $dayScans = $weeklyEntriesByDate->get($day->toDateString(), collect());
+            $dayEntryIds = $dayScans->pluck('weekly_run_sheet_entry_id')->unique();
+            $totalRunsheetEntries += $dayEntryIds->count();
+            $scannedRunsheetEntries += $dayEntryIds->count();
+        }
         $isCurrentWeek = $weekStart->isSameWeek(\Carbon\Carbon::now($timezone), \Carbon\Carbon::MONDAY);
 
         return response()->json([
@@ -466,6 +482,8 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
                 'is_current_week'     => $isCurrentWeek,
                 'site_tours_total'    => $totalSiteTourItems,
                 'site_tours_scanned'  => $scannedSiteTourItems,
+                'runsheets_total'     => $totalRunsheetEntries,
+                'runsheets_scanned'   => $scannedRunsheetEntries,
             ],
         ]);
     })->name('dashboard.live-data');

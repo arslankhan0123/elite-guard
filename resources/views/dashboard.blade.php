@@ -518,7 +518,7 @@
 
                     <div class="row g-4">
                         <!-- Weekly Site Tours Summary -->
-                        <div class="col-12">
+                        <div class="col-lg-6 col-12">
                             <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                     <div class="d-flex align-items-center gap-3">
@@ -537,6 +537,34 @@
                                 <div class="d-flex justify-content-between text-white-50 small">
                                     <span>Total Scanned Tours: <strong class="text-white" id="site-tours-scanned-txt">0</strong></span>
                                     <span>Total Site Tours: <strong class="text-white" id="site-tours-total-txt">0</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Runsheet Tours Summary -->
+                        <div class="col-lg-6 col-12">
+                            <div class="p-4 rounded-4 h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="p-3 rounded-circle" style="background: rgba(59, 130, 246, 0.25); color: #60a5fa;">
+                                            <i data-feather="map" style="width: 28px; height: 28px;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-1">Weekly Runsheet Tours</h5>
+                                            <p class="text-white-50 small mb-0">Runsheet tours scheduled and scanned this week</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="h3 fw-bold mb-0 text-white" id="runsheets-count-display">0 / 0</div>
+                                        <span class="badge rounded-pill px-2 py-1 mt-1 small" style="background: rgba(96, 165, 250, 0.2); color: #bfdbfe;" id="runsheets-percent-badge">0% Scanned</span>
+                                    </div>
+                                </div>
+                                <div class="progress rounded-pill mb-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
+                                    <div id="runsheets-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #38bdf8);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between text-white-50 small">
+                                    <span>Total Scanned Tours: <strong class="text-white" id="runsheets-scanned-txt">0</strong></span>
+                                    <span>Total Runsheet Tours: <strong class="text-white" id="runsheets-total-txt">0</strong></span>
                                 </div>
                             </div>
                         </div>
@@ -941,6 +969,7 @@
                         if (data.stats) {
                             const stScanned = data.stats.site_tours_scanned || 0;
                             const stTotal = data.stats.site_tours_total || 0;
+                            const stPercent = stTotal > 0 ? Math.round((stScanned / stTotal) * 100) : 0;
 
                             // Site Tours Elements
                             const stDisplay = document.getElementById('site-tours-count-display');
@@ -950,6 +979,23 @@
                             if (stDisplay) stDisplay.textContent = `${stScanned} / ${stTotal}`;
                             if (stScannedTxt) stScannedTxt.textContent = stScanned;
                             if (stTotalTxt) stTotalTxt.textContent = stTotal;
+
+                            const rsScanned = data.stats.runsheets_scanned || 0;
+                            const rsTotal = data.stats.runsheets_total || 0;
+                            const rsPercent = rsTotal > 0 ? Math.round((rsScanned / rsTotal) * 100) : 0;
+                            const rsDisplay = document.getElementById('runsheets-count-display');
+                            const rsBadge = document.getElementById('runsheets-percent-badge');
+                            const rsBar = document.getElementById('runsheets-progress-bar');
+                            const rsScannedTxt = document.getElementById('runsheets-scanned-txt');
+                            const rsTotalTxt = document.getElementById('runsheets-total-txt');
+                            if (rsDisplay) rsDisplay.textContent = `${rsScanned} / ${rsTotal}`;
+                            if (rsBadge) rsBadge.textContent = `${rsPercent}% Scanned`;
+                            if (rsBar) {
+                                rsBar.style.width = `${rsPercent}%`;
+                                rsBar.setAttribute('aria-valuenow', rsPercent);
+                            }
+                            if (rsScannedTxt) rsScannedTxt.textContent = rsScanned;
+                            if (rsTotalTxt) rsTotalTxt.textContent = rsTotal;
 
                             // Date Navigation UI Updates
                             const dateDisplay = document.getElementById('metrics-date-display');
