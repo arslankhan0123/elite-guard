@@ -64,19 +64,46 @@
     }
 
     .p-wrapper {
-        padding: 5px 0px;
+        padding: 2px 0px;
+    }
+
+    /* Keep dashboard sections and widgets compact at every screen size. */
+    .p-wrapper .row {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 0.75rem;
+    }
+
+    .p-wrapper .card,
+    .p-wrapper .info-card {
+        border-radius: 16px;
+    }
+
+    .p-wrapper .card-body {
+        padding: 1rem !important;
+    }
+
+    .p-wrapper .card-header {
+        padding: 0.75rem 1rem !important;
+    }
+
+    .p-wrapper .p-4 {
+        padding: 1rem !important;
+    }
+
+    .p-wrapper .p-3 {
+        padding: 0.75rem !important;
     }
 
     /* Vibrant Gradient Cards */
     .vibrant-card {
         border: none;
-        border-radius: 24px;
+        border-radius: 18px;
         color: white;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
         position: relative;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        min-height: 180px;
+        min-height: 150px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -154,7 +181,7 @@
     .hero-section {
         background: linear-gradient(135deg, #0b0f19 0%, #1e1b4b 50%, #0b0f19 100%);
         border-radius: 20px;
-        padding: 22px 30px;
+        padding: 16px 22px;
         color: white;
         margin-bottom: 12px;
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -189,8 +216,8 @@
 
     /* Floating Logo Animation & White Glass Circle Container */
     .hero-logo-container {
-        width: 110px;
-        height: 110px;
+        width: 84px;
+        height: 84px;
         background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
@@ -200,14 +227,14 @@
         align-items: center;
         justify-content: center;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.2);
-        padding: 10px;
+        padding: 7px;
         animation: floatLogo 5s ease-in-out infinite;
         flex-shrink: 0;
     }
 
     .hero-logo-img {
-        max-height: 80px;
-        max-width: 80px;
+        max-height: 62px;
+        max-width: 62px;
         object-fit: contain;
         filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
     }
@@ -227,7 +254,7 @@
     }
 
     .hero-title {
-        font-size: 2.1rem;
+        font-size: 1.75rem;
         font-weight: 850;
         letter-spacing: -1px;
         background: linear-gradient(to right, #fff, #cbd5e1);
@@ -237,10 +264,10 @@
     }
 
     .action-btn {
-        padding: 8px 20px;
-        border-radius: 12px;
+        padding: 6px 14px;
+        border-radius: 9px;
         font-weight: 700;
-        font-size: 0.88rem;
+        font-size: 0.8rem;
         transition: all 0.3s;
         border: none;
         display: inline-flex;
@@ -275,7 +302,7 @@
     /* Info Cards */
     .info-card {
         background: white;
-        border-radius: 24px;
+        border-radius: 18px;
         border: 1px solid #f1f5f9;
         transition: all 0.3s;
     }
@@ -292,7 +319,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
+        margin-bottom: 12px;
     }
 </style>
 
@@ -495,17 +522,17 @@
                         <!-- AJAX Date Navigation Controls -->
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <div class="d-flex align-items-center gap-1 p-1 rounded-pill" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);">
-                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="prev-date-btn" title="Previous Day" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="prev-date-btn" title="Previous Week" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
                                     <i data-feather="chevron-left" style="width: 18px; height: 18px;"></i>
                                 </button>
 
                                 <div class="d-flex align-items-center px-2 position-relative">
                                     <i data-feather="calendar" class="text-info me-2" style="width: 16px; height: 16px;"></i>
-                                    <span id="metrics-date-display" class="fw-bold text-white small" style="min-width: 110px; text-align: center; cursor: pointer;">Today</span>
+                                    <span id="metrics-date-display" class="fw-bold text-white small" style="min-width: 180px; text-align: center; cursor: pointer;">This Week</span>
                                     <input type="date" id="metrics-date-picker" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;">
                                 </div>
 
-                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="next-date-btn" title="Next Day" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-light rounded-circle border-0 text-white p-1" id="next-date-btn" title="Next Week" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
                                     <i data-feather="chevron-right" style="width: 18px; height: 18px;"></i>
                                 </button>
                             </div>
@@ -517,7 +544,7 @@
                     </div>
 
                     <div class="row g-4">
-                        <!-- Site Tours Progress Card -->
+                        <!-- Weekly Site Tours Summary -->
                         <div class="col-lg-6 col-12">
                             <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
                                 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -526,18 +553,13 @@
                                             <i data-feather="compass" style="width: 28px; height: 28px;"></i>
                                         </div>
                                         <div>
-                                            <h5 class="fw-bold text-white mb-1">Site Tours Progress</h5>
-                                            <p class="text-white-50 small mb-0">Patrol items & checkpoint tours</p>
+                                            <h5 class="fw-bold text-white mb-1">Weekly Site Tours</h5>
+                                            <p class="text-white-50 small mb-0">Tours scheduled and scanned this week</p>
                                         </div>
                                     </div>
                                     <div class="text-end">
                                         <div class="h3 fw-bold mb-0 text-white" id="site-tours-count-display">0 / 0</div>
-                                        <span class="badge rounded-pill px-2 py-1 mt-1 small" style="background: rgba(192, 132, 252, 0.2); color: #e9d5ff;" id="site-tours-percent-badge">0% Scanned</span>
                                     </div>
-                                </div>
-                                <!-- Progress Bar -->
-                                <div class="progress rounded-pill mb-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
-                                    <div id="site-tours-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #8b5cf6, #c084fc);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                                 <div class="d-flex justify-content-between text-white-50 small">
                                     <span>Total Scanned Tours: <strong class="text-white" id="site-tours-scanned-txt">0</strong></span>
@@ -546,17 +568,17 @@
                             </div>
                         </div>
 
-                        <!-- Runsheet Tours Progress Card -->
+                        <!-- Weekly Runsheet Tours Summary -->
                         <div class="col-lg-6 col-12">
-                            <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+                            <div class="p-4 rounded-4 h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="p-3 rounded-circle" style="background: rgba(59, 130, 246, 0.25); color: #60a5fa;">
                                             <i data-feather="map" style="width: 28px; height: 28px;"></i>
                                         </div>
                                         <div>
-                                            <h5 class="fw-bold text-white mb-1">Runsheet Tours Progress</h5>
-                                            <p class="text-white-50 small mb-0">Multi-site runsheet entries</p>
+                                            <h5 class="fw-bold text-white mb-1">Weekly Runsheet Tours</h5>
+                                            <p class="text-white-50 small mb-0">Runsheet tours scheduled and scanned this week</p>
                                         </div>
                                     </div>
                                     <div class="text-end">
@@ -564,7 +586,6 @@
                                         <span class="badge rounded-pill px-2 py-1 mt-1 small" style="background: rgba(96, 165, 250, 0.2); color: #bfdbfe;" id="runsheets-percent-badge">0% Scanned</span>
                                     </div>
                                 </div>
-                                <!-- Progress Bar -->
                                 <div class="progress rounded-pill mb-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
                                     <div id="runsheets-progress-bar" class="progress-bar rounded-pill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #38bdf8);" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
@@ -574,6 +595,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -976,33 +998,23 @@
                             const stTotal = data.stats.site_tours_total || 0;
                             const stPercent = stTotal > 0 ? Math.round((stScanned / stTotal) * 100) : 0;
 
-                            const rsScanned = data.stats.runsheets_scanned || 0;
-                            const rsTotal = data.stats.runsheets_total || 0;
-                            const rsPercent = rsTotal > 0 ? Math.round((rsScanned / rsTotal) * 100) : 0;
-
                             // Site Tours Elements
                             const stDisplay = document.getElementById('site-tours-count-display');
-                            const stBadge = document.getElementById('site-tours-percent-badge');
-                            const stBar = document.getElementById('site-tours-progress-bar');
                             const stScannedTxt = document.getElementById('site-tours-scanned-txt');
                             const stTotalTxt = document.getElementById('site-tours-total-txt');
 
                             if (stDisplay) stDisplay.textContent = `${stScanned} / ${stTotal}`;
-                            if (stBadge) stBadge.textContent = `${stPercent}% Scanned`;
-                            if (stBar) {
-                                stBar.style.width = `${stPercent}%`;
-                                stBar.setAttribute('aria-valuenow', stPercent);
-                            }
                             if (stScannedTxt) stScannedTxt.textContent = stScanned;
                             if (stTotalTxt) stTotalTxt.textContent = stTotal;
 
-                            // Runsheet Elements
+                            const rsScanned = data.stats.runsheets_scanned || 0;
+                            const rsTotal = data.stats.runsheets_total || 0;
+                            const rsPercent = rsTotal > 0 ? Math.round((rsScanned / rsTotal) * 100) : 0;
                             const rsDisplay = document.getElementById('runsheets-count-display');
                             const rsBadge = document.getElementById('runsheets-percent-badge');
                             const rsBar = document.getElementById('runsheets-progress-bar');
                             const rsScannedTxt = document.getElementById('runsheets-scanned-txt');
                             const rsTotalTxt = document.getElementById('runsheets-total-txt');
-
                             if (rsDisplay) rsDisplay.textContent = `${rsScanned} / ${rsTotal}`;
                             if (rsBadge) rsBadge.textContent = `${rsPercent}% Scanned`;
                             if (rsBar) {
@@ -1018,15 +1030,15 @@
                             const todayBtn = document.getElementById('today-date-btn');
 
                             if (dateDisplay) {
-                                dateDisplay.textContent = data.stats.is_today 
-                                    ? `Today (${data.stats.selected_date_label})` 
-                                    : data.stats.selected_date_label;
+                                dateDisplay.textContent = data.stats.is_current_week
+                                    ? `This Week (${data.stats.selected_week_label})`
+                                    : data.stats.selected_week_label;
                             }
                             if (datePicker) {
                                 datePicker.value = data.stats.selected_date;
                             }
                             if (todayBtn) {
-                                if (data.stats.is_today) {
+                                if (data.stats.is_current_week) {
                                     todayBtn.classList.add('d-none');
                                 } else {
                                     todayBtn.classList.remove('d-none');
@@ -1082,7 +1094,7 @@
             if (prevBtn) {
                 prevBtn.addEventListener('click', function() {
                     const dt = new Date(currentSelectedDate + 'T00:00:00');
-                    dt.setDate(dt.getDate() - 1);
+                    dt.setDate(dt.getDate() - 7);
                     fetchLiveDashboardData(formatYmd(dt));
                 });
             }
@@ -1090,7 +1102,7 @@
             if (nextBtn) {
                 nextBtn.addEventListener('click', function() {
                     const dt = new Date(currentSelectedDate + 'T00:00:00');
-                    dt.setDate(dt.getDate() + 1);
+                    dt.setDate(dt.getDate() + 7);
                     fetchLiveDashboardData(formatYmd(dt));
                 });
             }
@@ -1105,7 +1117,9 @@
 
             if (todayBtn) {
                 todayBtn.addEventListener('click', function() {
-                    fetchLiveDashboardData(formatYmd(new Date()));
+                    const today = new Date();
+                    today.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+                    fetchLiveDashboardData(formatYmd(today));
                 });
             }
 

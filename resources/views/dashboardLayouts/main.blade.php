@@ -569,10 +569,10 @@
         /* --- Flagship Admin Tables --- */
         #custom-table {
             border-collapse: separate !important;
-            border-spacing: 0 8px !important;
+            border-spacing: 0 2px !important;
             width: 100% !important;
             border: none !important;
-            margin-top: 15px !important;
+            margin-top: 4px !important;
         }
 
         #custom-table thead th {
@@ -581,9 +581,11 @@
             color: #ffffff !important;
             font-weight: 700 !important;
             text-transform: uppercase !important;
-            font-size: 0.8rem !important;
+            font-size: 0.75rem !important;
             letter-spacing: 0.05em !important;
-            padding: 16px 20px !important;
+            padding: 9px 8px !important;
+            line-height: 1.2 !important;
+            font-size: 0.66rem !important;
             border: none !important;
         }
 
@@ -603,10 +605,10 @@
         }
 
         #custom-table tbody td {
-            padding: 18px 20px !important;
+            padding: 5px 7px !important;
             border: none !important;
             color: #475569 !important;
-            font-size: 0.95rem !important;
+            font-size: 0.75rem !important;
             font-weight: 500 !important;
             vertical-align: middle !important;
         }
@@ -637,16 +639,16 @@
 
         /* --- Premium Pagination Refinement --- */
         .dataTables_paginate {
-            margin-top: 30px !important;
-            padding-top: 20px !important;
+            margin-top: 16px !important;
+            padding-top: 12px !important;
             border-top: 1px solid #e2e8f0 !important;
         }
 
         .dataTables_paginate .paginate_button {
             border-radius: 10px !important;
             margin: 0 4px !important;
-            padding: 10px 18px !important;
-            font-size: 0.9rem !important;
+            padding: 7px 11px !important;
+            font-size: 1rem !important;
             font-weight: 600 !important;
             color: #64748b !important;
             background: #ffffff !important;
@@ -689,13 +691,13 @@
         }
 
         .server-pagination .page-link {
-            min-width: 44px;
-            padding: 11px 16px;
+            min-width: 40px;
+            padding: 8px 12px;
             border: 1px solid #e2e8f0 !important;
             border-radius: 10px !important;
             background: #ffffff;
             color: #64748b;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 600;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
@@ -804,6 +806,75 @@
         .btn .badge {
             top: -10px !important;
             right: 12px !important;
+        }
+        /* Keep shared admin pages compact while preserving readable controls. */
+        .page-content {
+            padding-top: 12px;
+        }
+
+        .page-content > .container-fluid {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .page-title-box h4,
+        .page-title-box .shine {
+            font-size: 0.95rem !important;
+            font-weight: 700 !important;
+        }
+
+        .page-content .card-title {
+            font-size: 0.92rem !important;
+            margin-bottom: 0;
+        }
+
+        /* Compact shared section spacing and typography across admin pages. */
+        .page-content > .container-fluid > .row {
+            --bs-gutter-x: 1.25rem;
+            --bs-gutter-y: 0.75rem;
+        }
+
+        .page-content .card {
+            border-radius: 0.65rem;
+        }
+
+        .page-content .card-header {
+            padding: 0.5rem 0.75rem;
+        }
+
+        .page-content .card-body {
+            padding: 0.75rem;
+            font-size: 0.92rem;
+        }
+
+        .page-content h1 { font-size: 1.55rem; }
+        .page-content h2 { font-size: 1.35rem; }
+        .page-content h3 { font-size: 1.2rem; }
+        .page-content h4 { font-size: 1.05rem; }
+        .page-content h5 { font-size: 0.95rem; }
+        .page-content h6 { font-size: 0.85rem; }
+
+        .page-content .table th,
+        .page-content .table td {
+            font-size: 0.82rem;
+        }
+
+        .footer,
+        .footer a {
+            font-size: 0.7rem !important;
+        }
+
+        @media (max-width: 767.98px) {
+            .page-content > .container-fluid {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            #custom-table thead th,
+            #custom-table tbody td {
+                padding: 6px !important;
+                font-size: 0.75rem !important;
+            }
         }
     </style>
 </head>
