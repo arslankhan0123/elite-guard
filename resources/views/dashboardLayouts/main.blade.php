@@ -583,7 +583,8 @@
             text-transform: uppercase !important;
             font-size: 0.75rem !important;
             letter-spacing: 0.05em !important;
-            padding: 5px 7px !important;
+            padding: 9px 8px !important;
+            line-height: 1.2 !important;
             font-size: 0.66rem !important;
             border: none !important;
         }
@@ -646,8 +647,8 @@
         .dataTables_paginate .paginate_button {
             border-radius: 10px !important;
             margin: 0 4px !important;
-            padding: 4px 8px !important;
-            font-size: 0.9rem !important;
+            padding: 7px 11px !important;
+            font-size: 1rem !important;
             font-weight: 600 !important;
             color: #64748b !important;
             background: #ffffff !important;
@@ -690,13 +691,13 @@
         }
 
         .server-pagination .page-link {
-            min-width: 44px;
-            padding: 11px 16px;
+            min-width: 40px;
+            padding: 8px 12px;
             border: 1px solid #e2e8f0 !important;
             border-radius: 10px !important;
             background: #ffffff;
             color: #64748b;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 600;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
@@ -814,6 +815,22 @@
         .page-content > .container-fluid {
             padding-left: 12px;
             padding-right: 12px;
+        }
+
+        .page-title-box h4,
+        .page-title-box .shine {
+            font-size: 1.05rem !important;
+            font-weight: 700 !important;
+        }
+
+        .page-content .card-title {
+            font-size: 1rem !important;
+            margin-bottom: 0;
+        }
+
+        .footer,
+        .footer a {
+            font-size: 0.75rem !important;
         }
 
         @media (max-width: 767.98px) {
