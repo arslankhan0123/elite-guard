@@ -138,14 +138,16 @@
         <h6 class="fw-bold text-dark mb-4">Business Information</h6>
         <div class="row align-items-center">
             <div class="col-md-6">
-                <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" height="60" style="object-fit: contain;">
+                <img src="{{ $companyProfile['logo_url'] }}" alt="{{ $companyProfile['name'] }} Logo" height="60" style="object-fit: contain;">
             </div>
             <div class="col-md-6">
                 <div class="billed-by-info">
                     <strong>Billed By:</strong><br>
-                    <strong>Elite Guard Inc.</strong><br>
-                    2104-3961 52 Ave NE, Calgary, AB T3J 0K7, Canada<br>
-                    +14039090602
+                    <strong>{{ $companyProfile['name'] }}</strong><br>
+                    @if($companyProfile['address']){{ $companyProfile['address'] }}<br>@endif
+                    @if($companyProfile['email']){{ $companyProfile['email'] }}<br>@endif
+                    @if($companyProfile['phone']){{ $companyProfile['phone'] }}<br>@endif
+                    @if($companyProfile['website'])<a href="{{ $companyProfile['website'] }}">{{ $companyProfile['website'] }}</a>@endif
                 </div>
             </div>
         </div>

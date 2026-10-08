@@ -183,14 +183,17 @@
                 <tr>
                     <td style="width: 65px;">
                         <div class="logo-circle">
-                            <img src="{{ url('logo.png') }}" alt="Elite Guard Logo" style="width: 44px; height: 44px; margin-top: 6px; object-fit: contain;">
+                            <img src="{{ $companyProfile['logo_url'] }}" alt="{{ $companyProfile['name'] }} Logo" style="width: 44px; height: 44px; margin-top: 6px; object-fit: contain;">
                         </div>
                     </td>
                     <td>
-                        <div class="company-title">ELITE GUARD INC.</div>
+                        <div class="company-title">{{ $companyProfile['name'] }}</div>
                         <div class="company-info">
-                            3961 52 Ave NE #2104, Calgary, AB T3J 0J7<br>
-                            Phone: +1 (403) 830-7772 &bull; Email: Info@eliteguardinc.ca
+                            @if($companyProfile['address']){{ $companyProfile['address'] }}<br>@endif
+                            @if($companyProfile['phone'])Phone: {{ $companyProfile['phone'] }}@endif
+                            @if($companyProfile['phone'] && $companyProfile['email']) &bull; @endif
+                            @if($companyProfile['email'])Email: {{ $companyProfile['email'] }}@endif
+                            @if($companyProfile['website'])<br>{{ $companyProfile['website'] }}@endif
                         </div>
                     </td>
                     <td style="text-align: right;">
@@ -212,9 +215,11 @@
                 <tr>
                     <td class="meta-label">Billed By</td>
                     <td class="meta-value">
-                        <strong>Elite Guard Inc.</strong><br>
-                        2104-3961 52 Ave NE, Calgary, AB T3J 0K7, Canada<br>
-                        Phone: +14039090602
+                        <strong>{{ $companyProfile['name'] }}</strong><br>
+                        @if($companyProfile['address']){{ $companyProfile['address'] }}<br>@endif
+                        @if($companyProfile['phone'])Phone: {{ $companyProfile['phone'] }}<br>@endif
+                        @if($companyProfile['email'])Email: {{ $companyProfile['email'] }}<br>@endif
+                        @if($companyProfile['website']){{ $companyProfile['website'] }}@endif
                     </td>
                     <td class="meta-label">Billed To</td>
                     <td class="meta-value">
@@ -327,7 +332,7 @@
         </div>
 
         <div class="footer">
-            Elite Guard Inc. &bull; 3961 52 Ave NE #2104, Calgary, AB T3J 0J7 &bull; Phone: +1 (403) 830-7772
+            {{ $companyProfile['name'] }}@if($companyProfile['address']) &bull; {{ $companyProfile['address'] }}@endif @if($companyProfile['phone']) &bull; {{ $companyProfile['phone'] }}@endif
         </div>
     </div>
 </body>

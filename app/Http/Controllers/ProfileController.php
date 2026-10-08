@@ -25,7 +25,7 @@ class ProfileController extends Controller
 
         // Pull company name, email, and phone from the master tenant record (read-only fields)
         $tenant = TenantService::getTenant();
-        $companyName  = $tenant ? $tenant->name        : \App\Models\Setting::get('company_name', '');
+        $companyName  = \App\Models\Setting::get('company_name') ?: ($tenant ? $tenant->name : '');
         $companyEmail = $tenant ? $tenant->admin_email  : \App\Models\Setting::get('company_email', '');
         $companyPhone = $tenant ? ($tenant->phone ?? '') : \App\Models\Setting::get('company_phone', '');
         $smtpPasswordStored = (bool) \App\Models\Setting::get('smtp_password_encrypted', '');

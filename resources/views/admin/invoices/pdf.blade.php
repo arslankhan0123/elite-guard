@@ -172,14 +172,17 @@
             <tr>
                 <td style="width: 65px;">
                     <div style="display: inline-block; width: 56px; height: 56px; background-color: #ffffff; border-radius: 50%; text-align: center; vertical-align: middle; border: 1px solid #bae6fd;">
-                        <img src="{{ public_path('logo.png') }}" alt="Logo" style="width: 45px; height: 45px; margin-top: 5.5px; object-fit: contain; vertical-align: middle;">
+                        <img src="{{ $companyProfile['logo_file'] }}" alt="{{ $companyProfile['name'] }} Logo" style="width: 45px; height: 45px; margin-top: 5.5px; object-fit: contain; vertical-align: middle;">
                     </div>
                 </td>
                 <td>
-                    <div class="company-title">ELITE GUARD INC.</div>
+                    <div class="company-title">{{ $companyProfile['name'] }}</div>
                     <div class="company-info">
-                        3961 52 Ave NE #2104, Calgary, AB T3J 0J7<br>
-                        Phone: +1 (403) 830-7772 &bull; Email: Info@eliteguardinc.ca
+                        @if($companyProfile['address']){{ $companyProfile['address'] }}<br>@endif
+                        @if($companyProfile['phone'])Phone: {{ $companyProfile['phone'] }}@endif
+                        @if($companyProfile['phone'] && $companyProfile['email']) &bull; @endif
+                        @if($companyProfile['email'])Email: {{ $companyProfile['email'] }}@endif
+                        @if($companyProfile['website'])<br>{{ $companyProfile['website'] }}@endif
                     </div>
                 </td>
                 <td class="report-title-cell">
@@ -201,9 +204,11 @@
             <tr>
                 <td class="meta-label">Billed By</td>
                 <td class="meta-value">
-                    <strong>Elite Guard Inc.</strong><br>
-                    2104-3961 52 Ave NE, Calgary, AB T3J 0K7, Canada<br>
-                    Phone: +14039090602
+                    <strong>{{ $companyProfile['name'] }}</strong><br>
+                    @if($companyProfile['address']){{ $companyProfile['address'] }}<br>@endif
+                    @if($companyProfile['phone'])Phone: {{ $companyProfile['phone'] }}<br>@endif
+                    @if($companyProfile['email'])Email: {{ $companyProfile['email'] }}<br>@endif
+                    @if($companyProfile['website']){{ $companyProfile['website'] }}@endif
                 </td>
                 <td class="meta-label">Billed To</td>
                 <td class="meta-value">
@@ -316,7 +321,7 @@
     </div>
 
     <div class="footer">
-        Elite Guard Inc. &bull; Confidential Operational Billing Invoice &bull; Generated Automatically
+        {{ $companyProfile['name'] }} &bull; Confidential Operational Billing Invoice &bull; Generated Automatically
     </div>
 
 </body>
