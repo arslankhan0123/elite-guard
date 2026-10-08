@@ -28,6 +28,7 @@ class ProfileController extends Controller
         $companyName  = $tenant ? $tenant->name        : \App\Models\Setting::get('company_name', '');
         $companyEmail = $tenant ? $tenant->admin_email  : \App\Models\Setting::get('company_email', '');
         $companyPhone = $tenant ? ($tenant->phone ?? '') : \App\Models\Setting::get('company_phone', '');
+        $smtpPasswordStored = (bool) \App\Models\Setting::get('smtp_password_encrypted', '');
 
         return view('profile.edit', [
             'user'             => $request->user(),
@@ -43,6 +44,15 @@ class ProfileController extends Controller
             'companyLogoUrl'   => $companyLogoPath
                 ? \Illuminate\Support\Facades\Storage::url($companyLogoPath)
                 : null,
+            'smtpSettings'     => [
+                'host' => \App\Models\Setting::get('smtp_host', ''),
+                'port' => \App\Models\Setting::get('smtp_port', '587'),
+                'encryption' => \App\Models\Setting::get('smtp_encryption', 'tls'),
+                'username' => \App\Models\Setting::get('smtp_username', ''),
+                'from_address' => \App\Models\Setting::get('smtp_from_address', ''),
+                'from_name' => \App\Models\Setting::get('smtp_from_name', ''),
+                'password_configured' => $smtpPasswordStored,
+            ],
         ]);
     }
 
@@ -132,5 +142,36 @@ class ProfileController extends Controller
         }
 
         return Redirect::route('profile.edit')->with('status', 'company-settings-updated');
+    }
+
+    public function updateSmtpSettings(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->role === 'SuperAdmin', 403);
+
+        $validated = $request->validate([
+            'smtp_host' => ['required', 'string', 'max:255'],
+            'smtp_port' => ['required', 'integer', 'between:1,65535'],
+            'smtp_encryption' => ['required', 'in:tls,ssl,none'],
+            'smtp_username' => ['nullable', 'string', 'max:255'],
+            'smtp_password' => ['nullable', 'string', 'max:1000'],
+            'smtp_from_address' => ['required', 'email', 'max:255'],
+            'smtp_from_name' => ['required', 'string', 'max:255'],
+            'smtp_clear_password' => ['nullable', 'boolean'],
+        ]);
+
+        foreach (['smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_username', 'smtp_from_address', 'smtp_from_name'] as $key) {
+            \App\Models\Setting::set($key, $validated[$key] ?? '');
+        }
+
+        if ($request->boolean('smtp_clear_password')) {
+            \App\Models\Setting::set('smtp_password_encrypted', '');
+        } elseif ($request->filled('smtp_password')) {
+            \App\Models\Setting::set(
+                'smtp_password_encrypted',
+                \Illuminate\Support\Facades\Crypt::encryptString($validated['smtp_password'])
+            );
+        }
+
+        return Redirect::route('profile.edit', ['tab' => 'smtp'])->with('status', 'smtp-settings-updated');
     }
 }

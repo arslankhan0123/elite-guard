@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class Setting extends Model
 {
@@ -21,7 +22,7 @@ class Setting extends Model
     public static function get(string $key, $default = null)
     {
         try {
-            return Cache::remember('setting_' . $key, 86400, function () use ($key, $default) {
+            return Cache::remember(static::cacheKey($key), 86400, function () use ($key, $default) {
                 $setting = static::where('key', $key)->first();
                 return $setting !== null && $setting->value !== null ? $setting->value : $default;
             });
@@ -40,9 +41,17 @@ class Setting extends Model
             ['value' => $value]
         );
 
-        Cache::forget('setting_' . $key);
-        Cache::put('setting_' . $key, $value, 86400);
+        Cache::forget(static::cacheKey($key));
+        Cache::put(static::cacheKey($key), $value, 86400);
 
         return $setting;
+    }
+
+    private static function cacheKey(string $key): string
+    {
+        $connection = DB::connection();
+        $scope = $connection->getName() . ':' . $connection->getDatabaseName();
+
+        return 'setting_' . sha1($scope) . '_' . $key;
     }
 }

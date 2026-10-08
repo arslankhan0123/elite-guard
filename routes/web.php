@@ -25,6 +25,7 @@ use App\Http\Controllers\WeeklyRunSheetController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CustomerController;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\NfcTag;
@@ -709,6 +710,14 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/sites-by-company/{company_id}', [InvoiceController::class, 'getSitesByCompany'])->name('invoices.sitesByCompany');
     });
 
+    Route::group(['prefix' => '/customers'], function () {
+        Route::get('/', [CustomerController::class, 'index'])->name('customers.index');
+        Route::post('/store', [CustomerController::class, 'store'])->name('customers.store');
+        Route::get('/show/{id}', [CustomerController::class, 'show'])->name('customers.show');
+        Route::put('/update/{id}', [CustomerController::class, 'update'])->name('customers.update');
+        Route::delete('/delete/{id}', [CustomerController::class, 'destroy'])->name('customers.delete');
+    });
+
     Route::group(['prefix' => '/taxes'], function () {
         Route::get('/', [TaxController::class, 'index'])->name('taxes.index');
         Route::post('/store', [TaxController::class, 'store'])->name('taxes.store');
@@ -732,6 +741,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/timezone', [ProfileController::class, 'updateTimezone'])->name('profile.timezone.update');
     Route::post('/profile/company-settings', [ProfileController::class, 'updateCompanySettings'])->name('profile.company-settings.update');
+    Route::post('/profile/smtp-settings', [ProfileController::class, 'updateSmtpSettings'])->name('profile.smtp-settings.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

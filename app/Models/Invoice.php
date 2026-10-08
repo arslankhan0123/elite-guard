@@ -14,6 +14,7 @@ class Invoice extends Model
         'title',
         'summary',
         'company_id',
+        'customer_id',
         'site_id',
         'invoice_date',
         'due_date',
@@ -56,6 +57,11 @@ class Invoice extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function site()

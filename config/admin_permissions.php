@@ -28,5 +28,6 @@ return [
         'invoices'   => 'Invoices',
         'products'   => 'Products & Services',
         'taxes'      => 'Taxes',
+        'customers'  => 'Customers',
     ],
 ];

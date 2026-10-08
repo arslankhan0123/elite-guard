@@ -193,7 +193,7 @@
                                 <th width="30"><input type="checkbox" id="selectAll"></th>
                                 <th>Date</th>
                                 <th>Invoice</th>
-                                <th>Client</th>
+                                <th>Customer</th>
                                 <th>Total</th>
                                 <th>Amount Due</th>
                                 <th>Due Date</th>
@@ -212,7 +212,7 @@
                                     </a>
                                 </td>
                                 <td>
-                                    {{ $invoice->company ? $invoice->company->name : 'N/A' }}
+                                    {{ $invoice->customer?->name ?: ($invoice->company?->name ?: 'N/A') }}
                                     @if($invoice->site)
                                         <br><small class="text-muted"><i class="fa fa-map-marker-alt me-1"></i>{{ $invoice->site->name }}</small>
                                     @endif
@@ -244,7 +244,7 @@
                                                 <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
                                             </button>
                                         </a>
-                                        <a class="text-decoration-none text-dark me-2" href="{{ route('invoices.sendEmail', $invoice->id) }}" data-bs-toggle="tooltip" title="Send Email to Client" onclick="return confirm('Send invoice email to {{ $invoice->company ? $invoice->company->email : 'client' }}?')">
+                                        <a class="text-decoration-none text-dark me-2" href="{{ route('invoices.sendEmail', $invoice->id) }}" data-bs-toggle="tooltip" title="Send Email to Customer" onclick="return confirm('Send invoice email to {{ $invoice->customer?->email ?: ($invoice->company?->email ?: 'customer') }}?')">
                                             <button class="btn btn-sm btn-primary d-flex align-items-center justify-content-center" style="width: 1.875rem; height: 1.875rem; padding: 0; border-radius: 7px; background-color: #2563eb; border-color: #2563eb;" type="button">
                                                 <i data-feather="mail" style="width: 14px; height: 14px;"></i>
                                             </button>

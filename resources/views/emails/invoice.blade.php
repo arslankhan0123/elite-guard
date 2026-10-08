@@ -218,10 +218,15 @@
                     </td>
                     <td class="meta-label">Billed To</td>
                     <td class="meta-value">
-                        <strong>{{ $invoice->company ? $invoice->company->name : 'N/A' }}</strong><br>
+                        <strong>{{ $invoice->customer?->name ?: ($invoice->company?->name ?: 'N/A') }}</strong><br>
+                        @if($invoice->customer?->company_name){{ $invoice->customer->company_name }}<br>@endif
+                        @if($invoice->customer?->email){{ $invoice->customer->email }}<br>@endif
+                        @if($invoice->customer?->phone){{ $invoice->customer->phone }}<br>@endif
                         @if($invoice->site)
                             Site: {{ $invoice->site->name }}<br>
                             {{ $invoice->site->address }}<br>
+                        @elseif($invoice->customer?->address)
+                            {{ $invoice->customer->address }}<br>
                         @elseif($invoice->company)
                             {{ $invoice->company->address }}<br>
                         @endif
@@ -271,7 +276,12 @@
                 <tbody>
                     @foreach($invoice->items as $item)
                     <tr>
-                        <td><strong>{{ $item->product_service }}</strong></td>
+                        <td>
+                            <strong>{{ $item->product_service }}</strong>
+                            @if($item->description)
+                                <div style="margin-top:2px;color:#64748b;font-size:8px;">{{ $item->description }}</div>
+                            @endif
+                        </td>
                         <td class="text-center">{{ number_format($item->quantity, 2) }}</td>
                         <td class="text-right">$ {{ number_format($item->rate, 2) }}</td>
                         <td class="text-right">$ {{ number_format($item->tax, 2) }}</td>

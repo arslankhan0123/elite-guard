@@ -357,7 +357,7 @@
                             </a>
                         </li>
                         @endif
-                        @if(Auth::user()->hasAdminPermission('invoices', 'list') || Auth::user()->hasAdminPermission('products', 'list') || Auth::user()->hasAdminPermission('taxes', 'list'))
+                        @if(Auth::user()->hasAdminPermission('invoices', 'list') || Auth::user()->hasAdminPermission('products', 'list') || Auth::user()->hasAdminPermission('taxes', 'list') || Auth::user()->hasAdminPermission('customers', 'list'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-billing" role="button"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -369,6 +369,11 @@
                                 @if(Auth::user()->hasAdminPermission('invoices', 'list'))
                                 <a href="{{ route('invoices.index') }}" class="dropdown-item" data-key="t-invoices-list">
                                     <i class="icon nav-icon" data-feather="file-text" style="width:16px; height:16px;"></i> Invoices
+                                </a>
+                                @endif
+                                @if(Auth::user()->hasAdminPermission('customers', 'list'))
+                                <a href="{{ route('customers.index') }}" class="dropdown-item" data-key="t-customers">
+                                    <i class="icon nav-icon" data-feather="users" style="width:16px; height:16px;"></i> Customers
                                 </a>
                                 @endif
                                 @if(Auth::user()->hasAdminPermission('products', 'list'))
