@@ -59,6 +59,7 @@ class IsSuperAdmin
             str_starts_with($routeName, 'invoices.') => 'invoices',
             str_starts_with($routeName, 'products.') => 'products',
             str_starts_with($routeName, 'taxes.') => 'taxes',
+            str_starts_with($routeName, 'customers.') => 'customers',
             default => null,
         };
 

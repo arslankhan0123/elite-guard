@@ -3,18 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Product;
 use App\Models\Site;
 use App\Models\Tax;
-use App\Mail\InvoiceMail;
+use App\Services\InvoiceMailSender;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
 {
+    public function __construct(private InvoiceMailSender $invoiceMailSender)
+    {
+    }
+
     public function index(Request $request)
     {
         // Auto-update status for invoices based on due date & payment
@@ -26,7 +30,7 @@ class InvoiceController extends Controller
             }
         }
 
-        $query = Invoice::with(['company', 'site'])->orderBy('id', 'desc');
+        $query = Invoice::with(['company', 'customer', 'site'])->orderBy('id', 'desc');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -38,6 +42,8 @@ class InvoiceController extends Controller
                 $q->where('invoice_number', 'like', "%{$search}%")
                   ->orWhere('title', 'like', "%{$search}%")
                   ->orWhereHas('company', function ($c) use ($search) {
+                      $c->where('name', 'like', "%{$search}%");
+                  })->orWhereHas('customer', function ($c) use ($search) {
                       $c->where('name', 'like', "%{$search}%");
                   });
             });
@@ -74,11 +80,12 @@ class InvoiceController extends Controller
     public function create()
     {
         $companies = Company::orderBy('name', 'asc')->get();
+        $customers = Customer::orderBy('name', 'asc')->get();
         $nextInvoiceNumber = Invoice::generateNextInvoiceNumber();
         $products = Product::with('tax')->orderBy('name', 'asc')->get();
         $taxes = Tax::orderBy('name', 'asc')->get();
 
-        return view('admin.invoices.create', compact('companies', 'nextInvoiceNumber', 'products', 'taxes'));
+        return view('admin.invoices.create', compact('companies', 'customers', 'nextInvoiceNumber', 'products', 'taxes'));
     }
 
     public function getSitesByCompany($company_id)
@@ -93,7 +100,8 @@ class InvoiceController extends Controller
             'invoice_number' => 'required|string|unique:invoices,invoice_number',
             'title'          => 'required|string|max:255',
             'summary'        => 'nullable|string',
-            'company_id'     => 'required|exists:companies,id',
+            'company_id'     => 'nullable|exists:companies,id',
+            'customer_id'    => 'required|exists:customers,id',
             'site_id'        => 'nullable|exists:sites,id',
             'invoice_date'   => 'required|date',
             'due_date'       => 'required|date',
@@ -101,6 +109,7 @@ class InvoiceController extends Controller
             'notes'          => 'nullable|string',
             'items'          => 'required|array|min:1',
             'items.*.product_service' => 'required|string',
+            'items.*.description'    => 'nullable|string',
             'items.*.quantity'        => 'required|numeric|min:0',
             'items.*.rate'            => 'required|numeric|min:0',
             'items.*.tax'             => 'nullable|numeric|min:0',
@@ -126,6 +135,7 @@ class InvoiceController extends Controller
 
                 $itemsData[] = [
                     'product_service' => $item['product_service'],
+                    'description'    => $this->invoiceItemDescription($item),
                     'quantity'        => $qty,
                     'rate'            => $rate,
                     'tax'             => $tax,
@@ -147,6 +157,7 @@ class InvoiceController extends Controller
                 'title'          => $request->title ?: 'Invoice',
                 'summary'        => $request->summary,
                 'company_id'     => $request->company_id,
+                'customer_id'    => $request->customer_id,
                 'site_id'        => $request->site_id,
                 'invoice_date'   => $request->invoice_date,
                 'due_date'       => $request->due_date,
@@ -167,17 +178,18 @@ class InvoiceController extends Controller
 
             $emailMessage = '';
             if ($request->has('send_email') && $request->send_email == '1') {
-                $invoice->load(['company', 'site', 'items']);
-                if ($invoice->company && $invoice->company->email) {
+                $invoice->load(['company', 'customer', 'site', 'items']);
+                $recipientEmail = $invoice->customer?->email;
+                if ($recipientEmail) {
                     try {
-                        Mail::to($invoice->company->email)->send(new InvoiceMail($invoice));
-                        $emailMessage = ' and emailed to ' . $invoice->company->email;
+                        $this->invoiceMailSender->send($invoice, $recipientEmail);
+                        $emailMessage = ' and emailed to ' . $recipientEmail;
                     } catch (\Exception $e) {
                         logger()->error('Failed to send invoice email on create: ' . $e->getMessage());
-                        $emailMessage = ' (Note: Failed to send email to client)';
+                        $emailMessage = ' (Note: Invoice saved, but email was not sent: ' . $e->getMessage() . ')';
                     }
                 } else {
-                    $emailMessage = ' (Note: Client has no email address configured)';
+                    $emailMessage = ' (Note: Invoice saved, but the selected customer has no email address configured)';
                 }
             }
 
@@ -190,26 +202,27 @@ class InvoiceController extends Controller
 
     public function show($id)
     {
-        $invoice = Invoice::with(['company', 'site', 'items'])->findOrFail($id);
+        $invoice = Invoice::with(['company', 'customer', 'site', 'items'])->findOrFail($id);
         return view('admin.invoices.show', compact('invoice'));
     }
 
     public function downloadPdf($id)
     {
-        $invoice = Invoice::with(['company', 'site', 'items'])->findOrFail($id);
+        $invoice = Invoice::with(['company', 'customer', 'site', 'items'])->findOrFail($id);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.invoices.pdf', compact('invoice'));
         return $pdf->download('Invoice_' . $invoice->invoice_number . '.pdf');
     }
 
     public function edit($id)
     {
-        $invoice = Invoice::with(['company', 'site', 'items'])->findOrFail($id);
+        $invoice = Invoice::with(['company', 'customer', 'site', 'items'])->findOrFail($id);
+        $customers = Customer::orderBy('name', 'asc')->get();
         $companies = Company::orderBy('name', 'asc')->get();
         $sites = Site::where('company_id', $invoice->company_id)->orderBy('name', 'asc')->get();
         $products = Product::with('tax')->orderBy('name', 'asc')->get();
         $taxes = Tax::orderBy('name', 'asc')->get();
 
-        return view('admin.invoices.edit', compact('invoice', 'companies', 'sites', 'products', 'taxes'));
+        return view('admin.invoices.edit', compact('invoice', 'companies', 'customers', 'sites', 'products', 'taxes'));
     }
 
     public function update(Request $request, $id)
@@ -220,7 +233,8 @@ class InvoiceController extends Controller
             'invoice_number' => 'required|string|unique:invoices,invoice_number,' . $invoice->id,
             'title'          => 'required|string|max:255',
             'summary'        => 'nullable|string',
-            'company_id'     => 'required|exists:companies,id',
+            'company_id'     => 'nullable|exists:companies,id',
+            'customer_id'    => 'required|exists:customers,id',
             'site_id'        => 'nullable|exists:sites,id',
             'invoice_date'   => 'required|date',
             'due_date'       => 'required|date',
@@ -228,6 +242,7 @@ class InvoiceController extends Controller
             'notes'          => 'nullable|string',
             'items'          => 'required|array|min:1',
             'items.*.product_service' => 'required|string',
+            'items.*.description'    => 'nullable|string',
             'items.*.quantity'        => 'required|numeric|min:0',
             'items.*.rate'            => 'required|numeric|min:0',
             'items.*.tax'             => 'nullable|numeric|min:0',
@@ -253,6 +268,7 @@ class InvoiceController extends Controller
 
                 $itemsData[] = [
                     'product_service' => $item['product_service'],
+                    'description'    => $this->invoiceItemDescription($item),
                     'quantity'        => $qty,
                     'rate'            => $rate,
                     'tax'             => $tax,
@@ -275,6 +291,7 @@ class InvoiceController extends Controller
                 'title'          => $request->title ?: 'Invoice',
                 'summary'        => $request->summary,
                 'company_id'     => $request->company_id,
+                'customer_id'    => $request->customer_id,
                 'site_id'        => $request->site_id,
                 'invoice_date'   => $request->invoice_date,
                 'due_date'       => $request->due_date,
@@ -296,17 +313,18 @@ class InvoiceController extends Controller
 
             $emailMessage = '';
             if ($request->has('send_email') && $request->send_email == '1') {
-                $invoice->load(['company', 'site', 'items']);
-                if ($invoice->company && $invoice->company->email) {
+                $invoice->load(['company', 'customer', 'site', 'items']);
+                $recipientEmail = $invoice->customer?->email;
+                if ($recipientEmail) {
                     try {
-                        Mail::to($invoice->company->email)->send(new InvoiceMail($invoice));
-                        $emailMessage = ' and emailed to ' . $invoice->company->email;
+                        $this->invoiceMailSender->send($invoice, $recipientEmail);
+                        $emailMessage = ' and emailed to ' . $recipientEmail;
                     } catch (\Exception $e) {
                         logger()->error('Failed to send invoice email on update: ' . $e->getMessage());
-                        $emailMessage = ' (Note: Failed to send email to client)';
+                        $emailMessage = ' (Note: Invoice saved, but email was not sent: ' . $e->getMessage() . ')';
                     }
                 } else {
-                    $emailMessage = ' (Note: Client has no email address configured)';
+                    $emailMessage = ' (Note: Invoice saved, but the selected customer has no email address configured)';
                 }
             }
 
@@ -319,18 +337,19 @@ class InvoiceController extends Controller
 
     public function sendEmail($id)
     {
-        $invoice = Invoice::with(['company', 'site', 'items'])->findOrFail($id);
+        $invoice = Invoice::with(['company', 'customer', 'site', 'items'])->findOrFail($id);
 
-        if (!$invoice->company || !$invoice->company->email) {
-            return redirect()->back()->with('error', 'Unable to send email. Selected client does not have an email address configured.');
+        $recipientEmail = $invoice->customer?->email;
+        if (!$recipientEmail) {
+            return redirect()->back()->with('error', 'Unable to send invoice: selected customer does not have an email address configured.');
         }
 
         try {
-            Mail::to($invoice->company->email)->send(new InvoiceMail($invoice));
-            return redirect()->back()->with('success', 'Invoice #' . $invoice->invoice_number . ' successfully emailed to ' . $invoice->company->email . '.');
+            $this->invoiceMailSender->send($invoice, $recipientEmail);
+            return redirect()->back()->with('success', 'Invoice #' . $invoice->invoice_number . ' successfully emailed to ' . $recipientEmail . '.');
         } catch (\Exception $e) {
             logger()->error('Failed to send invoice email: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to send email to ' . $invoice->company->email . ': ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to send email to ' . $recipientEmail . ': ' . $e->getMessage());
         }
     }
 
@@ -340,5 +359,12 @@ class InvoiceController extends Controller
         $invoice->delete();
 
         return redirect()->route('invoices.index')->with('success', 'Invoice deleted successfully.');
+    }
+
+    private function invoiceItemDescription(array $item): ?string
+    {
+        $productDescription = Product::where('name', $item['product_service'])->value('description');
+
+        return filled($productDescription) ? $productDescription : ($item['description'] ?? null);
     }
 }

@@ -165,6 +165,13 @@
                 <i data-feather="settings" style="width:16px;height:16px;" class="me-1"></i> Company Settings
             </button>
         </li>
+        @if(Auth::user()->role === 'SuperAdmin')
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {{ request('tab') === 'smtp' ? 'active' : '' }}" id="tab-smtp" data-bs-toggle="tab" data-bs-target="#pane-smtp" type="button" role="tab">
+                    <i data-feather="mail" style="width:16px;height:16px;" class="me-1"></i> SMTP Settings
+                </button>
+            </li>
+        @endif
         <li class="nav-item" role="presentation">
             <button class="nav-link {{ request('tab') === 'timezone' ? 'active' : '' }}" id="tab-timezone" data-bs-toggle="tab" data-bs-target="#pane-timezone" type="button" role="tab">
                 <i data-feather="clock" style="width:16px;height:16px;" class="me-1"></i> Timezone
@@ -427,6 +434,92 @@
             </div>
         </div>
 
+        @if(Auth::user()->role === 'SuperAdmin')
+            {{-- ===== SMTP SETTINGS TAB ===== --}}
+            <div class="tab-pane fade {{ request('tab') === 'smtp' ? 'show active' : '' }}" id="pane-smtp" role="tabpanel">
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="card profile-card">
+                            <div class="card-body p-4 p-md-5">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="p-2 rounded-3 me-3" style="background:rgba(124,58,237,0.12);width:44px;height:44px;display:flex;align-items:center;justify-content:center;">
+                                        <i data-feather="mail" style="width:24px;height:24px;color:#7c3aed;"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="fw-bold mb-0">SMTP Settings</h4>
+                                        <p class="text-muted mb-0 small">Save outgoing email server credentials for this company. The password is encrypted before storage; these settings are not used to send email yet.</p>
+                                    </div>
+                                </div>
+
+                                @if(session('status') === 'smtp-settings-updated')
+                                    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+                                        <i class="mdi mdi-check-circle me-2"></i> SMTP settings saved successfully.
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                @endif
+
+                                <form method="post" action="{{ route('profile.smtp-settings.update') }}">
+                                    @csrf
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <label for="smtp_host" class="form-label fw-semibold">SMTP Host</label>
+                                            <input type="text" id="smtp_host" name="smtp_host" class="form-control @error('smtp_host') is-invalid @enderror" value="{{ old('smtp_host', $smtpSettings['host']) }}" placeholder="smtp.example.com" autocomplete="off" required>
+                                            @error('smtp_host') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="smtp_port" class="form-label fw-semibold">Port</label>
+                                            <input type="number" id="smtp_port" name="smtp_port" class="form-control @error('smtp_port') is-invalid @enderror" value="{{ old('smtp_port', $smtpSettings['port']) }}" min="1" max="65535" required>
+                                            @error('smtp_port') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="smtp_encryption" class="form-label fw-semibold">Encryption</label>
+                                            <select id="smtp_encryption" name="smtp_encryption" class="form-select @error('smtp_encryption') is-invalid @enderror" required>
+                                                <option value="tls" {{ old('smtp_encryption', $smtpSettings['encryption']) === 'tls' ? 'selected' : '' }}>TLS / STARTTLS</option>
+                                                <option value="ssl" {{ old('smtp_encryption', $smtpSettings['encryption']) === 'ssl' ? 'selected' : '' }}>SSL</option>
+                                                <option value="none" {{ old('smtp_encryption', $smtpSettings['encryption']) === 'none' ? 'selected' : '' }}>None</option>
+                                            </select>
+                                            @error('smtp_encryption') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="smtp_username" class="form-label fw-semibold">SMTP Username</label>
+                                            <input type="text" id="smtp_username" name="smtp_username" class="form-control @error('smtp_username') is-invalid @enderror" value="{{ old('smtp_username', $smtpSettings['username']) }}" autocomplete="off">
+                                            @error('smtp_username') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="smtp_password" class="form-label fw-semibold">SMTP Password</label>
+                                            <input type="password" id="smtp_password" name="smtp_password" class="form-control @error('smtp_password') is-invalid @enderror" value="" placeholder="{{ $smtpSettings['password_configured'] ? 'Saved — leave blank to keep current password' : 'Enter SMTP password' }}" autocomplete="new-password">
+                                            @error('smtp_password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                            @if($smtpSettings['password_configured'])
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" value="1" id="smtp_clear_password" name="smtp_clear_password">
+                                                    <label class="form-check-label small text-muted" for="smtp_clear_password">Clear the saved SMTP password</label>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="smtp_from_address" class="form-label fw-semibold">From Email Address</label>
+                                            <input type="email" id="smtp_from_address" name="smtp_from_address" class="form-control @error('smtp_from_address') is-invalid @enderror" value="{{ old('smtp_from_address', $smtpSettings['from_address']) }}" placeholder="notifications@example.com" required>
+                                            @error('smtp_from_address') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="smtp_from_name" class="form-label fw-semibold">From Name</label>
+                                            <input type="text" id="smtp_from_name" name="smtp_from_name" class="form-control @error('smtp_from_name') is-invalid @enderror" value="{{ old('smtp_from_name', $smtpSettings['from_name']) }}" placeholder="Company name" required>
+                                            @error('smtp_from_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        </div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button type="submit" class="btn-save">
+                                            <i class="mdi mdi-content-save me-1"></i> Save SMTP Settings
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- ===== TIMEZONE TAB ===== --}}
         <div class="tab-pane fade {{ request('tab') === 'timezone' ? 'show active' : '' }}" id="pane-timezone" role="tabpanel">
             <div class="row">
@@ -515,6 +608,9 @@
         // Restore active tab from session status or hash
         @if(session('status') === 'company-settings-updated')
             var triggerEl = document.querySelector('#tab-settings');
+            bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+        @elseif(session('status') === 'smtp-settings-updated')
+            var triggerEl = document.querySelector('#tab-smtp');
             bootstrap.Tab.getOrCreateInstance(triggerEl).show();
         @elseif(session('status') === 'timezone-updated')
             var triggerEl = document.querySelector('#tab-timezone');

@@ -80,7 +80,7 @@
                     <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
                 </button>
             </a>
-            <a class="text-decoration-none text-dark me-2" href="{{ route('invoices.sendEmail', $invoice->id) }}" data-bs-toggle="tooltip" title="Send Email to Client" onclick="return confirm('Send invoice email to {{ $invoice->company ? $invoice->company->email : 'client' }}?')">
+            <a class="text-decoration-none text-dark me-2" href="{{ route('invoices.sendEmail', $invoice->id) }}" data-bs-toggle="tooltip" title="Send Email to Customer" onclick="return confirm('Send invoice email to {{ $invoice->customer?->email ?: ($invoice->company?->email ?: 'customer') }}?')">
                 <button class="btn btn-sm btn-primary d-flex align-items-center justify-content-center" style="width: 1.875rem; height: 1.875rem; padding: 0; border-radius: 7px; background-color: #2563eb; border-color: #2563eb;" type="button">
                     <i data-feather="mail" style="width: 14px; height: 14px;"></i>
                 </button>
@@ -160,10 +160,15 @@
                                 </td>
                                 <td class="meta-box-label">Billed To</td>
                                 <td class="meta-box-val">
-                                    <strong>{{ $invoice->company ? $invoice->company->name : 'N/A' }}</strong><br>
+                                    <strong>{{ $invoice->customer?->name ?: ($invoice->company?->name ?: 'N/A') }}</strong><br>
+                                    @if($invoice->customer?->company_name){{ $invoice->customer->company_name }}<br>@endif
+                                    @if($invoice->customer?->email){{ $invoice->customer->email }}<br>@endif
+                                    @if($invoice->customer?->phone){{ $invoice->customer->phone }}<br>@endif
                                     @if($invoice->site)
                                         Site: {{ $invoice->site->name }}<br>
                                         {{ $invoice->site->address }}<br>
+                                    @elseif($invoice->customer?->address)
+                                        {{ $invoice->customer->address }}<br>
                                     @elseif($invoice->company)
                                         {{ $invoice->company->address }}<br>
                                     @endif
@@ -224,7 +229,12 @@
                         <tbody>
                             @foreach($invoice->items as $item)
                             <tr>
-                                <td class="fw-bold text-dark">{{ $item->product_service }}</td>
+                                <td>
+                                    <strong class="text-dark">{{ $item->product_service }}</strong>
+                                    @if($item->description)
+                                        <small class="d-block text-muted">{{ $item->description }}</small>
+                                    @endif
+                                </td>
                                 <td class="text-center">{{ number_format($item->quantity, 2) }}</td>
                                 <td class="text-end">$ {{ number_format($item->rate, 2) }}</td>
                                 <td class="text-end">$ {{ number_format($item->tax, 2) }}</td>

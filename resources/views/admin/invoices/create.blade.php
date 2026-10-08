@@ -194,9 +194,19 @@
         <h6 class="fw-bold text-dark mb-4">Billed To</h6>
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="field-label">Client *</label>
-                <select name="company_id" id="company_id" class="form-select form-control-custom" required>
-                    <option value="">Client *</option>
+                <label class="field-label">Customer *</label>
+                <select name="customer_id" id="customer_id" class="form-select form-control-custom" required>
+                    <option value="">Select Customer *</option>
+                    @foreach($customers as $customer)
+                        <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>{{ $customer->name }}{{ $customer->company_name ? ' — ' . $customer->company_name : '' }}</option>
+                    @endforeach
+                </select>
+                @if($customers->isEmpty())<small class="text-danger">Add a customer before creating an invoice. <a href="{{ route('customers.index') }}">Go to Customers</a></small>@endif
+            </div>
+            <div class="col-md-6">
+                <label class="field-label">Company (optional)</label>
+                <select name="company_id" id="company_id" class="form-select form-control-custom">
+                    <option value="">Select Company</option>
                     @foreach($companies as $company)
                         <option value="{{ $company->id }}">{{ $company->name }}</option>
                     @endforeach
@@ -421,6 +431,7 @@ $(document).ready(function() {
                     <select name="items[${itemIndex}][product_service]" class="form-select form-control-custom product-service-select" required>
                         ${optionsHtml}
                     </select>
+                    <input type="hidden" name="items[${itemIndex}][description]" class="description-input" value="">
                 </td>
                 <td>
                     <input type="number" step="0.01" min="0" name="items[${itemIndex}][quantity]" class="form-control form-control-custom qty-input" value="${qty}">
@@ -460,6 +471,8 @@ $(document).ready(function() {
         }
 
         const selectedOption = $(this).find('option:selected');
+        const selectedProduct = productsList.find(prod => prod.name === val);
+        $row.find('.description-input').val(selectedProduct ? (selectedProduct.description || '') : '');
         const price = parseFloat(selectedOption.data('price')) || 0;
         const taxRate = parseFloat(selectedOption.data('tax-rate')) || 0;
         const qty = parseFloat($row.find('.qty-input').val()) || 1;
