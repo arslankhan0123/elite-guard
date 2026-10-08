@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\Invoice;
+use App\Services\CompanyProfileService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -28,10 +29,11 @@ class InvoiceMail extends Mailable
     public function build()
     {
         $invoice = $this->invoice;
-        $pdf = Pdf::loadView('admin.invoices.pdf', compact('invoice'));
+        $companyProfile = app(CompanyProfileService::class)->data();
+        $pdf = Pdf::loadView('admin.invoices.pdf', compact('invoice', 'companyProfile'));
 
-        return $this->subject('Invoice #' . $this->invoice->invoice_number . ' from Elite Guard Inc.')
-                    ->view('emails.invoice', compact('invoice'))
+        return $this->subject('Invoice #' . $this->invoice->invoice_number . ' from ' . $companyProfile['name'])
+                    ->view('emails.invoice', compact('invoice', 'companyProfile'))
                     ->attachData($pdf->output(), 'Invoice_' . $this->invoice->invoice_number . '.pdf', [
                         'mime' => 'application/pdf',
                     ]);

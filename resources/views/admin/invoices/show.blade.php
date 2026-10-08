@@ -123,13 +123,16 @@
             <div class="row align-items-center">
                 <div class="col-md-7 d-flex align-items-center">
                     <div style="width: 64px; height: 64px; background-color: #ffffff; border-radius: 50%; text-align: center; line-height: 60px; border: 1px solid #bae6fd;" class="me-3 flex-shrink-0">
-                        <img src="{{ asset('logo.png') }}" alt="Elite Guard Logo" style="width: 48px; height: 48px; object-fit: contain; vertical-align: middle;">
+                        <img src="{{ $companyProfile['logo_url'] }}" alt="{{ $companyProfile['name'] }} Logo" style="width: 48px; height: 48px; object-fit: contain; vertical-align: middle;">
                     </div>
                     <div>
-                        <div class="company-title-sky">ELITE GUARD INC.</div>
+                        <div class="company-title-sky">{{ $companyProfile['name'] }}</div>
                         <div class="company-info-sky">
-                            3961 52 Ave NE #2104, Calgary, AB T3J 0J7<br>
-                            Phone: +1 (403) 830-7772 &bull; Email: Info@eliteguardinc.ca
+                            @if($companyProfile['address']){{ $companyProfile['address'] }}<br>@endif
+                            @if($companyProfile['phone'])Phone: {{ $companyProfile['phone'] }}@endif
+                            @if($companyProfile['phone'] && $companyProfile['email']) &bull; @endif
+                            @if($companyProfile['email'])Email: {{ $companyProfile['email'] }}@endif
+                            @if($companyProfile['website'])<br>{{ $companyProfile['website'] }}@endif
                         </div>
                     </div>
                 </div>
@@ -154,9 +157,11 @@
                             <tr>
                                 <td class="meta-box-label">Billed By</td>
                                 <td class="meta-box-val">
-                                    <strong>Elite Guard Inc.</strong><br>
-                                    2104-3961 52 Ave NE, Calgary, AB T3J 0K7, Canada<br>
-                                    Phone: +14039090602
+                                    <strong>{{ $companyProfile['name'] }}</strong><br>
+                                    @if($companyProfile['address']){{ $companyProfile['address'] }}<br>@endif
+                                    @if($companyProfile['phone'])Phone: {{ $companyProfile['phone'] }}<br>@endif
+                                    @if($companyProfile['email'])Email: {{ $companyProfile['email'] }}<br>@endif
+                                    @if($companyProfile['website']){{ $companyProfile['website'] }}@endif
                                 </td>
                                 <td class="meta-box-label">Billed To</td>
                                 <td class="meta-box-val">

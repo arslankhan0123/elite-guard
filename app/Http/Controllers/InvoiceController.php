@@ -10,12 +10,16 @@ use App\Models\Product;
 use App\Models\Site;
 use App\Models\Tax;
 use App\Services\InvoiceMailSender;
+use App\Services\CompanyProfileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
-    public function __construct(private InvoiceMailSender $invoiceMailSender)
+    public function __construct(
+        private InvoiceMailSender $invoiceMailSender,
+        private CompanyProfileService $companyProfileService
+    )
     {
     }
 
@@ -85,7 +89,9 @@ class InvoiceController extends Controller
         $products = Product::with('tax')->orderBy('name', 'asc')->get();
         $taxes = Tax::orderBy('name', 'asc')->get();
 
-        return view('admin.invoices.create', compact('companies', 'customers', 'nextInvoiceNumber', 'products', 'taxes'));
+        $companyProfile = $this->companyProfileService->data();
+
+        return view('admin.invoices.create', compact('companies', 'customers', 'nextInvoiceNumber', 'products', 'taxes', 'companyProfile'));
     }
 
     public function getSitesByCompany($company_id)
@@ -203,13 +209,16 @@ class InvoiceController extends Controller
     public function show($id)
     {
         $invoice = Invoice::with(['company', 'customer', 'site', 'items'])->findOrFail($id);
-        return view('admin.invoices.show', compact('invoice'));
+        $companyProfile = $this->companyProfileService->data();
+
+        return view('admin.invoices.show', compact('invoice', 'companyProfile'));
     }
 
     public function downloadPdf($id)
     {
         $invoice = Invoice::with(['company', 'customer', 'site', 'items'])->findOrFail($id);
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.invoices.pdf', compact('invoice'));
+        $companyProfile = $this->companyProfileService->data();
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.invoices.pdf', compact('invoice', 'companyProfile'));
         return $pdf->download('Invoice_' . $invoice->invoice_number . '.pdf');
     }
 
@@ -221,8 +230,9 @@ class InvoiceController extends Controller
         $sites = Site::where('company_id', $invoice->company_id)->orderBy('name', 'asc')->get();
         $products = Product::with('tax')->orderBy('name', 'asc')->get();
         $taxes = Tax::orderBy('name', 'asc')->get();
+        $companyProfile = $this->companyProfileService->data();
 
-        return view('admin.invoices.edit', compact('invoice', 'companies', 'customers', 'sites', 'products', 'taxes'));
+        return view('admin.invoices.edit', compact('invoice', 'companies', 'customers', 'sites', 'products', 'taxes', 'companyProfile'));
     }
 
     public function update(Request $request, $id)

@@ -11,15 +11,18 @@
             font-size: 13px;
             line-height: 1.4;
             margin: 0;
-            padding: 20px 10px;
+            padding: 10px 0;
+            width: 100% !important;
             background-color: #f8fafc;
         }
         .email-container {
+            width: 100%;
             max-width: 750px;
             margin: 0 auto;
             background-color: #ffffff;
             border-radius: 8px;
-            padding: 16px;
+            padding: 12px;
+            box-sizing: border-box;
             box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             border: 1px solid #e2e8f0;
         }
@@ -35,6 +38,7 @@
         .header-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
         .header-table td {
             vertical-align: middle;
@@ -60,6 +64,8 @@
             font-size: 11px;
             color: #334155;
             line-height: 1.4;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
         .report-badge {
             font-size: 16px;
@@ -113,6 +119,9 @@
         .meta-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
         .meta-table td {
             padding: 8px 10px;
@@ -130,12 +139,75 @@
         .meta-value {
             color: #0f172a;
             font-size: 12px;
-            width: 32%;
+            width: 100%;
+        }
+        .brand-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .brand-table td {
+            vertical-align: middle;
+            padding: 0;
+        }
+        .invoice-meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .invoice-meta-table td {
+            padding: 7px 9px;
+            border: 1px solid #f1f5f9;
+            vertical-align: top;
+            overflow-wrap: anywhere;
+        }
+        .invoice-meta-label {
+            width: 38%;
+            color: #64748b;
+            background-color: #f8fafc;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .invoice-meta-value {
+            color: #0f172a;
+            font-size: 12px;
+        }
+        @media only screen and (max-width: 600px) {
+            body { padding: 0 !important; }
+            .email-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 10px !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+            }
+            .card { padding: 10px !important; }
+            .card-header-sky { padding: 12px !important; }
+            .header-table > tbody > tr > td {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box;
+                text-align: left !important;
+            }
+            .invoice-header-cell { padding-top: 10px !important; }
+            .report-badge { font-size: 14px !important; text-align: left !important; }
+            .report-id-text { text-align: left !important; }
+            .meta-value { font-size: 12px !important; }
+            .items-table th, .items-table td { padding: 5px 4px !important; font-size: 10px !important; }
+            .totals-table > tbody > tr > td {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box;
+                padding: 0 !important;
+            }
         }
         .items-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 4px;
+            table-layout: fixed;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
         .items-table th {
             background-color: #0284c7;
@@ -179,21 +251,26 @@
     <div class="email-container">
         <!-- Sky Blue Header Card -->
         <div class="card-header-sky">
-            <table class="header-table">
+            <table class="header-table" style="width:100%;table-layout:fixed;">
                 <tr>
-                    <td style="width: 65px;">
-                        <div class="logo-circle">
-                            <img src="{{ url('logo.png') }}" alt="Elite Guard Logo" style="width: 44px; height: 44px; margin-top: 6px; object-fit: contain;">
-                        </div>
+                    <td style="width:62%;">
+                        <table class="brand-table" style="width:100%;"><tr>
+                            <td style="width:52px;padding-right:9px;">
+                                <img src="{{ $message->embed($companyProfile['logo_file']) }}" width="48" height="48" alt="{{ $companyProfile['name'] }} Logo" style="display:block;width:48px;height:48px;object-fit:contain;border-radius:50%;background:#fff;border:1px solid #bae6fd;">
+                            </td>
+                            <td>
+                                <div class="company-title">{{ $companyProfile['name'] }}</div>
+                                <div class="company-info">
+                                    @if($companyProfile['address']){{ $companyProfile['address'] }}<br>@endif
+                                    @if($companyProfile['phone'])Phone: {{ $companyProfile['phone'] }}@endif
+                                    @if($companyProfile['phone'] && $companyProfile['email']) &bull; @endif
+                                    @if($companyProfile['email'])Email: {{ $companyProfile['email'] }}@endif
+                                    @if($companyProfile['website'])<br>{{ $companyProfile['website'] }}@endif
+                                </div>
+                            </td>
+                        </tr></table>
                     </td>
-                    <td>
-                        <div class="company-title">ELITE GUARD INC.</div>
-                        <div class="company-info">
-                            3961 52 Ave NE #2104, Calgary, AB T3J 0J7<br>
-                            Phone: +1 (403) 830-7772 &bull; Email: Info@eliteguardinc.ca
-                        </div>
-                    </td>
-                    <td style="text-align: right;">
+                    <td class="invoice-header-cell" style="width:38%;text-align:right;">
                         <div class="report-badge">{{ strtoupper($invoice->title) }}</div>
                         <div class="report-id-text">INVOICE #{{ $invoice->invoice_number }}</div>
                         @php $st = strtolower($invoice->calculated_status); @endphp
@@ -208,16 +285,17 @@
         <!-- Billed Information Card -->
         <div class="card">
             <div class="card-title">Billed Information</div>
-            <table class="meta-table">
-                <tr>
-                    <td class="meta-label">Billed By</td>
-                    <td class="meta-value">
-                        <strong>Elite Guard Inc.</strong><br>
-                        2104-3961 52 Ave NE, Calgary, AB T3J 0K7, Canada<br>
-                        Phone: +14039090602
-                    </td>
-                    <td class="meta-label">Billed To</td>
-                    <td class="meta-value">
+            <table class="meta-table" style="width:100%;table-layout:fixed;">
+                <tr><td class="meta-label" colspan="2" style="width:100%;">Billed By</td></tr>
+                <tr><td class="meta-value" colspan="2" style="width:100%;">
+                        <strong>{{ $companyProfile['name'] }}</strong><br>
+                        @if($companyProfile['address']){{ $companyProfile['address'] }}<br>@endif
+                        @if($companyProfile['phone'])Phone: {{ $companyProfile['phone'] }}<br>@endif
+                        @if($companyProfile['email'])Email: {{ $companyProfile['email'] }}<br>@endif
+                        @if($companyProfile['website']){{ $companyProfile['website'] }}@endif
+                    </td></tr>
+                <tr><td class="meta-label" colspan="2" style="width:100%;">Billed To</td></tr>
+                <tr><td class="meta-value" colspan="2" style="width:100%;">
                         <strong>{{ $invoice->customer?->name ?: ($invoice->company?->name ?: 'N/A') }}</strong><br>
                         @if($invoice->customer?->company_name){{ $invoice->customer->company_name }}<br>@endif
                         @if($invoice->customer?->email){{ $invoice->customer->email }}<br>@endif
@@ -230,31 +308,34 @@
                         @elseif($invoice->company)
                             {{ $invoice->company->address }}<br>
                         @endif
-                    </td>
-                </tr>
+                    </td></tr>
             </table>
         </div>
 
         <!-- Invoice Details Card -->
         <div class="card">
             <div class="card-title">Invoice Details</div>
-            <table class="meta-table">
+            <table class="invoice-meta-table" style="width:100%;table-layout:fixed;">
                 <tr>
-                    <td class="meta-label">Invoice Date</td>
-                    <td class="meta-value"><strong>{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('M d, Y') }}</strong></td>
-                    <td class="meta-label">Payment Due</td>
-                    <td class="meta-value"><strong>{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</strong></td>
+                    <td class="invoice-meta-label">Invoice Date</td>
+                    <td class="invoice-meta-value"><strong>{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('M d, Y') }}</strong></td>
                 </tr>
                 <tr>
-                    <td class="meta-label">PO/SO Number</td>
-                    <td class="meta-value">{{ $invoice->po_so_number ?: 'N/A' }}</td>
-                    <td class="meta-label">Amount Due</td>
-                    <td class="meta-value"><strong style="color: #dc2626; font-size: 13px;">$ {{ number_format($invoice->amount_due, 2) }}</strong></td>
+                    <td class="invoice-meta-label">Payment Due</td>
+                    <td class="invoice-meta-value"><strong>{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</strong></td>
+                </tr>
+                <tr>
+                    <td class="invoice-meta-label">PO/SO Number</td>
+                    <td class="invoice-meta-value">{{ $invoice->po_so_number ?: 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <td class="invoice-meta-label">Amount Due</td>
+                    <td class="invoice-meta-value"><strong style="color: #dc2626; font-size: 13px;">$ {{ number_format($invoice->amount_due, 2) }}</strong></td>
                 </tr>
                 @if($invoice->summary)
                 <tr>
-                    <td class="meta-label">Summary</td>
-                    <td class="meta-value" colspan="3">{{ $invoice->summary }}</td>
+                    <td class="invoice-meta-label">Summary</td>
+                    <td class="invoice-meta-value">{{ $invoice->summary }}</td>
                 </tr>
                 @endif
             </table>
@@ -294,7 +375,7 @@
 
         <!-- Summary & Totals Section -->
         <div class="card">
-            <table style="width: 100%; border-collapse: collapse;">
+            <table class="totals-table" style="width: 100%; border-collapse: collapse;table-layout:fixed;">
                 <tr>
                     <td style="width: 55%; vertical-align: top; padding-right: 15px; border: 0;">
                         @if($invoice->notes)
@@ -327,7 +408,7 @@
         </div>
 
         <div class="footer">
-            Elite Guard Inc. &bull; 3961 52 Ave NE #2104, Calgary, AB T3J 0J7 &bull; Phone: +1 (403) 830-7772
+            {{ $companyProfile['name'] }}@if($companyProfile['address']) &bull; {{ $companyProfile['address'] }}@endif @if($companyProfile['phone']) &bull; {{ $companyProfile['phone'] }}@endif
         </div>
     </div>
 </body>
