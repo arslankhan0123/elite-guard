@@ -201,7 +201,7 @@
                         <option value="{{ $customer->id }}" {{ old('customer_id', $invoice->customer_id) == $customer->id ? 'selected' : '' }}>{{ $customer->name }}{{ $customer->company_name ? ' — ' . $customer->company_name : '' }}</option>
                     @endforeach
                 </select>
-                @if($customers->isEmpty())<small class="text-danger">Add a customer before updating this invoice. <a href="{{ route('customers.index') }}">Go to Customers</a></small>@endif
+                <!-- @if($customers->isEmpty())<small class="text-danger">Add a customer before updating this invoice. <a href="{{ route('customers.index') }}">Go to Customers</a></small>@endif -->
             </div>
             <div class="col-md-6">
                 <label class="field-label">Company (optional)</label>

@@ -372,9 +372,9 @@
                                 </a>
                                 @endif
                                 @if(Auth::user()->hasAdminPermission('customers', 'list'))
-                                <a href="{{ route('customers.index') }}" class="dropdown-item" data-key="t-customers">
+                                <!-- <a href="{{ route('customers.index') }}" class="dropdown-item" data-key="t-customers">
                                     <i class="icon nav-icon" data-feather="users" style="width:16px; height:16px;"></i> Customers
-                                </a>
+                                </a> -->
                                 @endif
                                 @if(Auth::user()->hasAdminPermission('products', 'list'))
                                 <a href="{{ route('products.index') }}" class="dropdown-item" data-key="t-products">
