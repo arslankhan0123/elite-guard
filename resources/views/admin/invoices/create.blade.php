@@ -203,7 +203,7 @@
                         <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>{{ $customer->name }}{{ $customer->company_name ? ' — ' . $customer->company_name : '' }}</option>
                     @endforeach
                 </select>
-                <!-- @if($customers->isEmpty())<small class="text-danger">Add a customer before creating an invoice. <a href="{{ route('customers.index') }}">Go to Customers</a></small>@endif -->
+                @if($customers->isEmpty())<small class="text-danger">Add a customer before creating an invoice. <a href="{{ route('customers.index') }}">Go to Customers</a></small>@endif
             </div>
             <div class="col-md-6">
                 <label class="field-label">Company (optional)</label>
@@ -424,8 +424,9 @@ $(document).ready(function() {
         return optionsHtml;
     }
 
-    function addRow(selectedProduct = '', qty = 1, rate = 0, tax = 0) {
+    function addRow(selectedProduct = '', qty = 1, rate = 0, tax = 0, taxRate = 0) {
         const optionsHtml = renderProductOptions(selectedProduct);
+        const taxPlaceholder = parseFloat(taxRate) > 0 ? parseFloat(taxRate) + '%' : 'No Tax';
         const rowId = `item_row_${itemIndex}`;
         const rowHtml = `
             <tr id="${rowId}" class="item-row">
@@ -434,6 +435,7 @@ $(document).ready(function() {
                         ${optionsHtml}
                     </select>
                     <input type="hidden" name="items[${itemIndex}][description]" class="description-input" value="">
+                    <input type="hidden" name="items[${itemIndex}][tax_rate]" class="tax-rate-input" value="${taxRate}">
                 </td>
                 <td>
                     <input type="number" step="0.01" min="0" name="items[${itemIndex}][quantity]" class="form-control form-control-custom qty-input" value="${qty}">
@@ -442,7 +444,7 @@ $(document).ready(function() {
                     <input type="number" step="0.01" min="0" name="items[${itemIndex}][rate]" class="form-control form-control-custom rate-input" value="${rate}">
                 </td>
                 <td>
-                    <input type="number" step="0.01" min="0" name="items[${itemIndex}][tax]" class="form-control form-control-custom tax-input" value="${tax}">
+                    <input type="number" step="0.01" min="0" name="items[${itemIndex}][tax]" class="form-control form-control-custom tax-input" value="${tax}" readonly style="background:#f8f9fa;cursor:not-allowed;" placeholder="${taxPlaceholder}">
                 </td>
                 <td>
                     <input type="text" readonly name="items[${itemIndex}][amount]" class="form-control form-control-custom amount-input fw-semibold" value="0.00">
@@ -480,8 +482,11 @@ $(document).ready(function() {
         const qty = parseFloat($row.find('.qty-input').val()) || 1;
 
         $row.find('.rate-input').val(price.toFixed(2));
+        $row.find('.tax-rate-input').val(taxRate);
         const calculatedTax = (qty * price) * (taxRate / 100);
         $row.find('.tax-input').val(calculatedTax.toFixed(2));
+        // Show tax rate % as placeholder
+        $row.find('.tax-input').attr('placeholder', taxRate > 0 ? taxRate + '%' : 'No Tax');
 
         const rowAmount = (qty * price) + calculatedTax;
         $row.find('.amount-input').val(rowAmount.toFixed(2));
@@ -570,17 +575,26 @@ $(document).ready(function() {
         recalculateTotals();
     });
 
-    $(document).on('input change', '.qty-input, .rate-input, .tax-input', function() {
+    $(document).on('input change', '.qty-input, .rate-input', function() {
         const $row = $(this).closest('tr');
         const qty = parseFloat($row.find('.qty-input').val()) || 0;
         const rate = parseFloat($row.find('.rate-input').val()) || 0;
-        const tax = parseFloat($row.find('.tax-input').val()) || 0;
+        const taxRate = parseFloat($row.find('.tax-rate-input').val()) || 0;
 
+        // Recalculate tax on full amount (qty × rate) when qty or rate changes
+        if (taxRate > 0) {
+            const recalcTax = (qty * rate) * (taxRate / 100);
+            $row.find('.tax-input').val(recalcTax.toFixed(2));
+        }
+
+        const tax = parseFloat($row.find('.tax-input').val()) || 0;
         const rowAmount = (qty * rate) + tax;
         $row.find('.amount-input').val(rowAmount.toFixed(2));
 
         recalculateTotals();
     });
+
+
 
     function recalculateTotals() {
         let subtotal = 0;

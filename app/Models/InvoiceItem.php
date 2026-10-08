@@ -16,6 +16,7 @@ class InvoiceItem extends Model
         'quantity',
         'rate',
         'tax',
+        'tax_rate',
         'amount',
     ];
 
@@ -23,6 +24,7 @@ class InvoiceItem extends Model
         'quantity' => 'decimal:2',
         'rate' => 'decimal:2',
         'tax' => 'decimal:2',
+        'tax_rate' => 'decimal:4',
         'amount' => 'decimal:2',
     ];
 
