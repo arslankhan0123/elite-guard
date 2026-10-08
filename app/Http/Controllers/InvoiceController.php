@@ -119,6 +119,7 @@ class InvoiceController extends Controller
             'items.*.quantity'        => 'required|numeric|min:0',
             'items.*.rate'            => 'required|numeric|min:0',
             'items.*.tax'             => 'nullable|numeric|min:0',
+            'items.*.tax_rate'        => 'nullable|numeric|min:0|max:100',
         ]);
 
         DB::beginTransaction();
@@ -130,10 +131,11 @@ class InvoiceController extends Controller
             foreach ($request->items as $item) {
                 $qty = (float) ($item['quantity'] ?? 0);
                 $rate = (float) ($item['rate'] ?? 0);
-                $tax = (float) ($item['tax'] ?? 0);
+                $taxRate = (float) ($item['tax_rate'] ?? 0);
 
                 $itemSub = $qty * $rate;
-                $itemTax = $tax; // tax value
+                // Tax is always calculated on full line amount (qty × rate)
+                $itemTax = $taxRate > 0 ? round($itemSub * ($taxRate / 100), 2) : (float) ($item['tax'] ?? 0);
                 $itemAmount = $itemSub + $itemTax;
 
                 $subtotal += $itemSub;
@@ -144,7 +146,8 @@ class InvoiceController extends Controller
                     'description'    => $this->invoiceItemDescription($item),
                     'quantity'        => $qty,
                     'rate'            => $rate,
-                    'tax'             => $tax,
+                    'tax'             => $itemTax,
+                    'tax_rate'        => $taxRate,
                     'amount'          => $itemAmount,
                 ];
             }
@@ -256,6 +259,7 @@ class InvoiceController extends Controller
             'items.*.quantity'        => 'required|numeric|min:0',
             'items.*.rate'            => 'required|numeric|min:0',
             'items.*.tax'             => 'nullable|numeric|min:0',
+            'items.*.tax_rate'        => 'nullable|numeric|min:0|max:100',
         ]);
 
         DB::beginTransaction();
@@ -267,10 +271,11 @@ class InvoiceController extends Controller
             foreach ($request->items as $item) {
                 $qty = (float) ($item['quantity'] ?? 0);
                 $rate = (float) ($item['rate'] ?? 0);
-                $tax = (float) ($item['tax'] ?? 0);
+                $taxRate = (float) ($item['tax_rate'] ?? 0);
 
                 $itemSub = $qty * $rate;
-                $itemTax = $tax;
+                // Tax is always calculated on full line amount (qty × rate)
+                $itemTax = $taxRate > 0 ? round($itemSub * ($taxRate / 100), 2) : (float) ($item['tax'] ?? 0);
                 $itemAmount = $itemSub + $itemTax;
 
                 $subtotal += $itemSub;
@@ -281,7 +286,8 @@ class InvoiceController extends Controller
                     'description'    => $this->invoiceItemDescription($item),
                     'quantity'        => $qty,
                     'rate'            => $rate,
-                    'tax'             => $tax,
+                    'tax'             => $itemTax,
+                    'tax_rate'        => $taxRate,
                     'amount'          => $itemAmount,
                 ];
             }
