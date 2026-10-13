@@ -506,7 +506,108 @@
         </div>
     </div>
 
-    <!-- Shift Patrol & Tour Progress Overview Section (col-12) -->
+    <!-- ============================================================ -->
+    <!-- Daily Shift Tours + Runsheets Side by Side -->
+    <!-- ============================================================ -->
+    <div class="row g-4 mt-2">
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="map-pin" class="text-primary me-2"></i> Daily Shift Site Tours
+                    </h5>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <!-- Date navigation for shift tours -->
+                        <div class="d-flex align-items-center gap-1 rounded-pill border px-2 py-1" style="background:#f8f9fa;">
+                            <button type="button" id="shift-tours-prev-btn" class="btn btn-sm btn-link p-0 text-dark" title="Previous Day">
+                                <i data-feather="chevron-left" style="width:16px;height:16px;"></i>
+                            </button>
+                            <span id="shift-tours-date-display" class="small fw-semibold text-dark px-2" style="min-width:100px;text-align:center;">—</span>
+                            <button type="button" id="shift-tours-next-btn" class="btn btn-sm btn-link p-0 text-dark" title="Next Day">
+                                <i data-feather="chevron-right" style="width:16px;height:16px;"></i>
+                            </button>
+                        </div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                            <span class="spinner-grow spinner-grow-sm text-primary" role="status" aria-hidden="true"></span>
+                            Live
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="daily-shift-tours-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Shift</th>
+                                    <th>Site</th>
+                                    <th>Guard</th>
+                                    <th>Hours</th>
+                                    <th class="text-center">Tour Progress</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">Loading shifts...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Shift Runsheets Column -->
+        <div class="col-xl-6 col-12">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i data-feather="list" class="text-cyan me-2" style="color:#0dcaf0;"></i> Daily Shift Runsheets
+                    </h5>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="d-flex align-items-center gap-1 rounded-pill border px-2 py-1" style="background:#f8f9fa;">
+                            <button type="button" id="runsheet-prev-btn" class="btn btn-sm btn-link p-0 text-dark" title="Previous Day">
+                                <i data-feather="chevron-left" style="width:16px;height:16px;"></i>
+                            </button>
+                            <span id="runsheet-date-display" class="small fw-semibold text-dark px-2" style="min-width:100px;text-align:center;">—</span>
+                            <button type="button" id="runsheet-next-btn" class="btn btn-sm btn-link p-0 text-dark" title="Next Day">
+                                <i data-feather="chevron-right" style="width:16px;height:16px;"></i>
+                            </button>
+                        </div>
+                        <span class="badge rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1" style="font-size:0.75rem;background:rgba(13,202,240,0.12);color:#0dcaf0;">
+                            <span class="spinner-grow spinner-grow-sm" role="status" style="color:#0dcaf0;"></span>
+                            Live
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="daily-shift-runsheets-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Shift</th>
+                                    <th>Site</th>
+                                    <th>Guard</th>
+                                    <th>Hours</th>
+                                    <th class="text-center">Progress</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">Loading shifts...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    {{-- HIDDEN: Shift Patrol & Tour Progress Overview Section
+<!-- Shift Patrol & Tour Progress Overview Section (col-12) -->
     <div class="row g-4 mt-2">
         <div class="col-12">
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
@@ -601,6 +702,7 @@
             </div>
         </div>
     </div>
+    --}}
 
     <!-- Recent Reports & Forms Section -->
     <div class="row g-4 mt-2">
@@ -866,6 +968,45 @@
 
                 const fetchUrl = "{{ route('dashboard.live-data') }}?date=" + encodeURIComponent(currentSelectedDate);
 
+                // Disable date nav buttons and show loader while fetching
+                // Runsheet table loader + disable its nav
+                const _rsPrev = document.getElementById('runsheet-prev-btn');
+                const _rsNext = document.getElementById('runsheet-next-btn');
+                if (_rsPrev) { _rsPrev.disabled = true; _rsPrev.style.opacity = '0.35'; _rsPrev.style.pointerEvents = 'none'; }
+                if (_rsNext) { _rsNext.disabled = true; _rsNext.style.opacity = '0.35'; _rsNext.style.pointerEvents = 'none'; }
+                const rsBodyLoader = document.querySelector('#daily-shift-runsheets-table tbody');
+                if (rsBodyLoader) {
+                    rsBodyLoader.innerHTML = `<tr><td colspan="6" class="text-center py-4"><div class="d-flex align-items-center justify-content-center gap-2" style="color:#0dcaf0;"><div class="spinner-border spinner-border-sm" role="status" style="width:18px;height:18px;"></div><span class="small fw-semibold">Loading runsheets...</span></div></td></tr>`;
+                }
+
+                function _rsEnableNav() {
+                    if (_rsPrev) { _rsPrev.disabled = false; _rsPrev.style.opacity = ''; _rsPrev.style.pointerEvents = ''; }
+                    if (_rsNext) { _rsNext.disabled = false; _rsNext.style.opacity = ''; _rsNext.style.pointerEvents = ''; }
+                }
+
+                const _stPrev = document.getElementById('shift-tours-prev-btn');
+                const _stNext = document.getElementById('shift-tours-next-btn');
+                if (_stPrev) { _stPrev.disabled = true; _stPrev.style.opacity = '0.35'; _stPrev.style.pointerEvents = 'none'; }
+                if (_stNext) { _stNext.disabled = true; _stNext.style.opacity = '0.35'; _stNext.style.pointerEvents = 'none'; }
+
+                const stBodyLoader = document.querySelector('#daily-shift-tours-table tbody');
+                if (stBodyLoader) {
+                    stBodyLoader.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="d-flex align-items-center justify-content-center gap-2 text-primary">
+                                    <div class="spinner-border spinner-border-sm" role="status" style="width:18px;height:18px;"></div>
+                                    <span class="small fw-semibold">Loading shifts...</span>
+                                </div>
+                            </td>
+                        </tr>`;
+                }
+
+                function _stEnableNav() {
+                    if (_stPrev) { _stPrev.disabled = false; _stPrev.style.opacity = ''; _stPrev.style.pointerEvents = ''; }
+                    if (_stNext) { _stNext.disabled = false; _stNext.style.opacity = ''; _stNext.style.pointerEvents = ''; }
+                }
+
                 fetch(fetchUrl)
                     .then(response => response.json())
                     .then(data => {
@@ -1046,6 +1187,130 @@
                             }
                         }
 
+                        // 5b. Render Daily Shift Site Tours
+                        const shiftToursBody = document.querySelector('#daily-shift-tours-table tbody');
+                        // Update both date displays
+                        const _fmtDate = (str) => {
+                            const d = new Date(str + 'T00:00:00');
+                            return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                        };
+                        const shiftToursDateEl = document.getElementById('shift-tours-date-display');
+                        if (shiftToursDateEl) shiftToursDateEl.textContent = _fmtDate(currentSelectedDate);
+                        const runsheetDateEl = document.getElementById('runsheet-date-display');
+                        if (runsheetDateEl) runsheetDateEl.textContent = _fmtDate(currentSelectedDate);
+
+                        if (shiftToursBody) {
+                            if (data.daily_shift_tours && data.daily_shift_tours.length > 0) {
+                                let stHtml = '';
+                                data.daily_shift_tours.forEach(shift => {
+                                    const scanned = shift.scanned;
+                                    const total   = shift.total;
+                                    const percent = shift.percent;
+
+                                    // Circle conic-gradient color
+                                    let ringColor = '#0d6efd';
+                                    if (percent >= 100)  ringColor = '#198754';
+                                    else if (percent >= 50) ringColor = '#0dcaf0';
+                                    else if (percent > 0)   ringColor = '#fd7e14';
+
+                                    // Status badge
+                                    let statusBadge = '';
+                                    if (shift.status === 'Completed') {
+                                        statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 fw-semibold">Completed</span>';
+                                    } else if (shift.status === 'In Progress') {
+                                        statusBadge = '<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2 py-1 fw-semibold">In Progress</span>';
+                                    } else if (shift.status === 'Not Started') {
+                                        statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-semibold">Not Started</span>';
+                                    } else {
+                                        statusBadge = '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2 py-1 fw-semibold">No Items</span>';
+                                    }
+
+                                    stHtml += `
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-dark">${shift.shift_name}</div>
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0 mt-1" style="font-size: 0.68rem;">Site Tour</span>
+                                        </td>
+                                        <td class="text-secondary">
+                                            <i data-feather="map-pin" style="width:13px;height:13px;" class="text-danger me-1"></i>${shift.site_name}
+                                        </td>
+                                        <td class="text-secondary">
+                                            <i data-feather="user" style="width:13px;height:13px;" class="text-muted me-1"></i>${shift.guard_name}
+                                        </td>
+                                        <td class="text-muted small">
+                                            <i data-feather="clock" style="width:13px;height:13px;" class="text-muted me-1"></i>${shift.time_range}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="shift-tour-circle" style="
+                                                width: 56px; height: 56px; border-radius: 50%;
+                                                background: conic-gradient(${ringColor} ${percent * 3.6}deg, #e9ecef ${percent * 3.6}deg);
+                                                display: inline-flex; align-items: center; justify-content: center;
+                                                position: relative; margin: auto;
+                                            ">
+                                                <div style="
+                                                    width: 40px; height: 40px; border-radius: 50%;
+                                                    background: #fff; display: flex; flex-direction: column;
+                                                    align-items: center; justify-content: center;
+                                                ">
+                                                    <span style="font-size: 0.6rem; font-weight: 700; color: #333; line-height: 1;">${scanned}/${total}</span>
+                                                    <span style="font-size: 0.5rem; color: #888; line-height: 1;">${percent}%</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">${statusBadge}</td>
+                                    </tr>
+                                    `;
+                                });
+                                shiftToursBody.innerHTML = stHtml;
+                            } else {
+                                shiftToursBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No site tour shifts found for this date.</td></tr>';
+                            }
+                        }
+
+                        // 5c. Render Daily Shift Runsheets
+                        const rsBody = document.querySelector('#daily-shift-runsheets-table tbody');
+                        if (rsBody) {
+                            if (data.daily_shift_runsheets && data.daily_shift_runsheets.length > 0) {
+                                let rsHtml = '';
+                                data.daily_shift_runsheets.forEach(shift => {
+                                    const sc = shift.scanned, tot = shift.total, pct = shift.percent;
+                                    let ringColor = '#0dcaf0';
+                                    if (pct >= 100) ringColor = '#198754';
+                                    else if (pct >= 50) ringColor = '#0dcaf0';
+                                    else if (pct > 0)   ringColor = '#fd7e14';
+
+                                    let statusBadge = '';
+                                    if (shift.status === 'Completed')    statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 fw-semibold">Completed</span>';
+                                    else if (shift.status === 'In Progress') statusBadge = '<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2 py-1 fw-semibold">In Progress</span>';
+                                    else if (shift.status === 'Not Started') statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-semibold">Not Started</span>';
+                                    else statusBadge = '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2 py-1 fw-semibold">No Items</span>';
+
+                                    rsHtml += `
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-dark">${shift.shift_name}</div>
+                                            <span class="badge rounded-pill px-2 py-0 mt-1" style="font-size:0.68rem;background:rgba(13,202,240,0.12);color:#0dcaf0;border:1px solid rgba(13,202,240,0.3);">Runsheet</span>
+                                        </td>
+                                        <td class="text-secondary"><i data-feather="map-pin" style="width:13px;height:13px;" class="text-danger me-1"></i>${shift.site_name}</td>
+                                        <td class="text-secondary"><i data-feather="user" style="width:13px;height:13px;" class="text-muted me-1"></i>${shift.guard_name}</td>
+                                        <td class="text-muted small"><i data-feather="clock" style="width:13px;height:13px;" class="text-muted me-1"></i>${shift.time_range}</td>
+                                        <td class="text-center">
+                                            <div style="width:56px;height:56px;border-radius:50%;background:conic-gradient(${ringColor} ${pct*3.6}deg,#e9ecef ${pct*3.6}deg);display:inline-flex;align-items:center;justify-content:center;margin:auto;">
+                                                <div style="width:40px;height:40px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                                                    <span style="font-size:0.6rem;font-weight:700;color:#333;line-height:1;">${sc}/${tot}</span>
+                                                    <span style="font-size:0.5rem;color:#888;line-height:1;">${pct}%</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">${statusBadge}</td>
+                                    </tr>`;
+                                });
+                                rsBody.innerHTML = rsHtml;
+                            } else {
+                                rsBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No runsheet shifts found for this date.</td></tr>';
+                            }
+                        }
+
                         if (typeof feather !== 'undefined') {
                             feather.replace();
                         }
@@ -1081,8 +1346,19 @@
                         }
 
                         isFirstLoad = false;
+                        _stEnableNav();
+                        _rsEnableNav();
                     })
-                    .catch(error => console.error("Error fetching live dashboard data:", error));
+                    .catch(error => {
+                        console.error("Error fetching live dashboard data:", error);
+                        _stEnableNav();
+                        _rsEnableNav();
+                        const stBodyErr = document.querySelector('#daily-shift-tours-table tbody');
+                        if (stBodyErr) {
+                            stBodyErr.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 small"><i data-feather="alert-circle" style="width:14px;height:14px;" class="me-1"></i>Failed to load shifts. Please try again.</td></tr>`;
+                            if (typeof feather !== 'undefined') feather.replace();
+                        }
+                    });
             }
 
             // Event Listeners for AJAX Date Navigation
@@ -1126,6 +1402,41 @@
             // Fetch immediately and poll every 30 seconds (30000ms)
             fetchLiveDashboardData();
             setInterval(() => fetchLiveDashboardData(), 30000);
+
+            // Shift Tours date prev/next navigation
+            function addDays(dateStr, days) {
+                const d = new Date(dateStr + 'T00:00:00');
+                d.setDate(d.getDate() + days);
+                return formatYmd(d);
+            }
+
+            // Runsheet date nav
+            const rsPrevBtn = document.getElementById('runsheet-prev-btn');
+            const rsNextBtn = document.getElementById('runsheet-next-btn');
+            if (rsPrevBtn) {
+                rsPrevBtn.addEventListener('click', function () {
+                    fetchLiveDashboardData(addDays(currentSelectedDate, -1));
+                });
+            }
+            if (rsNextBtn) {
+                rsNextBtn.addEventListener('click', function () {
+                    fetchLiveDashboardData(addDays(currentSelectedDate, 1));
+                });
+            }
+
+            const stPrevBtn = document.getElementById('shift-tours-prev-btn');
+            const stNextBtn = document.getElementById('shift-tours-next-btn');
+
+            if (stPrevBtn) {
+                stPrevBtn.addEventListener('click', function () {
+                    fetchLiveDashboardData(addDays(currentSelectedDate, -1));
+                });
+            }
+            if (stNextBtn) {
+                stNextBtn.addEventListener('click', function () {
+                    fetchLiveDashboardData(addDays(currentSelectedDate, 1));
+                });
+            }
         });
     </script>
     @endsection
