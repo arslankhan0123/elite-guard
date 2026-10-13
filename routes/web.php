@@ -77,6 +77,25 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         ));
     })->name('dashboard');
 
+    // ─── Admin Notifications ────────────────────────────────────────
+    Route::get('/notifications', function () {
+        $notifications = \App\Models\AdminNotification::orderByDesc('created_at')->take(50)->get();
+        $unreadCount   = \App\Models\AdminNotification::whereNull('read_at')->count();
+        return response()->json(['notifications' => $notifications, 'unread_count' => $unreadCount]);
+    });
+
+    Route::post('/notifications/{id}/read', function ($id) {
+        $n = \App\Models\AdminNotification::findOrFail($id);
+        $n->markAsRead();
+        return response()->json(['success' => true]);
+    });
+
+    Route::post('/notifications/read-all', function () {
+        \App\Models\AdminNotification::whereNull('read_at')->update(['read_at' => now()]);
+        return response()->json(['success' => true]);
+    });
+    // ────────────────────────────────────────────────────────────────
+
     Route::get('/dashboard/live-data', function () {
         // Capture any stray PHP warnings/notices so they don't corrupt JSON
         ob_start();
