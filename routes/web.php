@@ -77,7 +77,34 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         ));
     })->name('dashboard');
 
+    // ─── Admin Notifications ────────────────────────────────────────
+    Route::get('/notifications', function () {
+        $notifications = \App\Models\AdminNotification::orderByDesc('created_at')->take(50)->get();
+        $unreadCount   = \App\Models\AdminNotification::whereNull('read_at')->count();
+        return response()->json(['notifications' => $notifications, 'unread_count' => $unreadCount]);
+    });
+
+    Route::post('/notifications/{id}/read', function ($id) {
+        $n = \App\Models\AdminNotification::findOrFail($id);
+        $n->markAsRead();
+        return response()->json(['success' => true]);
+    });
+
+    Route::post('/notifications/read-all', function () {
+        \App\Models\AdminNotification::whereNull('read_at')->update(['read_at' => now()]);
+        return response()->json(['success' => true]);
+    });
+    // ────────────────────────────────────────────────────────────────
+
     Route::get('/dashboard/live-data', function () {
+        // Capture any stray PHP warnings/notices so they don't corrupt JSON
+        ob_start();
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+            throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+        });
+
+        try {
+
         $attendances = \App\Models\ShiftAttendance::with(['user', 'shift.site'])
             ->orderByRaw('COALESCE(clock_out_at, clock_in_at) DESC')
             ->limit(8)
@@ -472,12 +499,151 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         }
         $isCurrentWeek = $weekStart->isSameWeek(\Carbon\Carbon::now($timezone), \Carbon\Carbon::MONDAY);
 
+        // ============================================================
+        // Daily Shift Site Tours
+        // Shifts for selected date that are site tours (not runsheets).
+        // For each shift, count SiteTourItems and how many have >= 1 scan.
+        // ============================================================
+        $selectedDateStr = $requestedDate->toDateString();
+        $dailyShiftTours = collect();
+
+        try {
+            $dailyShifts = \App\Models\Shift::with(['site', 'schedule.user'])
+                ->where('date', $selectedDateStr)
+                ->where('type', 'site')
+                ->whereNotNull('site_id')
+                ->get();
+
+            foreach ($dailyShifts as $shift) {
+                $user = $shift->schedule?->user;
+                $site = $shift->site;
+
+                // Total site tour items for this user+site+date
+                $totalItems = \App\Models\SiteTourItem::where('site_id', $shift->site_id)
+                    ->where('date', $selectedDateStr)
+                    ->when($user, fn($q) => $q->where('user_id', $user->id))
+                    ->count();
+
+                // Items with at least 1 scan = "completed" items
+                $scannedItems = \App\Models\SiteTourItem::where('site_id', $shift->site_id)
+                    ->where('date', $selectedDateStr)
+                    ->when($user, fn($q) => $q->where('user_id', $user->id))
+                    ->whereHas('scans')
+                    ->count();
+
+                $percent = $totalItems > 0 ? round(($scannedItems / $totalItems) * 100) : 0;
+
+                if ($totalItems === 0) {
+                    $status = 'No Items';
+                } elseif ($scannedItems === 0) {
+                    $status = 'Not Started';
+                } elseif ($scannedItems >= $totalItems) {
+                    $status = 'Completed';
+                } else {
+                    $status = 'In Progress';
+                }
+
+                $timeRange = 'N/A';
+                if ($shift->start_time && $shift->end_time) {
+                    $s = \Carbon\Carbon::parse($shift->start_time)->format('g:i A');
+                    $e = \Carbon\Carbon::parse($shift->end_time)->format('g:i A');
+                    $timeRange = "{$s} – {$e}";
+                }
+
+                $dailyShiftTours->push([
+                    'shift_id'      => $shift->id,
+                    'shift_name'    => $shift->shift_name ?: 'Regular Shift',
+                    'site_name'     => $site?->name ?? 'N/A',
+                    'guard_name'    => $user?->name ?? 'Unassigned',
+                    'time_range'    => $timeRange,
+                    'scanned'       => $scannedItems,
+                    'total'         => $totalItems,
+                    'percent'       => $percent,
+                    'status'        => $status,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('daily_shift_tours error: ' . $e->getMessage(), [
+                'file' => $e->getFile(), 'line' => $e->getLine(),
+            ]);
+            $dailyShiftTours = collect();
+        }
+
+        // ============================================================
+        // Daily Shift Runsheets
+        // Shifts where type = 'runsheet' OR weekly_run_sheet_id IS NOT NULL
+        // Count RunSheet items (per shift+date) and how many have >= 1 scan
+        // ============================================================
+        $dailyShiftRunsheets = collect();
+
+        try {
+            // Fetch runsheet-type shifts for this date
+            $runsheetShifts = \App\Models\Shift::with(['site', 'schedule.user'])
+                ->where('date', $selectedDateStr)
+                ->where('type', 'runsheet')
+                ->whereNotNull('site_id')
+                ->get();
+
+            foreach ($runsheetShifts as $shift) {
+                $user = $shift->schedule?->user;
+                $site = $shift->site;
+
+                // All RunSheet rows for this shift
+                $rsQuery = \App\Models\RunSheet::where('shift_id', $shift->id)
+                    ->where('date', $selectedDateStr);
+                $rsTotal = $rsQuery->count();
+
+                // Items with at least 1 scan
+                $rsScanned = (clone $rsQuery)->whereHas('scans')->count();
+
+                $rsPercent = $rsTotal > 0 ? round(($rsScanned / $rsTotal) * 100) : 0;
+
+                if ($rsTotal === 0) {
+                    $rsStatus = 'No Items';
+                } elseif ($rsScanned === 0) {
+                    $rsStatus = 'Not Started';
+                } elseif ($rsScanned >= $rsTotal) {
+                    $rsStatus = 'Completed';
+                } else {
+                    $rsStatus = 'In Progress';
+                }
+
+                $rsTimeRange = 'N/A';
+                if ($shift->start_time && $shift->end_time) {
+                    $s = \Carbon\Carbon::parse($shift->start_time)->format('g:i A');
+                    $e = \Carbon\Carbon::parse($shift->end_time)->format('g:i A');
+                    $rsTimeRange = "{$s} – {$e}";
+                }
+
+                $dailyShiftRunsheets->push([
+                    'shift_id'   => $shift->id,
+                    'shift_name' => $shift->shift_name ?: 'Regular Shift',
+                    'site_name'  => $site?->name ?? 'N/A',
+                    'guard_name' => $user?->name ?? 'Unassigned',
+                    'time_range' => $rsTimeRange,
+                    'scanned'    => $rsScanned,
+                    'total'      => $rsTotal,
+                    'percent'    => $rsPercent,
+                    'status'     => $rsStatus,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('daily_shift_runsheets error: ' . $e->getMessage(), [
+                'file' => $e->getFile(), 'line' => $e->getLine(),
+            ]);
+            $dailyShiftRunsheets = collect();
+        }
+
+        ob_end_clean();
+        restore_error_handler();
         return response()->json([
-            'attendances' => $attendances,
-            'tours'       => $tours,
-            'reports'     => $reports,
-            'forms'       => $forms,
-            'stats'       => [
+            'attendances'       => $attendances,
+            'tours'             => $tours,
+            'reports'           => $reports,
+            'forms'             => $forms,
+            'daily_shift_tours'     => $dailyShiftTours->values(),
+            'daily_shift_runsheets' => $dailyShiftRunsheets->values(),
+            'stats'             => [
                 'selected_date'       => $weekStart->toDateString(),
                 'selected_week_label' => $weekStart->format('d M') . ' – ' . $weekEnd->format('d M Y'),
                 'is_current_week'     => $isCurrentWeek,
@@ -487,6 +653,15 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
                 'runsheets_scanned'   => $scannedRunsheetEntries,
             ],
         ]);
+
+        } catch (\Throwable $outerErr) {
+            ob_end_clean();
+            restore_error_handler();
+            \Illuminate\Support\Facades\Log::error('live-data route error: ' . $outerErr->getMessage(), [
+                'file' => $outerErr->getFile(), 'line' => $outerErr->getLine(),
+            ]);
+            return response()->json(['error' => 'Server error', 'message' => $outerErr->getMessage()], 500);
+        }
     })->name('dashboard.live-data');
 
     Route::group(['prefix' => '/company'], function () {
