@@ -74,19 +74,43 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
-    public static function generateNextInvoiceNumber(): string
+    /**
+     * Extract uppercase initials from a company name.
+     * e.g. "Avenue Living" → "AL", "Nai Advent" → "NA"
+     */
+    public static function generateInitials(string $name): string
     {
-        $latest = self::orderBy('id', 'desc')->first();
+        $words = preg_split('/\s+/', trim($name));
+        $initials = '';
+        foreach ($words as $word) {
+            if ($word !== '') {
+                $initials .= strtoupper(mb_substr($word, 0, 1));
+            }
+        }
+        return $initials ?: 'XX';
+    }
+
+    /**
+     * Generate next invoice number.
+     * With company name  → EG/AL/01, EG/AL/02 …
+     * Without company    → EG/GEN/01, EG/GEN/02 …
+     */
+    public static function generateNextInvoiceNumber(?string $companyName = null): string
+    {
+        $initials = $companyName ? self::generateInitials($companyName) : 'GEN';
+        $prefix   = 'EG/' . $initials . '/';
+
+        $latest = self::where('invoice_number', 'like', $prefix . '%')
+            ->orderBy('id', 'desc')
+            ->first();
+
         if (!$latest) {
-            return '0000001';
+            return $prefix . '01';
         }
 
-        $numberPart = preg_replace('/[^0-9]/', '', $latest->invoice_number);
-        if ($numberPart !== '' && is_numeric($numberPart)) {
-            $next = (int) $numberPart + 1;
-            return str_pad((string) $next, 7, '0', STR_PAD_LEFT);
-        }
+        $numberPart = str_replace($prefix, '', $latest->invoice_number);
+        $next = is_numeric($numberPart) ? (int) $numberPart + 1 : 1;
 
-        return '0000001';
+        return $prefix . str_pad((string) $next, 2, '0', STR_PAD_LEFT);
     }
 }

@@ -374,13 +374,14 @@ $(document).ready(function() {
         $('#invoiceHeaderNumber').text('Invoice #' + val);
     });
 
-    // Dynamic Client -> Site Dropdown
+    // Dynamic Client -> Site Dropdown + Invoice Number Update
     $('#company_id').on('change', function() {
         const companyId = $(this).val();
         const $siteDropdown = $('#site_id');
         $siteDropdown.html('<option value="">Site</option>');
 
         if (companyId) {
+            // Load sites for selected company
             $.ajax({
                 url: '{{ url("invoices/sites-by-company") }}/' + companyId,
                 type: 'GET',
@@ -390,6 +391,33 @@ $(document).ready(function() {
                         $.each(response.sites, function(index, site) {
                             $siteDropdown.append('<option value="' + site.id + '">' + site.name + '</option>');
                         });
+                    }
+                }
+            });
+
+            // Auto-generate invoice number based on selected company
+            $.ajax({
+                url: '{{ route("invoices.nextNumber") }}',
+                type: 'GET',
+                data: { company_id: companyId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.invoice_number) {
+                        $('#invoiceNumberInput').val(response.invoice_number);
+                        $('#invoiceHeaderNumber').text('Invoice #' + response.invoice_number);
+                    }
+                }
+            });
+        } else {
+            // No company selected — reset to generic number
+            $.ajax({
+                url: '{{ route("invoices.nextNumber") }}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.invoice_number) {
+                        $('#invoiceNumberInput').val(response.invoice_number);
+                        $('#invoiceHeaderNumber').text('Invoice #' + response.invoice_number);
                     }
                 }
             });
