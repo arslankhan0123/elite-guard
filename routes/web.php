@@ -883,6 +883,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::get('/download-pdf/{id}', [InvoiceController::class, 'downloadPdf'])->name('invoices.downloadPdf');
         Route::get('/send-email/{id}', [InvoiceController::class, 'sendEmail'])->name('invoices.sendEmail');
         Route::get('/sites-by-company/{company_id}', [InvoiceController::class, 'getSitesByCompany'])->name('invoices.sitesByCompany');
+        Route::get('/next-number', [InvoiceController::class, 'getNextInvoiceNumber'])->name('invoices.nextNumber');
     });
 
     Route::group(['prefix' => '/customers'], function () {

@@ -85,6 +85,7 @@ class InvoiceController extends Controller
     {
         $companies = Company::orderBy('name', 'asc')->get();
         $customers = Customer::orderBy('name', 'asc')->get();
+        // No company selected yet — use generic prefix; JS will update on company select
         $nextInvoiceNumber = Invoice::generateNextInvoiceNumber();
         $products = Product::with('tax')->orderBy('name', 'asc')->get();
         $taxes = Tax::orderBy('name', 'asc')->get();
@@ -98,6 +99,22 @@ class InvoiceController extends Controller
     {
         $sites = Site::where('company_id', $company_id)->orderBy('name', 'asc')->get(['id', 'name']);
         return response()->json(['sites' => $sites]);
+    }
+
+    /**
+     * AJAX: return the next invoice number for a given company.
+     * GET /invoices/next-number?company_id=5
+     */
+    public function getNextInvoiceNumber(Request $request)
+    {
+        $companyName = null;
+        if ($request->filled('company_id')) {
+            $company = Company::find($request->company_id);
+            $companyName = $company?->name;
+        }
+
+        $number = Invoice::generateNextInvoiceNumber($companyName);
+        return response()->json(['invoice_number' => $number]);
     }
 
     public function store(Request $request)
@@ -159,7 +176,9 @@ class InvoiceController extends Controller
                 $dueDate = \Carbon\Carbon::parse($request->due_date)->startOfDay();
                 $status = $dueDate->lt(\Carbon\Carbon::today()) ? 'overdue' : 'active';
             }
-            $invoiceNumber = $request->invoice_number ?: Invoice::generateNextInvoiceNumber();
+            $invoiceNumber = $request->invoice_number ?: Invoice::generateNextInvoiceNumber(
+                Company::find($request->company_id)?->name
+            );
 
             $invoice = Invoice::create([
                 'invoice_number' => $invoiceNumber,
