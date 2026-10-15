@@ -12,7 +12,7 @@ class AttendanceRepository
     /**
      * Handle Clock-In for a shift.
      */
-    public function clockIn($shiftId, $lat, $long)
+    public function clockIn($shiftId, $lat, $long, $clockInImagePath = null)
     {
         $user = Auth::user();
         $shift = Shift::with('site')->find($shiftId);
@@ -93,12 +93,13 @@ class AttendanceRepository
         }
 
         $attendance = ShiftAttendance::create([
-            'user_id' => $user->id,
-            'shift_id' => $shiftId,
-            'clock_in_at' => Carbon::now($this->getUserTimezone()),
-            'clock_in_latitude' => $lat,
+            'user_id'          => $user->id,
+            'shift_id'         => $shiftId,
+            'clock_in_at'      => Carbon::now($this->getUserTimezone()),
+            'clock_in_latitude'  => $lat,
             'clock_in_longitude' => $long,
-            'status' => 'active',
+            'clock_in_image'   => $clockInImagePath,
+            'status'           => 'active',
         ]);
 
         return [
@@ -111,7 +112,7 @@ class AttendanceRepository
     /**
      * Handle Clock-Out for a shift.
      */
-    public function clockOut($shiftId, $lat, $long)
+    public function clockOut($shiftId, $lat, $long, $clockOutImagePath = null)
     {
         $user = Auth::user();
 
@@ -143,10 +144,11 @@ class AttendanceRepository
         }
 
         $attendance->update([
-            'clock_out_at' => Carbon::now($this->getUserTimezone()),
-            'clock_out_latitude' => $lat,
+            'clock_out_at'       => Carbon::now($this->getUserTimezone()),
+            'clock_out_latitude'  => $lat,
             'clock_out_longitude' => $long,
-            'status' => 'completed',
+            'clock_out_image'    => $clockOutImagePath,
+            'status'             => 'completed',
         ]);
 
         return [
@@ -257,6 +259,7 @@ class AttendanceRepository
 
         return $earthRadius * $c;
     }
+
     /**
      * Get user's timezone based on IP address.
      */

@@ -23,6 +23,8 @@ class ShiftAttendance extends Model
         'status',
         'manual_adjustment',
         'admin_note',
+        'clock_in_image',
+        'clock_out_image',
     ];
 
     protected $casts = [
