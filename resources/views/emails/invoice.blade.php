@@ -334,7 +334,7 @@
                 </tr>
                 @if($invoice->summary)
                 <tr>
-                    <td class="invoice-meta-label">Summary</td>
+                    <td class="invoice-meta-label">Subject</td>
                     <td class="invoice-meta-value">{{ $invoice->summary }}</td>
                 </tr>
                 @endif
@@ -347,24 +347,31 @@
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th style="width: 44%;">Product / Service</th>
-                        <th style="width: 14%;" class="text-center">Qty</th>
-                        <th style="width: 14%;" class="text-right">Rate</th>
-                        <th style="width: 14%;" class="text-right">Tax</th>
-                        <th style="width: 14%;" class="text-right">Amount</th>
+                        <th style="width: 4%;" class="text-center">S/N</th>
+                        <th style="width: 26%;">Description</th>
+                        <th style="width: 8%;" class="text-center">UOM</th>
+                        <th style="width: 8%;" class="text-center">Qty</th>
+                        <th style="width: 13%;" class="text-right">Unit Price CAD</th>
+                        <th style="width: 14%;" class="text-right">Taxable Amt CAD</th>
+                        <th style="width: 13%;" class="text-right">GST (5%) CAD</th>
+                        <th style="width: 14%;" class="text-right">Gross Amt CAD</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($invoice->items as $item)
+                    @foreach($invoice->items as $index => $item)
+                    @php $taxableAmt = (float)$item->quantity * (float)$item->rate; @endphp
                     <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
                         <td>
                             <strong>{{ $item->product_service }}</strong>
                             @if($item->description)
-                                <div style="margin-top:2px;color:#64748b;font-size:8px;">{{ $item->description }}</div>
+                                <div style="margin-top:2px;color:#64748b;font-size:10px;">{{ $item->description }}</div>
                             @endif
                         </td>
+                        <td class="text-center">{{ $item->uom ?: '—' }}</td>
                         <td class="text-center">{{ number_format($item->quantity, 2) }}</td>
                         <td class="text-right">$ {{ number_format($item->rate, 2) }}</td>
+                        <td class="text-right">$ {{ number_format($taxableAmt, 2) }}</td>
                         <td class="text-right">$ {{ number_format($item->tax, 2) }}</td>
                         <td class="text-right"><strong>$ {{ number_format($item->amount, 2) }}</strong></td>
                     </tr>

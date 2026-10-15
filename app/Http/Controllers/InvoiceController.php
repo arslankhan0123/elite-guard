@@ -161,6 +161,7 @@ class InvoiceController extends Controller
                 $itemsData[] = [
                     'product_service' => $item['product_service'],
                     'description'    => $this->invoiceItemDescription($item),
+                    'uom'             => $item['uom'] ?? null,
                     'quantity'        => $qty,
                     'rate'            => $rate,
                     'tax'             => $itemTax,
@@ -241,7 +242,8 @@ class InvoiceController extends Controller
         $invoice = Invoice::with(['company', 'customer', 'site', 'items'])->findOrFail($id);
         $companyProfile = $this->companyProfileService->data();
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.invoices.pdf', compact('invoice', 'companyProfile'));
-        return $pdf->download('Invoice_' . $invoice->invoice_number . '.pdf');
+        $safeNumber = str_replace('/', '-', $invoice->invoice_number);
+        return $pdf->download('Invoice_' . $safeNumber . '.pdf');
     }
 
     public function edit($id)
@@ -303,6 +305,7 @@ class InvoiceController extends Controller
                 $itemsData[] = [
                     'product_service' => $item['product_service'],
                     'description'    => $this->invoiceItemDescription($item),
+                    'uom'             => $item['uom'] ?? null,
                     'quantity'        => $qty,
                     'rate'            => $rate,
                     'tax'             => $itemTax,
