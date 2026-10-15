@@ -163,8 +163,8 @@
                 <input type="text" name="title" class="form-control form-control-custom" value="Invoice" required>
             </div>
             <div class="col-md-6">
-                <label class="field-label">Summary</label>
-                <input type="text" name="summary" class="form-control form-control-custom" placeholder="Summary">
+                <label class="field-label">Subject</label>
+                <input type="text" name="summary" class="form-control form-control-custom" placeholder="e.g. 100% Billing for Security guard services under PO: PO-2026-104">
             </div>
         </div>
 
@@ -231,11 +231,12 @@
             <table class="table table-products-services" id="itemsTable">
                 <thead>
                     <tr>
-                        <th width="40%">Product/Service</th>
-                        <th width="15%">Quantity</th>
-                        <th width="15%">Rate</th>
-                        <th width="15%">Tax</th>
-                        <th width="15%">Amount</th>
+                        <th width="30%">Product/Service</th>
+                        <th width="10%">UOM</th>
+                        <th width="12%">Quantity</th>
+                        <th width="12%">Rate</th>
+                        <th width="12%">Tax</th>
+                        <th width="12%">Amount</th>
                         <th width="40"></th>
                     </tr>
                 </thead>
@@ -452,7 +453,7 @@ $(document).ready(function() {
         return optionsHtml;
     }
 
-    function addRow(selectedProduct = '', qty = 1, rate = 0, tax = 0, taxRate = 0) {
+    function addRow(selectedProduct = '', qty = 1, rate = 0, tax = 0, taxRate = 0, uom = '') {
         const optionsHtml = renderProductOptions(selectedProduct);
         const taxPlaceholder = parseFloat(taxRate) > 0 ? parseFloat(taxRate) + '%' : 'No Tax';
         const rowId = `item_row_${itemIndex}`;
@@ -464,6 +465,14 @@ $(document).ready(function() {
                     </select>
                     <input type="hidden" name="items[${itemIndex}][description]" class="description-input" value="">
                     <input type="hidden" name="items[${itemIndex}][tax_rate]" class="tax-rate-input" value="${taxRate}">
+                </td>
+                <td>
+                    <select name="items[${itemIndex}][uom]" class="form-select form-control-custom uom-select">
+                        <option value="" ${uom === '' ? 'selected' : ''}>-- UOM --</option>
+                        <option value="Hour" ${uom === 'Hour' ? 'selected' : ''}>Hour</option>
+                        <option value="Patrol" ${uom === 'Patrol' ? 'selected' : ''}>Patrol</option>
+                        <option value="Call" ${uom === 'Call' ? 'selected' : ''}>Call</option>
+                    </select>
                 </td>
                 <td>
                     <input type="number" step="0.01" min="0" name="items[${itemIndex}][quantity]" class="form-control form-control-custom qty-input" value="${qty}">
