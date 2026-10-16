@@ -267,7 +267,7 @@
                         @if($invoice->notes)
                             <div class="p-3 rounded bg-light border">
                                 <strong class="text-primary d-block mb-1"><i class="mdi mdi-note-text-outline me-1"></i> Notes:</strong>
-                                <p class="text-muted mb-0 font-size-13">{{ $invoice->notes }}</p>
+                                <p class="text-muted mb-0 font-size-13" style="white-space: pre-wrap;">{{ $invoice->notes }}</p>
                             </div>
                         @else
                             &nbsp;
