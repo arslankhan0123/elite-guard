@@ -303,7 +303,7 @@
                     @if($invoice->notes)
                         <div class="notes-box">
                             <strong style="color: #0369a1; display: block; margin-bottom: 3px;">Notes:</strong>
-                            {{ $invoice->notes }}
+                            <div style="white-space: pre-wrap;">{{ $invoice->notes }}</div>
                         </div>
                     @else
                         &nbsp;
