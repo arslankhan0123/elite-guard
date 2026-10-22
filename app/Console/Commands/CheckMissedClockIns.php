@@ -117,7 +117,7 @@ class CheckMissedClockIns extends Command
 
             $this->info("  [{$tenant->name}] Notification created — Guard: {$user->name}, Shift: {$shiftName}, Location: {$locationName}");
 
-            // ── Push notification → THE GUARD (their own fcm_token) ────────
+            // ── Push notification → THE GUARD (guard-worded message) ───────
             if (!empty($user->fcm_token)) {
                 try {
                     Notification::send($user, new MissedClockInNotification(
@@ -125,7 +125,7 @@ class CheckMissedClockIns extends Command
                         $locationName,
                         $startFormatted,
                         $minutesLate,
-                        true // forGuard
+                        true // forGuard → "You haven't clocked in..."
                     ));
                     $this->info("    Push sent to Guard: {$user->name}");
                 } catch (\Throwable $e) {
@@ -136,10 +136,18 @@ class CheckMissedClockIns extends Command
                 $this->warn("    Guard {$user->name} has no fcm_token — skipping guard push");
             }
 
-            // ── Push notification → SuperAdmin ─────────────────────────────
-            $superAdmins = User::where('role', 'SuperAdmin')
-                ->whereNotNull('fcm_token')
-                ->get();
+            // ── Push notification → SuperAdmins (admin-worded message) ─────
+            $allSuperAdmins = User::where('role', 'SuperAdmin')->get();
+            $superAdmins    = $allSuperAdmins->filter(fn ($a) => !empty($a->fcm_token));
+
+            // Diagnostic: how many super-admins exist vs. how many have a usable token
+            $diag = "SuperAdmins total={$allSuperAdmins->count()}, with_token={$superAdmins->count()}";
+            $this->info("    {$diag}");
+            Log::info("CheckMissedClockIns [{$tenant->name}] shift#{$shift->id} guard={$user->name}: {$diag}");
+            if ($superAdmins->isEmpty()) {
+                $this->warn("    No SuperAdmin with fcm_token in this tenant — nothing to push to admins.");
+                Log::warning("CheckMissedClockIns [{$tenant->name}]: no SuperAdmin has an fcm_token.");
+            }
 
             foreach ($superAdmins as $superAdmin) {
                 try {
@@ -148,17 +156,18 @@ class CheckMissedClockIns extends Command
                         $locationName,
                         $startFormatted,
                         $minutesLate,
-                        false // admin-worded
+                        false // admin-worded → "Guard X has not clocked in..."
                     ));
-                    $this->info("    Push sent to SuperAdmin: {$superAdmin->name}");
+                    $this->info("    Push sent to SuperAdmin: {$superAdmin->name} (id={$superAdmin->id})");
+                    Log::info("CheckMissedClockIns [{$tenant->name}]: push OK → SuperAdmin {$superAdmin->name} (id={$superAdmin->id})");
                 } catch (\Throwable $e) {
-                    Log::error("CheckMissedClockIns: push failed for [{$superAdmin->email}] — " . $e->getMessage());
-                    $this->warn("    Push failed for {$superAdmin->name}: " . $e->getMessage());
+                    Log::error("CheckMissedClockIns [{$tenant->name}]: push FAILED → SuperAdmin {$superAdmin->name} (id={$superAdmin->id}, token=" . substr((string) $superAdmin->fcm_token, 0, 12) . "...) — " . $e->getMessage());
+                    $this->warn("    Push FAILED for SuperAdmin {$superAdmin->name}: " . $e->getMessage());
                 }
             }
 
             // ── Send email to all SuperAdmin users of this tenant ──────────
-            $admins = User::whereIn('role', ['SuperAdmin'])
+            $admins = User::where('role', 'SuperAdmin')
                 ->whereNotNull('email')
                 ->get();
 
