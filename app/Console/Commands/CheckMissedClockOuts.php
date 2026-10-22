@@ -149,9 +149,16 @@ class CheckMissedClockOuts extends Command
             }
 
             // ── Push notification → SuperAdmins ───────────────────────────
-            $superAdmins = User::where('role', 'SuperAdmin')
-                ->whereNotNull('fcm_token')
-                ->get();
+            $allSuperAdmins = User::where('role', 'SuperAdmin')->get();
+            $superAdmins    = $allSuperAdmins->filter(fn ($a) => !empty($a->fcm_token));
+
+            // Diagnostic: how many super-admins exist vs. how many have a usable token
+            $diag = "SuperAdmins total={$allSuperAdmins->count()}, with_token={$superAdmins->count()}";
+            $this->info("    {$diag}");
+            Log::info("CheckMissedClockOuts [{$tenant->name}] guard={$user->name}: {$diag}");
+            if ($superAdmins->isEmpty()) {
+                $this->warn("    No SuperAdmin with fcm_token in this tenant.");
+            }
 
             foreach ($superAdmins as $superAdmin) {
                 try {
@@ -163,9 +170,10 @@ class CheckMissedClockOuts extends Command
                         $minutesBefore,
                         $now->lt($endDt)
                     ));
-                    $this->info("    Push sent to SuperAdmin: {$superAdmin->name}");
+                    $this->info("    Push sent to SuperAdmin: {$superAdmin->name} (id={$superAdmin->id})");
+                    Log::info("CheckMissedClockOuts [{$tenant->name}]: push OK to SuperAdmin {$superAdmin->name} (id={$superAdmin->id})");
                 } catch (\Throwable $e) {
-                    Log::error("CheckMissedClockOuts: push to SuperAdmin [{$superAdmin->email}] failed — " . $e->getMessage());
+                    Log::error("CheckMissedClockOuts [{$tenant->name}]: push FAILED to SuperAdmin {$superAdmin->name} (id={$superAdmin->id}, token=" . substr((string) $superAdmin->fcm_token, 0, 12) . "...) — " . $e->getMessage());
                     $this->warn("    Push to SuperAdmin {$superAdmin->name} failed: " . $e->getMessage());
                 }
             }
