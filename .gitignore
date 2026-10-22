@@ -28,3 +28,6 @@ yarn-error.log
 !composer.json
 !package.json
 !package-lock.json
+
+# Generated Swagger docs (regenerate per environment)
+/storage/api-docs/

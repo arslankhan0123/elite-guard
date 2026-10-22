@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Notification;
 class CheckMissedClockIns extends Command
 {
     protected $signature = 'shifts:check-missed-clockins';
-    protected $description = 'Check active shifts where the guard has not clocked in within 1 hour of start time, and notify admins';
+    protected $description = 'Check active shifts (site & runsheet) where the guard has not clocked in within 1 hour of start time, and notify the guard + admins';
 
     public function handle(): int
     {
@@ -53,13 +53,14 @@ class CheckMissedClockIns extends Command
         // Include yesterday so overnight shifts starting before midnight are caught
         $yesterday = $now->copy()->subDay()->toDateString();
 
-        // Fetch today's + yesterday's shifts that have a site assigned
-        $shifts = Shift::with(['schedule.user', 'site'])
-            ->whereNotNull('site_id')
+        // Fetch today's + yesterday's shifts — BOTH site & runsheet types.
+        // (runsheet shifts have site_id = NULL, so we must NOT filter on site_id)
+        $shifts = Shift::with(['schedule.user', 'site', 'weeklyRunSheet'])
             ->whereIn('date', [$today, $yesterday])
             ->get();
 
         foreach ($shifts as $shift) {
+            // ── shift → schedule → user ────────────────────────────────────
             $user = $shift->schedule?->user;
             if (!$user) {
                 continue; // unassigned shift — skip
@@ -82,8 +83,6 @@ class CheckMissedClockIns extends Command
                 continue; // more than 1 hour past start — window closed
             }
 
-
-
             // ── Already clocked in? ────────────────────────────────────────
             $hasClockedIn = ShiftAttendance::where('shift_id', $shift->id)
                 ->where('user_id', $user->id)
@@ -94,10 +93,16 @@ class CheckMissedClockIns extends Command
                 continue; // guard clocked in — all good
             }
 
+            // ── Location name (site OR runsheet) ───────────────────────────
+            if ($shift->type === 'runsheet') {
+                $locationName = $shift->weeklyRunSheet?->name ?? 'Run Sheet';
+            } else {
+                $locationName = $shift->site?->name ?? 'N/A';
+            }
+
             // ── Create DB notification ─────────────────────────────────────
             // No dedup — notify on every cron run while window is open and guard hasn't clocked in
             $minutesLate = (int) $startDt->diffInMinutes($now);
-            $siteName = $shift->site?->name ?? 'N/A';
             $shiftName = $shift->shift_name ?: 'Regular Shift';
             $startFormatted = $startDt->format('g:i A');
             $dateFormatted = $startDt->format('d M Y');
@@ -105,14 +110,33 @@ class CheckMissedClockIns extends Command
             AdminNotification::create([
                 'type' => 'missed_clock_in',
                 'title' => "Missed Clock-In: {$user->name}",
-                'message' => "{$user->name} has not clocked in for their shift at {$siteName}. Shift started at {$startFormatted} ({$minutesLate} min ago).",
+                'message' => "{$user->name} has not clocked in for their shift at {$locationName}. Shift started at {$startFormatted} ({$minutesLate} min ago).",
                 'shift_id' => $shift->id,
                 'user_id' => $user->id,
             ]);
 
-            $this->info("  [{$tenant->name}] Notification created — Guard: {$user->name}, Shift: {$shiftName}, Site: {$siteName}");
+            $this->info("  [{$tenant->name}] Notification created — Guard: {$user->name}, Shift: {$shiftName}, Location: {$locationName}");
 
-            // ── Push notification → SuperAdmin only ────────────────────────
+            // ── Push notification → THE GUARD (their own fcm_token) ────────
+            if (!empty($user->fcm_token)) {
+                try {
+                    Notification::send($user, new MissedClockInNotification(
+                        $user->name,
+                        $locationName,
+                        $startFormatted,
+                        $minutesLate,
+                        true // forGuard
+                    ));
+                    $this->info("    Push sent to Guard: {$user->name}");
+                } catch (\Throwable $e) {
+                    Log::error("CheckMissedClockIns: guard push failed for [{$user->email}] — " . $e->getMessage());
+                    $this->warn("    Guard push failed for {$user->name}: " . $e->getMessage());
+                }
+            } else {
+                $this->warn("    Guard {$user->name} has no fcm_token — skipping guard push");
+            }
+
+            // ── Push notification → SuperAdmin ─────────────────────────────
             $superAdmins = User::where('role', 'SuperAdmin')
                 ->whereNotNull('fcm_token')
                 ->get();
@@ -121,9 +145,10 @@ class CheckMissedClockIns extends Command
                 try {
                     Notification::send($superAdmin, new MissedClockInNotification(
                         $user->name,
-                        $siteName,
+                        $locationName,
                         $startFormatted,
-                        $minutesLate
+                        $minutesLate,
+                        false // admin-worded
                     ));
                     $this->info("    Push sent to SuperAdmin: {$superAdmin->name}");
                 } catch (\Throwable $e) {
@@ -132,8 +157,8 @@ class CheckMissedClockIns extends Command
                 }
             }
 
-            // ── Send email to all admin users of this tenant ───────────────
-            $admins = User::whereIn('role', ['SuperAdmin', 'Admin'])
+            // ── Send email to all SuperAdmin users of this tenant ──────────
+            $admins = User::whereIn('role', ['SuperAdmin'])
                 ->whereNotNull('email')
                 ->get();
 
@@ -143,7 +168,7 @@ class CheckMissedClockIns extends Command
                 try {
                     $html = view('emails.missed-clock-in', [
                         'guardName' => $user->name,
-                        'siteName' => $siteName,
+                        'siteName' => $locationName,
                         'shiftName' => $shiftName,
                         'shiftDate' => $dateFormatted,
                         'startTime' => $startFormatted,
@@ -151,9 +176,9 @@ class CheckMissedClockIns extends Command
                         'dashboardUrl' => $dashboardUrl,
                     ])->render();
 
-                    Mail::html($html, function ($message) use ($admin, $user, $siteName) {
+                    Mail::html($html, function ($message) use ($admin, $user, $locationName) {
                         $message->to($admin->email, $admin->name)
-                            ->subject("⚠️ Missed Clock-In: {$user->name} at {$siteName}")
+                            ->subject("⚠️ Missed Clock-In: {$user->name} at {$locationName}")
                             ->from(
                                 config('mail.from.address', 'info@eliteguardinc.com'),
                                 config('mail.from.name', 'Elite Guard')

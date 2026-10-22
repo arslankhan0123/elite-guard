@@ -46,15 +46,15 @@ class CheckMissedClockOuts extends Command
 
     private function processTenant(Tenant $tenant): void
     {
-        $tz  = config('app.timezone', 'Asia/Karachi');
+        $tz = config('app.timezone', 'Asia/Karachi');
         $now = Carbon::now($tz);
 
         // Look at today's and yesterday's shifts to catch overnight shifts
-        $today     = $now->toDateString();
+        $today = $now->toDateString();
         $yesterday = $now->copy()->subDay()->toDateString();
 
-        $shifts = Shift::with(['schedule.user', 'site'])
-            ->whereNotNull('site_id')
+        // BOTH site & runsheet types (runsheet shifts have site_id = NULL, so no site_id filter)
+        $shifts = Shift::with(['schedule.user', 'site', 'weeklyRunSheet'])
             ->whereIn('date', [$today, $yesterday])
             ->get();
 
@@ -66,7 +66,7 @@ class CheckMissedClockOuts extends Command
 
             // Build shift end datetime — handle overnight shifts
             $startDt = Carbon::parse($shift->date . ' ' . $shift->start_time, $tz);
-            $endDt   = Carbon::parse($shift->date . ' ' . $shift->end_time, $tz);
+            $endDt = Carbon::parse($shift->date . ' ' . $shift->end_time, $tz);
             if ($endDt->lte($startDt)) {
                 $endDt->addDay(); // overnight: end is next day
             }
@@ -74,7 +74,7 @@ class CheckMissedClockOuts extends Command
             // ── Notification window ────────────────────────────────────────
             // Send from (endDt - 10 min) up to (endDt + 30 min)
             $windowStart = $endDt->copy()->subMinutes(10);
-            $windowEnd   = $endDt->copy()->addMinutes(30);
+            $windowEnd = $endDt->copy()->addMinutes(30);
 
             if ($now->lt($windowStart) || $now->gt($windowEnd)) {
                 continue; // outside notification window
@@ -101,11 +101,16 @@ class CheckMissedClockOuts extends Command
             }
 
             // ── Build message vars ─────────────────────────────────────────
-            $siteName     = $shift->site?->name ?? 'N/A';
-            $shiftName    = $shift->shift_name ?: 'Regular Shift';
+            // Location name: site OR runsheet depending on shift type
+            if ($shift->type === 'runsheet') {
+                $siteName = $shift->weeklyRunSheet?->name ?? 'Run Sheet';
+            } else {
+                $siteName = $shift->site?->name ?? 'N/A';
+            }
+            $shiftName = $shift->shift_name ?: 'Regular Shift';
             $endFormatted = $endDt->format('g:i A');
             $dateFormatted = $endDt->format('d M Y');
-            $minutesPast  = max(0, (int) $endDt->diffInMinutes($now, false));
+            $minutesPast = max(0, (int) $endDt->diffInMinutes($now, false));
             $minutesBefore = max(0, (int) $now->diffInMinutes($endDt, false));
 
             if ($now->lt($endDt)) {
@@ -116,11 +121,11 @@ class CheckMissedClockOuts extends Command
 
             // ── Save DB notification ───────────────────────────────────────
             AdminNotification::create([
-                'type'     => 'missed_clock_out',
-                'title'    => "Missed Clock-Out: {$user->name}",
-                'message'  => "{$user->name} has not clocked out at {$siteName}. {$timeContext}.",
+                'type' => 'missed_clock_out',
+                'title' => "Missed Clock-Out: {$user->name}",
+                'message' => "{$user->name} has not clocked out at {$siteName}. {$timeContext}.",
                 'shift_id' => $shift->id,
-                'user_id'  => $user->id,
+                'user_id' => $user->id,
             ]);
 
             $this->info("  [{$tenant->name}] DB notification — Guard: {$user->name}, Site: {$siteName}, {$timeContext}");
@@ -166,7 +171,7 @@ class CheckMissedClockOuts extends Command
             }
 
             // ── Email → all admins ─────────────────────────────────────────
-            $admins = User::whereIn('role', ['SuperAdmin', 'Admin'])
+            $admins = User::whereIn('role', ['SuperAdmin'])
                 ->whereNotNull('email')
                 ->get();
 
@@ -175,13 +180,13 @@ class CheckMissedClockOuts extends Command
             foreach ($admins as $admin) {
                 try {
                     $html = view('emails.missed-clock-out', [
-                        'guardName'     => $user->name,
-                        'siteName'      => $siteName,
-                        'shiftName'     => $shiftName,
-                        'shiftDate'     => $dateFormatted,
-                        'endTime'       => $endFormatted,
-                        'timeContext'   => $timeContext,
-                        'dashboardUrl'  => $dashboardUrl,
+                        'guardName' => $user->name,
+                        'siteName' => $siteName,
+                        'shiftName' => $shiftName,
+                        'shiftDate' => $dateFormatted,
+                        'endTime' => $endFormatted,
+                        'timeContext' => $timeContext,
+                        'dashboardUrl' => $dashboardUrl,
                     ])->render();
 
                     Mail::html($html, function ($message) use ($admin, $user, $siteName) {

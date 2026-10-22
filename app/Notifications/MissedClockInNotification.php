@@ -16,13 +16,19 @@ class MissedClockInNotification extends Notification
     protected string $siteName;
     protected string $startTime;
     protected int    $minutesLate;
+    protected bool   $forGuard;
 
-    public function __construct(string $guardName, string $siteName, string $startTime, int $minutesLate)
+    /**
+     * @param bool $forGuard  true  → message addressed to the guard themselves
+     *                        false → message addressed to an admin/super-admin
+     */
+    public function __construct(string $guardName, string $siteName, string $startTime, int $minutesLate, bool $forGuard = false)
     {
         $this->guardName   = $guardName;
         $this->siteName    = $siteName;
         $this->startTime   = $startTime;
         $this->minutesLate = $minutesLate;
+        $this->forGuard    = $forGuard;
     }
 
     public function via(object $notifiable): array
@@ -32,9 +38,17 @@ class MissedClockInNotification extends Notification
 
     public function toFcm($notifiable): FcmMessage
     {
+        if ($this->forGuard) {
+            $title = '⏰ Clock-In Reminder';
+            $body  = "You haven't clocked in for your shift at {$this->siteName}. It started at {$this->startTime} ({$this->minutesLate} min ago). Please clock in now.";
+        } else {
+            $title = '⚠️ Missed Clock-In Alert';
+            $body  = "{$this->guardName} has not clocked in at {$this->siteName}. Shift started at {$this->startTime} ({$this->minutesLate} min ago).";
+        }
+
         return (new FcmMessage(notification: new FcmNotification(
-            title: '⚠️ Missed Clock-In Alert',
-            body: "{$this->guardName} has not clocked in at {$this->siteName}. Shift started at {$this->startTime} ({$this->minutesLate} min ago).",
+            title: $title,
+            body: $body,
         )))
         ->data([
             'click_action'  => 'FLUTTER_NOTIFICATION_CLICK',
@@ -43,6 +57,7 @@ class MissedClockInNotification extends Notification
             'site_name'     => $this->siteName,
             'start_time'    => $this->startTime,
             'minutes_late'  => (string) $this->minutesLate,
+            'for_guard'     => $this->forGuard ? '1' : '0',
         ]);
     }
 
@@ -54,6 +69,7 @@ class MissedClockInNotification extends Notification
             'site_name'    => $this->siteName,
             'start_time'   => $this->startTime,
             'minutes_late' => $this->minutesLate,
+            'for_guard'    => $this->forGuard,
         ];
     }
 }
