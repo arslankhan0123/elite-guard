@@ -53,11 +53,27 @@ class MissedClockInNotification extends Notification
         ->data([
             'click_action'  => 'FLUTTER_NOTIFICATION_CLICK',
             'type'          => 'missed_clock_in',
+            'audience'      => $this->forGuard ? 'guard' : 'admin',
             'guard_name'    => $this->guardName,
             'site_name'     => $this->siteName,
             'start_time'    => $this->startTime,
             'minutes_late'  => (string) $this->minutesLate,
             'for_guard'     => $this->forGuard ? '1' : '0',
+        ])
+        // Distinct tag / collapse-id per audience so the guard reminder and the
+        // admin alert appear as SEPARATE notifications on the same device
+        // (e.g. a user who is both an employee and a SuperAdmin).
+        ->custom([
+            'android' => [
+                'notification' => [
+                    'tag' => $this->forGuard ? 'missed_clock_in_guard' : 'missed_clock_in_admin',
+                ],
+            ],
+            'apns' => [
+                'headers' => [
+                    'apns-collapse-id' => $this->forGuard ? 'missed_clock_in_guard' : 'missed_clock_in_admin',
+                ],
+            ],
         ]);
     }
 
