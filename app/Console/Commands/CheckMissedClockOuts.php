@@ -139,7 +139,8 @@ class CheckMissedClockOuts extends Command
                         $endFormatted,
                         $minutesPast,
                         $minutesBefore,
-                        $now->lt($endDt)
+                        $now->lt($endDt),
+                        true // forGuard => "You haven't clocked out..."
                     ));
                     $this->info("    Push sent to guard: {$user->name}");
                 } catch (\Throwable $e) {
@@ -168,7 +169,8 @@ class CheckMissedClockOuts extends Command
                         $endFormatted,
                         $minutesPast,
                         $minutesBefore,
-                        $now->lt($endDt)
+                        $now->lt($endDt),
+                        false // admin-worded => "Guard X has not clocked out..."
                     ));
                     $this->info("    Push sent to SuperAdmin: {$superAdmin->name} (id={$superAdmin->id})");
                     Log::info("CheckMissedClockOuts [{$tenant->name}]: push OK to SuperAdmin {$superAdmin->name} (id={$superAdmin->id})");
