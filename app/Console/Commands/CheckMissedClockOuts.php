@@ -199,14 +199,12 @@ class CheckMissedClockOuts extends Command
                         'dashboardUrl' => $dashboardUrl,
                     ])->render();
 
-                    Mail::html($html, function ($message) use ($admin, $user, $siteName) {
-                        $message->to($admin->email, $admin->name)
-                            ->subject("⚠️ Missed Clock-Out: {$user->name} at {$siteName}")
-                            ->from(
-                                config('mail.from.address', 'info@eliteguardinc.com'),
-                                config('mail.from.name', 'Elite Guard')
-                            );
-                    });
+                    \App\Services\TenantMailSender::sendHtml(
+                        $admin->email,
+                        $admin->name,
+                        "⚠️ Missed Clock-Out: {$user->name} at {$siteName}",
+                        $html
+                    );
 
                     $this->info("    Email sent to: {$admin->email}");
                 } catch (\Throwable $e) {
