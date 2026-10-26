@@ -185,14 +185,12 @@ class CheckMissedClockIns extends Command
                         'dashboardUrl' => $dashboardUrl,
                     ])->render();
 
-                    Mail::html($html, function ($message) use ($admin, $user, $locationName) {
-                        $message->to($admin->email, $admin->name)
-                            ->subject("⚠️ Missed Clock-In: {$user->name} at {$locationName}")
-                            ->from(
-                                config('mail.from.address', 'info@eliteguardinc.com'),
-                                config('mail.from.name', 'Elite Guard')
-                            );
-                    });
+                    \App\Services\TenantMailSender::sendHtml(
+                        $admin->email,
+                        $admin->name,
+                        "⚠️ Missed Clock-In: {$user->name} at {$locationName}",
+                        $html
+                    );
 
                     $this->info("    Email sent to: {$admin->email}");
                 } catch (\Throwable $e) {
