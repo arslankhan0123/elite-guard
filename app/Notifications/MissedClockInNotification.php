@@ -4,6 +4,9 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\SendReport;
 use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
@@ -93,5 +96,71 @@ class MissedClockInNotification extends Notification
             'minutes_late' => $this->minutesLate,
             'for_guard'    => $this->forGuard,
         ];
+    }
+
+    /**
+     * Send the push DIRECTLY via Firebase and log the REAL success / failure
+     * (the actual FCM error, not a static one). Returns true on delivery.
+     *
+     * @param  object $user  Must have ->fcm_token, ->name, ->id
+     */
+    public static function pushTo(
+        object $user,
+        string $guardName,
+        string $siteName,
+        string $startTime,
+        int $minutesLate,
+        bool $forGuard = false,
+        ?string $tag = null
+    ): bool {
+        $prefix = '[MissedClockInNotification] ';
+        $name   = $user->name ?? 'unknown';
+        $id     = $user->id ?? 'n/a';
+        $token  = $user->fcm_token ?? null;
+
+        if (empty($token)) {
+            Log::warning($prefix . "SKIP: user '{$name}' (id={$id}) has no fcm_token.");
+            return false;
+        }
+
+        $tokenShort = substr((string) $token, 0, 14) . '...';
+
+        try {
+            $message = (new self($guardName, $siteName, $startTime, $minutesLate, $forGuard, $tag))->toFcm($user);
+
+            /** @var Messaging $messaging */
+            $messaging = app(Messaging::class);
+
+            $report = $messaging->sendMulticast($message, [$token]);
+
+            $successCount = $report->count() - count($report->failures()->getItems());
+
+            if (! $report->hasFailures() && $successCount > 0) {
+                Log::info($prefix . "SUCCESS: push delivered to '{$name}' (id={$id}, token={$tokenShort}).");
+                return true;
+            }
+
+            // Pull the ACTUAL error that FCM returned for this token
+            $reason = 'unknown failure';
+            foreach ($report->failures()->getItems() as $failure) {
+                /** @var SendReport $failure */
+                $err = $failure->error();
+                $reason = $err ? $err->getMessage() : 'unknown failure';
+                if ($failure->messageWasSentToUnknownToken()) {
+                    $reason .= ' (token is unregistered/stale — user must re-open the app)';
+                } elseif ($failure->messageTargetWasInvalid()) {
+                    $reason .= ' (token is invalid/malformed)';
+                }
+                break; // single token, single report
+            }
+
+            Log::error($prefix . "FAILED: push to '{$name}' (id={$id}, token={$tokenShort}) — {$reason}");
+            return false;
+        } catch (\Throwable $e) {
+            // The real exception (e.g. credentials / network / config), not a static message
+            Log::error($prefix . "EXCEPTION sending push to '{$name}' (id={$id}, token={$tokenShort}): "
+                . $e->getMessage() . ' @ ' . basename($e->getFile()) . ':' . $e->getLine());
+            return false;
+        }
     }
 }
