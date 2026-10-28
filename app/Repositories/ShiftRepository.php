@@ -142,7 +142,8 @@ class ShiftRepository
         // 1. Look for currently active shift (time window matches now)
         //    but skip it if checkIn + checkOut are both done (completed shift).
         $activeShift = $mappedShifts->first(function ($shift) use ($currentDateTime) {
-            if (!$currentDateTime->between($shift->start_datetime, $shift->end_datetime)) {
+            // Keep the shift "active" for 45 minutes after its end time
+            if (!$currentDateTime->between($shift->start_datetime, $shift->end_datetime->copy()->addMinutes(45))) {
                 return false;
             }
             // If attendance exists and checkout is done, this shift is completed
