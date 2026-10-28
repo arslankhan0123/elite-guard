@@ -4,6 +4,9 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\SendReport;
 use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
@@ -12,17 +15,18 @@ class MissedClockOutNotification extends Notification
 {
     use Queueable;
 
-    protected string $guardName;
-    protected string $siteName;
-    protected string $endTime;
-    protected int    $minutesPast;
-    protected int    $minutesBefore;
-    protected bool   $isBeforeEnd;
-    protected bool   $forGuard;
+    protected string  $guardName;
+    protected string  $siteName;
+    protected string  $endTime;
+    protected int     $minutesPast;
+    protected int     $minutesBefore;
+    protected bool    $isBeforeEnd;
+    protected bool    $forGuard;
+    protected ?string $tag;
 
     /**
-     * @param bool $forGuard  true  => message addressed to the guard themselves
-     *                        false => message addressed to an admin/super-admin
+     * @param bool        $forGuard true => addressed to the guard; false => admin-worded
+     * @param string|null $tag      Unique Android tag / iOS collapse-id => no override
      */
     public function __construct(
         string $guardName,
@@ -31,7 +35,8 @@ class MissedClockOutNotification extends Notification
         int    $minutesPast,
         int    $minutesBefore,
         bool   $isBeforeEnd,
-        bool   $forGuard = false
+        bool   $forGuard = false,
+        ?string $tag = null
     ) {
         $this->guardName     = $guardName;
         $this->siteName      = $siteName;
@@ -40,6 +45,7 @@ class MissedClockOutNotification extends Notification
         $this->minutesBefore = $minutesBefore;
         $this->isBeforeEnd   = $isBeforeEnd;
         $this->forGuard      = $forGuard;
+        $this->tag           = $tag;
     }
 
     public function via(object $notifiable): array
@@ -65,6 +71,8 @@ class MissedClockOutNotification extends Notification
             }
         }
 
+        $tag = $this->tag ?? ($this->forGuard ? 'missed_clock_out_guard' : 'missed_clock_out_admin');
+
         return (new FcmMessage(notification: new FcmNotification(
             title: $title,
             body: $body,
@@ -80,19 +88,18 @@ class MissedClockOutNotification extends Notification
             'minutes_before'  => (string) $this->minutesBefore,
             'is_before_end'   => $this->isBeforeEnd ? 'true' : 'false',
             'for_guard'       => $this->forGuard ? '1' : '0',
+            'tag'             => $tag,
+            'notification_id' => (string) abs(crc32($tag)),
         ])
-        // Distinct tag / collapse-id per audience so the guard reminder and the
-        // admin alert appear as SEPARATE notifications on the same device
-        // (e.g. a user who is both an employee and a SuperAdmin).
         ->custom([
             'android' => [
                 'notification' => [
-                    'tag' => $this->forGuard ? 'missed_clock_out_guard' : 'missed_clock_out_admin',
+                    'tag' => $tag,
                 ],
             ],
             'apns' => [
                 'headers' => [
-                    'apns-collapse-id' => $this->forGuard ? 'missed_clock_out_guard' : 'missed_clock_out_admin',
+                    'apns-collapse-id' => $tag,
                 ],
             ],
         ]);
@@ -110,5 +117,68 @@ class MissedClockOutNotification extends Notification
             'is_before_end'  => $this->isBeforeEnd,
             'for_guard'      => $this->forGuard,
         ];
+    }
+
+    /**
+     * Send the push DIRECTLY via Firebase and log the REAL success / failure.
+     */
+    public static function pushTo(
+        object $user,
+        string $guardName,
+        string $siteName,
+        string $endTime,
+        int $minutesPast,
+        int $minutesBefore,
+        bool $isBeforeEnd,
+        bool $forGuard = false,
+        ?string $tag = null
+    ): bool {
+        $prefix = '[MissedClockOutNotification] ';
+        $name   = $user->name ?? 'unknown';
+        $id     = $user->id ?? 'n/a';
+        $token  = $user->fcm_token ?? null;
+
+        if (empty($token)) {
+            Log::warning($prefix . "SKIP: user '{$name}' (id={$id}) has no fcm_token.");
+            return false;
+        }
+
+        $tokenShort = substr((string) $token, 0, 14) . '...';
+
+        try {
+            $message = (new self($guardName, $siteName, $endTime, $minutesPast, $minutesBefore, $isBeforeEnd, $forGuard, $tag))->toFcm($user);
+
+            /** @var Messaging $messaging */
+            $messaging = app(Messaging::class);
+
+            $report = $messaging->sendMulticast($message, [$token]);
+
+            $successCount = $report->count() - count($report->failures()->getItems());
+
+            if (! $report->hasFailures() && $successCount > 0) {
+                Log::info($prefix . "SUCCESS: push delivered to '{$name}' (id={$id}, token={$tokenShort}).");
+                return true;
+            }
+
+            $reason = 'unknown failure';
+            foreach ($report->failures()->getItems() as $failure) {
+                /** @var SendReport $failure */
+                $err = $failure->error();
+                $reason = $err ? $err->getMessage() : 'unknown failure';
+                if ($failure->messageWasSentToUnknownToken()) {
+                    $reason .= ' (token is unregistered/stale — user must re-open the app)';
+                } elseif ($failure->messageTargetWasInvalid()) {
+                    $reason .= ' (token is invalid/malformed)';
+                }
+                break;
+            }
+
+            Log::error($prefix . "FAILED: push to '{$name}' (id={$id}, token={$tokenShort}) — {$reason}");
+            return false;
+        } catch (\Throwable $e) {
+            Log::error($prefix . "EXCEPTION sending push to '{$name}' (id={$id}, token={$tokenShort}): "
+                . $e->getMessage() . ' @ ' . basename($e->getFile()) . ':' . $e->getLine());
+            return false;
+        }
     }
 }
