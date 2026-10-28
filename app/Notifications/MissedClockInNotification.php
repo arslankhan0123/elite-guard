@@ -12,23 +12,27 @@ class MissedClockInNotification extends Notification
 {
     use Queueable;
 
-    protected string $guardName;
-    protected string $siteName;
-    protected string $startTime;
-    protected int    $minutesLate;
-    protected bool   $forGuard;
+    protected string  $guardName;
+    protected string  $siteName;
+    protected string  $startTime;
+    protected int     $minutesLate;
+    protected bool    $forGuard;
+    protected ?string $tag;
 
     /**
-     * @param bool $forGuard  true  → message addressed to the guard themselves
-     *                        false → message addressed to an admin/super-admin
+     * @param bool        $forGuard true => addressed to the guard; false => admin-worded
+     * @param string|null $tag      Android notification tag / iOS collapse-id.
+     *                              Pass a UNIQUE value so each push shows separately
+     *                              (previous notifications are NOT overridden).
      */
-    public function __construct(string $guardName, string $siteName, string $startTime, int $minutesLate, bool $forGuard = false)
+    public function __construct(string $guardName, string $siteName, string $startTime, int $minutesLate, bool $forGuard = false, ?string $tag = null)
     {
         $this->guardName   = $guardName;
         $this->siteName    = $siteName;
         $this->startTime   = $startTime;
         $this->minutesLate = $minutesLate;
         $this->forGuard    = $forGuard;
+        $this->tag         = $tag;
     }
 
     public function via(object $notifiable): array
@@ -46,6 +50,10 @@ class MissedClockInNotification extends Notification
             $body  = "{$this->guardName} has not clocked in at {$this->siteName}. Shift started at {$this->startTime} ({$this->minutesLate} min ago).";
         }
 
+        // Unique tag => every push shows separately (no override). Falls back to a
+        // fixed tag only if no unique tag was provided.
+        $tag = $this->tag ?? ($this->forGuard ? 'missed_clock_in_guard' : 'missed_clock_in_admin');
+
         return (new FcmMessage(notification: new FcmNotification(
             title: $title,
             body: $body,
@@ -59,19 +67,17 @@ class MissedClockInNotification extends Notification
             'start_time'    => $this->startTime,
             'minutes_late'  => (string) $this->minutesLate,
             'for_guard'     => $this->forGuard ? '1' : '0',
+            'tag'           => $tag,
         ])
-        // Distinct tag / collapse-id per audience so the guard reminder and the
-        // admin alert appear as SEPARATE notifications on the same device
-        // (e.g. a user who is both an employee and a SuperAdmin).
         ->custom([
             'android' => [
                 'notification' => [
-                    'tag' => $this->forGuard ? 'missed_clock_in_guard' : 'missed_clock_in_admin',
+                    'tag' => $tag,
                 ],
             ],
             'apns' => [
                 'headers' => [
-                    'apns-collapse-id' => $this->forGuard ? 'missed_clock_in_guard' : 'missed_clock_in_admin',
+                    'apns-collapse-id' => $tag,
                 ],
             ],
         ]);
