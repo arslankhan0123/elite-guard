@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 class CheckMissedClockIns extends Command
 {
     protected $signature = 'shifts:check-missed-clockins';
-    protected $description = 'For each tenant, resolve each user\'s active shift (like the API) and, from the shift start time for 1 hour, push a clock-in reminder to the guard + email all SuperAdmins.';
+    protected $description = 'For each tenant, resolve each user\'s active shift (like the API) and, from the shift start time for 1 hour: push a clock-in reminder to the guard + push + email ALL SuperAdmins.';
 
     private function logBoth(string $message, string $level = 'info'): void
     {
@@ -63,9 +63,11 @@ class CheckMissedClockIns extends Command
         $this->logBoth("DATABASE: {$tenant->db_name}  (Tenant: {$tenant->name})");
         $this->logBoth("Now: {$now->toDateTimeString()} ({$tz})");
 
-        // SuperAdmins of this tenant (for email alerts) — fetched once
-        $superAdmins = User::where('role', 'SuperAdmin')->whereNotNull('email')->get();
-        $this->logBoth("SuperAdmins with email in this tenant: {$superAdmins->count()}");
+        // All SuperAdmins of this tenant (for admin push + email)
+        $superAdmins = User::where('role', 'SuperAdmin')->get();
+        $withToken = $superAdmins->filter(fn ($a) => ! empty($a->fcm_token))->count();
+        $withEmail = $superAdmins->filter(fn ($a) => ! empty($a->email))->count();
+        $this->logBoth("SuperAdmins: total={$superAdmins->count()}, with_token={$withToken}, with_email={$withEmail}");
 
         // Shifts from yesterday onwards (overnight + upcoming), BOTH types, assigned only
         $shifts = Shift::with(['schedule.user', 'site', 'weeklyRunSheet', 'attendances'])
@@ -81,14 +83,14 @@ class CheckMissedClockIns extends Command
             return;
         }
 
-        $byUser    = $shifts->groupBy(fn ($s) => $s->schedule->user->id);
-        $pushCount = 0;
-        $mailCount = 0;
+        $byUser      = $shifts->groupBy(fn ($s) => $s->schedule->user->id);
+        $guardPushes = 0;
+        $adminPushes = 0;
+        $emails      = 0;
 
         foreach ($byUser as $userId => $userShifts) {
             $user = $userShifts->first()->schedule->user;
 
-            // Map real start/end datetimes (overnight aware)
             $mapped = $userShifts->map(function ($shift) use ($tz) {
                 $startDt = Carbon::parse($shift->date . ' ' . $shift->start_time, $tz);
                 $endDt   = Carbon::parse($shift->date . ' ' . $shift->end_time, $tz);
@@ -146,44 +148,71 @@ class CheckMissedClockIns extends Command
             $startFormatted = $active->start_datetime->format('g:i A');
             $dateFormatted  = $active->start_datetime->format('d M Y');
             $shiftName      = $active->shift_name ?: 'Regular Shift';
-            $uniqueTag      = 'clock_in_' . $active->id . '_' . $now->timestamp;
 
-            // ── Push to the guard (their own reminder) ─────────────────────
+            // ── 1) Push to the GUARD (their own reminder) ──────────────────
             if (! empty($user->fcm_token)) {
-                $this->logBoth("   => IN WINDOW. Sending push to '{$user->name}' (tag: {$uniqueTag}, {$minutesLate} min after start)...");
+                $guardTag = 'clock_in_guard_' . $active->id . '_' . $now->timestamp;
+                $this->logBoth("   => IN WINDOW. Guard push to '{$user->name}' (tag: {$guardTag}, {$minutesLate} min after start)...");
                 $ok = MissedClockInNotification::pushTo(
-                    $user, $user->name, $locationName, $startFormatted, $minutesLate, true, $uniqueTag
+                    $user, $user->name, $locationName, $startFormatted, $minutesLate, true, $guardTag
                 );
                 if ($ok) {
-                    $pushCount++;
-                    $this->logBoth("   => PUSH SUCCESS for '{$user->name}'.");
+                    $guardPushes++;
+                    $this->logBoth("   => GUARD PUSH SUCCESS for '{$user->name}'.");
                 } else {
-                    $this->logBoth("   => PUSH FAILED for '{$user->name}' (see error log line above).", 'warn');
+                    $this->logBoth("   => GUARD PUSH FAILED for '{$user->name}' (see error log line above).", 'warn');
                 }
             } else {
-                $this->logBoth("   => In window but user has NO fcm_token. Push skipped.", 'warn');
+                $this->logBoth("   => In window but guard has NO fcm_token. Guard push skipped.", 'warn');
             }
 
-            // ── Email ALL SuperAdmins: "<guard> has not clocked in" ────────
-            $mailCount += $this->emailSuperAdmins(
+            // ── 2) Push the SAME alert (admin-worded) to ALL SuperAdmins ───
+            $adminPushes += $this->pushSuperAdmins(
+                $superAdmins, $active->id, $user->name, $locationName, $startFormatted, $minutesLate, $now
+            );
+
+            // ── 3) Email ALL SuperAdmins ("<guard> has not clocked in") ────
+            $emails += $this->emailSuperAdmins(
                 $superAdmins, $user->name, $locationName, $shiftName, $dateFormatted, $startFormatted, $minutesLate
             );
         }
 
-        $this->logBoth("SUMMARY [{$tenant->db_name}]: users checked = {$byUser->count()}, pushes sent = {$pushCount}, emails sent = {$mailCount}");
+        $this->logBoth("SUMMARY [{$tenant->db_name}]: users checked = {$byUser->count()}, guard pushes = {$guardPushes}, admin pushes = {$adminPushes}, emails = {$emails}");
+    }
+
+    /** Push the admin-worded alert ("<guard> has not clocked in") to every SuperAdmin with a token. */
+    private function pushSuperAdmins($superAdmins, int $shiftId, string $guardName, string $locationName, string $startFormatted, int $minutesLate, Carbon $now): int
+    {
+        $sent = 0;
+        foreach ($superAdmins as $admin) {
+            if (empty($admin->fcm_token)) {
+                continue;
+            }
+            // Unique per superadmin + guard + run => separate notification, no override
+            $adminTag = 'clock_in_admin_' . $shiftId . '_' . $admin->id . '_' . $now->timestamp;
+            $ok = MissedClockInNotification::pushTo(
+                $admin, $guardName, $locationName, $startFormatted, $minutesLate, false, $adminTag
+            );
+            if ($ok) {
+                $sent++;
+                $this->logBoth("      -> Admin push sent to SuperAdmin: {$admin->name} (id={$admin->id})");
+            } else {
+                $this->logBoth("      -> Admin push FAILED to SuperAdmin: {$admin->name} (id={$admin->id}, see error log).", 'warn');
+            }
+        }
+        return $sent;
     }
 
     /** Email every SuperAdmin that a guard has not clocked in. Returns number of emails sent. */
     private function emailSuperAdmins($superAdmins, string $guardName, string $locationName, string $shiftName, string $dateFormatted, string $startFormatted, int $minutesLate): int
     {
-        if ($superAdmins->isEmpty()) {
-            return 0;
-        }
-
         $sent = 0;
         $dashboardUrl = url('/dashboard');
 
         foreach ($superAdmins as $admin) {
+            if (empty($admin->email)) {
+                continue;
+            }
             try {
                 $html = view('emails.missed-clock-in', [
                     'guardName'    => $guardName,
@@ -208,7 +237,6 @@ class CheckMissedClockIns extends Command
                 $this->logBoth("      -> Email FAILED to SuperAdmin {$admin->email}: " . $e->getMessage(), 'warn');
             }
         }
-
         return $sent;
     }
 }
