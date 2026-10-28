@@ -101,15 +101,20 @@ class CheckMissedClockOuts extends Command
                 return $shift;
             });
 
-            // Target = the shift whose END window (end-10min .. end+30min) contains NOW
-            $target = $mapped->filter(function ($shift) use ($now) {
+            // Target = a shift the guard CHECKED IN to (but not checked out) whose END
+            // window (end-10min .. end+30min) contains NOW. (active shifts + checked-in)
+            $target = $mapped->filter(function ($shift) use ($now, $userId) {
                 $ws = $shift->end_datetime->copy()->subMinutes(10);
                 $we = $shift->end_datetime->copy()->addMinutes(30);
-                return $now->between($ws, $we);
+                if (! $now->between($ws, $we)) {
+                    return false;
+                }
+                $att = $shift->attendances->firstWhere('user_id', $userId);
+                return $att && $att->clock_in_at && ! $att->clock_out_at; // checked in, not out
             })->sortBy('end_datetime')->first();
 
             if (! $target) {
-                $this->logBoth("User '{$user->name}' (id={$userId}) => no shift in clock-out window (end-10min .. end+30min) right now.");
+                $this->logBoth("User '{$user->name}' (id={$userId}) => no checked-in (not-clocked-out) shift in clock-out window right now.");
                 continue;
             }
 
@@ -118,17 +123,6 @@ class CheckMissedClockOuts extends Command
                 : ($target->site?->name ?? 'N/A');
 
             $this->logBoth("User '{$user->name}' (id={$userId}) => clock-out target shift #{$target->id} | type: {$target->type} | ends {$target->end_datetime->toDateTimeString()} | location: {$locationName}");
-
-            // Must have clocked IN but NOT clocked OUT
-            $att = $target->attendances->firstWhere('user_id', $userId);
-            if (! $att || ! $att->clock_in_at) {
-                $this->logBoth("   => In window but guard NEVER clocked in (missed-clockin job handles that). Skipping.");
-                continue;
-            }
-            if ($att->clock_out_at) {
-                $this->logBoth("   => In window but guard ALREADY clocked out. Nothing to remind.");
-                continue;
-            }
 
             $isBeforeEnd   = $now->lt($target->end_datetime);
             $minutesPast   = $isBeforeEnd ? 0 : (int) $target->end_datetime->diffInMinutes($now);
