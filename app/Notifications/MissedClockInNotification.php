@@ -71,6 +71,8 @@ class MissedClockInNotification extends Notification
             'minutes_late'  => (string) $this->minutesLate,
             'for_guard'     => $this->forGuard ? '1' : '0',
             'tag'           => $tag,
+            // Unique numeric id the mobile app can use so each push shows separately (no override)
+            'notification_id' => (string) abs(crc32($tag)),
         ])
         ->custom([
             'android' => [
