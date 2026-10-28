@@ -136,11 +136,19 @@
                                     @if($attendance->clock_in_latitude)
                                         <br><small class="text-info"><i class="mdi mdi-map-marker"></i> Lat: {{ round($attendance->clock_in_latitude, 4) }}, Lng: {{ round($attendance->clock_in_longitude, 4) }}</small>
                                     @endif
+                                    @if(!empty($attendance->clock_in_image))
+                                        @php $ciImg = \Illuminate\Support\Str::startsWith($attendance->clock_in_image, ['http://','https://']) ? $attendance->clock_in_image : asset('storage/'.ltrim(str_replace('storage/','',$attendance->clock_in_image),'/')); @endphp
+                                        <br><img src="{{ $ciImg }}" alt="Clock In Photo" class="attendance-img-thumb mt-1" data-img="{{ $ciImg }}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #ddd;">
+                                    @endif
                                 </td>
                                 <td>
                                     {{ $attendance->clock_out_at ? $attendance->clock_out_at->format('Y-m-d H:i') : '-' }}
                                     @if($attendance->clock_out_latitude)
                                         <br><small class="text-info"><i class="mdi mdi-map-marker"></i> Lat: {{ round($attendance->clock_out_latitude, 4) }}, Lng: {{ round($attendance->clock_out_longitude, 4) }}</small>
+                                    @endif
+                                    @if(!empty($attendance->clock_out_image))
+                                        @php $coImg = \Illuminate\Support\Str::startsWith($attendance->clock_out_image, ['http://','https://']) ? $attendance->clock_out_image : asset('storage/'.ltrim(str_replace('storage/','',$attendance->clock_out_image),'/')); @endphp
+                                        <br><img src="{{ $coImg }}" alt="Clock Out Photo" class="attendance-img-thumb mt-1" data-img="{{ $coImg }}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #ddd;">
                                     @endif
                                 </td>
                                 <td>
@@ -170,6 +178,7 @@
                                     @endif
                                 </td>
                                 <td>
+                                    <div class="d-flex align-items-center gap-2">
                                     <button type="button" class="btn btn-primary btn-sm edit-adjustment" 
                                             data-id="{{ $attendance->id }}" 
                                             data-adjustment="{{ $attendance->manual_adjustment ?? 0 }}"
@@ -177,6 +186,21 @@
                                             data-bs-toggle="modal" data-bs-target="#adjustmentModal">
                                         <i class="mdi mdi-clock-edit"></i>
                                     </button>
+                                    <a href="{{ route('attendance.delete', $attendance->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Attendance" onclick="return confirm('Are you sure you want to delete this attendance record?')">
+                                        <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+                                            <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+                                        </svg>
+                                        <svg class="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <mask id="path-1-inside-1_8_19" fill="white">
+                                                <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
+                                            </mask>
+                                            <path d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" fill="white" mask="url(#path-1-inside-1_8_19)"></path>
+                                            <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+                                            <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+                                        </svg>
+                                    </a>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -222,6 +246,21 @@
         </form>
     </div>
 </div>
+
+<!-- Attendance Photo Preview Modal -->
+<div class="modal fade" id="attendanceImageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Attendance Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" id="attendanceImagePreview" alt="Attendance Photo" style="max-width:100%;max-height:70vh;border-radius:8px;">
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -230,6 +269,13 @@
         // Auto-submit form when Select2 values change
         $('.select2').on('change', function() {
             $('#filterForm').submit();
+        });
+
+        // Attendance photo preview
+        $(document).on('click', '.attendance-img-thumb', function() {
+            $('#attendanceImagePreview').attr('src', $(this).data('img'));
+            var modalEl = document.getElementById('attendanceImageModal');
+            (bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl)).show();
         });
 
         // Edit adjustment button handler

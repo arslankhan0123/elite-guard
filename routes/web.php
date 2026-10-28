@@ -747,6 +747,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         Route::post('/export/pdf', [\App\Http\Controllers\AttendanceController::class, 'exportPdf'])->name('attendance.export.pdf');
         Route::post('/export/excel', [\App\Http\Controllers\AttendanceController::class, 'exportExcel'])->name('attendance.export.excel');
         Route::post('/update-adjustment', [\App\Http\Controllers\AttendanceController::class, 'updateAdjustment'])->name('attendance.updateAdjustment');
+        Route::get('/delete/{attendance_id}', [\App\Http\Controllers\AttendanceController::class, 'delete'])->name('attendance.delete');
     });
 
     Route::group(['prefix' => '/profile'], function () {

@@ -63,4 +63,17 @@ class AttendanceController extends Controller
 
         return back()->with('success', 'Attendance adjustment updated successfully.');
     }
+
+    public function delete($attendance_id)
+    {
+        $attendance = ShiftAttendance::findOrFail($attendance_id);
+
+        // Delete clock-in / clock-out images from storage (if any) before removing the record
+        \App\Models\Shift::deleteStorageFile($attendance->clock_in_image);
+        \App\Models\Shift::deleteStorageFile($attendance->clock_out_image);
+
+        $attendance->delete();
+
+        return back()->with('success', 'Attendance record deleted successfully.');
+    }
 }
