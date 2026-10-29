@@ -33,7 +33,7 @@ class EliteGuardTenantSeeder extends Seeder
             [
                 'name'        => 'Elite Guard Inc.',
                 'db_name'     => $dbName,
-                'admin_email' => 'admin@eliteguardinc.ca',
+                'admin_email' => 'info@eliteguardinc.ca',
                 'is_active'   => true,
                 'notes'       => 'Migrated from existing database.',
             ]
