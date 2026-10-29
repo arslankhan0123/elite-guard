@@ -18,6 +18,11 @@ class TenantMailSender
      */
     public static function sendHtml(string $toEmail, ?string $toName, string $subject, string $html): void
     {
+        // Never attempt to send to an empty/invalid address (prevents bounces / undelivered mail)
+        if (! filter_var((string) $toEmail, FILTER_VALIDATE_EMAIL)) {
+            throw new RuntimeException("Invalid recipient email: '" . (string) $toEmail . "'.");
+        }
+
         $host        = Setting::get('smtp_host');
         $port        = Setting::get('smtp_port');
         $encryption  = Setting::get('smtp_encryption');

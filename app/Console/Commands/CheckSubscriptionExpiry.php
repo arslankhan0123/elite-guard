@@ -74,6 +74,12 @@ class CheckSubscriptionExpiry extends Command
     private function sendExpiryEmail(Tenant $tenant, string $type): void
     {
         try {
+            // Skip if the tenant has no valid admin email (prevents bounce / undelivered mail)
+            if (empty($tenant->admin_email) || ! filter_var($tenant->admin_email, FILTER_VALIDATE_EMAIL)) {
+                \Illuminate\Support\Facades\Log::warning("CheckSubscriptionExpiry: skipped '{$tenant->name}' — invalid/empty admin_email (" . ($tenant->admin_email ?? 'null') . ").");
+                return;
+            }
+
             $subject = $type === 'deactivated'
                 ? "Your Elite Guard subscription has expired — account deactivated"
                 : "Your Elite Guard subscription expires in 3 days";
