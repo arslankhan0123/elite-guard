@@ -861,12 +861,14 @@
             if (type === 'runsheet') {
                 const rs = shiftItem.querySelector('.runsheet-select-input');
                 if (rs && rs.value) place = rs.options[rs.selectedIndex].text.trim();
-                nameInput.value = (dayName ? dayName + ' ' : '') + 'Runsheet' + (place ? ' ' + place : '');
             } else {
                 const st = shiftItem.querySelector('.site-select-input');
                 if (st && st.value) place = st.options[st.selectedIndex].text.trim();
-                nameInput.value = (dayName ? dayName + ' ' : '') + 'Site' + (place ? ' ' + place : '');
             }
+
+            // Format: "Regular Shift (DayName site/runsheet name)" — "Regular Shift" is static
+            const inner = [dayName, place].filter(Boolean).join(' ');
+            nameInput.value = inner ? ('Regular Shift (' + inner + ')') : 'Regular Shift';
         }
 
         function addShiftToDay(date, data = null) {
@@ -920,7 +922,7 @@
                     <div class="col-md-4">
                         <label class="small fw-bold text-muted mb-1">Shift Name</label>
                         <input type="text" name="shifts[${index}][shift_name]" class="form-control form-control-sm rounded-3 border-0 bg-light shift-name-input" 
-                               value="${data ? data.shift_name : ''}" placeholder="Auto from day + site/runsheet" readonly>
+                               value="${data ? data.shift_name : ''}" placeholder="Auto from day + site/runsheet (editable)">
                     </div>
                 </div>
 
