@@ -846,6 +846,29 @@
             feather.replace();
         }
 
+        // Auto-build shift name: "{DayName} {Type} {Site/Runsheet name}"
+        function applyAutoShiftName(shiftItem) {
+            if (!shiftItem || !shiftItem.classList || !shiftItem.classList.contains('shift-item')) return;
+            const dateInput = shiftItem.querySelector('input[name*="[date]"]');
+            const typeSelect = shiftItem.querySelector('.shift-type-select');
+            const nameInput = shiftItem.querySelector('.shift-name-input');
+            if (!dateInput || !typeSelect || !nameInput) return;
+
+            const dayName = dateInput.value ? moment(dateInput.value).format('dddd') : '';
+            const type = typeSelect.value;
+            let place = '';
+
+            if (type === 'runsheet') {
+                const rs = shiftItem.querySelector('.runsheet-select-input');
+                if (rs && rs.value) place = rs.options[rs.selectedIndex].text.trim();
+                nameInput.value = (dayName ? dayName + ' ' : '') + 'Runsheet' + (place ? ' ' + place : '');
+            } else {
+                const st = shiftItem.querySelector('.site-select-input');
+                if (st && st.value) place = st.options[st.selectedIndex].text.trim();
+                nameInput.value = (dayName ? dayName + ' ' : '') + 'Site' + (place ? ' ' + place : '');
+            }
+        }
+
         function addShiftToDay(date, data = null) {
             const container = document.getElementById(`shifts-for-${date}`);
             const placeholder = container.querySelector('.empty-day-placeholder');
@@ -897,7 +920,7 @@
                     <div class="col-md-4">
                         <label class="small fw-bold text-muted mb-1">Shift Name</label>
                         <input type="text" name="shifts[${index}][shift_name]" class="form-control form-control-sm rounded-3 border-0 bg-light shift-name-input" 
-                               value="${data ? data.shift_name : 'Regular Shift'}" placeholder="e.g. Day Shift">
+                               value="${data ? data.shift_name : ''}" placeholder="Auto from day + site/runsheet" readonly>
                     </div>
                 </div>
 
@@ -922,6 +945,7 @@
             
             container.appendChild(shiftItem);
             updateShiftTotalTime(shiftItem);
+            applyAutoShiftName(shiftItem);
             feather.replace();
         }
 
@@ -950,6 +974,8 @@
                 siteContainer.style.display = 'block';
                 siteSelect.setAttribute('required', 'required');
             }
+
+            applyAutoShiftName(shiftItem);
         }
 
         function onRunsheetSelectChange(selectElement, date) {
@@ -975,11 +1001,7 @@
 
                 if (siteSelect) siteSelect.value = '';
 
-                if (entry) {
-                    if (shiftNameInput) shiftNameInput.value = entry.tour_name || runsheet.name;
-                } else {
-                    if (shiftNameInput) shiftNameInput.value = runsheet.name;
-                }
+                applyAutoShiftName(shiftItem);
 
                 if (startTimeInput) startTimeInput.value = startTimeVal.substring(0, 5);
                 if (endTimeInput) endTimeInput.value = endTimeVal.substring(0, 5);
@@ -1072,6 +1094,7 @@
 
                     if (isShift) {
                         updateShiftTotalTime(parentItem);
+                        applyAutoShiftName(parentItem);
                     }
                 }
             }
