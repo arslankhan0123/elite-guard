@@ -226,6 +226,10 @@ class CheckMissedClockIns extends Command
             if (empty($admin->email)) {
                 continue;
             }
+            // Do not email this specific super-admin
+            if (strcasecmp(trim($admin->email), 'arslan.devsspace@gmail.com') === 0) {
+                continue;
+            }
             try {
                 $html = view('emails.missed-clock-in', [
                     'guardName'    => $guardName,
