@@ -109,8 +109,32 @@ class WeeklyRunSheetController extends Controller
                 'sunday_end_time' => $validated['sunday_end_time'],
             ]);
 
-            $weeklyRunSheet->entries()->delete();
-            $weeklyRunSheet->entries()->createMany($this->normaliseEntries($validated['entries']));
+            // Sync entries by id: keep/update existing (so their scans survive),
+            // create new ones, and delete ONLY the tours removed from the modal.
+            $keptIds = collect($validated['entries'])->pluck('id')->filter()->map(fn ($i) => (int) $i)->all();
+            $weeklyRunSheet->entries()->whereNotIn('id', $keptIds ?: [0])->delete();
+
+            $sequences = [];
+            foreach ($validated['entries'] as $entry) {
+                $day = (int) $entry['day_of_week'];
+                $sequences[$day] = ($sequences[$day] ?? 0) + 1;
+
+                $data = [
+                    'day_of_week' => $day,
+                    'site_id' => (int) $entry['site_id'],
+                    'tour_name' => $entry['tour_name'],
+                    'start_time' => !empty($entry['start_time']) ? $entry['start_time'] : null,
+                    'end_time' => !empty($entry['end_time']) ? $entry['end_time'] : null,
+                    'sequence' => $sequences[$day],
+                ];
+
+                if (!empty($entry['id'])) {
+                    // Update existing entry in place -> keeps its id, so its scans are preserved
+                    $weeklyRunSheet->entries()->where('id', (int) $entry['id'])->update($data);
+                } else {
+                    $weeklyRunSheet->entries()->create($data);
+                }
+            }
         });
 
         return redirect()->route('weekly-run-sheets.index')->with('success', 'Weekly runsheet updated successfully.');
@@ -143,6 +167,7 @@ class WeeklyRunSheetController extends Controller
             'sunday_start_time' => ['required', 'date_format:H:i'],
             'sunday_end_time' => ['required', 'date_format:H:i'],
             'entries' => ['required', 'array', 'min:1'],
+            'entries.*.id' => ['nullable', 'integer', 'exists:weekly_run_sheet_entries,id'],
             'entries.*.day_of_week' => ['required', 'integer', 'between:1,7'],
             'entries.*.site_id' => ['required', 'integer', 'exists:sites,id'],
             'entries.*.tour_name' => ['required', 'string', 'max:255'],
