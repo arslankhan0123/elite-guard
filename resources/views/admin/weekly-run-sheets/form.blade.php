@@ -12,6 +12,7 @@
 @php
     $days = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
     $savedEntries = old('entries', $runSheet->entries?->map(fn ($entry) => [
+        'id' => $entry->id,
         'day_of_week' => $entry->day_of_week,
         'site_id' => $entry->site_id,
         'tour_name' => $entry->tour_name,
@@ -129,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const wrapper = document.createElement('div');
         wrapper.className = 'tour-entry';
         wrapper.innerHTML = `
+            <input type="hidden" name="entries[${index}][id]" value="${data.id || ''}">
             <input type="hidden" name="entries[${index}][day_of_week]" value="${day}">
             <div class="row g-2 align-items-end">
                 <div class="col-auto align-self-center"><span class="tour-number"></span></div>
