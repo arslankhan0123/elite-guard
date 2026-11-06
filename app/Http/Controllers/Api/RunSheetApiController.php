@@ -203,6 +203,15 @@ class RunSheetApiController extends Controller
             return $this->errorResponse('Associated site not found.', null, 404);
         }
 
+        // ── Validate scan TIME is within the run sheet's start_time..end_time window ──
+        // Run sheet date does NOT roll over past midnight, so we check the time-of-day
+        // only (supporting overnight windows that wrap past midnight), using the time
+        // that came in the request.
+        $windowError = $this->validateRunSheetScanTime($request, $runsheet);
+        if ($windowError !== null) {
+            return $this->errorResponse($windowError, null, 422);
+        }
+
         // if ($request->latitude && $request->longitude) {
         //     $distance = $this->calculateDistance($request->latitude, $request->longitude, $site->latitude, $site->longitude);
         //
@@ -256,6 +265,112 @@ class RunSheetApiController extends Controller
         $result = $this->runSheetRepo->storeScan($scanData);
 
         return $this->successResponse($result['runsheet'], 'Scan recorded successfully.');
+    }
+
+    /**
+     * Ensure the scan TIME (sent by the app) falls within the run sheet's
+     * start_time..end_time window. The run sheet's date does not change past
+     * midnight, so this is a time-of-day check that supports overnight windows
+     * (e.g. 11:38 -> 01:31). Returns an error message when invalid (and alerts the
+     * guard + SuperAdmins), or null when the scan is valid.
+     */
+    private function validateRunSheetScanTime(Request $request, RunSheet $runsheet): ?string
+    {
+        if (empty($runsheet->start_time) || empty($runsheet->end_time)) {
+            return null; // nothing to validate against -> let it through
+        }
+
+        try {
+            $startT = Carbon::parse($runsheet->start_time)->format('H:i:s');
+            $endT   = Carbon::parse($runsheet->end_time)->format('H:i:s');
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        // Use the time coming in the request (fall back to server now only if absent)
+        $rawTime = $request->filled('time')
+            ? $request->input('time')
+            : Carbon::now(config('app.timezone', 'UTC'))->toTimeString();
+        try {
+            $reqT = Carbon::parse($rawTime)->format('H:i:s');
+        } catch (\Throwable $e) {
+            return 'Invalid scan time supplied.';
+        }
+
+        // Time-of-day between check, with midnight wrap for overnight run sheets
+        if ($startT <= $endT) {
+            $inWindow = ($reqT >= $startT && $reqT <= $endT);
+        } else {
+            $inWindow = ($reqT >= $startT || $reqT <= $endT);
+        }
+
+        if ($inWindow) {
+            return null;
+        }
+
+        $siteName  = optional(Site::find($runsheet->site_id))->name ?? 'N/A';
+        $startDisp = Carbon::parse($startT)->format('g:i A');
+        $endDisp   = Carbon::parse($endT)->format('g:i A');
+        $scanDisp  = Carbon::parse($reqT)->format('g:i A');
+
+        $this->alertInvalidRunSheetScan(Auth::user(), $siteName, $scanDisp, $startDisp, $endDisp);
+
+        return 'Scan rejected: the scan time (' . $scanDisp .
+               ') is outside the allowed window for this run sheet (' .
+               $startDisp . ' - ' . $endDisp . ').';
+    }
+
+    /** Email the guard + every SuperAdmin (except the excluded one) about an out-of-window run sheet scan. */
+    private function alertInvalidRunSheetScan($guard, string $siteName, string $scanTime, string $windowStart, string $windowEnd): void
+    {
+        try {
+            $dashboardUrl = url('/dashboard');
+            $guardName    = $guard->name ?? 'Guard';
+            $subject      = "\u{26A0} Invalid Run Sheet Scan: {$guardName} at {$siteName}";
+
+            $html = view('emails.invalid-site-tour-scan', [
+                'scanLabel'    => 'Run Sheet',
+                'guardName'    => $guardName,
+                'siteName'     => $siteName,
+                'scanTime'     => $scanTime,
+                'windowStart'  => $windowStart,
+                'windowEnd'    => $windowEnd,
+                'dashboardUrl' => $dashboardUrl,
+            ])->render();
+
+            // Track who we've emailed so nobody gets it twice (e.g. a guard who is also a SuperAdmin)
+            $sentTo = [];
+            $send = function ($email, $name) use (&$sentTo, $subject, $html) {
+                $email = trim((string) $email);
+                if ($email === '') {
+                    return;
+                }
+                // if (strcasecmp($email, 'arslan.devsspace@gmail.com') === 0) {
+                //     return;
+                // }
+                if (in_array(strtolower($email), $sentTo, true)) {
+                    return;
+                }
+                try {
+                    \App\Services\TenantMailSender::sendHtml($email, $name, $subject, $html);
+                    $sentTo[] = strtolower($email);
+                    \Illuminate\Support\Facades\Log::info('[InvalidRunSheetScan] alert email sent to: ' . $email);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('[InvalidRunSheetScan] email FAILED to ' . $email . ': ' . $e->getMessage());
+                }
+            };
+
+            // 1) The guard (user) who made the scan
+            $send($guard->email ?? null, $guardName);
+
+            // 2) All SuperAdmins
+            $superAdmins = \App\Models\User::where('role', 'SuperAdmin')->get();
+            foreach ($superAdmins as $admin) {
+                $send($admin->email, $admin->name);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('[InvalidRunSheetScan] alert routine failed: ' . $e->getMessage());
+        }
     }
 
     /**

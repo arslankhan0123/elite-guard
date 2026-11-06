@@ -229,9 +229,9 @@ class SiteTourItemApiController extends Controller
                     return;
                 }
                 // Do not email this specific super-admin
-                if (strcasecmp($email, 'arslan.devsspace@gmail.com') === 0) {
-                    return;
-                }
+                // if (strcasecmp($email, 'arslan.devsspace@gmail.com') === 0) {
+                //     return;
+                // }
                 if (in_array(strtolower($email), $sentTo, true)) {
                     return;
                 }

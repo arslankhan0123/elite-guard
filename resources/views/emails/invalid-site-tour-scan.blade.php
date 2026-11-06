@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invalid Site Tour Scan Alert</title>
+  <title>Invalid {{ $scanLabel ?? 'Site Tour' }} Scan Alert</title>
 </head>
 
 <body style="margin:0;padding:0;background:#f4f6f8;font-family:'Segoe UI',Arial,sans-serif;">
@@ -17,7 +17,7 @@
           <tr>
             <td style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:32px 40px;text-align:center;">
               <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">
-                &#9888; Invalid Site Tour Scan
+                &#9888; Invalid {{ $scanLabel ?? 'Site Tour' }} Scan
               </h1>
               <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Elite Guard Security Management</p>
             </td>
@@ -30,8 +30,8 @@
                 Hello Admin,
               </p>
               <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.6;">
-                A site tour scan was <strong style="color:#dc2626;">rejected</strong> because it was submitted
-                <strong>outside the allowed time window</strong> for the tour point. Details below:
+                A {{ strtolower($scanLabel ?? 'Site Tour') }} scan was <strong style="color:#dc2626;">rejected</strong> because it was submitted
+                <strong>outside the allowed time window</strong>. Details below:
               </p>
 
               <!-- Details Card -->
@@ -73,7 +73,7 @@
               </table>
 
               <p style="margin:0 0 24px;color:#6b7280;font-size:14px;line-height:1.6;">
-                This alert was automatically generated when a guard attempted to record a tour scan outside the scheduled start/end time of the tour point.
+                This alert was automatically generated when a guard attempted to record a scan outside the scheduled start/end time.
               </p>
 
               <!-- CTA Button -->
