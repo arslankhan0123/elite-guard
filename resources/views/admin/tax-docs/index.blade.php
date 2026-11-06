@@ -59,9 +59,11 @@
                 </p>
             </div>
             @if(!empty($availableTypes))
+@if(auth()->user()->hasAdminPermission('tax-docs','create'))
             <a href="{{ route('tax-docs.create') }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
                 <i data-feather="plus" class="me-1" style="width:16px;"></i> Upload Tax Document
             </a>
+@endif
             @else
             <button class="btn btn-secondary rounded-pill px-4 fw-bold" disabled>
                 <i data-feather="check-circle" class="me-1" style="width:16px;"></i> All Types Uploaded
@@ -80,9 +82,11 @@
             </div>
             <h5 class="fw-bold">No Tax Documents Yet</h5>
             <p class="text-muted mb-4">Upload the required tax forms (Td1-Fill, Td1-Ab, Td2-Ab) to get started.</p>
+@if(auth()->user()->hasAdminPermission('tax-docs','create'))
             <a href="{{ route('tax-docs.create') }}" class="btn btn-primary rounded-pill px-5 fw-bold">
                 <i data-feather="upload" class="me-1" style="width:15px;"></i> Upload First Document
             </a>
+@endif
         </div>
     </div>
     @else
@@ -130,6 +134,7 @@
                         <i data-feather="download" style="width:13px;" class="me-1"></i> Download
                     </a>
                     <div class="btn-group" role="group" aria-label="Tax Document Actions">
+@if(auth()->user()->hasAdminPermission('tax-docs','update'))
                         <a class="text-decoration-none me-2 text-dark ml-1"
                             href="{{ route('tax-docs.edit', $doc->id) }}" data-bs-toggle="tooltip"
                             title="Edit Tax Document">
@@ -141,6 +146,8 @@
                                 </svg>
                             </button>
                         </a>
+@endif
+@if(auth()->user()->hasAdminPermission('tax-docs','delete'))
                         <a href="{{ route('tax-docs.delete', $doc->id) }}" class="bin-button ml-1"
                             data-bs-toggle="tooltip" title="Delete Tax Document"
                             onclick="return confirm('Are you sure you want to delete this tax document?')">
@@ -164,6 +171,7 @@
                                 <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                             </svg>
                         </a>
+@endif
                     </div>
                 </div>
             </div>
@@ -182,10 +190,12 @@
             </div>
             <p class="fw-bold mb-1" style="color:{{ $accentColor }};">{{ $type }}</p>
             <p class="text-muted small mb-3">Not yet uploaded</p>
+@if(auth()->user()->hasAdminPermission('tax-docs','create'))
             <a href="{{ route('tax-docs.create') }}" class="btn btn-sm rounded-pill px-3 fw-semibold"
                 style="background:{{ $bgLight }}; color:{{ $accentColor }}; border: 1px solid {{ $accentColor }}40;">
                 <i data-feather="plus" style="width:12px;" class="me-1"></i> Upload
             </a>
+@endif
         </div>
     </div>
     @endforeach

@@ -15,7 +15,9 @@
         <div class="card">
             <div class="card-header justify-content-between d-flex align-items-center">
                 <h4 class="card-title shine">Site Table</h4>
+@if(auth()->user()->hasAdminPermission('sites','create'))
                 <a href="{{route('sites.create')}}" class="btn btn-sm btn-info">Create <i class="mdi mdi-arrow-right align-middle"></i></a>
+@endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -53,20 +55,25 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group" aria-label="Site Actions">
+@if(auth()->user()->hasAdminPermission('sites','view'))
                                         <a class="text-decoration-none text-dark me-2" href="{{ route('sites.scan-report', $site->id) }}" data-bs-toggle="tooltip" title="Checkpoint Scan Report">
                                             <button class="btn btn-sm btn-danger d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; border-radius: 6px;" type="button">
                                                 <i data-feather="file-text" style="width: 16px; height: 16px;"></i>
                                             </button>
                                         </a>
+@endif
+@if(auth()->user()->hasAdminPermission('sites','view'))
                                         <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('sites.nfcTags', $site->id) }}" data-bs-toggle="tooltip" title="View Check Points">
                                             <button class="view_btn me-2" fdprocessedid="pxicc">
                                             </button>
                                         </a>
+@endif
                                         <!-- <a class="text-decoration-none text-dark" fdprocessedid="pxicc" href="{{ route('sites.tours', $site->id) }}" data-bs-toggle="tooltip" title="View Site Tours">
                                             <button class="btn btn-sm btn-outline-primary me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; border-radius: 6px;" fdprocessedid="pxicc">
                                                 <i data-feather="map" style="width: 16px; height: 16px;"></i>
                                             </button>
                                         </a> -->
+@if(auth()->user()->hasAdminPermission('sites','update'))
                                         <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('sites.edit', $site->id) }}" data-bs-toggle="tooltip" title="Edit Site">
                                             <button class="editBtn">
                                                 <svg height="1em" viewBox="0 0 512 512">
@@ -74,6 +81,8 @@
                                                 </svg>
                                             </button>
                                         </a>
+@endif
+@if(auth()->user()->hasAdminPermission('sites','delete'))
                                         <a href="{{ route('sites.delete', $site->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Site" onclick="return confirm('Are you sure you want to delete this site?')">
                                             <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
@@ -88,6 +97,7 @@
                                                 <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                             </svg>
                                         </a>
+@endif
                                     </div>
                                 </td>
                             </tr>

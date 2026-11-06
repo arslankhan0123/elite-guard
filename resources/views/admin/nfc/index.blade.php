@@ -15,7 +15,9 @@
         <div class="card">
             <div class="card-header justify-content-between d-flex align-items-center">
                 <h4 class="card-title shine">NFC Tag Table</h4>
+@if(auth()->user()->hasAdminPermission('nfc','create'))
                 <a href="{{route('nfc.create')}}" class="btn btn-sm btn-info">Create <i class="mdi mdi-arrow-right align-middle"></i></a>
+@endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -53,6 +55,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group" aria-label="NFC Actions">
+@if(auth()->user()->hasAdminPermission('nfc','update'))
                                         <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('nfc.edit', $tag->id) }}" data-bs-toggle="tooltip" title="Edit NFC Tag">
                                             <button class="editBtn">
                                                 <svg height="1em" viewBox="0 0 512 512">
@@ -60,6 +63,8 @@
                                                 </svg>
                                             </button>
                                         </a>
+@endif
+@if(auth()->user()->hasAdminPermission('nfc','delete'))
                                         <a href="{{ route('nfc.delete', $tag->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete NFC Tag" onclick="return confirm('Are you sure you want to delete this NFC Tag?')">
                                             <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
@@ -74,6 +79,7 @@
                                                 <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                             </svg>
                                         </a>
+@endif
                                     </div>
                                 </td>
                             </tr>

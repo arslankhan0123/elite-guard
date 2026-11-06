@@ -251,9 +251,11 @@
                                                     @foreach($dayUsers as $userName => $userData)
                                                         <div class="fw-bold text-primary my-1">
                                                             @if(!empty($userData['employee_id']))
+@if(auth()->user()->hasAdminPermission('schedules','view'))
                                                                 <a href="{{ route('employees.show', $userData['employee_id']) }}" class="text-primary text-decoration-underline fw-bold">
                                                                     {{ $userName }}
                                                                 </a>
+@endif
                                                             @else
                                                                 {{ $userName }}
                                                             @endif

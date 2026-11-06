@@ -15,7 +15,9 @@
         <div class="card">
             <div class="card-header justify-content-between d-flex align-items-center">
                 <h4 class="card-title shine">Company Table</h4>
+@if(auth()->user()->hasAdminPermission('companies','create'))
                 <a href="{{route('companies.create')}}" class="btn btn-sm btn-info">Create <i class="mdi mdi-arrow-right align-middle"></i></a>
+@endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -59,6 +61,7 @@
                                 <td>{{ $company->created_at->format('Y-m-d') }}</td>
                                 <td>
                                     <div class="btn-group" role="group" aria-label="Company Actions">
+@if(auth()->user()->hasAdminPermission('companies','update'))
                                         <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('companies.edit', $company->id) }}" data-bs-toggle="tooltip" title="Edit Company">
                                             <button class="editBtn">
                                                 <svg height="1em" viewBox="0 0 512 512">
@@ -66,6 +69,8 @@
                                                 </svg>
                                             </button>
                                         </a>
+@endif
+@if(auth()->user()->hasAdminPermission('companies','delete'))
                                         <a href="{{ route('companies.delete', $company->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Company" onclick="return confirm('Are you sure you want to delete this company?')">
                                             <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
@@ -80,6 +85,7 @@
                                                 <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                             </svg>
                                         </a>
+@endif
                                     </div>
                                 </td>
                             </tr>
