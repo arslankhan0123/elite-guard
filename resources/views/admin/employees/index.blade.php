@@ -18,10 +18,12 @@
                             <h4 class="fw-bold mb-1">Elite Personnel</h4>
                             <p class="text-muted mb-0">Total of {{ count($employees) }} registered employees & guards.</p>
                         </div>
+@if(auth()->user()->hasAdminPermission('employees','create'))
                         <a href="{{ route('employees.create') }}"
                             class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
                             <i data-feather="plus" class="me-1"></i> Add Employee
                         </a>
+@endif
                     </div>
 
                     <div class="table-responsive">
@@ -169,9 +171,12 @@
                                                     data-assigned-run-sheets="{{ $employee->user->weeklyRunSheets->pluck('id')->toJson() }}">
                                                     <i data-feather="clipboard" style="width: 14px; height: 14px;"></i>
                                                 </button> -->
+@if(auth()->user()->hasAdminPermission('employees','view'))
                                                 <a class="text-decoration-none text-dark me-2" href="{{ route('employees.show', $employee->id) }}" data-bs-toggle="tooltip" title="View Details">
                                                     <button class="view_btn"></button>
                                                 </a>
+@endif
+@if(auth()->user()->hasAdminPermission('employees','update'))
                                                 <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('employees.edit', $employee->id) }}" data-bs-toggle="tooltip" title="Edit Employee">
                                                     <button class="editBtn">
                                                         <svg height="1em" viewBox="0 0 512 512">
@@ -179,6 +184,8 @@
                                                         </svg>
                                                     </button>
                                                 </a>
+@endif
+@if(auth()->user()->hasAdminPermission('employees','delete'))
                                                 <a href="{{ route('employees.delete', $employee->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Employee" onclick="return confirm('Are you sure you want to delete this employee?')">
                                                     <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
@@ -193,6 +200,7 @@
                                                         <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                                     </svg>
                                                 </a>
+@endif
                                             </div>
                                         </td>
                                     </tr>

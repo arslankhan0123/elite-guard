@@ -14,9 +14,11 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title">Notice Board</h4>
+@if(auth()->user()->hasAdminPermission('notice-board','create'))
                 <a href="{{ route('notice-board.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Create Notice
                 </a>
+@endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">                   
@@ -39,6 +41,7 @@
                                 <td>{{ Str::limit($notice->long_description, 100) }}</td>
                                 <td>
                                     <div class="btn-group" role="group" aria-label="Number Actions">
+@if(auth()->user()->hasAdminPermission('notice-board','update'))
                                         <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('notice-board.edit', $notice->id) }}" data-bs-toggle="tooltip" title="Edit Number">
                                             <button class="editBtn">
                                                 <svg height="1em" viewBox="0 0 512 512">
@@ -46,6 +49,8 @@
                                                 </svg>
                                             </button>
                                         </a>
+@endif
+@if(auth()->user()->hasAdminPermission('notice-board','delete'))
                                         <a href="{{ route('notice-board.delete', $notice->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Number" onclick="return confirm('Are you sure you want to delete this number?')">
                                             <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
@@ -60,6 +65,7 @@
                                                 <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                             </svg>
                                         </a>
+@endif
                                     </div>
                                 </td>
                             </tr>

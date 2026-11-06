@@ -100,6 +100,7 @@
                                         </td>
                                         <td>
                                             <div class="d-flex gap-1 justify-content-center">
+@if(auth()->user()->hasAdminPermission('availabilities','update'))
                                                 <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3"
                                                         data-bs-toggle="modal" data-bs-target="#processModal"
                                                         data-id="{{ $item->id }}"
@@ -111,12 +112,15 @@
                                                         data-status="{{ $item->status }}">
                                                     Review
                                                 </button>
+@endif
+@if(auth()->user()->hasAdminPermission('availabilities','delete'))
                                                 <form action="{{ route('availabilities.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Delete this record?')">
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
                                                         <i data-feather="trash-2" style="width:13px;"></i>
                                                     </button>
                                                 </form>
+@endif
                                             </div>
                                         </td>
                                     </tr>

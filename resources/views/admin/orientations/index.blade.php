@@ -14,6 +14,7 @@
             <div class="card">
                 <div class="card-header justify-content-between d-flex align-items-center">
                     <h4 class="card-title shine">Orientation Table</h4>
+@if(auth()->user()->hasAdminPermission('orientations','create'))
                     <a href="{{route('orientations.create')}}" class="btn btn-sm btn-info">Create <i
                             class="mdi mdi-arrow-right align-middle"></i></a>
                 </div>
@@ -41,6 +42,7 @@
                                                     class="btn btn-sm btn-soft-primary">
                                                     <i class="mdi mdi-file-document-outline"></i> View Document
                                                 </a>
+@endif
                                             @else
                                                 <span class="text-muted">No Document</span>
                                             @endif
@@ -70,6 +72,7 @@
                                                         </svg>
                                                     </button>
                                                 </a> -->
+@if(auth()->user()->hasAdminPermission('orientations','delete'))
                                                 <a href="{{ route('orientations.delete', $orientation->id) }}" class="bin-button ml-1"
                                                     data-bs-toggle="tooltip" title="Delete Orientation"
                                                     onclick="return confirm('Are you sure you want to delete this orientation?')">
@@ -93,6 +96,7 @@
                                                         <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                                     </svg>
                                                 </a>
+@endif
                                             </div>
                                         </td>
                                     </tr>

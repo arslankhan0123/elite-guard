@@ -30,9 +30,11 @@
                             </span>
                         @endif
                     </a>
+@if(auth()->user()->hasAdminPermission('open-shifts','create'))
                     <a href="{{ route('open-shifts.create') }}" class="btn btn-light rounded-pill px-4 fw-bold">
                         <i data-feather="plus" class="me-1" style="width:16px;"></i> Post New Shift
                     </a>
+@endif
                 </div>
             </div>
         </div>
@@ -75,9 +77,11 @@
                         <div style="font-size:4rem;">📭</div>
                         <h5 class="fw-bold text-muted mt-3">No open shifts posted yet</h5>
                         <p class="text-muted">Click "Post New Shift" to get started.</p>
+@if(auth()->user()->hasAdminPermission('open-shifts','create'))
                         <a href="{{ route('open-shifts.create') }}" class="btn btn-primary rounded-pill px-4 fw-bold">
                             <i data-feather="plus" class="me-1" style="width:16px;"></i> Post First Shift
                         </a>
+@endif
                     </div>
                 @else
                     <div class="table-responsive">
@@ -169,10 +173,12 @@
                                         </td>
                                         <td>
                                             <div class="d-flex gap-1 justify-content-center">
+@if(auth()->user()->hasAdminPermission('open-shifts','update'))
                                                 <a href="{{ route('open-shifts.edit', $shift->id) }}"
                                                    class="btn btn-sm btn-outline-primary rounded-pill px-3" title="Edit">
                                                     <i data-feather="edit-2" style="width:13px;"></i>
                                                 </a>
+@endif
                                                 <a href="{{ route('open-shifts.claims') }}?shift_id={{ $shift->id }}"
                                                    class="btn btn-sm btn-outline-warning rounded-pill px-3 position-relative" title="View Claims">
                                                     <i data-feather="users" style="width:13px;"></i>
@@ -182,11 +188,13 @@
                                                         </span>
                                                     @endif
                                                 </a>
+@if(auth()->user()->hasAdminPermission('open-shifts','delete'))
                                                 <a href="{{ route('open-shifts.delete', $shift->id) }}"
                                                    class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Delete"
                                                    onclick="return confirm('Delete this open shift and all its claims?')">
                                                     <i data-feather="trash-2" style="width:13px;"></i>
                                                 </a>
+@endif
                                             </div>
                                         </td>
                                     </tr>

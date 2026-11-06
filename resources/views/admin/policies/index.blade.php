@@ -14,6 +14,7 @@
             <div class="card">
                 <div class="card-header justify-content-between d-flex align-items-center">
                     <h4 class="card-title shine">Policy Table</h4>
+@if(auth()->user()->hasAdminPermission('policies','create'))
                     <a href="{{route('policies.create')}}" class="btn btn-sm btn-info">Create <i
                             class="mdi mdi-arrow-right align-middle"></i></a>
                 </div>
@@ -41,6 +42,7 @@
                                                     class="btn btn-sm btn-soft-primary">
                                                     <i class="mdi mdi-file-document-outline"></i> View Document
                                                 </a>
+@endif
                                             @else
                                                 <span class="text-muted">No Document</span>
                                             @endif
@@ -59,6 +61,7 @@
                                                     <button class="view_btn me-2" fdprocessedid="pxicc">
                                                     </button>
                                                 </a>
+@if(auth()->user()->hasAdminPermission('policies','update'))
                                                 <a class="text-decoration-none me-2 text-dark ml-1"
                                                     href="{{ route('policies.edit', $policy->id) }}" data-bs-toggle="tooltip"
                                                     title="Edit Policy">
@@ -70,6 +73,8 @@
                                                         </svg>
                                                     </button>
                                                 </a>
+@endif
+@if(auth()->user()->hasAdminPermission('policies','delete'))
                                                 <a href="{{ route('policies.delete', $policy->id) }}" class="bin-button ml-1"
                                                     data-bs-toggle="tooltip" title="Delete Policy"
                                                     onclick="return confirm('Are you sure you want to delete this policy?')">
@@ -93,6 +98,7 @@
                                                         <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                                     </svg>
                                                 </a>
+@endif
                                             </div>
                                         </td>
                                     </tr>

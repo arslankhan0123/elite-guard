@@ -13,7 +13,9 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title">Post &amp; ESC</h4>
+@if(auth()->user()->hasAdminPermission('post-esc','create'))
                 <a href="{{ route('post-esc.create') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Create Post &amp; ESC</a>
+@endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -44,6 +46,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group" aria-label="Post and ESC actions">
+@if(auth()->user()->hasAdminPermission('post-esc','update'))
                                         <a class="text-decoration-none me-2 text-dark ml-1" href="{{ route('post-esc.edit', $post->id) }}" data-bs-toggle="tooltip" title="Edit Post & ESC">
                                             <button class="editBtn">
                                                 <svg height="1em" viewBox="0 0 512 512">
@@ -51,6 +54,8 @@
                                                 </svg>
                                             </button>
                                         </a>
+@endif
+@if(auth()->user()->hasAdminPermission('post-esc','delete'))
                                         <a href="{{ route('post-esc.delete', $post->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Post & ESC" onclick="return confirm('Are you sure you want to delete this Post & ESC?')">
                                             <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
@@ -65,6 +70,7 @@
                                                 <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                             </svg>
                                         </a>
+@endif
                                     </div>
                                 </td>
                             </tr>

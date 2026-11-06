@@ -13,7 +13,9 @@
         <div class="card">
             <div class="card-header justify-content-between d-flex align-items-center">
                 <h4 class="card-title shine">Runsheet Table</h4>
+@if(auth()->user()->hasAdminPermission('sites','create'))
                 <a href="{{ route('weekly-run-sheets.create') }}" class="btn btn-sm btn-info">Create <i class="mdi mdi-arrow-right align-middle"></i></a>
+@endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -42,9 +44,12 @@
 
 
                                     <div class="btn-group" role="group" aria-label="Site Actions">
+@if(auth()->user()->hasAdminPermission('sites','view'))
                                         <a class="text-decoration-none text-dark me-2" href="{{ route('weekly-run-sheets.show', $runSheet) }}" data-bs-toggle="tooltip" title="View Runsheet">
                                             <button class="view_btn" type="button"></button>
                                         </a>
+@endif
+@if(auth()->user()->hasAdminPermission('sites','update'))
                                         <a class="text-decoration-none me-2 text-dark" href="{{ route('weekly-run-sheets.edit', $runSheet) }}" data-bs-toggle="tooltip" title="Edit Runsheet">
                                             <button class="editBtn" type="button">
                                                 <svg height="1em" viewBox="0 0 512 512">
@@ -52,6 +57,7 @@
                                                 </svg>
                                             </button>
                                         </a>
+@endif
                                         <form action="{{ route('weekly-run-sheets.destroy', $runSheet) }}" method="POST" class="d-inline-block align-middle" onsubmit="return confirm('Delete this weekly runsheet?')">
                                             @csrf @method('DELETE')
                                             <button class="bin-button" type="submit" data-bs-toggle="tooltip" title="Delete Runsheet">

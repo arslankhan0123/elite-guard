@@ -186,6 +186,7 @@
                                             data-bs-toggle="modal" data-bs-target="#adjustmentModal">
                                         <i class="mdi mdi-clock-edit"></i>
                                     </button>
+@if(auth()->user()->hasAdminPermission('attendance','delete'))
                                     <a href="{{ route('attendance.delete', $attendance->id) }}" class="bin-button ml-1" data-bs-toggle="tooltip" title="Delete Attendance" onclick="return confirm('Are you sure you want to delete this attendance record?')">
                                         <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
@@ -200,6 +201,7 @@
                                             <path d="M21 6V29" stroke="white" stroke-width="4"></path>
                                         </svg>
                                     </a>
+@endif
                                     </div>
                                 </td>
                             </tr>
