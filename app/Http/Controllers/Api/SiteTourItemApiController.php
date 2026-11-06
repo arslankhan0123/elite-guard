@@ -138,7 +138,122 @@ class SiteTourItemApiController extends Controller
 
         
         $user = Auth::user();
+
+        // ── Validate the scan falls within the tour point's date + time window ──
+        $siteTourItem = \App\Models\SiteTourItem::with('site')->find($request->input('site_tour_item_id'));
+        if (! $siteTourItem) {
+            return $this->notFoundResponse('Site tour item not found.');
+        }
+
+        $windowError = $this->validateScanWindow($request, $siteTourItem, $user);
+        if ($windowError !== null) {
+            return $this->wrongDataResponse($windowError);
+        }
+
         $response = $this->siteTourItemRepo->storeScan($request, $user);
         return $this->successResponse($response, $response['message']);
+    }
+
+    /**
+     * Ensure the scan datetime (sent by the app) falls within the tour point's own
+     * date + start_time..end_time window. Handles overnight slots that cross midnight
+     * (e.g. 23:46 -> 00:30, or an 8pm -> 6am shift). Returns an error message string
+     * when invalid (and alerts the SuperAdmins), or null when the scan is valid.
+     */
+    private function validateScanWindow(Request $request, \App\Models\SiteTourItem $item, $user): ?string
+    {
+        // Need valid date + start/end on the item to validate against
+        if (empty($item->date) || empty($item->start_time) || empty($item->end_time)) {
+            return null; // nothing to validate against -> let it through
+        }
+
+        try {
+            $itemDate = Carbon::parse($item->date)->format('Y-m-d');
+            $startT   = Carbon::parse($item->start_time)->format('H:i:s');
+            $endT     = Carbon::parse($item->end_time)->format('H:i:s');
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        $winStart = Carbon::parse("{$itemDate} {$startT}");
+        $winEnd   = Carbon::parse("{$itemDate} {$endT}");
+        if ($winEnd->lessThanOrEqualTo($winStart)) {
+            $winEnd->addDay(); // overnight slot -> end falls on the next calendar day
+        }
+
+        // Build the scan datetime from what the API actually sent (date + time)
+        try {
+            $reqDate = Carbon::parse($request->input('date'))->format('Y-m-d');
+            $reqTime = Carbon::parse($request->input('time'))->format('H:i:s');
+            $reqDt   = Carbon::parse("{$reqDate} {$reqTime}");
+        } catch (\Throwable $e) {
+            return 'Invalid scan date/time supplied.';
+        }
+
+        // Inclusive check: covers both the date and the time together
+        if ($reqDt->between($winStart, $winEnd)) {
+            return null;
+        }
+
+        $siteName = $item->site?->name ?? 'N/A';
+        $this->alertSuperAdminsInvalidScan($user, $siteName, $reqDt, $winStart, $winEnd);
+
+        return 'Scan rejected: the scan time (' . $reqDt->format('d M Y g:i A') .
+               ') is outside the allowed window for this tour point (' .
+               $winStart->format('d M Y g:i A') . ' - ' . $winEnd->format('d M Y g:i A') . ').';
+    }
+
+    /** Email every SuperAdmin (except the excluded one) that an out-of-window scan was blocked. */
+    private function alertSuperAdminsInvalidScan($guard, string $siteName, Carbon $reqDt, Carbon $winStart, Carbon $winEnd): void
+    {
+        try {
+            $dashboardUrl = url('/dashboard');
+            $guardName    = $guard->name ?? 'Guard';
+            $subject      = "\u{26A0} Invalid Site Tour Scan: {$guardName} at {$siteName}";
+
+            $html = view('emails.invalid-site-tour-scan', [
+                'guardName'    => $guardName,
+                'siteName'     => $siteName,
+                'scanTime'     => $reqDt->format('d M Y g:i A'),
+                'windowStart'  => $winStart->format('d M Y g:i A'),
+                'windowEnd'    => $winEnd->format('d M Y g:i A'),
+                'dashboardUrl' => $dashboardUrl,
+            ])->render();
+
+            // Track who we've emailed so nobody gets it twice (e.g. a guard who is also a SuperAdmin)
+            $sentTo = [];
+
+            $send = function ($email, $name) use (&$sentTo, $subject, $html) {
+                $email = trim((string) $email);
+                if ($email === '') {
+                    return;
+                }
+                // Do not email this specific super-admin
+                if (strcasecmp($email, 'arslan.devsspace@gmail.com') === 0) {
+                    return;
+                }
+                if (in_array(strtolower($email), $sentTo, true)) {
+                    return;
+                }
+                try {
+                    \App\Services\TenantMailSender::sendHtml($email, $name, $subject, $html);
+                    $sentTo[] = strtolower($email);
+                    Log::info('[InvalidScan] alert email sent to: ' . $email);
+                } catch (\Throwable $e) {
+                    Log::warning('[InvalidScan] email FAILED to ' . $email . ': ' . $e->getMessage());
+                }
+            };
+
+            // 1) The guard (user) who made the scan
+            $send($guard->email ?? null, $guardName);
+
+            // 2) All SuperAdmins
+            $superAdmins = \App\Models\User::where('role', 'SuperAdmin')->get();
+            foreach ($superAdmins as $admin) {
+                $send($admin->email, $admin->name);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[InvalidScan] alert routine failed: ' . $e->getMessage());
+        }
     }
 }
