@@ -166,27 +166,21 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         // ─── Daily Shift Runsheets (type = 'runsheet') for the same date ───
         $dailyShiftRunsheets = collect();
         try {
-            $runsheetShifts = \App\Models\Shift::with(['site', 'schedule.user'])
+            // Runsheet data lives in run_sheets (one row per tour-point/site for a
+            // runsheet shift) + run_sheet_scans. A runsheet shift's own site_id is
+            // null (it spans multiple sites), so we build straight from run_sheets,
+            // grouped by shift_id, for the selected date.
+            $rsRows = \App\Models\RunSheet::with(['scans', 'user', 'site'])
                 ->where('date', $selectedDateStr)
-                ->where('type', 'runsheet')
-                ->whereNotNull('site_id')
-                ->get();
+                ->get()
+                ->groupBy('shift_id');
 
-            foreach ($runsheetShifts as $shift) {
-                $user = $shift->schedule?->user;
-                $site = $shift->site;
+            foreach ($rsRows as $shiftId => $rows) {
+                $first = $rows->first();
+                $user  = $first->user;
 
-                $isOvernightRs = false;
-                if ($shift->start_time && $shift->end_time) {
-                    $isOvernightRs = \Carbon\Carbon::parse($shift->end_time)
-                        ->lessThanOrEqualTo(\Carbon\Carbon::parse($shift->start_time));
-                }
-
-                // All RunSheet rows that belong to this shift (shift-wise, date-agnostic)
-                $rsQuery   = \App\Models\RunSheet::where('shift_id', $shift->id);
-                $rsTotal   = (clone $rsQuery)->count();
-                $rsScanned = (clone $rsQuery)->whereHas('scans')->count();
-
+                $rsTotal   = $rows->count();
+                $rsScanned = $rows->filter(fn ($r) => $r->scans->isNotEmpty())->count();
                 $rsPercent = $rsTotal > 0 ? round(($rsScanned / $rsTotal) * 100) : 0;
 
                 if ($rsTotal === 0) {
@@ -199,17 +193,31 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
                     $rsStatus = 'In Progress';
                 }
 
+                $isOvernightRs = false;
+                if ($first->start_time && $first->end_time) {
+                    $isOvernightRs = \Carbon\Carbon::parse($first->end_time)
+                        ->lessThanOrEqualTo(\Carbon\Carbon::parse($first->start_time));
+                }
+
                 $rsTimeRange = 'N/A';
-                if ($shift->start_time && $shift->end_time) {
-                    $sTime = \Carbon\Carbon::parse($shift->start_time)->format('g:i A');
-                    $eTime = \Carbon\Carbon::parse($shift->end_time)->format('g:i A');
+                if ($first->start_time && $first->end_time) {
+                    $sTime = \Carbon\Carbon::parse($first->start_time)->format('g:i A');
+                    $eTime = \Carbon\Carbon::parse($first->end_time)->format('g:i A');
                     $rsTimeRange = "{$sTime} \u{2013} {$eTime}";
                 }
 
+                // A runsheet can span several sites; show the single name or a count.
+                $siteNames = $rows->map(fn ($r) => $r->site?->name)->filter()->unique()->values();
+                if ($siteNames->count() > 1) {
+                    $rsSiteName = 'Multiple (' . $siteNames->count() . ' sites)';
+                } else {
+                    $rsSiteName = $siteNames->first() ?? 'N/A';
+                }
+
                 $dailyShiftRunsheets->push([
-                    'shift_id'     => $shift->id,
-                    'shift_name'   => $shift->shift_name ?: 'Regular Shift',
-                    'site_name'    => $site?->name ?? 'N/A',
+                    'shift_id'     => $shiftId,
+                    'shift_name'   => $first->run_sheet_name ?: 'Runsheet',
+                    'site_name'    => $rsSiteName,
                     'guard_name'   => $user?->name ?? 'Unassigned',
                     'time_range'   => $rsTimeRange,
                     'is_overnight' => $isOvernightRs,
