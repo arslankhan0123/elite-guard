@@ -112,18 +112,39 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
                     $itemDates[] = \Carbon\Carbon::parse($selectedDateStr)->addDay()->toDateString();
                 }
 
-                $totalItems = \App\Models\SiteTourItem::where('site_id', $shift->site_id)
+                // Tour-wise: each SiteTourItem is a tour (a visit slot at the site).
+                $items = \App\Models\SiteTourItem::with(['site.nfcTags', 'scans'])
+                    ->where('site_id', $shift->site_id)
                     ->whereIn('date', $itemDates)
                     ->when($user, fn($q) => $q->where('user_id', $user->id))
-                    ->count();
+                    ->orderBy('date')->orderBy('start_time')
+                    ->get();
 
-                $scannedItems = \App\Models\SiteTourItem::where('site_id', $shift->site_id)
-                    ->whereIn('date', $itemDates)
-                    ->when($user, fn($q) => $q->where('user_id', $user->id))
-                    ->whereHas('scans')
-                    ->count();
+                $tours = $items->map(function ($it) {
+                    $totalTags   = $it->site?->nfcTags?->count() ?? 0;
+                    $scannedTags = $it->scans ? $it->scans->pluck('nfc_tag_id')->unique()->count() : 0;
+                    $tp = $totalTags > 0 ? round(($scannedTags / $totalTags) * 100) : ($scannedTags > 0 ? 100 : 0);
+                    if ($totalTags === 0 && $scannedTags === 0) { $ts = 'No Tags'; }
+                    elseif ($scannedTags === 0) { $ts = 'Not Started'; }
+                    elseif ($totalTags > 0 && $scannedTags >= $totalTags) { $ts = 'Completed'; }
+                    else { $ts = 'In Progress'; }
+                    $time = ($it->start_time && $it->end_time)
+                        ? \Carbon\Carbon::parse($it->start_time)->format('g:i A') . ' - ' . \Carbon\Carbon::parse($it->end_time)->format('g:i A')
+                        : '';
+                    return [
+                        'site_name'    => $it->site?->name ?? 'N/A',
+                        'time'         => $time,
+                        'date'         => \Carbon\Carbon::parse($it->date)->format('d M'),
+                        'total_tags'   => $totalTags,
+                        'scanned_tags' => $scannedTags,
+                        'percent'      => $tp,
+                        'status'       => $ts,
+                    ];
+                })->values();
 
-                $percent = $totalItems > 0 ? round(($scannedItems / $totalItems) * 100) : 0;
+                $totalItems   = $items->count();
+                $scannedItems = $items->filter(fn($it) => $it->scans->isNotEmpty())->count();
+                $percent      = $totalItems > 0 ? round(($scannedItems / $totalItems) * 100) : 0;
 
                 if ($totalItems === 0) {
                     $status = 'No Items';
@@ -154,6 +175,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
                     'total'        => $totalItems,
                     'percent'      => $percent,
                     'status'       => $status,
+                    'tours'        => $tours,
                 ]);
             }
         } catch (\Throwable $e) {
@@ -178,8 +200,10 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
                 ->get();
 
             foreach ($runsheetShifts as $shift) {
-                $rows = \App\Models\RunSheet::with(['scans', 'site', 'user'])
+                $rows = \App\Models\RunSheet::with(['scans', 'site.nfcTags', 'user'])
                     ->where('shift_id', $shift->id)
+                    ->orderByRaw('CAST(sequence AS UNSIGNED) ASC')
+                    ->orderBy('start_time', 'asc')
                     ->get();
 
                 $user = $shift->schedule?->user ?? $rows->first()?->user;
@@ -225,6 +249,30 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
 
                 $rsName = $rows->first()?->run_sheet_name ?: ($shift->shift_name ?: 'Runsheet');
 
+                // Tour-wise: each run_sheet row is a tour (one site/checkpoint-set to patrol)
+                $rsTours = $rows->map(function ($r) {
+                    $totalTags   = $r->site?->nfcTags?->count() ?? 0;
+                    $scannedTags = $r->scans ? $r->scans->pluck('nfc_tag_id')->unique()->count() : 0;
+                    $tp = $totalTags > 0 ? round(($scannedTags / $totalTags) * 100) : ($scannedTags > 0 ? 100 : 0);
+                    if ($totalTags === 0 && $scannedTags === 0) { $ts = 'No Tags'; }
+                    elseif ($scannedTags === 0) { $ts = 'Not Started'; }
+                    elseif ($totalTags > 0 && $scannedTags >= $totalTags) { $ts = 'Completed'; }
+                    else { $ts = 'In Progress'; }
+                    $time = ($r->start_time && $r->end_time)
+                        ? \Carbon\Carbon::parse($r->start_time)->format('g:i A') . ' - ' . \Carbon\Carbon::parse($r->end_time)->format('g:i A')
+                        : '';
+                    return [
+                        'site_name'    => $r->site?->name ?? 'N/A',
+                        'time'         => $time,
+                        'date'         => $r->date ? \Carbon\Carbon::parse($r->date)->format('d M') : '',
+                        'sequence'     => $r->sequence,
+                        'total_tags'   => $totalTags,
+                        'scanned_tags' => $scannedTags,
+                        'percent'      => $tp,
+                        'status'       => $ts,
+                    ];
+                })->values();
+
                 $dailyShiftRunsheets->push([
                     'shift_id'     => $shift->id,
                     'shift_name'   => $rsName,
@@ -241,6 +289,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
                     'total'        => $rsTotal,
                     'percent'      => $rsPercent,
                     'status'       => $rsStatus,
+                    'tours'        => $rsTours,
                 ]);
             }
         } catch (\Throwable $e) {
