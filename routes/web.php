@@ -77,6 +77,159 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         ));
     })->name('dashboard');
 
+    // ─── Daily Tours page (shift-wise, same data as dashboard's Daily Shift Site Tours) ───
+    Route::get('/daily-tours', function () {
+        $tz = \App\Models\Setting::get('timezone', config('app.timezone', 'UTC'));
+        $dateParam     = request('date');
+        $selectedDate  = $dateParam
+            ? \Carbon\Carbon::parse($dateParam, $tz)
+            : \Carbon\Carbon::now($tz);
+        $selectedDateStr = $selectedDate->toDateString();
+
+        $dailyShiftTours = collect();
+        try {
+            $dailyShifts = \App\Models\Shift::with(['site', 'schedule.user'])
+                ->where('date', $selectedDateStr)
+                ->where('type', 'site')
+                ->whereNotNull('site_id')
+                ->get();
+
+            foreach ($dailyShifts as $shift) {
+                $user = $shift->schedule?->user;
+                $site = $shift->site;
+
+                // Overnight shift? (end time is on/earlier than start time => crosses midnight)
+                $isOvernight = false;
+                if ($shift->start_time && $shift->end_time) {
+                    $isOvernight = \Carbon\Carbon::parse($shift->end_time)
+                        ->lessThanOrEqualTo(\Carbon\Carbon::parse($shift->start_time));
+                }
+
+                // Tour items of an overnight shift carry the next calendar date after
+                // midnight, so count across both days; a day-wise shift uses just its date.
+                $itemDates = [$selectedDateStr];
+                if ($isOvernight) {
+                    $itemDates[] = \Carbon\Carbon::parse($selectedDateStr)->addDay()->toDateString();
+                }
+
+                $totalItems = \App\Models\SiteTourItem::where('site_id', $shift->site_id)
+                    ->whereIn('date', $itemDates)
+                    ->when($user, fn($q) => $q->where('user_id', $user->id))
+                    ->count();
+
+                $scannedItems = \App\Models\SiteTourItem::where('site_id', $shift->site_id)
+                    ->whereIn('date', $itemDates)
+                    ->when($user, fn($q) => $q->where('user_id', $user->id))
+                    ->whereHas('scans')
+                    ->count();
+
+                $percent = $totalItems > 0 ? round(($scannedItems / $totalItems) * 100) : 0;
+
+                if ($totalItems === 0) {
+                    $status = 'No Items';
+                } elseif ($scannedItems === 0) {
+                    $status = 'Not Started';
+                } elseif ($scannedItems >= $totalItems) {
+                    $status = 'Completed';
+                } else {
+                    $status = 'In Progress';
+                }
+
+                $timeRange = 'N/A';
+                if ($shift->start_time && $shift->end_time) {
+                    $sTime = \Carbon\Carbon::parse($shift->start_time)->format('g:i A');
+                    $eTime = \Carbon\Carbon::parse($shift->end_time)->format('g:i A');
+                    $timeRange = "{$sTime} \u{2013} {$eTime}";
+                }
+
+                $dailyShiftTours->push([
+                    'shift_id'     => $shift->id,
+                    'shift_name'   => $shift->shift_name ?: 'Regular Shift',
+                    'site_name'    => $site?->name ?? 'N/A',
+                    'guard_name'   => $user?->name ?? 'Unassigned',
+                    'time_range'   => $timeRange,
+                    'is_overnight' => $isOvernight,
+                    'end_date'     => $isOvernight ? \Carbon\Carbon::parse($selectedDateStr)->addDay()->format('d M') : null,
+                    'scanned'      => $scannedItems,
+                    'total'        => $totalItems,
+                    'percent'      => $percent,
+                    'status'       => $status,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('shift_site_tours_page error: ' . $e->getMessage(), [
+                'file' => $e->getFile(), 'line' => $e->getLine(),
+            ]);
+            $dailyShiftTours = collect();
+        }
+
+        // ─── Daily Shift Runsheets (type = 'runsheet') for the same date ───
+        $dailyShiftRunsheets = collect();
+        try {
+            $runsheetShifts = \App\Models\Shift::with(['site', 'schedule.user'])
+                ->where('date', $selectedDateStr)
+                ->where('type', 'runsheet')
+                ->whereNotNull('site_id')
+                ->get();
+
+            foreach ($runsheetShifts as $shift) {
+                $user = $shift->schedule?->user;
+                $site = $shift->site;
+
+                $isOvernightRs = false;
+                if ($shift->start_time && $shift->end_time) {
+                    $isOvernightRs = \Carbon\Carbon::parse($shift->end_time)
+                        ->lessThanOrEqualTo(\Carbon\Carbon::parse($shift->start_time));
+                }
+
+                // All RunSheet rows that belong to this shift (shift-wise, date-agnostic)
+                $rsQuery   = \App\Models\RunSheet::where('shift_id', $shift->id);
+                $rsTotal   = (clone $rsQuery)->count();
+                $rsScanned = (clone $rsQuery)->whereHas('scans')->count();
+
+                $rsPercent = $rsTotal > 0 ? round(($rsScanned / $rsTotal) * 100) : 0;
+
+                if ($rsTotal === 0) {
+                    $rsStatus = 'No Items';
+                } elseif ($rsScanned === 0) {
+                    $rsStatus = 'Not Started';
+                } elseif ($rsScanned >= $rsTotal) {
+                    $rsStatus = 'Completed';
+                } else {
+                    $rsStatus = 'In Progress';
+                }
+
+                $rsTimeRange = 'N/A';
+                if ($shift->start_time && $shift->end_time) {
+                    $sTime = \Carbon\Carbon::parse($shift->start_time)->format('g:i A');
+                    $eTime = \Carbon\Carbon::parse($shift->end_time)->format('g:i A');
+                    $rsTimeRange = "{$sTime} \u{2013} {$eTime}";
+                }
+
+                $dailyShiftRunsheets->push([
+                    'shift_id'     => $shift->id,
+                    'shift_name'   => $shift->shift_name ?: 'Regular Shift',
+                    'site_name'    => $site?->name ?? 'N/A',
+                    'guard_name'   => $user?->name ?? 'Unassigned',
+                    'time_range'   => $rsTimeRange,
+                    'is_overnight' => $isOvernightRs,
+                    'end_date'     => $isOvernightRs ? \Carbon\Carbon::parse($selectedDateStr)->addDay()->format('d M') : null,
+                    'scanned'      => $rsScanned,
+                    'total'        => $rsTotal,
+                    'percent'      => $rsPercent,
+                    'status'       => $rsStatus,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('daily_tours_runsheets error: ' . $e->getMessage(), [
+                'file' => $e->getFile(), 'line' => $e->getLine(),
+            ]);
+            $dailyShiftRunsheets = collect();
+        }
+
+        return view('admin.shift-site-tours.index', compact('dailyShiftTours', 'dailyShiftRunsheets', 'selectedDate'));
+    })->name('daily-tours.index');
+
     // ─── Admin Notifications ────────────────────────────────────────
     Route::get('/notifications', function () {
         $notifications = \App\Models\AdminNotification::orderByDesc('created_at')->take(50)->get();

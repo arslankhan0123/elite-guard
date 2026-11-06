@@ -79,20 +79,21 @@ class User extends Authenticatable implements JWTSubject
     {
         $routes = [
             'dashboard' => 'dashboard', 'companies' => 'companies.index', 'sites' => 'sites.index',
-            'site-tours' => 'sites.tours.all', 'nfc' => 'nfc.index', 'schedules' => 'schedules.index',
+            'site-tours' => 'sites.tours.all', 'daily-tours' => 'daily-tours.index', 'nfc' => 'nfc.index', 'schedules' => 'schedules.index',
             'open-shifts' => 'open-shifts.index',
             'availabilities' => 'availabilities.index', 'time-clocks' => 'time-clocks.index',
             'attendance' => 'attendance.index', 'reports-forms' => 'reports.all',
-            'management-reports' => 'reports.index', 'shifts-reports' => 'reports.index',
+            'management-reports' => 'reports.index', 'shifts-reports' => 'reports.index', 'system-reports' => 'chronological-reports.index',
             'employees' => 'employees.index', 'policies' => 'policies.index',
             'orientations' => 'orientations.index', 'pay-slips' => 'pay-slips.index',
             'tax-docs' => 'tax-docs.index', 'numbers' => 'numbers.index',
             'notice-board' => 'notice-board.index', 'post-esc' => 'post-esc.index',
             'dispatches' => 'dispatches.index', 'invoices' => 'invoices.index',
             'products' => 'products.index', 'taxes' => 'taxes.index', 'customers' => 'customers.index',
+            'profile' => 'profile.edit',
         ];
 
-        return collect($routes)->first(fn ($route, $module) => $this->hasAdminPermission($module, 'list')) ?? 'profile.edit';
+        return collect($routes)->first(fn ($route, $module) => $this->hasAdminPermission($module, 'list')) ?? 'dashboard';
     }
 
     public function employee()

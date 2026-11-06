@@ -250,9 +250,11 @@
                         <h6 class="mb-0 text-white">{{Auth::user()->name}}</h6>
                         <p class="mb-0 font-size-11 text-white-50 fw-semibold">{{Auth::user()->email}}</p>
                     </div>
+                    @if(Auth::user()->hasAdminPermission('profile', 'list'))
                     <a class="dropdown-item" href="{{ route('profile.edit') }}"><i
                             class="mdi mdi-account-circle text-muted font-size-16 align-middle me-1"></i> <span
                             class="align-middle">Profile</span></a>
+                    @endif
                     <!-- <a class="dropdown-item" href="apps-chat.html"><i
                             class="mdi mdi-message-text-outline text-muted font-size-16 align-middle me-1"></i>
                         <span class="align-middle">Messages</span></a> -->
@@ -326,7 +328,16 @@
                             </a>
                         </li>
                         @endif
-                        @if(Auth::user()->role === 'SuperAdmin' || Auth::user()->role === 'Admin')
+                        @if(Auth::user()->hasAdminPermission('daily-tours', 'list'))
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle arrow-none" href="{{ route('daily-tours.index') }}"
+                                id="topnav-daily-tours" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon nav-icon" data-feather="map-pin"></i>
+                                <span>Daily Tours</span>
+                            </a>
+                        </li>
+                        @endif
+                        @if(Auth::user()->hasAdminPermission('system-reports', 'list'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle arrow-none" href="{{ route('chronological-reports.index') }}">
                                 <i class="icon nav-icon" data-feather="bar-chart-2"></i>

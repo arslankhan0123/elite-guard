@@ -27,18 +27,20 @@ return Application::configure(basePath: dirname(__DIR__))
             'master.admin' => \App\Http\Middleware\IsMasterAdmin::class,
         ]);
 
-        // Run SetTenantConnection BEFORE SubstituteBindings so route-model binding
-        // (e.g. WeeklyRunSheet, Site, Employee) resolves on the correct tenant DB.
+        // Run SetTenantConnection BEFORE auth (AuthenticatesRequests) AND before
+        // SubstituteBindings. This way auth()->user() (and its admin_permissions)
+        // and route-model binding both resolve on the correct tenant DB — not the
+        // default/master connection.
         $middleware->priority([
             \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \App\Http\Middleware\SetTenantConnection::class,
             \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class,
             \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
             \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
-            \App\Http\Middleware\SetTenantConnection::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \Illuminate\Auth\Middleware\Authorize::class,
         ]);
