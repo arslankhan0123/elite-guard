@@ -166,18 +166,23 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
         // ─── Daily Shift Runsheets (type = 'runsheet') for the same date ───
         $dailyShiftRunsheets = collect();
         try {
-            // Runsheet data lives in run_sheets (one row per tour-point/site for a
-            // runsheet shift) + run_sheet_scans. A runsheet shift's own site_id is
-            // null (it spans multiple sites), so we build straight from run_sheets,
-            // grouped by shift_id, for the selected date.
-            $rsRows = \App\Models\RunSheet::with(['scans', 'user', 'site'])
+            // Shift-first: take runsheet-type shifts whose shift.date is the selected
+            // date, then pull ALL that shift's run_sheet tours by shift_id - regardless
+            // of each tour's own date - so overnight tours that rolled over to the next
+            // day are still counted under the shift's start date.
+            $runsheetShifts = \App\Models\Shift::with(['schedule.user', 'site'])
                 ->where('date', $selectedDateStr)
-                ->get()
-                ->groupBy('shift_id');
+                ->where(function ($q) {
+                    $q->where('type', 'runsheet')->orWhereNotNull('weekly_run_sheet_id');
+                })
+                ->get();
 
-            foreach ($rsRows as $shiftId => $rows) {
-                $first = $rows->first();
-                $user  = $first->user;
+            foreach ($runsheetShifts as $shift) {
+                $rows = \App\Models\RunSheet::with(['scans', 'site', 'user'])
+                    ->where('shift_id', $shift->id)
+                    ->get();
+
+                $user = $shift->schedule?->user ?? $rows->first()?->user;
 
                 $rsTotal   = $rows->count();
                 $rsScanned = $rows->filter(fn ($r) => $r->scans->isNotEmpty())->count();
@@ -193,35 +198,45 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
                     $rsStatus = 'In Progress';
                 }
 
-                $isOvernightRs = false;
-                if ($first->start_time && $first->end_time) {
-                    $isOvernightRs = \Carbon\Carbon::parse($first->end_time)
-                        ->lessThanOrEqualTo(\Carbon\Carbon::parse($first->start_time));
+                // Overnight: shift end on/before start, or its tours span two dates
+                $dateSpan = $rows->map(fn ($r) => \Carbon\Carbon::parse($r->date)->toDateString())->unique();
+                $isOvernightRs = $dateSpan->count() > 1;
+                if (! $isOvernightRs && $shift->start_time && $shift->end_time) {
+                    $isOvernightRs = \Carbon\Carbon::parse($shift->end_time)
+                        ->lessThanOrEqualTo(\Carbon\Carbon::parse($shift->start_time));
                 }
 
                 $rsTimeRange = 'N/A';
-                if ($first->start_time && $first->end_time) {
-                    $sTime = \Carbon\Carbon::parse($first->start_time)->format('g:i A');
-                    $eTime = \Carbon\Carbon::parse($first->end_time)->format('g:i A');
+                if ($shift->start_time && $shift->end_time) {
+                    $sTime = \Carbon\Carbon::parse($shift->start_time)->format('g:i A');
+                    $eTime = \Carbon\Carbon::parse($shift->end_time)->format('g:i A');
                     $rsTimeRange = "{$sTime} \u{2013} {$eTime}";
                 }
 
-                // A runsheet can span several sites; show the single name or a count.
+                // A runsheet can span several sites; show the single name or a count
                 $siteNames = $rows->map(fn ($r) => $r->site?->name)->filter()->unique()->values();
                 if ($siteNames->count() > 1) {
                     $rsSiteName = 'Multiple (' . $siteNames->count() . ' sites)';
+                } elseif ($siteNames->count() === 1) {
+                    $rsSiteName = $siteNames->first();
                 } else {
-                    $rsSiteName = $siteNames->first() ?? 'N/A';
+                    $rsSiteName = $shift->site?->name ?? 'N/A';
                 }
 
+                $rsName = $rows->first()?->run_sheet_name ?: ($shift->shift_name ?: 'Runsheet');
+
                 $dailyShiftRunsheets->push([
-                    'shift_id'     => $shiftId,
-                    'shift_name'   => $first->run_sheet_name ?: 'Runsheet',
+                    'shift_id'     => $shift->id,
+                    'shift_name'   => $rsName,
                     'site_name'    => $rsSiteName,
                     'guard_name'   => $user?->name ?? 'Unassigned',
                     'time_range'   => $rsTimeRange,
                     'is_overnight' => $isOvernightRs,
-                    'end_date'     => $isOvernightRs ? \Carbon\Carbon::parse($selectedDateStr)->addDay()->format('d M') : null,
+                    'end_date'     => $isOvernightRs
+                        ? ($dateSpan->count() > 1
+                            ? \Carbon\Carbon::parse($rows->map(fn ($r) => \Carbon\Carbon::parse($r->date))->max())->format('d M')
+                            : \Carbon\Carbon::parse($selectedDateStr)->addDay()->format('d M'))
+                        : null,
                     'scanned'      => $rsScanned,
                     'total'        => $rsTotal,
                     'percent'      => $rsPercent,
