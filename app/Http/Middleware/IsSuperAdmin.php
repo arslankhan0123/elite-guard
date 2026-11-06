@@ -36,6 +36,8 @@ class IsSuperAdmin
         $module = match (true) {
             $routeName === 'dashboard' => 'dashboard',
             str_starts_with($routeName, 'sites.tours.') => 'site-tours',
+            str_starts_with($routeName, 'daily-tours.') => 'daily-tours',
+            str_starts_with($routeName, 'chronological-reports.') => 'system-reports',
             str_starts_with($routeName, 'companies.') => 'companies',
             str_starts_with($routeName, 'sites.') => 'sites',
             str_starts_with($routeName, 'weekly-run-sheets.') => 'sites',

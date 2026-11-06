@@ -14,10 +14,24 @@ use App\Services\TenantService;
 class ProfileController extends Controller
 {
     /**
+     * Admins must hold the 'profile' permission to access account/profile settings.
+     * SuperAdmins and non-admin roles are unaffected.
+     */
+    private function authorizeProfileAccess(): void
+    {
+        $user = auth()->user();
+        if ($user && $user->role === 'Admin' && ! $user->hasAdminPermission('profile', 'list')) {
+            abort(403);
+        }
+    }
+
+    /**
      * Display the user's profile form.
      */
     public function edit(Request $request, ProfileCompletionService $profileCompletion): View
     {
+        $this->authorizeProfileAccess();
+
         $timezones = \DateTimeZone::listIdentifiers();
         $currentTimezone = \App\Models\Setting::get('timezone', config('app.timezone'));
 
@@ -61,6 +75,8 @@ class ProfileController extends Controller
      */
     public function updateTimezone(Request $request): RedirectResponse
     {
+        $this->authorizeProfileAccess();
+
         $timezones = \DateTimeZone::listIdentifiers();
         $request->validate([
             'timezone' => ['required', 'string', 'in:' . implode(',', $timezones)],
@@ -76,6 +92,8 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        $this->authorizeProfileAccess();
+
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
@@ -92,6 +110,8 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $this->authorizeProfileAccess();
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
@@ -114,6 +134,8 @@ class ProfileController extends Controller
      */
     public function updateCompanySettings(Request $request): RedirectResponse
     {
+        $this->authorizeProfileAccess();
+
         $request->validate([
             'company_name'    => ['nullable', 'string', 'max:255'],
             'company_address' => ['nullable', 'string', 'max:500'],

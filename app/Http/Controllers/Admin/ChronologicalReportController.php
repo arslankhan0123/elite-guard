@@ -17,6 +17,8 @@ class ChronologicalReportController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless(auth()->user()?->hasAdminPermission('system-reports', 'list'), 403);
+
         $users = User::orderBy('name')->get();
         $sites = Site::orderBy('name')->get();
         $weeklyRunSheets = \App\Models\WeeklyRunSheet::orderBy('name')->get();
