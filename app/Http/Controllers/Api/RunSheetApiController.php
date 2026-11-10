@@ -280,8 +280,13 @@ class RunSheetApiController extends Controller
             return null; // nothing to validate against -> let it through
         }
 
+        // Allow scanning to open early: subtract the site's open_time (minutes) from start.
+        // e.g. start 18:00 with open_time 10 -> window opens 17:50.
+        $site     = Site::find($runsheet->site_id);
+        $openTime = (int) ($site->open_time ?? 0);
+
         try {
-            $startT = Carbon::parse($runsheet->start_time)->format('H:i:s');
+            $startT = Carbon::parse($runsheet->start_time)->subMinutes($openTime)->format('H:i:s');
             $endT   = Carbon::parse($runsheet->end_time)->format('H:i:s');
         } catch (\Throwable $e) {
             return null;
@@ -308,7 +313,7 @@ class RunSheetApiController extends Controller
             return null;
         }
 
-        $siteName  = optional(Site::find($runsheet->site_id))->name ?? 'N/A';
+        $siteName  = $site?->name ?? 'N/A';
         $startDisp = Carbon::parse($startT)->format('g:i A');
         $endDisp   = Carbon::parse($endT)->format('g:i A');
         $scanDisp  = Carbon::parse($reqT)->format('g:i A');

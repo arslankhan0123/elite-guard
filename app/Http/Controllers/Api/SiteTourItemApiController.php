@@ -181,6 +181,13 @@ class SiteTourItemApiController extends Controller
             $winEnd->addDay(); // overnight slot -> end falls on the next calendar day
         }
 
+        // Allow scanning to open early: subtract the site's open_time (in minutes)
+        // from the window start. e.g. start 03:16 with open_time 10 -> window opens 03:06.
+        $openTime = (int) ($item->site->open_time ?? 0);
+        if ($openTime > 0) {
+            $winStart->subMinutes($openTime);
+        }
+
         // Build the scan datetime from what the API actually sent (date + time)
         try {
             $reqDate = Carbon::parse($request->input('date'))->format('Y-m-d');
