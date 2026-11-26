@@ -123,6 +123,10 @@
         gap: 12px;
         margin-top: 30px;
     }
+    .cc-customer-menu { max-height: 260px; overflow-y: auto; }
+    .cc-customer-option { display: flex; align-items: flex-start; gap: 9px; padding: 8px 12px; cursor: pointer; }
+    .cc-customer-option:hover { background: #f3f6fb; }
+    .cc-customer-option input { margin-top: 4px; }
 </style>
 
 <form action="{{ route('invoices.store') }}" method="POST" id="invoiceForm">
@@ -280,12 +284,37 @@
     </div>
 
     <!-- Bottom Actions Bar -->
-    <div class="bottom-actions-bar mb-5">
+    <div class="bottom-actions-bar mb-5 flex-wrap">
         <div class="form-check form-switch me-3 d-inline-flex align-items-center">
             <input class="form-check-input me-2" type="checkbox" name="send_email" value="1" id="sendEmail" style="width: 2.2em; height: 1.2em; cursor: pointer;">
             <label class="form-check-label fw-semibold text-dark" for="sendEmail" style="cursor: pointer;">
                 <i class="fa fa-envelope text-primary me-1"></i> Send email to client
             </label>
+        </div>
+        <div id="emailRecipients" class="row g-2 w-100 mt-2 d-none">
+            <div class="col-md-6">
+                <label class="field-label" for="email_recipient_id">Send invoice to *</label>
+                <select name="email_recipient_id" id="email_recipient_id" class="form-select form-control-custom" disabled>
+                    <option value="">Select recipient</option>
+                    @foreach($customers as $customer)
+                        @if(filled($customer->email))<option value="{{ $customer->id }}" {{ old('email_recipient_id') == $customer->id ? 'selected' : '' }}>{{ $customer->name }} — {{ $customer->email }}</option>@endif
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="field-label">CC (optional)</label>
+                <div class="dropdown cc-customer-dropdown" id="ccCustomerDropdown">
+                    <button class="form-select form-control-custom text-start bg-white" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled id="ccCustomerToggle">Select CC recipients</button>
+                    <div class="dropdown-menu w-100 p-0 shadow-sm">
+                        <div class="p-2 border-bottom"><input type="search" class="form-control form-control-sm" id="ccCustomerSearch" placeholder="Search customers..."></div>
+                        <div class="cc-customer-menu">
+                            @foreach($customers as $customer)
+                                @if(filled($customer->email))<label class="cc-customer-option" data-search="{{ strtolower($customer->name.' '.$customer->email) }}"><input type="checkbox" name="email_cc_customer_ids[]" value="{{ $customer->id }}" {{ in_array($customer->id, old('email_cc_customer_ids', [])) ? 'checked' : '' }} disabled><span>{{ $customer->name }}<small class="d-block text-muted">{{ $customer->email }}</small></span></label>@endif
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <button type="button" class="btn btn-light rounded-pill px-4" id="previewBtn">Preview</button>
         <button type="submit" name="action_type" value="draft" class="btn btn-outline-secondary rounded-pill px-4">Save As Draft</button>
@@ -385,6 +414,25 @@ $(document).ready(function() {
     let productsList = @json($products);
     let taxesList = @json($taxes);
     let $activeRowSelect = null;
+
+    function toggleEmailRecipients() {
+        const enabled = $('#sendEmail').is(':checked');
+        $('#emailRecipients').toggleClass('d-none', !enabled);
+        $('#email_recipient_id, #ccCustomerToggle, .cc-customer-option input').prop('disabled', !enabled);
+        $('#email_recipient_id').prop('required', enabled);
+    }
+    $('#sendEmail').on('change', toggleEmailRecipients);
+    toggleEmailRecipients();
+    function updateCcCustomerLabel() {
+        const selected = $('.cc-customer-option input:checked').map(function() { return $(this).closest('label').find('span').contents().first().text().trim(); }).get();
+        $('#ccCustomerToggle').text(selected.length ? selected.join(', ') : 'Select CC recipients');
+    }
+    $('.cc-customer-option input').on('change', updateCcCustomerLabel);
+    $('#ccCustomerSearch').on('input', function() {
+        const search = this.value.toLowerCase();
+        $('.cc-customer-option').each(function() { $(this).toggle($(this).data('search').includes(search)); });
+    });
+    updateCcCustomerLabel();
 
     // Update Header Invoice Number live
     $('#invoiceNumberInput').on('input', function() {

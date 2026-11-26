@@ -11,7 +11,7 @@ use RuntimeException;
 
 class InvoiceMailSender
 {
-    public function send(Invoice $invoice, string $recipientEmail): void
+    public function send(Invoice $invoice, string $recipientEmail, array $ccEmails = []): void
     {
         $host = Setting::get('smtp_host');
         $port = Setting::get('smtp_port');
@@ -48,8 +48,10 @@ class InvoiceMailSender
 
         Mail::purge('tenant_invoice_smtp');
 
-        Mail::mailer('tenant_invoice_smtp')
-            ->to($recipientEmail)
-            ->send((new InvoiceMail($invoice))->from($fromAddress, $fromName));
+        $message = Mail::mailer('tenant_invoice_smtp')->to($recipientEmail);
+        if ($ccEmails !== []) {
+            $message->cc($ccEmails);
+        }
+        $message->send((new InvoiceMail($invoice))->from($fromAddress, $fromName));
     }
 }

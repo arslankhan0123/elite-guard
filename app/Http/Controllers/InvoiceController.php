@@ -140,6 +140,24 @@ class InvoiceController extends Controller
             'items.*.tax_rate'        => 'nullable|numeric|min:0|max:100',
         ]);
 
+        if ($request->boolean('send_email')) {
+            $request->validate([
+                'email_recipient_id' => 'required|exists:customers,id',
+                'email_cc_customer_ids' => 'nullable|array',
+                'email_cc_customer_ids.*' => 'distinct|exists:customers,id',
+            ]);
+            if (! Customer::whereKey($request->email_recipient_id)->whereNotNull('email')->where('email', '<>', '')->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_recipient_id' => 'The selected recipient does not have an email address.',
+                ]);
+            }
+            if (Customer::whereIn('id', $request->input('email_cc_customer_ids', []))->where(fn ($query) => $query->whereNull('email')->orWhere('email', ''))->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_cc_customer_ids' => 'Every selected CC customer must have an email address.',
+                ]);
+            }
+        }
+
         DB::beginTransaction();
         try {
             $subtotal = 0;
@@ -209,10 +227,11 @@ class InvoiceController extends Controller
             $emailMessage = '';
             if ($request->has('send_email') && $request->send_email == '1') {
                 $invoice->load(['company', 'customer', 'site', 'items']);
-                $recipientEmail = $invoice->customer?->email;
+                $recipientEmail = Customer::whereKey($request->email_recipient_id)->value('email');
+                $ccEmails = Customer::whereIn('id', $request->input('email_cc_customer_ids', []))->whereNotNull('email')->pluck('email')->all();
                 if ($recipientEmail) {
                     try {
-                        $this->invoiceMailSender->send($invoice, $recipientEmail);
+                        $this->invoiceMailSender->send($invoice, $recipientEmail, $ccEmails);
                         $emailMessage = ' and emailed to ' . $recipientEmail;
                     } catch (\Exception $e) {
                         logger()->error('Failed to send invoice email on create: ' . $e->getMessage());
@@ -284,6 +303,24 @@ class InvoiceController extends Controller
             'items.*.tax_rate'        => 'nullable|numeric|min:0|max:100',
         ]);
 
+        if ($request->boolean('send_email')) {
+            $request->validate([
+                'email_recipient_id' => 'required|exists:customers,id',
+                'email_cc_customer_ids' => 'nullable|array',
+                'email_cc_customer_ids.*' => 'distinct|exists:customers,id',
+            ]);
+            if (! Customer::whereKey($request->email_recipient_id)->whereNotNull('email')->where('email', '<>', '')->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_recipient_id' => 'The selected recipient does not have an email address.',
+                ]);
+            }
+            if (Customer::whereIn('id', $request->input('email_cc_customer_ids', []))->where(fn ($query) => $query->whereNull('email')->orWhere('email', ''))->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_cc_customer_ids' => 'Every selected CC customer must have an email address.',
+                ]);
+            }
+        }
+
         DB::beginTransaction();
         try {
             $subtotal = 0;
@@ -353,10 +390,11 @@ class InvoiceController extends Controller
             $emailMessage = '';
             if ($request->has('send_email') && $request->send_email == '1') {
                 $invoice->load(['company', 'customer', 'site', 'items']);
-                $recipientEmail = $invoice->customer?->email;
+                $recipientEmail = Customer::whereKey($request->email_recipient_id)->value('email');
+                $ccEmails = Customer::whereIn('id', $request->input('email_cc_customer_ids', []))->whereNotNull('email')->pluck('email')->all();
                 if ($recipientEmail) {
                     try {
-                        $this->invoiceMailSender->send($invoice, $recipientEmail);
+                        $this->invoiceMailSender->send($invoice, $recipientEmail, $ccEmails);
                         $emailMessage = ' and emailed to ' . $recipientEmail;
                     } catch (\Exception $e) {
                         logger()->error('Failed to send invoice email on update: ' . $e->getMessage());
