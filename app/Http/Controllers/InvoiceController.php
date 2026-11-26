@@ -26,7 +26,7 @@ class InvoiceController extends Controller
     public function index(Request $request)
     {
         // Auto-update status for invoices based on due date & payment
-        $allNonFinalInvoices = Invoice::whereNotIn('status', ['draft', 'paid'])->get();
+        $allNonFinalInvoices = Invoice::whereNotIn('status', ['draft', 'paid', 'waiting_for_po'])->get();
         foreach ($allNonFinalInvoices as $inv) {
             $expected = $inv->calculated_status;
             if ($inv->status !== $expected) {
@@ -129,6 +129,7 @@ class InvoiceController extends Controller
             'invoice_date'   => 'required|date',
             'due_date'       => 'required|date',
             'po_so_number'   => 'nullable|string|max:255',
+            'status'         => 'nullable|in:active,overdue,paid,draft,waiting_for_po',
             'notes'          => 'nullable|string',
             'items'          => 'required|array|min:1',
             'items.*.product_service' => 'required|string',
@@ -317,8 +318,8 @@ class InvoiceController extends Controller
             $grandTotal = $subtotal + $taxTotal;
             if ($request->input('action_type') === 'draft') {
                 $status = 'draft';
-            } elseif ($request->filled('status') && $request->status === 'paid') {
-                $status = 'paid';
+            } elseif ($request->filled('status') && in_array($request->status, ['paid', 'waiting_for_po'], true)) {
+                $status = $request->status;
             } else {
                 $dueDate = \Carbon\Carbon::parse($request->due_date)->startOfDay();
                 $status = $dueDate->lt(\Carbon\Carbon::today()) ? 'overdue' : 'active';

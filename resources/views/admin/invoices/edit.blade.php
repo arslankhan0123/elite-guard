@@ -180,6 +180,7 @@
             <div class="col-md-4">
                 <label class="field-label">Status *</label>
                 <select name="status" class="form-select form-control-custom" required>
+                    <option value="waiting_for_po" {{ old('status', $invoice->calculated_status) === 'waiting_for_po' ? 'selected' : '' }}>Waitng For PO</option>
                     <option value="active" {{ old('status', $invoice->calculated_status) === 'active' ? 'selected' : '' }}>Active / Pending</option>
                     <option value="overdue" {{ old('status', $invoice->calculated_status) === 'overdue' ? 'selected' : '' }}>Overdue</option>
                     <option value="paid" {{ old('status', $invoice->calculated_status) === 'paid' ? 'selected' : '' }}>Paid</option>
