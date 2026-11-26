@@ -26,7 +26,7 @@ class InvoiceController extends Controller
     public function index(Request $request)
     {
         // Auto-update status for invoices based on due date & payment
-        $allNonFinalInvoices = Invoice::whereNotIn('status', ['draft', 'paid'])->get();
+        $allNonFinalInvoices = Invoice::whereNotIn('status', ['draft', 'paid', 'waiting_for_po'])->get();
         foreach ($allNonFinalInvoices as $inv) {
             $expected = $inv->calculated_status;
             if ($inv->status !== $expected) {
@@ -129,6 +129,7 @@ class InvoiceController extends Controller
             'invoice_date'   => 'required|date',
             'due_date'       => 'required|date',
             'po_so_number'   => 'nullable|string|max:255',
+            'status'         => 'nullable|in:active,overdue,paid,draft,waiting_for_po',
             'notes'          => 'nullable|string',
             'items'          => 'required|array|min:1',
             'items.*.product_service' => 'required|string',
@@ -138,6 +139,24 @@ class InvoiceController extends Controller
             'items.*.tax'             => 'nullable|numeric|min:0',
             'items.*.tax_rate'        => 'nullable|numeric|min:0|max:100',
         ]);
+
+        if ($request->boolean('send_email')) {
+            $request->validate([
+                'email_recipient_id' => 'required|exists:customers,id',
+                'email_cc_customer_ids' => 'nullable|array',
+                'email_cc_customer_ids.*' => 'distinct|exists:customers,id',
+            ]);
+            if (! Customer::whereKey($request->email_recipient_id)->whereNotNull('email')->where('email', '<>', '')->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_recipient_id' => 'The selected recipient does not have an email address.',
+                ]);
+            }
+            if (Customer::whereIn('id', $request->input('email_cc_customer_ids', []))->where(fn ($query) => $query->whereNull('email')->orWhere('email', ''))->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_cc_customer_ids' => 'Every selected CC customer must have an email address.',
+                ]);
+            }
+        }
 
         DB::beginTransaction();
         try {
@@ -208,10 +227,11 @@ class InvoiceController extends Controller
             $emailMessage = '';
             if ($request->has('send_email') && $request->send_email == '1') {
                 $invoice->load(['company', 'customer', 'site', 'items']);
-                $recipientEmail = $invoice->customer?->email;
+                $recipientEmail = Customer::whereKey($request->email_recipient_id)->value('email');
+                $ccEmails = Customer::whereIn('id', $request->input('email_cc_customer_ids', []))->whereNotNull('email')->pluck('email')->all();
                 if ($recipientEmail) {
                     try {
-                        $this->invoiceMailSender->send($invoice, $recipientEmail);
+                        $this->invoiceMailSender->send($invoice, $recipientEmail, $ccEmails);
                         $emailMessage = ' and emailed to ' . $recipientEmail;
                     } catch (\Exception $e) {
                         logger()->error('Failed to send invoice email on create: ' . $e->getMessage());
@@ -283,6 +303,24 @@ class InvoiceController extends Controller
             'items.*.tax_rate'        => 'nullable|numeric|min:0|max:100',
         ]);
 
+        if ($request->boolean('send_email')) {
+            $request->validate([
+                'email_recipient_id' => 'required|exists:customers,id',
+                'email_cc_customer_ids' => 'nullable|array',
+                'email_cc_customer_ids.*' => 'distinct|exists:customers,id',
+            ]);
+            if (! Customer::whereKey($request->email_recipient_id)->whereNotNull('email')->where('email', '<>', '')->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_recipient_id' => 'The selected recipient does not have an email address.',
+                ]);
+            }
+            if (Customer::whereIn('id', $request->input('email_cc_customer_ids', []))->where(fn ($query) => $query->whereNull('email')->orWhere('email', ''))->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_cc_customer_ids' => 'Every selected CC customer must have an email address.',
+                ]);
+            }
+        }
+
         DB::beginTransaction();
         try {
             $subtotal = 0;
@@ -317,8 +355,8 @@ class InvoiceController extends Controller
             $grandTotal = $subtotal + $taxTotal;
             if ($request->input('action_type') === 'draft') {
                 $status = 'draft';
-            } elseif ($request->filled('status') && $request->status === 'paid') {
-                $status = 'paid';
+            } elseif ($request->filled('status') && in_array($request->status, ['paid', 'waiting_for_po'], true)) {
+                $status = $request->status;
             } else {
                 $dueDate = \Carbon\Carbon::parse($request->due_date)->startOfDay();
                 $status = $dueDate->lt(\Carbon\Carbon::today()) ? 'overdue' : 'active';
@@ -352,10 +390,11 @@ class InvoiceController extends Controller
             $emailMessage = '';
             if ($request->has('send_email') && $request->send_email == '1') {
                 $invoice->load(['company', 'customer', 'site', 'items']);
-                $recipientEmail = $invoice->customer?->email;
+                $recipientEmail = Customer::whereKey($request->email_recipient_id)->value('email');
+                $ccEmails = Customer::whereIn('id', $request->input('email_cc_customer_ids', []))->whereNotNull('email')->pluck('email')->all();
                 if ($recipientEmail) {
                     try {
-                        $this->invoiceMailSender->send($invoice, $recipientEmail);
+                        $this->invoiceMailSender->send($invoice, $recipientEmail, $ccEmails);
                         $emailMessage = ' and emailed to ' . $recipientEmail;
                     } catch (\Exception $e) {
                         logger()->error('Failed to send invoice email on update: ' . $e->getMessage());

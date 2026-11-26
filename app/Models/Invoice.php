@@ -42,6 +42,9 @@ class Invoice extends Model
         if ($statusStr === 'draft') {
             return 'draft';
         }
+        if ($statusStr === 'waiting_for_po') {
+            return 'waiting_for_po';
+        }
         if ($statusStr === 'paid' || (float) $this->amount_due <= 0) {
             return 'paid';
         }
